@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
+
+require 'appmap'
+require 'appmap/inspector'
+require 'appmap/config'
+
+def usage
+  warn 'Usage: inspect <config-file>'
+  exit 1
+end
+
+config_file_name = ARGV.shift || usage
+usage unless ARGV.empty?
+
+config = AppMap::Config.load_from_file(config_file_name)
+annotations = config.map(&AppMap::Inspector.method(:inspect))
+
+puts JSON.pretty_generate(annotations)

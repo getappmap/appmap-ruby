@@ -1,0 +1,3 @@
+lib/appmap:
+  type: module
+  name: appmap
