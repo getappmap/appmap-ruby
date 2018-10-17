@@ -1,3 +1,6 @@
+.DS_Store
+/html/
+/.appmap/
 /.bundle/
 /.yardoc
 /_yardoc/

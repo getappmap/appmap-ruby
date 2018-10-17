@@ -1,3 +1,9 @@
 lib/appmap:
   type: module
-  name: appmap
+  module_name: appmap
+  exclude:
+    - appmap/server
+
+examples:
+  type: module
+  module_name: examples

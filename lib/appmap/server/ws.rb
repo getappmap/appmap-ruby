@@ -49,7 +49,9 @@ class AppMapServer < Sinatra::Base
 
   get '/scenarios/:id' do
     serve_json
-    result = AppMap::Scenario.parse_rbtrace File.read(expand_scenairo(params[:id]))
-    JSON.pretty_generate result
+
+    JSON.pretty_generate File.read(expand_scenairo(params[:id])).split.map do |line|
+      JSON.parse(line).as_json
+    end
   end
 end

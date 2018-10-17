@@ -35,6 +35,7 @@ GEM
     rack-protection (2.0.3)
       rack
     rake (10.5.0)
+    rdoc (6.0.4)
     sinatra (2.0.3)
       mustermann (~> 1.0)
       rack (~> 2.0)
@@ -54,6 +55,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   pry-byebug
   rake (~> 10.0)
+  rdoc
 
 BUNDLED WITH
    1.16.3

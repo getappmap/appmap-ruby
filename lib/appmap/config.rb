@@ -10,7 +10,11 @@ module AppMap
       # Loads configuration data from a file, specified by the file name.
       def load_from_file(config_file_name)
         require 'yaml'
-        config_data = Array(YAML.safe_load(::File.read(config_file_name)))
+        load YAML.safe_load(::File.read(config_file_name))
+      end
+
+      # Loads configuration from a Hash.
+      def load(config_data)
         config_data.map do |path, data|
           type = data.delete('type')
           case type

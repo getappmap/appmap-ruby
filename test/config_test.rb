@@ -19,6 +19,25 @@ class ConfigTest < Minitest::Test
     assert_equal %w[ignore_non_ruby_file Cls], annotation_names(annotation)
   end
 
+  def test_inspect_multiple_subdirs
+    config_yaml = <<-YAML
+    module_a:
+      type: module
+      module_name: module_a
+  
+    module_b:
+      type: module
+      module_name: module_b
+    YAML
+
+    require 'yaml'
+    config = AppMap::Config.load YAML.safe_load(config_yaml)
+    annotations = Dir.chdir File.join(FIXTURE_DIR, 'inspect_multiple_subdirs') do
+      config.map(&AppMap::Inspector.method(:inspect))
+    end
+    assert_equal %w[module_a ClassA module_b ClassB], annotations.map(&method(:annotation_names)).flatten
+  end
+
   def annotation_names(annotation, names = [])
     names.tap do |_|
       names << annotation.name

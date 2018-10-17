@@ -9,23 +9,38 @@ require 'appmap/annotation'
 require 'shellwords'
 
 def usage
-  warn 'Usage: trace <pid> <inspect-file>'
+  warn 'Usage: trace <inspect-file> program'
   exit 1
 end
 
-pid = ARGV.shift || usage
 inspect_file = ARGV.shift || usage
-usage unless ARGV.empty?
+program = ARGV.shift
 
 inspect_data = JSON.parse(File.read(inspect_file))
 annotations = inspect_data.map { |entry| AppMap::Annotation.from_hash(entry) }
+methods = annotations.map(&:collect_methods).flatten
 
-method_names = annotations.map(&:collect_methods).flatten.map do |method|
-  separator = method.static? ? '.' : '#'
-  [ method.class_name, method.name ].join(separator)
+require 'appmap/trace/tracer'
+
+tracer = AppMap::Trace::Tracer.new(methods)
+AppMap::Trace::Tracer.trace tracer
+
+quit = false
+event_thread = Thread.new do
+  while tracer.has_event? || !quit
+    event = tracer.next_event
+    if event
+      puts event.to_h.to_json
+    else
+      sleep 0.0001
+    end
+  end
+end
+event_thread.abort_on_exception = true
+
+at_exit do
+  quit = true
+  event_thread.join
 end
 
-method_args = method_names.map(&:shellescape)
-command = "rbtrace --devmode -p #{pid.to_i} -m #{method_args.join(' ')}"
-$stderr.puts command
-exec(command)
+load program

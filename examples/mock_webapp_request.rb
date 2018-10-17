@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift File.join(__dir__)
+
+require 'json'
+require 'mock_webapp/user'
+require 'mock_webapp/request'
+require 'mock_webapp/controller'
+
+include MockWebapp
+
+puts JSON.pretty_generate Controller.instance.process(Request.new(id: 'alice'))
