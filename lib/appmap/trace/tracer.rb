@@ -42,7 +42,6 @@ module AppMap
       alias static? static
 
       # Build a new instance from a TracePoint.
-      # @appmap
       def initialize(tp)
         self.id = self.class.next_id
         self.event = tp.event
@@ -61,7 +60,6 @@ module AppMap
       end
     end
 
-    # @appmap
     class MethodCall < MethodEvent
       class << self
         def collect_variables(tp)
@@ -85,7 +83,6 @@ module AppMap
         end
       end
 
-      # @appmap
       def initialize(tp)
         super
 
@@ -93,11 +90,9 @@ module AppMap
       end
     end
 
-    # @appmap
     class MethodReturn < MethodEvent
       attr_reader :parent_id, :elapsed
 
-      # @appmap
       def initialize(tp, parent_id, elapsed)
         super(tp)
 
@@ -121,7 +116,6 @@ module AppMap
       end
     end
 
-    # @appmap
     class Tracer
       class << self
         # Trace program execution using a TracePoint hook. As methods are called and returned from,
@@ -145,7 +139,7 @@ module AppMap
               call_stack[Thread.current.object_id].pop
               AppMap::Trace::MethodReturn.new(tp, c[2], Time.now - c[3])
             end
-            
+
             if method_event
               tracer.record_event method_event
             end
@@ -156,7 +150,6 @@ module AppMap
       # Trace a specified set of methods.
       #
       # methods Array of AppMap::Annotation::Method.
-      # @appmap
       def initialize(methods)
         @methods = methods
 
@@ -183,7 +176,6 @@ module AppMap
       # The event should be one of the MethodEvent subclasses.
       #
       # This method is thread-safe.
-      # @appmap
       def record_event(event)
         @events_mutex.synchronize do
           @events << event
