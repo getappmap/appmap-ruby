@@ -4,9 +4,12 @@ require 'set'
 require 'appmap/annotation'
 
 module AppMap
+  # @appmap
   class Inspector
     class << self
       # Inspect the filesystem for annotations.
+      #
+      # @appmap
       def inspect(config)
         children = config.children.map(&Inspector.method(:inspect)).flatten.compact
 
@@ -107,8 +110,9 @@ module AppMap
 
       # An instance method defined in an sclass is a static method.
       def static?
-        ancestors[-1].type == :sclass ||
-          (ancestors[-1].type == :begin && ancestors[-2].type == :sclass)
+        result = ancestors[-1].type == :sclass ||
+          (ancestors[-1].type == :begin && ancestors[-2] && ancestors[-2].type == :sclass)
+        !!result
       end
 
       def public?
