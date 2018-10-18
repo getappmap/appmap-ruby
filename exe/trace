@@ -27,7 +27,7 @@ AppMap::Trace::Tracer.trace tracer
 
 quit = false
 event_thread = Thread.new do
-  while tracer.has_event? || !quit
+  while tracer.event? || !quit
     event = tracer.next_event
     if event
       puts event.to_h.to_json

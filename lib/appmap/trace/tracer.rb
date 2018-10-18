@@ -1,7 +1,8 @@
 module AppMap
   module Trace
-    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :static, :thread_id, :variables)
+    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id, :variables)
 
+    # @appmap include=public_methods
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
@@ -9,6 +10,26 @@ module AppMap
       @@id_counter = 0
 
       class << self
+        # Build a new instance from a TracePoint.
+        def build_from_tracepoint(me, tp)
+          me.id = next_id
+          me.event = tp.event
+
+          if tp.defined_class.name
+            me.defined_class = tp.defined_class.name
+          else
+            raise "Expecting <Class:[class-name]> for static method call, got #{tp.defined_class}" \
+              unless (md = tp.defined_class.to_s.match(/^#<Class:(.*)>$/))
+            me.defined_class = md[1]
+          end
+
+          me.method_id = tp.method_id
+          me.path = tp.path
+          me.lineno = tp.lineno
+          me.static = tp.defined_class.name.nil?
+          me.thread_id = Thread.current.object_id
+        end
+
         # Gets the next serial id.
         #
         # This method is thread-safe.
@@ -40,28 +61,18 @@ module AppMap
       end
 
       alias static? static
-
-      # Build a new instance from a TracePoint.
-      def initialize(tp)
-        self.id = self.class.next_id
-        self.event = tp.event
-
-        if tp.defined_class.name
-          self.defined_class = tp.defined_class.name
-        else
-          raise "Expecting <Class:[class-name]> for static method call, got #{tp.defined_class}" \
-            unless (md = tp.defined_class.to_s.match(/^#<Class:(.*)>$/))
-          self.defined_class = md[1]
-        end
-
-        self.method_id = tp.method_id
-        self.static = tp.defined_class.name.nil?
-        self.thread_id = Thread.current.object_id
-      end
     end
 
+    # @appmap include=public_methods
     class MethodCall < MethodEvent
       class << self
+        def build_from_tracepoint(mc = MethodCall.new, tp)
+          mc.tap do |_|
+            mc.variables = collect_variables(tp)
+            MethodEvent.build_from_tracepoint(mc, tp)
+          end
+        end
+
         def collect_variables(tp)
           m = tp.self.method(tp.method_id)
           lv = m.parameters.each_with_object({}) do |pinfo, memo|
@@ -82,30 +93,28 @@ module AppMap
           }
         end
       end
-
-      def initialize(tp)
-        super
-
-        self.variables = MethodCall.collect_variables(tp)
-      end
     end
 
+    # @appmap include=public_methods
     class MethodReturn < MethodEvent
-      attr_reader :parent_id, :elapsed
+      attr_accessor :parent_id, :elapsed
 
-      def initialize(tp, parent_id, elapsed)
-        super(tp)
-
-        @parent_id = parent_id
-        @elapsed = elapsed
-        self.variables = {
-          self: self.class.inspect_self(tp),
-          return_value: {
-            class: tp.return_value.class.name,
-            value: self.class.display_string(tp.return_value),
-            object_id: tp.return_value.object_id
-          }
-        }
+      class << self
+        def build_from_tracepoint(mr = MethodReturn.new, tp, parent_id, elapsed)
+          mr.tap do |_|
+            mr.parent_id = parent_id
+            mr.elapsed = elapsed
+            mr.variables = {
+              self: inspect_self(tp),
+              return_value: {
+                class: tp.return_value.class.name,
+                value: display_string(tp.return_value),
+                object_id: tp.return_value.object_id
+              }
+            }
+            MethodEvent.build_from_tracepoint(mr, tp)
+          end
+        end
       end
 
       def to_h
@@ -116,40 +125,56 @@ module AppMap
       end
     end
 
+    # Processes a series of calls into recorded events.
+    # Each call to the handle should provide a TracePoint (or duck-typed object) as the argument.
+    # On each call, a MethodEvent is constructed according to the nature of the TracePoint, and then
+    # stored using the record_event method.
+    # @appmap
+    class TracePointHandler
+      attr_accessor :call_constructor, :return_constructor
+
+      def initialize(tracer)
+        @tracer = tracer
+        @call_stack = Hash.new { |h, k| h[k] = [] }
+        @call_constructor = MethodCall.method(:build_from_tracepoint)
+        @return_constructor = MethodReturn.method(:build_from_tracepoint)
+      end
+
+      # @appmap
+      def handle(tp)
+        method_event = if tp.event == :call && @tracer.break_on_line?(tp.path, tp.lineno)
+                         @call_constructor.call(tp).tap do |c|
+                           @call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now ]
+                         end
+                       elsif (c = @call_stack[Thread.current.object_id].last) &&
+                             c[0] == tp.defined_class &&
+                             c[1] == tp.method_id
+                         @call_stack[Thread.current.object_id].pop
+                         @return_constructor.call(tp, c[2], Time.now - c[3])
+                       end
+
+        @tracer.record_event method_event if method_event
+
+        method_event
+      end
+    end
+
+    # @appmap
     class Tracer
       class << self
         # Trace program execution using a TracePoint hook. As methods are called and returned from,
         # the events are recorded via Tracer#record_event.
+        # @appmap
         def trace(tracer)
-          call_stack = Hash.new { |h, k| h[k] = [] }
-          TracePoint.trace(:call, :return) do |tp|
-            # In order to make this as quick as possible, we lookup the TracePoint by
-            # file path and line number in a pre-populated Hash.
-            #
-            # If the user wants to trace this event, the data is copied from the TracePoint
-            # into a struct and then pushed onto a queue for processing by another thread so that
-            # the program can continue in the meantime.
-            method_event = if tp.event == :call && tracer.break_on_line?(tp.path, tp.lineno)
-              AppMap::Trace::MethodCall.new(tp).tap do |c|
-                call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now ]
-              end
-            elsif (c = call_stack[Thread.current.object_id].last) &&
-              c[0] == tp.defined_class &&
-              c[1] == tp.method_id
-              call_stack[Thread.current.object_id].pop
-              AppMap::Trace::MethodReturn.new(tp, c[2], Time.now - c[3])
-            end
-
-            if method_event
-              tracer.record_event method_event
-            end
-          end
+          handler = TracePointHandler.new(tracer)
+          TracePoint.trace(:call, :return, &handler.method(:handle))
         end
       end
 
       # Trace a specified set of methods.
       #
       # methods Array of AppMap::Annotation::Method.
+      # @appmap
       def initialize(methods)
         @methods = methods
 
@@ -167,6 +192,7 @@ module AppMap
 
       # Whether the indicated file path and lineno is a breakpoint on which
       # execution should interrupted.
+      # @appmap
       def break_on_line?(path, lineno)
         (methods_by_path = @methods_by_location[path]) && methods_by_path[lineno]
       end
@@ -176,6 +202,7 @@ module AppMap
       # The event should be one of the MethodEvent subclasses.
       #
       # This method is thread-safe.
+      # @appmap
       def record_event(event)
         @events_mutex.synchronize do
           @events << event
@@ -185,7 +212,7 @@ module AppMap
       # Whether there is an event available for processing.
       #
       # This method is thread-safe.
-      def has_event?
+      def event?
         @events_mutex.synchronize do
           !@events.empty?
         end
