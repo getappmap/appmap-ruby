@@ -32,7 +32,7 @@ class TraceTest < Minitest::Test
 
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
-    annotations = config.map(&AppMap::Inspector.method(:inspect)).flatten
+    annotations = config.map(&AppMap::Inspector.method(:detect_annotations)).flatten
     methods = annotations.map(&:collect_methods).flatten
 
     def method_call_from_event(evt)
