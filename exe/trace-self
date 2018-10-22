@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
+
+require 'appmap'
+require 'appmap/annotation'
+require 'shellwords'
+
+def usage
+  warn 'Usage: trace-self <trace-file>'
+  exit 1
+end
+
+trace_file = ARGV.shift || usage
+usage unless ARGV.empty?
+
+replay_events = File.read(trace_file)
+                 .split("\n")
+                 .map(&:strip)
+                 .reject(&:empty?)
+                 .map(&JSON.method(:parse))
+                 .map { |te| te['event'] = te['event'].intern; te }
+                 .map { |te| OpenStruct.new(te) }
+
+require 'appmap/trace/tracer'
+
+def method_call_from_event(evt)
+  AppMap::Trace::MethodCall.new(evt.id, evt.event.intern, evt.defined_class, evt.method_id, evt.path, evt.lineno, evt.static, evt.thread_id, evt.variables)
+end
+
+# _parent_id and _elapsed are ignored since they are already specified in the 
+# data being replayed.
+def method_return_from_event(evt, _parent_id, _elapsed)
+  AppMap::Trace::MethodReturn.new(evt.id, evt.event.intern, evt.defined_class, evt.method_id, evt.path, evt.lineno, evt.static, evt.thread_id, evt.variables).tap do |mr|
+    mr.parent_id = evt.parent_id
+    mr.elapsed = evt.elapsed
+  end
+end
+
+tracer = AppMap::Trace.tracer
+handler = AppMap::Trace::TracePointHandler.new(tracer)
+handler.call_constructor = method(:method_call_from_event)
+handler.return_constructor = method(:method_return_from_event)
+
+replay_events.each do |evt|
+  handler.handle evt
+end

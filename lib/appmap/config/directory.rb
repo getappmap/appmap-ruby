@@ -2,7 +2,15 @@ module AppMap
   module Config
     # A normal directory is scanned for AppMap annotations without interpreting the
     # directory as a code module.
+    #
+    # @appmap
     class Directory < Path
+      # @appmap
+      def initialize(path)
+        super
+      end
+
+      # @appmap
       def children
         child_files.sort + child_directories.sort
       end

@@ -3,7 +3,6 @@ lib/appmap:
   module_name: appmap
   exclude:
     - appmap/server
-    - appmap/trace
 
 examples:
   type: module

@@ -16,7 +16,7 @@ namespace :appmap do
     require 'appmap/config'
 
     config = AppMap::Config.load_from_file('.appmap.yml')
-    annotations = config.map(&AppMap::Inspector.method(:inspect))
+    annotations = config.map(&AppMap::Inspector.method(:detect_annotations))
 
     puts JSON.pretty_generate(annotations)
   end

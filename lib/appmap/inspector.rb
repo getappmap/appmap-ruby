@@ -10,8 +10,8 @@ module AppMap
       # Inspect the filesystem for annotations.
       #
       # @appmap
-      def inspect(config)
-        children = config.children.map(&Inspector.method(:inspect)).flatten.compact
+      def detect_annotations(config)
+        children = config.children.map(&Inspector.method(:detect_annotations)).flatten.compact
 
         if config.annotated?
           AppMap::Inspector.new(config.path).parse.tap do |annotations|

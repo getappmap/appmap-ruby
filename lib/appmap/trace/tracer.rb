@@ -2,6 +2,16 @@ module AppMap
   module Trace
     MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id, :variables)
 
+    class << self
+      def tracer
+        @tracer or raise "No global tracer has been configured"
+      end
+
+      def tracer=(tracer)
+        @tracer = tracer
+      end
+    end
+
     # @appmap include=public_methods
     class MethodEvent < MethodEventStruct
       LIMIT = 100
@@ -33,6 +43,7 @@ module AppMap
         # Gets the next serial id.
         #
         # This method is thread-safe.
+        # @appmap
         def next_id
           COUNTER_LOCK.synchronize do
             @@id_counter += 1
@@ -66,6 +77,7 @@ module AppMap
     # @appmap include=public_methods
     class MethodCall < MethodEvent
       class << self
+        # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp)
           mc.tap do |_|
             mc.variables = collect_variables(tp)
@@ -93,13 +105,19 @@ module AppMap
           }
         end
       end
+
+      # @appmap
+      def initialize(*args)
+        super
+      end
     end
 
-    # @appmap include=public_methods
+    # @appmap
     class MethodReturn < MethodEvent
       attr_accessor :parent_id, :elapsed
 
       class << self
+        # @appmap
         def build_from_tracepoint(mr = MethodReturn.new, tp, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
@@ -117,6 +135,11 @@ module AppMap
         end
       end
 
+      # @appmap
+      def initialize(*args)
+        super
+      end
+      
       def to_h
         super.tap do |h|
           h[:parent_id] = parent_id
@@ -133,6 +156,7 @@ module AppMap
     class TracePointHandler
       attr_accessor :call_constructor, :return_constructor
 
+      # @appmap
       def initialize(tracer)
         @tracer = tracer
         @call_stack = Hash.new { |h, k| h[k] = [] }

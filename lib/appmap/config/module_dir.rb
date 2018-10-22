@@ -2,10 +2,13 @@ module AppMap
   module Config
     # Scan a directory for AppMap annotations, treating it as a module and its
     # sub-folders as sub-modules.
+    #
+    # @appmap
     class ModuleDir < Directory
       attr_reader :module_name, :module_path
       attr_accessor :exclude
 
+      # @appmap
       def initialize(path, module_name, module_path: module_name, exclude: [])
         super(path)
         @module_name = module_name
@@ -25,6 +28,7 @@ module AppMap
         exclude.member?(path)
       end
 
+      # @appmap
       def children
         child_files + child_modules
       end

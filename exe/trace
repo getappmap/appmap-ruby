@@ -22,7 +22,7 @@ methods = annotations.map(&:collect_methods).flatten
 
 require 'appmap/trace/tracer'
 
-tracer = AppMap::Trace::Tracer.new(methods)
+tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(methods)
 AppMap::Trace::Tracer.trace tracer
 
 quit = false

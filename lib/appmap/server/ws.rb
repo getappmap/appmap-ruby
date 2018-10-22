@@ -27,7 +27,7 @@ class AppMapServer < Sinatra::Base
   get '/map' do
     serve_json
     config = AppMap::Config.load_from_file('.appmap.yml')
-    JSON.pretty_generate config.map(&AppMap::Inspector.method(:inspect))
+    JSON.pretty_generate config.map(&AppMap::Inspector.method(:detect_annotations))
   end
 
   get '/scenarios' do

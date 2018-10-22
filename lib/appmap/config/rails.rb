@@ -6,7 +6,15 @@ module AppMap
     # * app/controllers
     # * app/views
     # * lib/tasks
+    #
+    # @appmap
     class Rails < Path
+      # @appmap
+      def initialize(path)
+        super
+      end
+
+      # @appmap
       def children
         [
           ModuleDir.new(File.join(path, 'app/models'), 'models'),
