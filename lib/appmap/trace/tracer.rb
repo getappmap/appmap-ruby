@@ -1,6 +1,7 @@
 module AppMap
   module Trace
-    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id, :variables)
+    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id, 
+        :self, :parameters, :return_value)
 
     class << self
       def tracer
@@ -12,7 +13,7 @@ module AppMap
       end
     end
 
-    # @appmap include=public_methods
+    # @appmap
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
@@ -74,20 +75,21 @@ module AppMap
       alias static? static
     end
 
-    # @appmap include=public_methods
+    # @appmap
     class MethodCall < MethodEvent
       class << self
         # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp)
           mc.tap do |_|
-            mc.variables = collect_variables(tp)
+            mc.self = inspect_self(tp)
+            mc.parameters = collect_parameters(tp)
             MethodEvent.build_from_tracepoint(mc, tp)
           end
         end
 
-        def collect_variables(tp)
+        def collect_parameters(tp)
           m = tp.self.method(tp.method_id)
-          lv = m.parameters.each_with_object({}) do |pinfo, memo|
+          m.parameters.each_with_object({}) do |pinfo, memo|
             kind, key = pinfo
             begin
               value = tp.binding.eval(key.to_s)
@@ -99,16 +101,20 @@ module AppMap
               object_id: value.object_id
             }
           end
-          {
-            self: inspect_self(tp),
-            variables: lv
-          }
         end
       end
 
       # @appmap
       def initialize(*args)
         super
+      end
+
+      def to_h
+        super.tap do |h|
+          h.delete(:return_value)
+          h.delete(:parent_id)
+          h.delete(:elapsed)
+        end
       end
     end
 
@@ -122,13 +128,10 @@ module AppMap
           mr.tap do |_|
             mr.parent_id = parent_id
             mr.elapsed = elapsed
-            mr.variables = {
-              self: inspect_self(tp),
-              return_value: {
+            mr.return_value = {
                 class: tp.return_value.class.name,
                 value: display_string(tp.return_value),
                 object_id: tp.return_value.object_id
-              }
             }
             MethodEvent.build_from_tracepoint(mr, tp)
           end
@@ -142,6 +145,8 @@ module AppMap
       
       def to_h
         super.tap do |h|
+          h.delete(:self)
+          h.delete(:parameters)
           h[:parent_id] = parent_id
           h[:elapsed] = elapsed
         end
