@@ -5,7 +5,7 @@ require 'json'
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
 
 require 'appmap'
-require 'appmap/annotation'
+require 'appmap/feature'
 require 'shellwords'
 
 def usage

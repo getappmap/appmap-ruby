@@ -27,7 +27,7 @@ class AppMapServer < Sinatra::Base
   get '/map' do
     serve_json
     config = AppMap::Config.load_from_file('.appmap.yml')
-    JSON.pretty_generate config.map(&AppMap::Inspector.method(:detect_annotations))
+    JSON.pretty_generate config.map(&AppMap::Inspector.method(:detect_features))
   end
 
   get '/scenarios' do
@@ -40,18 +40,13 @@ class AppMapServer < Sinatra::Base
     end
     result = files.map do |file|
       {
-        path: file.path[SCENARIO_PATH.length+1..-1],
-        name: file.read.split("\n")[0][1..-1].strip
+        path: file.path[SCENARIO_PATH.length+1..-1]
       }
     end
     JSON.pretty_generate result
   end
 
   get '/scenarios/:id' do
-    serve_json
-
-    JSON.pretty_generate File.read(expand_scenairo(params[:id])).split.map do |line|
-      JSON.parse(line).as_json
-    end
+    File.read(expand_scenairo(params[:id]))
   end
 end

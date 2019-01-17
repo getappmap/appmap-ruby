@@ -1,39 +1,53 @@
 require 'parser/current'
 require 'set'
 
-require 'appmap/annotation'
+require 'appmap/feature'
 
 module AppMap
+  # Inspector is used to automatically build features from the source code.
+  #
   # @appmap
   class Inspector
     class << self
-      # Inspect the filesystem for annotations.
+      # Inspect the source code for features. The manner in which the features are detected in the
+      # code is defined and tuned by a path configuration object. The path configuration tells the 
+      # feature detector what it should do when it encounters code that may be a "sub-feature",
+      # for example a public instance method of a class.
       #
       # @appmap
-      def detect_annotations(config)
-        children = config.children.map(&Inspector.method(:detect_annotations)).flatten.compact
+      def detect_features(path_config)
+        child_features = -> { path_config.children.map(&Inspector.method(:detect_features)).flatten.compact }
+        parse_file = -> { AppMap::Inspector.new(path_config.path).parse }
 
-        if config.annotated?
-          AppMap::Inspector.new(config.path).parse.tap do |annotations|
-            annotations.each do |annot|
-              annot.children ||= []
-              annot.children += children
-            end
-          end
-        elsif config.module?
-          AppMap::Annotation::Module.new(config.module_name, config.path, {}, children)
-        end
+        feature_builders = {
+          AppMap::Config::Directory => child_features,
+          AppMap::Config::File => parse_file,
+          AppMap::Config::ModuleDir => lambda {
+            AppMap::Feature::Module.new(path_config.module_name, path_config.path, {}, child_features.call) 
+          },
+          AppMap::Config::Rails => child_features
+        }
+
+        builder = feature_builders[path_config.class]
+        raise "Unable to build features for #{path_config.class}" unless builder
+        builder.call
       end
     end
 
     attr_reader :file_path
 
-    ParseNode = Struct.new(:node, :file_path, :ancestors) do # :nodoc:
+    # ParseNodeStruct wraps a generic AST parse node.
+    ParseNodeStruct = Struct.new(:node, :file_path, :ancestors) do
+    end
+
+    # ParseNode wraps a generic AST parse node.
+    class ParseNode < ParseNodeStruct
       extend Forwardable
 
       def_delegators :node, :type, :location
 
       class << self
+        # Build a ParseNode from an AST node.
         def from_node(node, file_path, ancestors)
           case node.type
           when :class
@@ -75,15 +89,15 @@ module AppMap
 
     # A Ruby class.
     class ClassParseNode < ParseNode
-      def to_annotation(attributes)
-        AppMap::Annotation::Cls.new(extract_class_name(node), "#{file_path}:#{location.line}", attributes, [])
+      def to_feature(attributes)
+        AppMap::Feature::Cls.new(extract_class_name(node), "#{file_path}:#{location.line}", attributes, [])
       end
     end
 
     # Abstract representation of a method.
     class MethodParseNode < ParseNode
-      def to_annotation(attributes)
-        AppMap::Annotation::Method.new(name, "#{file_path}:#{location.line}", attributes, []).tap do |a|
+      def to_feature(attributes)
+        AppMap::Feature::Method.new(name, "#{file_path}:#{location.line}", attributes, []).tap do |a|
           a.static = static?
           a.class_name = class_name
         end
@@ -156,7 +170,7 @@ module AppMap
       "Inspect #{file_path.inspect}"
     end
 
-    # Parse the contents of a file into a list of annotations.
+    # Parse the contents of a file into a list of features.
     def parse
       parse_tree, comments = begin
         Parser::CurrentRuby.parse_with_comments(File.read(file_path))
@@ -167,7 +181,7 @@ module AppMap
       end
 
       nodes_by_line = {}
-      annotations_by_ast_node = {}
+      features_by_ast_node = {}
       visit_methods = lambda do |node, ancestors|
         return unless node.respond_to?(:type)
 
@@ -182,11 +196,11 @@ module AppMap
       end
       visit_methods.call(parse_tree, [])
 
-      annotations = []
+      features = []
 
       comments.select { |c| c.text.index('@appmap') }.each do |c|
-        c.text.split("\n").select { |l| l.index('@appmap') }.each do |annotation|
-          tokens = annotation.split
+        c.text.split("\n").select { |l| l.index('@appmap') }.each do |feature|
+          tokens = feature.split
           tokens.delete_if { |t| %w[# @appmap].member?(t) }
           attributes = tokens.inject({}) do |memo, token|
             key, value = token.split('=')
@@ -197,22 +211,22 @@ module AppMap
 
           parse_node = nodes_by_line[c.location.last_line + 1]
           if parse_node
-            annotation = parse_node.to_annotation(attributes)
-            annotations_by_ast_node[parse_node.node] = annotation
-            if annotation
+            feature = parse_node.to_feature(attributes)
+            features_by_ast_node[parse_node.node] = feature
+            if feature
               if (enclosing_type_node = parse_node.enclosing_type_node) &&
-                 (parent_annotation = annotations_by_ast_node[enclosing_type_node])
-                parent_annotation.children << annotation
+                 (parent_feature = features_by_ast_node[enclosing_type_node])
+                parent_feature.children << feature
               else
-                annotations << annotation
+                features << feature
               end
 
-              # At this point there's a parse_node and an associated annotation.
-              # If the annotation is a class which has the option 'include=public_methods',
-              # scan the rest of the class body for public methods and create annotations
+              # At this point there's a parse_node and an associated feature.
+              # If the feature is a class which has the option 'include=public_methods',
+              # scan the rest of the class body for public methods and create features
               # for them.
 
-              if parse_node.type == :class && annotation.include_option.member?('public_methods')
+              if parse_node.type == :class && feature.include_option.member?('public_methods')
                 begin_node = parse_node.node.children.find { |n| n.respond_to?(:type) && n.type == :begin }
                 if begin_node
                   public_methods = begin_node
@@ -220,7 +234,7 @@ module AppMap
                                    .select { |n| n.respond_to?(:type) && n.type == :def }
                                    .map { |n| ParseNode.from_node(n, file_path, parse_node.ancestors + [ parse_node.node, begin_node ]) }
                                    .select(&:public?)
-                  annotation.children += public_methods.map { |m| m.to_annotation([]) }.compact
+                  feature.children += public_methods.map { |m| m.to_feature([]) }.compact
                 end
               end
             end
@@ -230,8 +244,8 @@ module AppMap
         end
       end
 
-      annotations.delete_if { |a| !a.valid? }
-      annotations
+      features.delete_if { |a| !a.valid? }
+      features
     end
   end
 end

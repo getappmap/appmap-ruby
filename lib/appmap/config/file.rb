@@ -1,16 +1,12 @@
 module AppMap
   module Config
-    # Scan a specific file for AppMap annotations.
+    # Scan a specific file for AppMap features.
     #
     # @appmap
     class File < Path
       # @appmap
       def initialize(path)
         super
-      end
-
-      def annotated?
-        true
       end
     end
   end

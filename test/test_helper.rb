@@ -16,18 +16,18 @@ end
 module FixtureFile
   include FixturePath
 
-  def assert_fixture_annotations(path)
-    annotations = Array(AppMap::Inspector.new(parse_fixture_file(path)).parse)
+  def assert_fixture_features(path)
+    features = Array(AppMap::Inspector.new(parse_fixture_file(path)).parse)
 
     fixup_fixture_path = lambda do |a|
       a.location = a.location.gsub(PARSE_FILE_FIXTURE_DIR, '$FIXTURE_DIR')
       a.children.each(&fixup_fixture_path)
     end
-    annotations.each(&fixup_fixture_path)
+    features.each(&fixup_fixture_path)
 
     expectation = `ruby #{parse_fixture_file(path)}`
     assert_equal JSON.pretty_generate(Array(JSON.parse(expectation))),
-                 JSON.pretty_generate(annotations.map(&:to_h))
+                 JSON.pretty_generate(features.map(&:to_h))
   end
 end
 

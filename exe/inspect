@@ -15,6 +15,6 @@ config_file_name = ARGV.shift || usage
 usage unless ARGV.empty?
 
 config = AppMap::Config.load_from_file(config_file_name)
-annotations = config.map(&AppMap::Inspector.method(:inspect))
+features = config.map(&AppMap::Inspector.method(:inspect))
 
-puts JSON.pretty_generate(annotations)
+puts JSON.pretty_generate(features)

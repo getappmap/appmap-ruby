@@ -5,32 +5,34 @@ require 'json'
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
 
 require 'appmap'
-require 'appmap/annotation'
+require 'appmap/inspector'
+require 'appmap/config'
+require 'appmap/feature'
 require 'shellwords'
 
 def usage
-  warn 'Usage: trace <inspect-file> program'
+  warn 'Usage: record (program-arg)+'
   exit 1
 end
 
-inspect_file = ARGV.shift || usage
 program = ARGV.shift
 
-inspect_data = JSON.parse(File.read(inspect_file))
-annotations = inspect_data.map { |entry| AppMap::Annotation.from_hash(entry) }
-methods = annotations.map(&:collect_methods).flatten
+config = AppMap::Config.load_from_file('.appmap.yml')
+features = config.map(&AppMap::Inspector.method(:detect_features))
+methods = features.map(&:collect_methods).flatten
 
 require 'appmap/trace/tracer'
 
 tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(methods)
 AppMap::Trace::Tracer.trace tracer
 
+events = []
 quit = false
 event_thread = Thread.new do
   while tracer.event? || !quit
     event = tracer.next_event
     if event
-      puts event.to_h.to_json
+      events << event.to_h
     else
       sleep 0.0001
     end
@@ -41,6 +43,7 @@ event_thread.abort_on_exception = true
 at_exit do
   quit = true
   event_thread.join
+  File.write('appmap.json', JSON.generate(classMap: features, events: events))
 end
 
 load program

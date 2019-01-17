@@ -1,6 +1,6 @@
 module AppMap
   module Config
-    # Scan a directory for AppMap annotations, treating it as a module and its
+    # Scan a directory for AppMap features, treating it as a module and its
     # sub-folders as sub-modules.
     #
     # @appmap
@@ -18,10 +18,6 @@ module AppMap
 
       def sub_module_dir(dir)
         ModuleDir.new(::File.join(path, dir), dir, module_path: ::File.join(module_path, dir), exclude: exclude)
-      end
-
-      def module?
-        true
       end
 
       def exclude?(path)

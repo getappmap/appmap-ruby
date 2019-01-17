@@ -1,6 +1,6 @@
 module AppMap
   module Config
-    # A normal directory is scanned for AppMap annotations without interpreting the
+    # A normal directory is scanned for AppMap features without interpreting the
     # directory as a code module.
     #
     # @appmap

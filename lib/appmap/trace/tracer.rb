@@ -1,16 +1,15 @@
 module AppMap
   module Trace
-    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id, 
-        :self, :parameters, :return_value)
+    MethodEventStruct =
+      Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id,
+                 :self, :parameters, :return_value)
 
     class << self
       def tracer
-        @tracer or raise "No global tracer has been configured"
+        @tracer || raise('No global tracer has been configured')
       end
 
-      def tracer=(tracer)
-        @tracer = tracer
-      end
+      attr_writer :tracer
     end
 
     # @appmap
@@ -129,9 +128,9 @@ module AppMap
             mr.parent_id = parent_id
             mr.elapsed = elapsed
             mr.return_value = {
-                class: tp.return_value.class.name,
-                value: display_string(tp.return_value),
-                object_id: tp.return_value.object_id
+              class: tp.return_value.class.name,
+              value: display_string(tp.return_value),
+              object_id: tp.return_value.object_id
             }
             MethodEvent.build_from_tracepoint(mr, tp)
           end
@@ -142,7 +141,7 @@ module AppMap
       def initialize(*args)
         super
       end
-      
+
       def to_h
         super.tap do |h|
           h.delete(:self)
@@ -202,7 +201,7 @@ module AppMap
 
       # Trace a specified set of methods.
       #
-      # methods Array of AppMap::Annotation::Method.
+      # methods Array of AppMap::Feature::Method.
       # @appmap
       def initialize(methods)
         @methods = methods

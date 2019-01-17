@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'faraday'
+require 'active_support'
+require 'active_support/core_ext'
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
+
+def usage
+  warn "Usage: upload (appmap-file: 'appmap.json')"
+  exit 1
+end
+
+appmap_file = ARGV.shift || 'appmap.json'
+appmap = JSON.parse(File.read(appmap_file))
+
+conn = Faraday.new(url: 'http://localhost:32768')
+response = conn.post do |req|
+  req.url '/api/scenarios'
+  req.headers['Content-Type'] = 'application/json'
+  req.body = JSON.generate({ owner_id: 1, data: appmap })
+end
+
+message = JSON.parse(response.body) rescue JSON::ParserError unless response.body.blank?
+unless response.success?
+  warn 'Upload failed'
+  warn JSON.pretty_generate(message) unless message.blank?
+  exit 1
+end
+scenario_id = message['id']
+puts "Created scenario #{scenario_id}"
+system "open http://localhost:32768/scenarios/#{scenario_id}"
