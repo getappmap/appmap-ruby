@@ -15,11 +15,14 @@ end
 appmap_file = ARGV.shift || 'appmap.json'
 appmap = JSON.parse(File.read(appmap_file))
 
-conn = Faraday.new(url: 'http://localhost:32768')
+url = ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
+owner = (ENV['APPLAND_OWNER'] || 1).to_i
+
+conn = Faraday.new(url: url)
 response = conn.post do |req|
   req.url '/api/scenarios'
   req.headers['Content-Type'] = 'application/json'
-  req.body = JSON.generate({ owner_id: 1, data: appmap })
+  req.body = JSON.generate(owner_id: owner, data: appmap)
 end
 
 message = JSON.parse(response.body) rescue JSON::ParserError unless response.body.blank?
@@ -28,6 +31,6 @@ unless response.success?
   warn JSON.pretty_generate(message) unless message.blank?
   exit 1
 end
-scenario_id = message['id']
+scenario_id = message['uuid']
 puts "Created scenario #{scenario_id}"
-system "open http://localhost:32768/scenarios/#{scenario_id}"
+system "open #{url}/scenarios/#{scenario_id}"
