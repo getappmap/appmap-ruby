@@ -22,7 +22,15 @@ module AppMap
       end
 
       def ruby_shebang?(path)
-        lines = ::File.read(path).split("\n")
+        lines = begin
+          ::File.read(path).split("\n")
+        rescue ArgumentError => e
+          if e.message.index 'invalid byte sequence'
+            warn "Unable to load file #{path.inspect} : #{e.message}"
+            return false
+          end
+          raise
+        end
         lines[0] && lines[0].index('#!/usr/bin/env ruby') == 0
       end
 
@@ -33,7 +41,9 @@ module AppMap
             !::File.symlink?(expand_path.call(fname)) &&
             ruby_file?(expand_path.call(fname))
         end.map do |fname|
-          File.new(expand_path.call(fname))
+          File.new(expand_path.call(fname)).tap do |f|
+            f.mode = mode
+          end
         end
       end
 
@@ -41,7 +51,9 @@ module AppMap
         File.new(path).entries.select do |fname|
           !%w[. ..].include?(fname) && !::File.directory?(fname)
         end.map do |dir|
-          ModuleDir.new(dir, [module_name, dir].join('/'))
+          ModuleDir.new(dir, [module_name, dir].join('/')).tap do |m|
+            m.mode = mode
+          end
         end
       end
     end

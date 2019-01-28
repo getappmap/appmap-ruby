@@ -5,7 +5,7 @@ require 'json'
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '../lib')
 
 require 'appmap'
-require 'appmap/inspector'
+require 'appmap/inspect'
 require 'appmap/config'
 require 'appmap/feature'
 require 'shellwords'
@@ -18,7 +18,7 @@ end
 program = ARGV.shift
 
 config = AppMap::Config.load_from_file('.appmap.yml')
-features = config.map(&AppMap::Inspector.method(:detect_features))
+features = config.map(&AppMap::Inspect.method(:detect_features))
 methods = features.map(&:collect_methods).flatten
 
 require 'appmap/trace/tracer'

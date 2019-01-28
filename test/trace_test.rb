@@ -1,11 +1,11 @@
 require 'test_helper'
 require 'appmap'
 require 'appmap/config'
-require 'appmap/inspector'
+require 'appmap/inspect'
 require 'appmap/trace/tracer'
 
 class TraceTest < Minitest::Test
-  # Runs a sequence of pre-recorded events and ensures that 
+  # Runs a sequence of pre-recorded events.
   def test_trace_web_request
     config_yaml = <<-CONFIG
     lib/appmap:
@@ -32,7 +32,7 @@ class TraceTest < Minitest::Test
 
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
-    features = config.map(&AppMap::Inspector.method(:detect_features)).flatten
+    features = config.map(&AppMap::Inspect.method(:detect_features)).flatten
     methods = features.map(&:collect_methods).flatten
 
     def method_call_from_event(evt)

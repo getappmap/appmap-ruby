@@ -12,11 +12,11 @@ namespace :appmap do
   desc 'Inspect the application source code for appmap features, and print them as JSON'
   task :inspect do
     require 'appmap'
-    require 'appmap/inspector'
+    require 'appmap/inspect'
     require 'appmap/config'
 
     config = AppMap::Config.load_from_file('.appmap.yml')
-    features = config.map(&AppMap::Inspector.method(:detect_features))
+    features = config.map(&AppMap::Inspect.method(:detect_features))
 
     puts JSON.pretty_generate(features)
   end

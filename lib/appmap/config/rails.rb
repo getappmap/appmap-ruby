@@ -2,10 +2,8 @@ module AppMap
   module Config
     # Provides module configuration for the standard Rails directory layout:
     #
-    # * app/models
-    # * app/controllers
-    # * app/views
-    # * lib/tasks
+    # * app
+    # * lib
     #
     # @appmap
     class Rails < Path
@@ -17,9 +15,8 @@ module AppMap
       # @appmap
       def children
         [
-          ModuleDir.new(File.join(path, 'app/models'), 'models'),
-          ModuleDir.new(File.join(path, 'app/controllers'), 'controllers'),
-          ModuleDir.new(File.join(path, 'lib'), 'lib')
+          ModuleDir.new(File.join(path, 'app'), 'app').tap { |md| md.mode = mode },
+          ModuleDir.new(File.join(path, 'lib'), 'lib').tap { |md| md.mode = mode }
         ]
       end
     end

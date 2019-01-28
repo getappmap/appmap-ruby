@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    appmap (0.1.0)
+    appmap (0.2.0)
       activesupport
       faraday
       parser

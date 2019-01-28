@@ -1,6 +1,17 @@
 module AppMap
   module Config
-    Path = Struct.new(:path) do
+    PathStruct = Struct.new(:path)
+
+    # Path is an abstract configuration of a file, directory, or module.
+    class Path < PathStruct
+      attr_accessor :mode
+
+      def initialize(path)
+        super(path)
+
+        @mode = :implicit
+      end
+
       def <=>(other)
         path <=> other.path
       end

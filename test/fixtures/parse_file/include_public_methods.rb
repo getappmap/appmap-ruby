@@ -13,6 +13,12 @@ class Main
   def protected_function
   end
 
+  def Main.protected_function_2
+  end
+
+  def self.protected_function_3
+  end
+
   public
 
   def public_function_2
@@ -32,46 +38,92 @@ end
 
 puts DATA.read
 __END__
-[
-  {
-    "name": "Main",
-    "location": "$FIXTURE_DIR/include_public_methods.rb:2",
-    "attributes": {
-      "include": "public_methods"
-    },
-    "children": [
-      {
-        "name": "public_function",
-        "location": "$FIXTURE_DIR/include_public_methods.rb:8",
-        "kind": "method",
-        "class_name": "Main",
-        "static": false
+{
+  "explicit": [
+    {
+      "name": "Main",
+      "location": "$FIXTURE_DIR/include_public_methods.rb:2",
+      "attributes": {
+        "include": "public_methods"
       },
-      {
-        "name": "public_function_2",
-        "location": "$FIXTURE_DIR/include_public_methods.rb:18",
-        "kind": "method",
-        "class_name": "Main",
-        "static": false
-      }
-    ],
-    "kind": "class"
-  },
-  {
-    "name": "M2",
-    "location": "$FIXTURE_DIR/include_public_methods.rb:26",
-    "attributes": {
-      "include": "public_methods"
+      "children": [
+        {
+          "name": "public_function",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:8",
+          "kind": "method",
+          "class_name": "Main",
+          "static": false
+        },
+        {
+          "name": "public_function_2",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:24",
+          "kind": "method",
+          "class_name": "Main",
+          "static": false
+        }
+      ],
+      "kind": "class"
     },
-    "children": [
-      {
-        "name": "public_function_3",
-        "location": "$FIXTURE_DIR/include_public_methods.rb:29",
-        "kind": "method",
-        "class_name": "M2",
-        "static": false
-      }
-    ],
-    "kind": "class"
-  }
-]
+    {
+      "name": "M2",
+      "location": "$FIXTURE_DIR/include_public_methods.rb:32",
+      "attributes": {
+        "include": "public_methods"
+      },
+      "children": [
+        {
+          "name": "public_function_3",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:35",
+          "kind": "method",
+          "class_name": "M2",
+          "static": false
+        }
+      ],
+      "kind": "class"
+    }
+  ],
+  "implicit": [
+    {
+      "name": "Main",
+      "location": "$FIXTURE_DIR/include_public_methods.rb:2",
+      "children": [
+        {
+          "name": "sclass_function",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:4",
+          "kind": "method",
+          "class_name": "Main",
+          "static": true
+        },
+        {
+          "name": "public_function",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:8",
+          "kind": "method",
+          "class_name": "Main",
+          "static": false
+        },
+        {
+          "name": "public_function_2",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:24",
+          "kind": "method",
+          "class_name": "Main",
+          "static": false
+        }
+      ],
+      "kind": "class"
+    },
+    {
+      "name": "M2",
+      "location": "$FIXTURE_DIR/include_public_methods.rb:32",
+      "children": [
+        {
+          "name": "public_function_3",
+          "location": "$FIXTURE_DIR/include_public_methods.rb:35",
+          "kind": "method",
+          "class_name": "M2",
+          "static": false
+        }
+      ],
+      "kind": "class"
+    }
+  ]
+}

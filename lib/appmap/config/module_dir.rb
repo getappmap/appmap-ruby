@@ -17,7 +17,9 @@ module AppMap
       end
 
       def sub_module_dir(dir)
-        ModuleDir.new(::File.join(path, dir), dir, module_path: ::File.join(module_path, dir), exclude: exclude)
+        ModuleDir.new(::File.join(path, dir), dir, module_path: ::File.join(module_path, dir), exclude: exclude).tap do |m|
+          m.mode = mode
+        end
       end
 
       def exclude?(path)
