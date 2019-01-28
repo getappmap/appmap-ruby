@@ -15,6 +15,85 @@ end
 appmap_file = ARGV.shift || 'appmap.json'
 appmap = JSON.parse(File.read(appmap_file))
 
+search = lambda do |list, test, path = [ '' ]|
+  list.each_with_index do |item, idx|
+    path.push idx
+    path.push item['name']
+
+    return path if test.call(item)
+
+    children = item['children'] || []
+    result = search.call(children, test, path)
+    return result if result
+
+    path.pop
+    path.pop
+  end
+  nil
+end
+$search = search
+
+# Prune the classMap so that only methods, classes and modules which are referenced
+# by some event are retained.
+def prune(class_map, events)
+  obj_method_name = ->(e) { [ e['class_name'], e['name'] ].join(e['static'] ? ':' : '#') }
+  event_method_name = ->(e) { [ e['defined_class'], e['method_id'] ].join(e['static'] ? ':' : '#') }
+
+  method_names = Set.new(events.map { |e| event_method_name.call(e) })
+
+  # This proc counts the number of objects in the class map whose kind is 'k'
+  count = proc do |k, e|
+    n = 0
+    n += 1 if e['kind'] == k
+    n += (e['children'] || []).map { |child| count.call(k, child) }.reduce(0, :+)
+    n
+  end
+
+  warn "Full classMap contains #{class_map.map { |m| count.call('class', m) }.reduce(0, :+)} classes"
+
+  # Prune all the classes which aren't part of the application trace for this scenario.
+  reject = proc do |list, test|
+    list.tap do |_|
+      list.each do |item|
+        children = item['children']
+        next unless children
+        reject.call(children, test)
+      end
+      list.reject!(&test)
+    end
+  end
+
+  # Prune all unutilized methods
+  reject.call class_map,
+              ->(e) { e['kind'] == 'method' && !method_names.member?(obj_method_name.call(e)) }
+
+  # Prune all empty classes
+  reject.call class_map,
+              ->(e) { e['kind'] == 'class' && (e['children'] || []).empty? }
+
+  # Prune all empty modules
+  reject.call class_map,
+              ->(e) { e['kind'] == 'module' && (e['children'] || []).empty? }
+
+  warn "Pruned classMap contains #{class_map.map { |m| count.call('class', m) }.reduce(0, :+)} classes"
+
+  class_map
+end
+
+# If it's a list, upload it as a classMap
+if appmap.is_a?(Hash)
+  events = appmap['events'] || []
+  class_map = appmap['classMap'] || []
+
+  class_map = prune(class_map, events)
+  appmap = { "classMap": class_map, "events": events }
+else
+  appmap = { "classMap": appmap, "events": [] }
+end
+
+#warn 'exiting!'
+#exit 1
+
 url = ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
 owner = (ENV['APPLAND_OWNER'] || 1).to_i
 
@@ -25,7 +104,13 @@ response = conn.post do |req|
   req.body = JSON.generate(owner_id: owner, data: appmap)
 end
 
-message = JSON.parse(response.body) rescue JSON::ParserError unless response.body.blank?
+unless response.body.blank?
+  message = begin
+              JSON.parse(response.body)
+            rescue StandardError
+              JSON::ParserError
+            end
+end
 unless response.success?
   warn 'Upload failed'
   warn JSON.pretty_generate(message) unless message.blank?
