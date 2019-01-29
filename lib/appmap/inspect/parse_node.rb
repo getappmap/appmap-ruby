@@ -27,7 +27,11 @@ module AppMap
       end
 
       def public?
-        true
+        preceding_send = preceding_sibling_nodes
+                         .reverse
+                         .select { |n| n.respond_to?(:type) && n.type == :send }
+                         .find { |n| %i[public protected private].member?(n.children[1]) }
+        preceding_send.nil? || preceding_send.children[1] == :public
       end
 
       # Gets the AST node of the module or class which encloses this node.
@@ -42,6 +46,7 @@ module AppMap
       end
 
       def preceding_sibling_nodes
+        return [] unless parent_node
         index_of_this_node = parent_node.children.index { |c| c == node }
         parent_node.children[0...index_of_this_node]
       end
@@ -93,18 +98,16 @@ module AppMap
       end
 
       # An instance method defined in an sclass is a static method.
+      #
+      # TODO: Well, not strictly true. A singleton class can be defined on a class or
+      # on an instance. In fact, to Ruby a class method is really just an instance method
+      # on a class. So, this needs fixing to try and determine if the singleton class is
+      # defined on an instance or on a class. This may actually be hard (impossible?) to do
+      # from static parsing.
       def static?
         result = ancestors[-1].type == :sclass ||
           (ancestors[-1].type == :begin && ancestors[-2] && ancestors[-2].type == :sclass)
         !!result
-      end
-
-      def public?
-        preceding_send = preceding_sibling_nodes
-                         .reverse
-                         .select { |n| n.respond_to?(:type) && n.type == :send }
-                         .find { |n| %i[public protected private].member?(n.children[1]) }
-        preceding_send.nil? || preceding_send.children[1] == :public
       end
     end
 

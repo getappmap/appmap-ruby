@@ -15,7 +15,7 @@ module AppMap
       # @appmap
       def detect_features(path_config)
         child_features = -> { path_config.children.map(&Inspect.method(:detect_features)).flatten.compact }
-        parse_file = -> { inspect_file(path_config.mode, path_config.path) }
+        parse_file = -> { inspect_file(path_config.mode, file_path: path_config.path) }
 
         feature_builders = {
           AppMap::Config::Directory => child_features,
@@ -36,8 +36,8 @@ module AppMap
       # Inspect a specific file for features.
       #
       # @appmap
-      def inspect_file(strategy, file_path)
-        parse_nodes, comments = Parser.new(file_path).parse
+      def inspect_file(strategy, file_path: nil, code: nil)
+        parse_nodes, comments = Parser.new(file_path: file_path).parse
         inspector_class = \
           case strategy
           when :implicit

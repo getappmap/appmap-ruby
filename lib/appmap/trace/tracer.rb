@@ -25,12 +25,10 @@ module AppMap
           me.id = next_id
           me.event = tp.event
 
-          if tp.defined_class.name
-            me.defined_class = tp.defined_class.name
+          if tp.defined_class.singleton_class?
+            me.defined_class = (tp.self.is_a?(Class) || tp.self.is_a?(Module)) ? tp.self.name : tp.self.class.name
           else
-            raise "Expecting <Class:[class-name]> for static method call, got #{tp.defined_class}" \
-              unless (md = tp.defined_class.to_s.match(/^#<Class:(.*)>$/))
-            me.defined_class = md[1]
+            me.defined_class = tp.defined_class.name
           end
 
           me.method_id = tp.method_id

@@ -10,14 +10,13 @@ module AppMap
 
     # Parser processes a Ruby into a list of parse nodes and a list of comments.
     class Parser
-      attr_reader :file_path
-
-      def initialize(file_path)
+      def initialize(file_path: nil, code: nil)
         @file_path = file_path
+        @code = code
       end
 
       def to_s
-        "Inspect #{file_path.inspect}"
+        "Inspect code #{file_path.inspect}"
       end
 
       # Parse the contents of a file into a list of features.
@@ -29,8 +28,16 @@ module AppMap
 
       protected
 
+      def file_path
+        @file_path || '<inline>'
+      end
+
+      def code
+        @code ||= File.read(file_path)
+      end
+
       def parse_code_and_comments
-        ::Parser::CurrentRuby.parse_with_comments(File.read(file_path))
+        ::Parser::CurrentRuby.parse_with_comments(code)
       rescue Parser::SyntaxError, EncodingError
         raise ParseError, "Unable to parse #{file_path.inspect} : #{$ERROR_INFO.message}"
       end

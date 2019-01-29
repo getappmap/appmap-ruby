@@ -19,7 +19,7 @@ module FixtureFile
   def assert_fixture_features(strategy, path)
     require 'appmap/inspect'
 
-    features = Array(AppMap::Inspect.inspect_file(strategy, parse_fixture_file(path)))
+    features = Array(AppMap::Inspect.inspect_file(strategy, file_path: parse_fixture_file(path)))
 
     fixup_fixture_path = lambda do |a|
       a.location = a.location.gsub(PARSE_FILE_FIXTURE_DIR, '$FIXTURE_DIR')

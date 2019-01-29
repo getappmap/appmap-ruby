@@ -29,7 +29,6 @@ module AppMap
           end
         end
 
-        features.keep_if(&:public?)
         features.keep_if(&:valid?)
         features
       end
