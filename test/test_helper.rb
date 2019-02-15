@@ -5,7 +5,7 @@ require 'minitest/autorun'
 
 FIXTURE_DIR = File.join(__dir__, 'fixtures')
 PARSE_FILE_FIXTURE_DIR = File.join(FIXTURE_DIR, 'parse_file')
-INSPECT_MODULE_FIXTURE_DIR = File.join(FIXTURE_DIR, 'inspect_module')
+INSPECT_PACKAGE_FIXTURE_DIR = File.join(FIXTURE_DIR, 'inspect_package')
 
 module FixturePath
   def parse_fixture_file(path)
@@ -30,6 +30,7 @@ module FixtureFile
     expectation = JSON.parse(`ruby #{parse_fixture_file(path)}`)
     expectation = expectation[strategy.to_s] \
       if expectation.is_a?(Hash) && expectation[strategy.to_s]
+    warn JSON.pretty_generate(features.map(&:to_h)) if ENV['DEBUG']
     assert_equal JSON.pretty_generate(expectation),
                  JSON.pretty_generate(features.map(&:to_h))
   end

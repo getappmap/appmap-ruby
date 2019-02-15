@@ -50,20 +50,20 @@ __END__
         {
           "name": "public_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:8",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": false
         },
         {
           "name": "public_function_2",
           "location": "$FIXTURE_DIR/include_public_methods.rb:24",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": false
         }
       ],
-      "kind": "class"
-    },
+      "type": "class"
+    },    
     {
       "name": "M2",
       "location": "$FIXTURE_DIR/include_public_methods.rb:32",
@@ -74,12 +74,12 @@ __END__
         {
           "name": "public_function_3",
           "location": "$FIXTURE_DIR/include_public_methods.rb:35",
-          "kind": "method",
+          "type": "function",
           "class_name": "M2",
           "static": false
         }
       ],
-      "kind": "class"
+      "type": "class"
     }
   ],
   "implicit": [
@@ -90,26 +90,31 @@ __END__
         {
           "name": "sclass_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:4",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": true
         },
         {
           "name": "public_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:8",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": false
         },
         {
           "name": "public_function_2",
           "location": "$FIXTURE_DIR/include_public_methods.rb:24",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": false
         }
       ],
-      "kind": "class"
+      "type": "class"
+    },
+    {
+      "name": "Mod",
+      "location": "$FIXTURE_DIR/include_public_methods.rb:28",
+      "type": "class"
     },
     {
       "name": "M2",
@@ -118,12 +123,12 @@ __END__
         {
           "name": "public_function_3",
           "location": "$FIXTURE_DIR/include_public_methods.rb:35",
-          "kind": "method",
+          "type": "function",
           "class_name": "M2",
           "static": false
         }
       ],
-      "kind": "class"
+      "type": "class"
     }
   ]
 }

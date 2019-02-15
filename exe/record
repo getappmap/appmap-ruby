@@ -19,11 +19,13 @@ program = ARGV.shift
 
 config = AppMap::Config.load_from_file('.appmap.yml')
 features = config.map(&AppMap::Inspect.method(:detect_features))
-methods = features.map(&:collect_methods).flatten
+features.each(&:prune)
+features = features.map(&:reparent)
+functions = features.map(&:collect_functions).flatten
 
 require 'appmap/trace/tracer'
 
-tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(methods)
+tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(functions)
 AppMap::Trace::Tracer.trace tracer
 
 events = []

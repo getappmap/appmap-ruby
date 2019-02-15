@@ -10,7 +10,7 @@ __END__
   {
     "name": "instance_func",
     "location": "$FIXTURE_DIR/instance_func.rb:3",
-    "kind": "method",
+    "type": "function",
     "class_name": "Main",
     "static": false
   }

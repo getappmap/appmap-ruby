@@ -9,14 +9,14 @@ class PrerecordedTraceTest < Minitest::Test
   def test_trace_web_request
     config_yaml = <<-CONFIG
     lib/appmap:
-      type: module
-      module_name: appmap
+      type: package
+      package_name: appmap
       exclude:
         - appmap/server
 
     examples:
-      type: module
-      module_name: examples
+      type: package
+      package_name: examples
     CONFIG
 
     events = %q(
@@ -33,7 +33,7 @@ class PrerecordedTraceTest < Minitest::Test
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
     features = config.map(&AppMap::Inspect.method(:detect_features)).flatten
-    methods = features.map(&:collect_methods).flatten
+    methods = features.map(&:collect_functions).flatten
 
     def method_call_from_event(evt)
       AppMap::Trace::MethodCall.new(evt.id, evt.event.intern, evt.defined_class, evt.method_id, evt.path, evt.lineno,

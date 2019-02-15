@@ -26,4 +26,8 @@ class ImplicitInspectTest < Minitest::Test
   def test_include_public_methods
     assert_fixture_features :implicit, 'include_public_methods.rb'
   end
+
+  def test_modules
+    assert_fixture_features :implicit, 'modules.rb'
+  end
 end

@@ -33,7 +33,7 @@ module AppMap
       end
 
       def setup_tracer
-        methods = features.map(&:collect_methods).flatten
+        methods = features.map(&:collect_features).flatten
 
         require 'appmap/trace/tracer'
 

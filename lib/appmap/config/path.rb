@@ -2,7 +2,7 @@ module AppMap
   module Config
     PathStruct = Struct.new(:path)
 
-    # Path is an abstract configuration of a file, directory, or module.
+    # Path is an abstract configuration of a file, directory, or package.
     class Path < PathStruct
       attr_accessor :mode
 
@@ -16,7 +16,7 @@ module AppMap
         path <=> other.path
       end
 
-      # Automatically determined configurations of child file/module paths.
+      # Automatically determined configurations of child file/package paths.
       def children
         []
       end

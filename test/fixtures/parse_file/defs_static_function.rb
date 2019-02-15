@@ -26,28 +26,28 @@ __END__
     {
       "name": "main_func",
       "location": "$FIXTURE_DIR/defs_static_function.rb:3",
-      "kind": "method",
+      "type": "function",
       "class_name": "Main",
       "static": true
     },
     {
       "name": "sub_func",
       "location": "$FIXTURE_DIR/defs_static_function.rb:8",
-      "kind": "method",
+      "type": "function",
       "class_name": "Sub",
       "static": true
     },
     {
       "name": "sub_func_2",
       "location": "$FIXTURE_DIR/defs_static_function.rb:11",
-      "kind": "method",
+      "type": "function",
       "class_name": "Main",
       "static": true
     },
     {
       "name": "sub_func_3",
       "location": "$FIXTURE_DIR/defs_static_function.rb:14",
-      "kind": "method",
+      "type": "function",
       "class_name": "Sub",
       "static": true
     }
@@ -60,12 +60,12 @@ __END__
         {
           "name": "main_func",
           "location": "$FIXTURE_DIR/defs_static_function.rb:3",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": true
         }
       ],
-      "kind": "class"
+      "type": "class"
     },
     {
       "name": "Sub",
@@ -74,26 +74,26 @@ __END__
         {
           "name": "sub_func",
           "location": "$FIXTURE_DIR/defs_static_function.rb:8",
-          "kind": "method",
+          "type": "function",
           "class_name": "Sub",
           "static": true
         },
         {
           "name": "sub_func_2",
           "location": "$FIXTURE_DIR/defs_static_function.rb:11",
-          "kind": "method",
+          "type": "function",
           "class_name": "Main",
           "static": true
         },
         {
           "name": "sub_func_3",
           "location": "$FIXTURE_DIR/defs_static_function.rb:14",
-          "kind": "method",
+          "type": "function",
           "class_name": "Sub",
           "static": true
         }
       ],
-      "kind": "class"
+      "type": "class"
     }
   ]
 }

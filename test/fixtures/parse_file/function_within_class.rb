@@ -21,18 +21,18 @@ __END__
       {
         "name": "sclass_function",
         "location": "$FIXTURE_DIR/function_within_class.rb:5",
-        "kind": "method",
+        "type": "function",
         "class_name": "Main",
         "static": true
       },
       {
         "name": "instance_function",
         "location": "$FIXTURE_DIR/function_within_class.rb:10",
-        "kind": "method",
+        "type": "function",
         "class_name": "Main",
         "static": false
       }
     ],
-    "kind": "class"
+    "type": "class"
   }
 ]

@@ -8,6 +8,6 @@ __END__
   {
     "name": "Main",
     "location": "$FIXTURE_DIR/toplevel_class.rb:2",
-    "kind": "class"
+    "type": "class"
   }
 ]

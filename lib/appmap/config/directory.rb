@@ -1,7 +1,7 @@
 module AppMap
   module Config
     # A normal directory is scanned for AppMap features without interpreting the
-    # directory as a code module.
+    # directory as a 'package'.
     #
     # @appmap
     class Directory < Path
@@ -40,6 +40,8 @@ module AppMap
           ::File.file?(expand_path.call(fname)) &&
             !::File.symlink?(expand_path.call(fname)) &&
             ruby_file?(expand_path.call(fname))
+        end.select do |fname|
+          !exclude?(fname)
         end.map do |fname|
           File.new(expand_path.call(fname)).tap do |f|
             f.mode = mode
@@ -50,8 +52,10 @@ module AppMap
       def child_directories
         File.new(path).entries.select do |fname|
           !%w[. ..].include?(fname) && !::File.directory?(fname)
+        end.select do |dir|
+          !exclude?(::File.join(path, dir))
         end.map do |dir|
-          ModuleDir.new(dir, [module_name, dir].join('/')).tap do |m|
+          PackageDir.new(dir, [module_name, dir].join('/')).tap do |m|
             m.mode = mode
           end
         end

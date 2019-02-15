@@ -8,8 +8,7 @@ __END__
   {
     "name": "main",
     "location": "$FIXTURE_DIR/toplevel_function.rb:2",
-    "kind": "method",
-    "class_name": "",
+    "type": "function",
     "static": false
   }
 ]

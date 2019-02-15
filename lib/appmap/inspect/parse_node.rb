@@ -16,12 +16,13 @@ module AppMap
         # Build a ParseNode from an AST node.
         def from_node(node, file_path, ancestors)
           case node.type
-          when :class
+          when :class, :module
             ClassParseNode.new(node, file_path, ancestors.dup)
           when :def
             InstanceMethodParseNode.new(node, file_path, ancestors.dup)
           when :defs
-            StaticMethodParseNode.new(node, file_path, ancestors.dup)
+            StaticMethodParseNode.new(node, file_path, ancestors.dup) \
+              if StaticMethodParseNode.static?(node)
           end
         end
       end
@@ -65,14 +66,15 @@ module AppMap
     # A Ruby class.
     class ClassParseNode < ParseNode
       def to_feature(attributes)
-        AppMap::Feature::Cls.new(extract_class_name(node), "#{file_path}:#{location.line}", attributes, [])
+        AppMap::Feature::Cls.new(nil, extract_class_name(node), "#{file_path}:#{location.line}", attributes)
       end
     end
 
     # Abstract representation of a method.
     class MethodParseNode < ParseNode
       def to_feature(attributes)
-        AppMap::Feature::Method.new(name, "#{file_path}:#{location.line}", attributes, []).tap do |a|
+        AppMap::Feature::Function.new(nil, name, "#{file_path}:#{location.line}", attributes).tap do |a|
+#          require 'pry'; binding.pry
           a.static = static?
           a.class_name = class_name
         end
@@ -115,10 +117,20 @@ module AppMap
     # For example:
     #
     # class Main
-    #   def Main.main_func
-    #  end
+    #   def Main.main_func; end
+    #   def explain
+    #     some_func.tap do |s|
+    #       def s.inspect; self; end
+    #     end
+    #   end
     # end
     class StaticMethodParseNode < MethodParseNode
+      class << self
+        def static?(node)
+          %i[self const].member?(node.children[0].type)
+        end
+      end
+
       def name
         node.children[1].to_s
       end

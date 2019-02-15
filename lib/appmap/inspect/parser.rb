@@ -38,8 +38,9 @@ module AppMap
 
       def parse_code_and_comments
         ::Parser::CurrentRuby.parse_with_comments(code)
-      rescue Parser::SyntaxError, EncodingError
-        raise ParseError, "Unable to parse #{file_path.inspect} : #{$ERROR_INFO.message}"
+      rescue ::Parser::SyntaxError, EncodingError
+        warn "Unable to parse #{file_path.inspect} : #{$!.message}"
+        [ [], [] ]
       end
 
       # rubocop:disable Metrics/MethodLength

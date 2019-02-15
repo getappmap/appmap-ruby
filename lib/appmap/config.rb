@@ -1,7 +1,7 @@
 require 'appmap/config/path'
 require 'appmap/config/file'
 require 'appmap/config/directory'
-require 'appmap/config/module_dir'
+require 'appmap/config/package_dir'
 require 'appmap/config/rails'
 
 module AppMap
@@ -18,8 +18,8 @@ module AppMap
         config_data.map do |path, data|
           type = data.delete('type')
           case type
-          when 'module'
-            AppMap::Config::ModuleDir.new(path, data['name'] || path.split('/')[-1], exclude: data['exclude'])
+          when 'package'
+            AppMap::Config::PackageDir.new(path, data['name'] || path.split('/')[-1], exclude: data['exclude'])
           when 'directory'
             AppMap::Config::Directory.new(path)
           when 'file'

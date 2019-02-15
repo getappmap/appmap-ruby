@@ -20,8 +20,8 @@ module AppMap
         feature_builders = {
           AppMap::Config::Directory => child_features,
           AppMap::Config::File => parse_file,
-          AppMap::Config::ModuleDir => lambda {
-            AppMap::Feature::Module.new(path_config.module_name, path_config.path, {}, child_features.call)
+          AppMap::Config::PackageDir => lambda {
+            AppMap::Feature::Package.new(nil, path_config.package_name, path_config.path, {}, child_features.call)
           },
           AppMap::Config::Rails => child_features
         }

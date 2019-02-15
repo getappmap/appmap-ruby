@@ -16,5 +16,7 @@ usage unless ARGV.empty?
 
 config = AppMap::Config.load_from_file(config_file_name)
 features = config.map(&AppMap::Inspect.method(:detect_features))
+features.each(&:prune)
+features = features.map(&:reparent)
 
 puts JSON.pretty_generate(features)

@@ -31,27 +31,21 @@ search = lambda do |list, test, path = [ '' ]|
   end
   nil
 end
-$search = search
 
-# Prune the classMap so that only methods, classes and modules which are referenced
+# Prune the classMap so that only functions, classes and packages which are referenced
 # by some event are retained.
-def prune(class_map, events)
-  obj_method_name = ->(e) { [ e['class_name'], e['name'] ].join(e['static'] ? ':' : '#') }
-  event_method_name = ->(e) { [ e['defined_class'], e['method_id'] ].join(e['static'] ? ':' : '#') }
-
-  method_names = Set.new(events.map { |e| event_method_name.call(e) })
-
-  # This proc counts the number of objects in the class map whose kind is 'k'
+def prune(class_map, events: nil)
+  # This proc counts the number of objects in the class map whose type is 'k'
   count = proc do |k, e|
     n = 0
-    n += 1 if e['kind'] == k
+    n += 1 if e['type'] == k
     n += (e['children'] || []).map { |child| count.call(k, child) }.reduce(0, :+)
     n
   end
 
   warn "Full classMap contains #{class_map.map { |m| count.call('class', m) }.reduce(0, :+)} classes"
 
-  # Prune all the classes which aren't part of the application trace for this scenario.
+  # Prune all the classes which fail a test.
   reject = proc do |list, test|
     list.tap do |_|
       list.each do |item|
@@ -63,17 +57,23 @@ def prune(class_map, events)
     end
   end
 
-  # Prune all unutilized methods
-  reject.call class_map,
-              ->(e) { e['kind'] == 'method' && !method_names.member?(obj_method_name.call(e)) }
+  if events
+    locations = \
+      Set.new(events.select { |e| e['event'] == 'call' }
+      .map { |e| [ e['path'], e['lineno'] ].join(':') })
+
+    # Prune all functions which aren't called
+    reject.call class_map,
+                ->(e) { e['type'] == 'function' && !locations.member?(e['location']) }
+  end
 
   # Prune all empty classes
   reject.call class_map,
-              ->(e) { e['kind'] == 'class' && (e['children'] || []).empty? }
+              ->(e) { e['type'] == 'class' && (e['children'] || []).empty? }
 
-  # Prune all empty modules
+  # Prune all empty packages
   reject.call class_map,
-              ->(e) { e['kind'] == 'module' && (e['children'] || []).empty? }
+              ->(e) { e['type'] == 'package' && (e['children'] || []).empty? }
 
   warn "Pruned classMap contains #{class_map.map { |m| count.call('class', m) }.reduce(0, :+)} classes"
 
@@ -85,14 +85,12 @@ if appmap.is_a?(Hash)
   events = appmap['events'] || []
   class_map = appmap['classMap'] || []
 
-  class_map = prune(class_map, events)
+  class_map = prune(class_map, events: events)
   appmap = { "classMap": class_map, "events": events }
 else
-  appmap = { "classMap": appmap, "events": [] }
+  class_map = prune(appmap)
+  appmap = { "classMap": class_map, "events": [] }
 end
-
-#warn 'exiting!'
-#exit 1
 
 url = ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
 owner = (ENV['APPLAND_OWNER'] || 1).to_i
@@ -113,7 +111,7 @@ unless response.body.blank?
 end
 unless response.success?
   warn 'Upload failed'
-  warn JSON.pretty_generate(message) unless message.blank?
+  warn message unless message.blank?
   exit 1
 end
 scenario_id = message['uuid']
