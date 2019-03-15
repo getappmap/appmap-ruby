@@ -55,37 +55,34 @@ __END__
     {
       "name": "Main",
       "location": "$FIXTURE_DIR/sclass_static_function.rb:8",
+      "type": "class",
       "children": [
         {
           "name": "main_sclass_func_1",
           "location": "$FIXTURE_DIR/sclass_static_function.rb:11",
           "type": "function",
-          "class_name": "Main",
           "static": true
         }
-      ],
-      "type": "class"
+      ]
     },
     {
       "name": "Main2",
       "location": "$FIXTURE_DIR/sclass_static_function.rb:16",
+      "type": "class",
       "children": [
         {
           "name": "main_sclass_func_1",
           "location": "$FIXTURE_DIR/sclass_static_function.rb:19",
           "type": "function",
-          "class_name": "Main2",
           "static": true
         },
         {
           "name": "main_sclass_func_2",
           "location": "$FIXTURE_DIR/sclass_static_function.rb:23",
           "type": "function",
-          "class_name": "Main2",
           "static": true
         }
-      ],
-      "type": "class"
+      ]
     }
   ]
 }

@@ -56,26 +56,25 @@ __END__
     {
       "name": "Main",
       "location": "$FIXTURE_DIR/defs_static_function.rb:1",
+      "type": "class",
       "children": [
         {
           "name": "main_func",
           "location": "$FIXTURE_DIR/defs_static_function.rb:3",
           "type": "function",
-          "class_name": "Main",
           "static": true
         }
-      ],
-      "type": "class"
+      ]
     },
     {
       "name": "Sub",
       "location": "$FIXTURE_DIR/defs_static_function.rb:6",
+      "type": "class",
       "children": [
         {
           "name": "sub_func",
           "location": "$FIXTURE_DIR/defs_static_function.rb:8",
           "type": "function",
-          "class_name": "Sub",
           "static": true
         },
         {
@@ -89,11 +88,9 @@ __END__
           "name": "sub_func_3",
           "location": "$FIXTURE_DIR/defs_static_function.rb:14",
           "type": "function",
-          "class_name": "Sub",
           "static": true
         }
-      ],
-      "type": "class"
+      ]
     }
   ]
 }

@@ -22,7 +22,7 @@ module AppMap
           if feature
             if (enclosing_type_node = parse_node.enclosing_type_node) &&
                (parent_feature = features_by_ast_node[enclosing_type_node])
-              parent_feature.children << feature
+              parent_feature.add_child(feature)
             else
               features << feature
             end
@@ -61,7 +61,7 @@ module AppMap
               if feature
                 if (enclosing_type_node = parse_node.enclosing_type_node) &&
                    (parent_feature = features_by_ast_node[enclosing_type_node])
-                  parent_feature.children << feature
+                  parent_feature.add_child(feature)
                 else
                   features << feature
                 end
@@ -79,7 +79,9 @@ module AppMap
                                      .select { |n| n.respond_to?(:type) && n.type == :def }
                                      .map { |n| ParseNode.from_node(n, file_path, parse_node.ancestors + [ parse_node.node, begin_node ]) }
                                      .select(&:public?)
-                    feature.children += public_methods.map { |m| m.to_feature([]) }.compact
+                    public_methods.map { |m| m.to_feature([]) }.compact.each do |f|
+                      feature.add_child(f)
+                    end
                   end
                 end
               end
