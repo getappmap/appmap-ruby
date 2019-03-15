@@ -20,12 +20,6 @@ namespace :appmap do
 
     puts JSON.pretty_generate(features)
   end
-
-  desc 'Run an embedded webserver which serves the appmap features'
-  task :serve do
-    require 'appmap/server/ws'
-    AppMapServer.run!
-  end
 end
 
 Rake::TestTask.new(:test) do |t|

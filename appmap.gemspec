@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Kevin Gilpin']
   spec.email         = ['kgilpin@gmail.com']
 
-  spec.summary       = %q{Generate animated diagrams of your Ruby application code.}
+  spec.summary       = %q{Inspect and trace your Ruby code, generating a JSON data file.}
   spec.homepage      = 'https://github.com/kgilpin/appmap-ruby'
   spec.license       = 'MIT'
 
@@ -24,7 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport'
   spec.add_dependency 'faraday'
   spec.add_dependency 'parser'
-  spec.add_dependency 'sinatra'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
   spec.add_development_dependency 'minitest', '~> 5.0'
