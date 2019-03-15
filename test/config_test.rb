@@ -66,10 +66,12 @@ class ConfigTest < Minitest::Test
   {
     "name": "ROOT",
     "location": "$BASEDIR/test/fixtures/active_record_like",
+    "type": "package",
     "children": [
       {
         "name": "ActiveRecord",
         "location": "$BASEDIR/test/fixtures/active_record_like/active_record.rb:1",
+        "type": "class",
         "children": [
           {
             "name": "Aggregations",
@@ -79,10 +81,12 @@ class ConfigTest < Minitest::Test
           {
             "name": "Associations",
             "location": "$BASEDIR/test/fixtures/active_record_like/active_record/association.rb:2",
+            "type": "class",
             "children": [
               {
                 "name": "JoinDependency",
                 "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency.rb:3",
+                "type": "class",
                 "children": [
                   {
                     "name": "JoinBase",
@@ -94,36 +98,42 @@ class ConfigTest < Minitest::Test
                     "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency/join_part.rb:4",
                     "type": "class"
                   }
-                ],
-                "type": "class"
+                ]
               }
-            ],
+            ]
+          },
+          {
+            "name": "CAPS",
+            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/caps/caps.rb:2",
             "type": "class"
           }
-        ],
-        "type": "class"
+        ]
       },
       {
         "name": "active_record",
         "location": "$BASEDIR/test/fixtures/active_record_like/active_record",
+        "type": "package",
         "children": [
           {
             "name": "associations",
             "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations",
+            "type": "package",
             "children": [
               {
                 "name": "join_dependency",
                 "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency",
                 "type": "package"
               }
-            ],
+            ]
+          },
+          {
+            "name": "caps",
+            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/caps",
             "type": "package"
           }
-        ],
-        "type": "package"
+        ]
       }
-    ],
-    "type": "package"
+    ]
   }
 ]
     FEATURES

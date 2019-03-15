@@ -66,15 +66,14 @@ module AppMap
     # A Ruby class.
     class ClassParseNode < ParseNode
       def to_feature(attributes)
-        AppMap::Feature::Cls.new(nil, extract_class_name(node), "#{file_path}:#{location.line}", attributes)
+        AppMap::Feature::Cls.new(extract_class_name(node), "#{file_path}:#{location.line}", attributes)
       end
     end
 
     # Abstract representation of a method.
     class MethodParseNode < ParseNode
       def to_feature(attributes)
-        AppMap::Feature::Function.new(nil, name, "#{file_path}:#{location.line}", attributes).tap do |a|
-#          require 'pry'; binding.pry
+        AppMap::Feature::Function.new(name, "#{file_path}:#{location.line}", attributes).tap do |a|
           a.static = static?
           a.class_name = class_name
         end
@@ -95,6 +94,7 @@ module AppMap
         node.children[0].to_s
       end
 
+      # class_name should be inferred from the enclosing type.
       def class_name
         enclosing_names.join('::')
       end
@@ -135,6 +135,8 @@ module AppMap
         node.children[1].to_s
       end
 
+      # class_name is specified as `nil` if it should be inferred from the
+      # enclosing type.
       def class_name
         case (defs_type = node.children[0].type)
         when :self

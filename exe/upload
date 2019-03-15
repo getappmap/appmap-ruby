@@ -13,24 +13,12 @@ def usage
 end
 
 appmap_file = ARGV.shift || 'appmap.json'
-appmap = JSON.parse(File.read(appmap_file))
-
-search = lambda do |list, test, path = [ '' ]|
-  list.each_with_index do |item, idx|
-    path.push idx
-    path.push item['name']
-
-    return path if test.call(item)
-
-    children = item['children'] || []
-    result = search.call(children, test, path)
-    return result if result
-
-    path.pop
-    path.pop
+appmap_data = if appmap_file == '-'
+    $stdin.read
+  else
+    File.read(appmap_file)
   end
-  nil
-end
+appmap = JSON.parse(appmap_data)
 
 # Prune the classMap so that only functions, classes and packages which are referenced
 # by some event are retained.
@@ -95,11 +83,13 @@ end
 url = ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
 owner = (ENV['APPLAND_OWNER'] || 1).to_i
 
+upload_file = { owner_id: owner, data: appmap }
+
 conn = Faraday.new(url: url)
 response = conn.post do |req|
   req.url '/api/scenarios'
   req.headers['Content-Type'] = 'application/json'
-  req.body = JSON.generate(owner_id: owner, data: appmap)
+  req.body = JSON.generate(upload_file)
 end
 
 unless response.body.blank?

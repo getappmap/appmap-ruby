@@ -15,12 +15,12 @@ def usage
   exit 1
 end
 
-program = ARGV.shift
+program = ARGV.shift || usage
 
 config = AppMap::Config.load_from_file('.appmap.yml')
 features = config.map(&AppMap::Inspect.method(:detect_features))
-features.each(&:prune)
 features = features.map(&:reparent)
+features.each(&:prune)
 functions = features.map(&:collect_functions).flatten
 
 require 'appmap/trace/tracer'

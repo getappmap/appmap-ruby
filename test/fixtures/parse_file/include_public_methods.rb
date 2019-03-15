@@ -46,23 +46,21 @@ __END__
       "attributes": {
         "include": "public_methods"
       },
+      "type": "class",
       "children": [
         {
           "name": "public_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:8",
           "type": "function",
-          "class_name": "Main",
           "static": false
         },
         {
           "name": "public_function_2",
           "location": "$FIXTURE_DIR/include_public_methods.rb:24",
           "type": "function",
-          "class_name": "Main",
           "static": false
         }
-      ],
-      "type": "class"
+      ]
     },    
     {
       "name": "M2",
@@ -70,46 +68,42 @@ __END__
       "attributes": {
         "include": "public_methods"
       },
+      "type": "class",
       "children": [
         {
           "name": "public_function_3",
           "location": "$FIXTURE_DIR/include_public_methods.rb:35",
           "type": "function",
-          "class_name": "M2",
           "static": false
         }
-      ],
-      "type": "class"
+      ]
     }
   ],
   "implicit": [
     {
       "name": "Main",
       "location": "$FIXTURE_DIR/include_public_methods.rb:2",
+      "type": "class",
       "children": [
         {
           "name": "sclass_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:4",
           "type": "function",
-          "class_name": "Main",
           "static": true
         },
         {
           "name": "public_function",
           "location": "$FIXTURE_DIR/include_public_methods.rb:8",
           "type": "function",
-          "class_name": "Main",
           "static": false
         },
         {
           "name": "public_function_2",
           "location": "$FIXTURE_DIR/include_public_methods.rb:24",
           "type": "function",
-          "class_name": "Main",
           "static": false
         }
-      ],
-      "type": "class"
+      ]
     },
     {
       "name": "Mod",
@@ -119,16 +113,15 @@ __END__
     {
       "name": "M2",
       "location": "$FIXTURE_DIR/include_public_methods.rb:32",
+      "type": "class",
       "children": [
         {
           "name": "public_function_3",
           "location": "$FIXTURE_DIR/include_public_methods.rb:35",
           "type": "function",
-          "class_name": "M2",
           "static": false
         }
-      ],
-      "type": "class"
+      ]
     }
   ]
 }

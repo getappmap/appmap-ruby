@@ -1,11 +1,10 @@
 PATH
   remote: .
   specs:
-    appmap (0.2.0)
+    appmap (0.3.0)
       activesupport
       faraday
       parser
-      sinatra
 
 GEM
   remote: https://rubygems.org/
@@ -26,7 +25,6 @@ GEM
     method_source (0.9.0)
     minitest (5.11.3)
     multipart-post (2.0.0)
-    mustermann (1.0.3)
     parser (2.6.0.0)
       ast (~> 2.4.0)
     pry (0.11.3)
@@ -35,18 +33,9 @@ GEM
     pry-byebug (3.6.0)
       byebug (~> 10.0)
       pry (~> 0.10)
-    rack (2.0.6)
-    rack-protection (2.0.5)
-      rack
     rake (10.5.0)
     rdoc (6.0.4)
-    sinatra (2.0.5)
-      mustermann (~> 1.0)
-      rack (~> 2.0)
-      rack-protection (= 2.0.5)
-      tilt (~> 2.0)
     thread_safe (0.3.6)
-    tilt (2.0.9)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
 

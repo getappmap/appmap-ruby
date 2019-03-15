@@ -33,7 +33,7 @@ module AppMap
       end
     end
 
-    FeatureStruct = Struct.new(:parent, :name, :location, :attributes, :children)
+    FeatureStruct = Struct.new(:name, :location, :attributes)
 
     # Base is an abstract base class for features.
     class Base < FeatureStruct
@@ -44,18 +44,31 @@ module AppMap
         end
       end
 
-      def initialize(parent, name, location, attributes, children = [])
-        super(parent, name, self.class.expand_path(location), attributes, children)
+      attr_reader :parent, :children
 
-        parent.children << self if parent
+      def initialize(name, location, attributes)
+        super(name, self.class.expand_path(location), attributes)
+
+        @parent = nil
+        @children = []
+      end
+
+      def remove_child(child)
+        children.delete(child) or raise "No such child : #{child}"
+        child.instance_variable_set('@parent', nil)
+      end
+
+      def add_child(child)
+        @children << child
+        child.instance_variable_set('@parent', self)
       end
 
       # Gets an array containing the type names which enclose this feature.
       def enclosing_type_name
         @enclosing_type_name ||= [].tap do |names|
-          while (p = parent) && p.type?
+          p = self
+          while (p = p.parent) && p.type?
             names << p.name
-            p = p.parent
           end
         end.reverse
       end
@@ -98,22 +111,29 @@ module AppMap
           map.delete(:parent)
           class_name = self.class.name.underscore.split('/')[-1]
           map[:type] = TYPE_MAP[class_name] || class_name
-          map.delete(:children) if map[:children].empty?
+          map[:children] = @children.map(&:to_h) unless @children.empty?
           map.delete(:attributes) if map[:attributes].empty?
         end
       end
 
       # Determines if this feature should be dropped from the feature tree.
       # A feature is dropped from the feature tree if it doesn't add useful information for the user.
+      # Performing this operation removes feature nodes that don't add anything useful to the user.
+      # For example, empty classes.
       def prune(parent = nil)
-        if prune? && parent
-          parent.children.delete(self)
-          parent.children += children
-        else
-          parent = self
-        end
-        children.each do |child|
+        should_prune = prune? && !parent.nil?
+        parent = self unless should_prune
+        children.dup.each do |child|
           child.prune(parent)
+        end
+
+        # Perform the prune in post-fix traversal order, otherwise the
+        # features will get confused about whether they should prune or not.
+        if should_prune
+          parent.remove_child(self)
+          children.each do |child|
+            parent.add_child(child)
+          end
         end
       end
 
@@ -125,6 +145,7 @@ module AppMap
       def reparent(parent = nil, features_by_type = {})
         # Determine if the enclosing type of the feature is defined.
         # Generally, it should be.
+
         existing_enclosing_type = features_by_type[enclosing_type_name] if enclosing_type_name?
         if existing_enclosing_type
           parent = existing_enclosing_type
@@ -140,7 +161,8 @@ module AppMap
         if type_exists
           features_by_type[type_name]
         else
-          clone_with_new_parent(parent).tap do |f|
+          clone.tap do |f|
+            parent.add_child(f) if parent
             features_by_type[type_name] = f if type?
           end
         end.tap do |updated_parent|
@@ -156,8 +178,8 @@ module AppMap
 
       protected
 
-      def clone_with_new_parent(parent)
-        self.class.new(parent, name, location, attributes)
+      def clone
+        self.class.new(name, location, attributes)
       end
 
       def child_classes
@@ -203,22 +225,26 @@ module AppMap
       attr_accessor :static, :class_name
 
       alias static? static
+      def instance?
+        !static?
+      end
 
       # Static functions must have an enclosing class defined in order to be traced.
       def valid?
-        super && (!static || !class_name.blank?)
+        super && (instance? || !class_name.blank?)
       end
 
       def to_h
         super.tap do |h|
-          h[:class_name] = class_name unless ( parent && parent.is_a?(Cls) ) || class_name.blank?
+          # Suppress the class name when it can be inferred from the enclosing type.
+          h[:class_name] = class_name if class_name && class_name != enclosing_type_name.join('::')
           h[:static] = static?
         end
       end
 
       protected
 
-      def clone_with_new_parent(parent)
+      def clone
         super.tap do |obj|
           obj.static = static
           obj.class_name = class_name

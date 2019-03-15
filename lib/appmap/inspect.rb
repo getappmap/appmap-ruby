@@ -21,7 +21,11 @@ module AppMap
           AppMap::Config::Directory => child_features,
           AppMap::Config::File => parse_file,
           AppMap::Config::PackageDir => lambda {
-            AppMap::Feature::Package.new(nil, path_config.package_name, path_config.path, {}, child_features.call)
+            AppMap::Feature::Package.new(path_config.package_name, path_config.path, {}).tap do |package|
+              child_features.call.each do |child|
+                package.add_child(child)
+              end
+            end
           },
           AppMap::Config::Rails => child_features
         }
