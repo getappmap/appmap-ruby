@@ -62,8 +62,9 @@ module AppMap
           return nil unless value
 
           begin
-            value.to_s[0...LIMIT]
+            value.to_s[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
           rescue StandardError
+            warn $!.message
             '*Error inspecting variable*'
           end
         end
@@ -85,12 +86,15 @@ module AppMap
         end
 
         def collect_parameters(tp)
-          m = tp.self.method(tp.method_id)
+          m = tp.self.method(tp.method_id) rescue nil
+          # 'method' method may be overridden and hidden
+          return {} unless m
+
           m.parameters.each_with_object({}) do |pinfo, memo|
             kind, key = pinfo
             begin
               value = tp.binding.eval(key.to_s)
-            rescue NameError
+            rescue NameError, ArgumentError
             end
             memo[key] = {
               class: value.class.name,
@@ -182,6 +186,9 @@ module AppMap
         @tracer.record_event method_event if method_event
 
         method_event
+      rescue
+        puts $!.message
+        puts $!.backtrace.join("\n")
       end
     end
 
