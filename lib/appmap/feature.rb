@@ -54,7 +54,8 @@ module AppMap
       end
 
       def remove_child(child)
-        children.delete(child) or raise "No such child : #{child}"
+        # TODO: Encountered this indexing appland with active_dispatch
+        children.delete(child) or warn "Unable to remove #{name.inspect} from parent" # or raise "No such child : #{child}"
         child.instance_variable_set('@parent', nil)
       end
 
