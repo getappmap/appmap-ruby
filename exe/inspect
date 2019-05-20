@@ -11,7 +11,7 @@ def usage
   exit 1
 end
 
-config_file_name = ARGV.shift || usage
+config_file_name = ARGV.shift || '.appmap.yml'
 usage unless ARGV.empty?
 
 config = AppMap::Config.load_from_file(config_file_name)
