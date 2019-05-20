@@ -61,41 +61,41 @@ class ConfigTest < Minitest::Test
     end
     features = features.map(&:reparent)
 
-    assert_equal <<-FEATURES.strip.gsub('$BASEDIR', Dir.pwd), JSON.pretty_generate(features)
+    assert_equal <<-FEATURES.strip, JSON.pretty_generate(features)
 [
   {
     "name": "ROOT",
-    "location": "$BASEDIR/test/fixtures/active_record_like",
+    "location": ".",
     "type": "package",
     "children": [
       {
         "name": "ActiveRecord",
-        "location": "$BASEDIR/test/fixtures/active_record_like/active_record.rb:1",
+        "location": "./active_record.rb:1",
         "type": "class",
         "children": [
           {
             "name": "Aggregations",
-            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/aggregations.rb:2",
+            "location": "./active_record/aggregations.rb:2",
             "type": "class"
           },
           {
             "name": "Associations",
-            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/association.rb:2",
+            "location": "./active_record/association.rb:2",
             "type": "class",
             "children": [
               {
                 "name": "JoinDependency",
-                "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency.rb:3",
+                "location": "./active_record/associations/join_dependency.rb:3",
                 "type": "class",
                 "children": [
                   {
                     "name": "JoinBase",
-                    "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency/join_base.rb:4",
+                    "location": "./active_record/associations/join_dependency/join_base.rb:4",
                     "type": "class"
                   },
                   {
                     "name": "JoinPart",
-                    "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency/join_part.rb:4",
+                    "location": "./active_record/associations/join_dependency/join_part.rb:4",
                     "type": "class"
                   }
                 ]
@@ -104,31 +104,31 @@ class ConfigTest < Minitest::Test
           },
           {
             "name": "CAPS",
-            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/caps/caps.rb:2",
+            "location": "./active_record/caps/caps.rb:2",
             "type": "class"
           }
         ]
       },
       {
         "name": "active_record",
-        "location": "$BASEDIR/test/fixtures/active_record_like/active_record",
+        "location": "./active_record",
         "type": "package",
         "children": [
           {
             "name": "associations",
-            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations",
+            "location": "./active_record/associations",
             "type": "package",
             "children": [
               {
                 "name": "join_dependency",
-                "location": "$BASEDIR/test/fixtures/active_record_like/active_record/associations/join_dependency",
+                "location": "./active_record/associations/join_dependency",
                 "type": "package"
               }
             ]
           },
           {
             "name": "caps",
-            "location": "$BASEDIR/test/fixtures/active_record_like/active_record/caps",
+            "location": "./active_record/caps",
             "type": "package"
           }
         ]

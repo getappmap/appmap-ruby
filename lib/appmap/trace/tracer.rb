@@ -213,7 +213,6 @@ module AppMap
 
         @methods_by_location = methods.each_with_object({}) do |m, memo|
           path, lineno = m.location.split(':', 2)
-          path = File.absolute_path(path)
           memo[path] ||= {}
           memo[path][lineno.to_i] = m
           memo

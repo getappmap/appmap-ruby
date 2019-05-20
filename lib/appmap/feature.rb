@@ -40,7 +40,7 @@ module AppMap
       class << self
         def expand_path(location)
           path, lineno = location.split(':')
-          [ File.absolute_path(path), lineno ].compact.join(':')
+          [ path, lineno ].compact.join(':')
         end
       end
 
