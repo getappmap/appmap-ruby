@@ -20,6 +20,9 @@ appmap_data = if appmap_file == '-'
   end
 appmap = JSON.parse(appmap_data)
 
+# TODO: Make this an option to the CLI
+$max_depth = 12
+
 # Prune the classMap so that only functions, classes and packages which are referenced
 # by some event are retained.
 def prune(class_map, events: nil)
@@ -68,10 +71,34 @@ def prune(class_map, events: nil)
   class_map
 end
 
+# Prune all "busy" classes
+# TODO: Read this from a file or CLI option
+$blacklist = []
+
 # If it's a list, upload it as a classMap
 if appmap.is_a?(Hash)
   events = appmap['events'] || []
   class_map = appmap['classMap'] || []
+
+  pruned_events = []
+  stack = []
+  events.each do |evt|
+    if evt['event'] == 'call'
+      stack << evt
+      stack_depth = stack.length
+    else
+      stack_depth = stack.length
+      stack.pop
+    end
+
+    prune = stack_depth > $max_depth || $blacklist.member?(evt['defined_class'])
+
+    pruned_events << evt unless prune
+  end
+
+  warn "Pruned events to #{pruned_events.length}" if events.length > pruned_events.length 
+
+  events = pruned_events
 
   class_map = prune(class_map, events: events)
   appmap = { "classMap": class_map, "events": events }
