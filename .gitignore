@@ -11,4 +11,5 @@
 /tmp/
 /vendor/
 Gemfile.lock
+appmap.json
 

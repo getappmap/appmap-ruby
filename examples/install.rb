@@ -29,7 +29,7 @@ class Install
   end
 
   def bundle
-    system 'bundle --local > /dev/null' or raise "Failed to bundle --local'"
+    run_command 'bundle --local > /dev/null'
   end
 
   def create_project_dir
@@ -42,17 +42,22 @@ class Install
   end
 
   def in_example_dir(&block)
-    puts "in example dir"
     Dir.chdir 'mock_webapp', &block
   end
 
   def inspect_example_project
     FileUtils.mkdir_p '.appmap'
-    @inventory = `bundle exec #{File.expand_path('../exe/inspect', __dir__)}` or raise "Failed to inspect the sample project"
+    @inventory = run_command "bundle exec #{File.expand_path('../exe/inspect', __dir__)}"
   end
 
   def print_inventory
     puts @inventory
+  end
+
+  def run_command command
+    `#{command}`.tap do |_|
+      raise "Command failed: #{command}" unless $? == 0
+    end
   end
 end
 
