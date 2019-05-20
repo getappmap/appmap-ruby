@@ -6,3 +6,5 @@ rescue NameError
 end
 
 require 'appmap/version'
+
+require 'appmap/railtie' if defined?(Rails)
