@@ -10,3 +10,5 @@
 /spec/reports/
 /tmp/
 /vendor/
+Gemfile.lock
+
