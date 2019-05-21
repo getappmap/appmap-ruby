@@ -44,7 +44,7 @@ class ConfigTest < Minitest::Test
       config.map(&AppMap::Inspect.method(:detect_features))
     end
     features = features.map(&:reparent)
-    assert_equal %w[module_a ModuleA ClassA module_b ModuleB ClassC ClassB], features.map(&method(:feature_names)).flatten
+    assert_equal %w[module_a ModuleA ClassA module_b ModuleB ClassB ClassC], features.map(&method(:feature_names)).flatten
   end
 
   def test_active_record_like

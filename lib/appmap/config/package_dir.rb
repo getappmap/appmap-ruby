@@ -28,7 +28,7 @@ module AppMap
 
       # @appmap
       def children
-        child_files + child_packages
+        child_files.sort + child_packages.sort
       end
 
       protected
