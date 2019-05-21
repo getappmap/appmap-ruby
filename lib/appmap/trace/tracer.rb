@@ -21,7 +21,7 @@ module AppMap
 
       class << self
         # Build a new instance from a TracePoint.
-        def build_from_tracepoint(me, tp)
+        def build_from_tracepoint(me, tp, path)
           me.id = next_id
           me.event = tp.event
 
@@ -32,7 +32,7 @@ module AppMap
           end
 
           me.method_id = tp.method_id
-          me.path = tp.path
+          me.path = path
           me.lineno = tp.lineno
           me.static = tp.defined_class.name.nil?
           me.thread_id = Thread.current.object_id
@@ -77,11 +77,11 @@ module AppMap
     class MethodCall < MethodEvent
       class << self
         # @appmap
-        def build_from_tracepoint(mc = MethodCall.new, tp)
+        def build_from_tracepoint(mc = MethodCall.new, tp, path)
           mc.tap do |_|
             mc.self = inspect_self(tp)
             mc.parameters = collect_parameters(tp)
-            MethodEvent.build_from_tracepoint(mc, tp)
+            MethodEvent.build_from_tracepoint(mc, tp, path)
           end
         end
 
@@ -125,7 +125,7 @@ module AppMap
 
       class << self
         # @appmap
-        def build_from_tracepoint(mr = MethodReturn.new, tp, parent_id, elapsed)
+        def build_from_tracepoint(mr = MethodReturn.new, tp, path, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
             mr.elapsed = elapsed
@@ -134,7 +134,7 @@ module AppMap
               value: display_string(tp.return_value),
               object_id: tp.return_value.object_id
             }
-            MethodEvent.build_from_tracepoint(mr, tp)
+            MethodEvent.build_from_tracepoint(mr, tp, path)
           end
         end
       end
@@ -164,6 +164,7 @@ module AppMap
 
       # @appmap
       def initialize(tracer)
+        @pwd = Dir.pwd
         @tracer = tracer
         @call_stack = Hash.new { |h, k| h[k] = [] }
         @call_constructor = MethodCall.method(:build_from_tracepoint)
@@ -172,15 +173,22 @@ module AppMap
 
       # @appmap
       def handle(tp)
-        method_event = if tp.event == :call && @tracer.break_on_line?(tp.path, tp.lineno)
-                         @call_constructor.call(tp).tap do |c|
+        # Absoute paths which are within the current working directory are normalized
+        # to be relative paths.
+        path = tp.path
+        if path.index(@pwd) == 0
+          path = path[@pwd.length+1..-1]
+        end
+
+        method_event = if tp.event == :call && @tracer.break_on_line?(path, tp.lineno)
+                         @call_constructor.call(tp, path).tap do |c|
                            @call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now ]
                          end
                        elsif (c = @call_stack[Thread.current.object_id].last) &&
                              c[0] == tp.defined_class &&
                              c[1] == tp.method_id
                          @call_stack[Thread.current.object_id].pop
-                         @return_constructor.call(tp, c[2], Time.now - c[3])
+                         @return_constructor.call(tp, path, c[2], Time.now - c[3])
                        end
 
         @tracer.record_event method_event if method_event
