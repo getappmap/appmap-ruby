@@ -9,7 +9,8 @@
 /pkg/
 /spec/reports/
 /tmp/
-/vendor/
+vendor
+node_modules
 Gemfile.lock
 appmap.json
 
