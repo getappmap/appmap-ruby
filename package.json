@@ -2,6 +2,9 @@
   "name": "appmap-ruby-lore",
   "version": "1.0.0",
   "description": "Lore for the AppMap Rubygem",
+  "scripts": {
+    "start": "./node_modules/applore/bin/lore serve"
+  },
   "directories": {
     "example": "examples",
     "lib": "lib",
