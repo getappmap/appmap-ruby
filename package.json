@@ -1,0 +1,21 @@
+{
+  "name": "appmap-ruby-lore",
+  "version": "1.0.0",
+  "description": "Lore for the AppMap Rubygem",
+  "directories": {
+    "example": "examples",
+    "lib": "lib",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/applandinc/appmap-ruby.git"
+  },
+  "bugs": {
+    "url": "https://github.com/applandinc/appmap-ruby/issues"
+  },
+  "homepage": "https://github.com/applandinc/appmap-ruby#readme",
+  "dependencies": {
+    "applore": "^0.3.0"
+  }
+}
