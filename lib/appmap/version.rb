@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
-  VERSION = '0.4.0'.freeze
+  VERSION = '0.5.0'
 end

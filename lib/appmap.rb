@@ -6,3 +6,15 @@ rescue NameError
 end
 
 require 'appmap/version'
+
+module AppMap
+  class << self
+    # Simplified entry point to inspect code for features.
+    def inspect(config)
+      require 'appmap/inspect'
+      features = config.map(&AppMap::Inspect.method(:detect_features))
+      features = features.map(&:reparent)
+      features.each(&:prune)
+    end
+  end
+end

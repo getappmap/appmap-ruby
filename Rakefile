@@ -3,8 +3,8 @@ require 'rake/testtask'
 require 'rdoc/task'
 
 Rake::RDocTask.new do |rd|
-  rd.main = "README.rdoc"
-  rd.rdoc_files.include("README.rdoc","lib/**/*.rb","exe/**/*")
+  rd.main = 'README.rdoc'
+  rd.rdoc_files.include(%w[README.rdoc lib/**/*.rb exe/**/*])
   rd.title = 'AppMap'
 end
 

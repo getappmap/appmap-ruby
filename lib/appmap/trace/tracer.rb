@@ -180,6 +180,10 @@ module AppMap
           path = path[@pwd.length+1..-1]
         end
 
+        if tp.defined_class.to_s =~ /^RSpec::Core::Example/
+#          require 'pry'; binding.pry
+        end
+
         method_event = if tp.event == :call && @tracer.break_on_line?(path, tp.lineno)
                          @call_constructor.call(tp, path).tap do |c|
                            @call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now ]
