@@ -13,4 +13,5 @@ vendor
 node_modules
 Gemfile.lock
 appmap.json
+.byebug_history
 
