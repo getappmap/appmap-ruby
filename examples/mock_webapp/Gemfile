@@ -1,1 +1,1 @@
-gem 'appmap', git: '../..', branch: 'master'
+gem 'appmap', git: '../..', branch: `git rev-parse --abbrev-ref HEAD`.strip

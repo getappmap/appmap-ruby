@@ -1,3 +1,5 @@
+require 'pathname'
+
 module AppMap
   module Config
     # Scan a directory for AppMap features, treating it as a package and its
@@ -5,25 +7,28 @@ module AppMap
     #
     # @appmap
     class PackageDir < Directory
-      attr_reader :package_name, :package_path
-      attr_accessor :exclude
+      attr_accessor :package_name, :base_path, :exclude
 
       # @appmap
-      def initialize(path, package_name, package_path: package_name, exclude: [])
+      def initialize(path, package_name = Pathname.new(path || '').basename.to_s)
         super(path)
+
         @package_name = package_name
-        @package_path = package_path
-        @exclude = exclude || []
+        @base_path = path
+        @exclude = []
       end
 
       def sub_package_dir(dir)
-        PackageDir.new(::File.join(path, dir), dir, package_path: ::File.join(package_path, dir), exclude: exclude).tap do |m|
+        PackageDir.new(::File.join(path, dir), dir).tap do |m|
+          m.base_path = base_path
+          m.exclude = exclude
           m.mode = mode
         end
       end
 
       def exclude?(path)
-        exclude.member?(path)
+        relative_path = path.gsub("#{base_path}/", '')
+        exclude.member?(relative_path)
       end
 
       # @appmap
@@ -37,7 +42,7 @@ module AppMap
         ::Dir.new(path).entries.select do |fname|
           !%w[. ..].include?(fname) && ::File.directory?(::File.join(path, fname))
         end.select do |dir|
-          !exclude?(::File.join(package_path, dir))
+          !exclude?(::File.join(path, dir))
         end.map do |dir|
           sub_package_dir(dir)
         end

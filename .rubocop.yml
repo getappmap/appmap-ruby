@@ -7,5 +7,12 @@ Style/NumericPredicate:
 Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: false
 
+# We have squiggly heredocs
+Layout/IndentHeredoc:
+  Enabled: false
+
+Style/AndOr:
+  Enabled: false
+
 Metrics/LineLength:
   Max: 120

@@ -1,0 +1,8 @@
+name: appmap-ruby
+packages:
+  - path: lib/appmap
+    exclude:
+      - server
+      - trace
+
+  - path: examples

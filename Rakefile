@@ -3,8 +3,8 @@ require 'rake/testtask'
 require 'rdoc/task'
 
 Rake::RDocTask.new do |rd|
-  rd.main = "README.rdoc"
-  rd.rdoc_files.include("README.rdoc","lib/**/*.rb","exe/**/*")
+  rd.main = 'README.rdoc'
+  rd.rdoc_files.include(%w[README.rdoc lib/**/*.rb exe/**/*])
   rd.title = 'AppMap'
 end
 
@@ -16,7 +16,7 @@ namespace :appmap do
     require 'appmap/config'
 
     config = AppMap::Config.load_from_file('.appmap.yml')
-    features = config.map(&AppMap::Inspect.method(:detect_features))
+    features = config.source_locations.map(&AppMap::Inspect.method(:detect_features))
 
     puts JSON.pretty_generate(features)
   end

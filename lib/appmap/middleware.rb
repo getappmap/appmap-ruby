@@ -29,7 +29,7 @@ module AppMap
         require 'appmap/inspect'
 
         config = AppMap::Config.load_from_file(File.join(Rails.root, '.appmap.yml'))
-        self.features = config.map(&AppMap::Inspect.method(:detect_features))
+        self.features = config.source_locations.map(&AppMap::Inspect.method(:detect_features))
       end
 
       def setup_tracer

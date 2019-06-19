@@ -50,7 +50,7 @@ class InspectExampleProject
 
   def perform
     FileUtils.mkdir_p '.appmap'
-    run_command "bundle exec #{File.expand_path('../exe/inspect', __dir__)}"
+    run_command "bundle exec #{File.expand_path('../exe/appmap', __dir__)} inspect -o appmap.json"
   end
 end
 
