@@ -1,4 +1,5 @@
 require 'appmap/feature'
+require 'forwardable'
 
 module AppMap
   module Inspect

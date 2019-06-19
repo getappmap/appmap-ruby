@@ -12,7 +12,7 @@ module AppMap
     # Simplified entry point to inspect code for features.
     def inspect(config)
       require 'appmap/inspect'
-      features = config.map(&AppMap::Inspect.method(:detect_features))
+      features = config.source_locations.map(&AppMap::Inspect.method(:detect_features))
       features = features.map(&:reparent)
       features.each(&:prune)
     end

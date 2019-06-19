@@ -32,7 +32,7 @@ class PrerecordedTraceTest < Minitest::Test
 
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
-    features = config.map(&AppMap::Inspect.method(:detect_features)).flatten
+    features = config.source_locations.map(&AppMap::Inspect.method(:detect_features)).flatten
     methods = features.map(&:collect_functions).flatten
 
     def method_call_from_event(evt)

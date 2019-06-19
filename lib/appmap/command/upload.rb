@@ -3,23 +3,25 @@ require 'faraday'
 
 module AppMap
   module Command
-    UploadStruct = Struct.new(:config, :appmap, :url, :owner)
+    UploadStruct = Struct.new(:config, :data, :url, :owner)
 
     class Upload < UploadStruct
       MAX_DEPTH = 12
 
-      def initialize(config, appmap, url, owner)
+      def initialize(config, data, url, owner)
         super
 
-        # TODO: Make this an option to the CLI
+        # TODO: Make this an option
         @max_depth = MAX_DEPTH
       end
 
       def perform
+        appmap = data.clone
+
         # If it's a list, upload it as a classMap
-        if appmap.is_a?(Hash)
-          events = appmap.delete('events') || []
-          class_map = appmap.delete('classMap') || []
+        if data.is_a?(Hash)
+          events = data.delete('events') || []
+          class_map = data.delete('classMap') || []
 
           pruned_events = []
           stack = []
@@ -45,7 +47,7 @@ module AppMap
           appmap[:classMap] = class_map
           appmap[:events] = events
         else
-          class_map = prune(appmap)
+          class_map = prune(data)
           appmap = { "classMap": class_map, "events": [] }
         end
 

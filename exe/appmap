@@ -37,7 +37,7 @@ class App
   end
 
   desc 'AppMap configuration file name'
-  default_value ENV['APPMAP_CONFIG'] || '.appmap.yml'
+  default_value ENV['APPMAP_CONFIG'] || 'appmap.yml'
   arg_name 'filename'
   flag %i[c config]
 

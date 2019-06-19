@@ -16,7 +16,7 @@ namespace :appmap do
     require 'appmap/config'
 
     config = AppMap::Config.load_from_file('.appmap.yml')
-    features = config.map(&AppMap::Inspect.method(:detect_features))
+    features = config.source_locations.map(&AppMap::Inspect.method(:detect_features))
 
     puts JSON.pretty_generate(features)
   end

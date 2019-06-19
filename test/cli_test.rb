@@ -5,7 +5,7 @@ require 'test_helper'
 require 'English'
 
 class CLITest < Minitest::Test
-  OUTPUT_FILENAME = 'tmp/appmap.json'
+  OUTPUT_FILENAME = File.expand_path('../tmp/appmap.json', __dir__)
 
   def setup
     FileUtils.rm_f OUTPUT_FILENAME
@@ -37,26 +37,34 @@ class CLITest < Minitest::Test
   end
 
   def test_record
-    `./exe/appmap record -o #{OUTPUT_FILENAME} ./examples/install.rb`
+    output = Dir.chdir 'test/fixtures/cli_record_test' do
+      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
+    end
 
     assert_equal 0, $CHILD_STATUS.exitstatus
     assert File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} does not exist"
+    assert_equal 'Hello', output
     output = JSON.parse(File.read(OUTPUT_FILENAME))
     assert output['classMap'], 'Output should contain classMap'
     assert output['events'], 'Output should contain events'
   end
 
   def test_record_to_default_location
-    system({ 'APPMAP_FILE' => OUTPUT_FILENAME }, './exe/appmap record ./examples/install.rb')
+    Dir.chdir 'test/fixtures/cli_record_test' do
+      system({ 'APPMAP_FILE' => OUTPUT_FILENAME }, "#{File.expand_path '../exe/appmap', __dir__} record ./lib/cli_record_test/main.rb")
+    end
 
     assert_equal 0, $CHILD_STATUS.exitstatus
     assert File.file?(OUTPUT_FILENAME), 'appmap.json does not exist'
   end
 
   def test_record_to_stdout
-    `./exe/appmap record -o - ./examples/install.rb`
+    output = Dir.chdir 'test/fixtures/cli_record_test' do
+      `#{File.expand_path '../exe/appmap', __dir__} record -o - ./lib/cli_record_test/main.rb`
+    end
 
     assert_equal 0, $CHILD_STATUS.exitstatus
+    assert_includes output, %("location":"lib/cli_record_test")
     assert !File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} should not exist"
   end
 

@@ -41,7 +41,7 @@ module AppMap
             !::File.symlink?(expand_path.call(fname)) &&
             ruby_file?(expand_path.call(fname))
         end.select do |fname|
-          !exclude?(fname)
+          !exclude?(::File.join(path, fname))
         end.map do |fname|
           File.new(expand_path.call(fname)).tap do |f|
             f.mode = mode

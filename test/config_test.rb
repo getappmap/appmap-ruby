@@ -6,42 +6,41 @@ class ConfigTest < Minitest::Test
   include FixtureFile
 
   def test_explicit_module_path_naming
-    config = AppMap::Config::PackageDir.new(INSPECT_PACKAGE_FIXTURE_DIR, 'inspect_package').tap do |c|
+    config = AppMap::Config::PackageDir.new(INSPECT_PACKAGE_FIXTURE_DIR).tap do |c|
       c.mode = :explicit
+      c.exclude = [ 'module_a/ignore_module_c' ]
     end
-    config.exclude = [ 'inspect_package/module_a/ignore_module_c' ]
     feature = AppMap::Inspect.detect_features(config)
 
     assert_equal %w[inspect_package module_a module_b], feature_names(feature)
   end
 
   def test_implicit_module_path_naming
-    config = AppMap::Config::PackageDir.new(INSPECT_PACKAGE_FIXTURE_DIR, 'inspect_package')
-    config.exclude = [ 'inspect_package/module_a/ignore_module_c' ]
+    config = AppMap::Config::PackageDir.new(INSPECT_PACKAGE_FIXTURE_DIR).tap do |c|
+      c.exclude = [ 'module_a/ignore_module_c' ]
+    end
     feature = AppMap::Inspect.detect_features(config)
 
     assert_equal %w[inspect_package module_a module_b A B Main], feature_names(feature)
   end
 
   def test_ignore_non_ruby_file
-    config = AppMap::Config::PackageDir.new(File.join(FIXTURE_DIR, 'ignore_non_ruby_file'), 'ignore_non_ruby_file')
+    config = AppMap::Config::PackageDir.new(File.join(FIXTURE_DIR, 'ignore_non_ruby_file'))
     feature = AppMap::Inspect.detect_features(config)
     assert_equal %w[ignore_non_ruby_file Cls], feature_names(feature)
   end
 
   def test_inspect_multiple_subdirs
     config_yaml = <<-YAML
-    module_a:
-      type: package
-
-    module_b:
-      type: package
+    packages:
+      - path: module_a
+      - path: module_b
     YAML
 
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
     features = Dir.chdir File.join(FIXTURE_DIR, 'inspect_multiple_subdirs') do
-      config.map(&AppMap::Inspect.method(:detect_features))
+      config.source_locations.map(&AppMap::Inspect.method(:detect_features))
     end
     features = features.map(&:reparent)
     assert_equal %w[module_a ModuleA ClassA module_b ModuleB ClassB ClassC], features.map(&method(:feature_names)).flatten
@@ -49,15 +48,15 @@ class ConfigTest < Minitest::Test
 
   def test_active_record_like
     config_yaml = <<-YAML
-    .:
-      type: package
-      name: ROOT
+    packages:
+      - path: .
+        name: ROOT
     YAML
 
     require 'yaml'
     config = AppMap::Config.load YAML.safe_load(config_yaml)
     features = Dir.chdir File.join(FIXTURE_DIR, 'active_record_like') do
-      config.map(&AppMap::Inspect.method(:detect_features))
+      config.source_locations.map(&AppMap::Inspect.method(:detect_features))
     end
     features = features.map(&:reparent)
 
