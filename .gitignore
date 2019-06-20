@@ -8,7 +8,7 @@
 /doc/
 /pkg/
 /spec/reports/
-/tmp/
+tmp/
 vendor
 node_modules
 Gemfile.lock

@@ -1,0 +1,4 @@
+source 'https://rubygems.org'
+
+gem 'appmap', git: '../..', branch: `git rev-parse --abbrev-ref HEAD`.strip
+gem 'rspec'
