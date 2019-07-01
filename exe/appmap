@@ -52,7 +52,7 @@ class App
     end
   end
 
-  desc 'Describe record here'
+  desc 'Record the execution of a program and generate an AppMap.'
   arg_name 'program'
   command :record do |c|
     output_file_flag(c, default_value: default_appmap_file)
