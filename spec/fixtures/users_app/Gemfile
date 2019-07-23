@@ -4,4 +4,6 @@ gem 'rack'
 gem 'rack-app'
 gem 'rspec'
 gem 'pry-byebug'
-gem 'appmap', path: '/tmp/appmap-0.5.1'
+
+appmap_path = File.exists?('/tmp/appmap') ? '/tmp/appmap' : '../../..'
+gem 'appmap', path: appmap_path

@@ -43,7 +43,6 @@ module AppMap
                 mr.parent_id = parent_id
                 mr.elapsed = elapsed
                 mr.http_status = res.status
-                mr.http_header = res.header
 
                 MethodEvent.build_from_tracepoint(mr, tp, path)
               end
@@ -55,8 +54,7 @@ module AppMap
               h[:parent_id] = parent_id
               h[:elapsed] = elapsed
               h[:http_server_response] = {
-                status: http_status,
-                header: http_header
+                status: http_status
               }
             end
           end

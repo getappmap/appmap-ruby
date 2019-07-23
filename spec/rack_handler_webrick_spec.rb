@@ -1,13 +1,14 @@
 require 'rspec'
 require 'net/http'
 require 'json'
+require 'yaml'
 require 'English'
 
 describe 'RackHandlerWebrick' do
   around(:each) do |example|
     FileUtils.mkdir_p tmpdir
     FileUtils.rm_f appmap_json
-    container_id = `cd spec/fixtures/users_app && docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 users_app`.strip
+    container_id = `cd spec/fixtures/users_app && docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 appmap-users_app`.strip
     raise 'Failed to start users_app container' unless $CHILD_STATUS.exitstatus == 0
 
     begin
@@ -40,9 +41,19 @@ describe 'RackHandlerWebrick' do
       `docker stop #{@container_id}`
 
       expect(File).to exist(appmap_json)
-      appmap = JSON.parse(File.read(appmap_json))
+      appmap = JSON.parse(File.read(appmap_json)).to_yaml
 
-      puts JSON.pretty_generate(appmap)
+      expect(appmap).to include(<<-WEB_REQUEST.strip)
+  http_server_request:
+    request_method: POST
+    path_info: "/users"
+    version: HTTP/1.1
+      WEB_REQUEST
+
+      expect(appmap).to include(<<-WEB_RESPONSE.strip)
+  http_server_response:
+    status: 201
+      WEB_RESPONSE
     end
   end
 end

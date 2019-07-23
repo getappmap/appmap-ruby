@@ -1,4 +1,7 @@
 FROM ruby:2.5
 
-COPY pkg/appmap-0.5.1.gem /tmp
-RUN cd /tmp && gem unpack appmap-0.5.1.gem
+ARG GEM_VERSION
+
+COPY pkg/appmap-$GEM_VERSION.gem /tmp
+
+RUN cd /tmp && gem unpack appmap-$GEM_VERSION.gem --target appmap
