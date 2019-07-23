@@ -2,24 +2,31 @@ require 'appmap/config/path'
 require 'appmap/config/file'
 require 'appmap/config/directory'
 require 'appmap/config/package_dir'
+require 'appmap/config/dependency'
 
 module AppMap
   module Config
     class Configuration
-      attr_reader :name, :packages, :files
+      attr_reader :name, :packages, :files, :dependencies
 
       def initialize(name)
         @name = name
         @packages = []
         @files = []
+        @dependencies = []
       end
 
       def source_locations
-        packages + files
+        packages + files + dependencies
       end
     end
 
     class << self
+      SPECIAL_DEPENDENCIES = [
+        Config::Dependency.new(:rack_handler_webrick, 'rack', 'lib/rack/handler/webrick.rb',
+                               %w[Rack Handler WEBrick], 'service', false)
+      ].freeze
+
       # Loads configuration data from a file, specified by the file name.
       def load_from_file(config_file_name)
         require 'yaml'
@@ -44,6 +51,10 @@ module AppMap
               path = member.delete('path')
               config.send(kind) << builders[kind].call(path, member)
             end
+          end
+
+          SPECIAL_DEPENDENCIES.each do |dep|
+            config.dependencies << dep
           end
         end
       end

@@ -27,6 +27,44 @@ module AppMap
             end
           end
         }
+        feature_builders[AppMap::Config::Dependency] = lambda {
+          gem = Gem.loaded_specs[path_config.gem_name]
+          return [] unless gem
+
+          gem_dir = gem.gem_dir
+          file_path = File.join(gem_dir, path_config.file_path)
+
+          # Inspect the file to detect all the classes and functions.
+          # Then search for the one that we expect to be there.
+          # This way, we don't have to 'require'; because if we do that, it can change the 
+          # behavior of the program.
+          parse_nodes, comments = Parser.new(file_path: file_path).parse
+          features = ImplicitInspector.new(file_path, parse_nodes, comments).inspect_file
+
+          class_names = path_config.class_names.dup
+          until class_names.empty?
+            class_name = class_names.shift
+            feature = features.find { |f| f.to_h[:type] == 'class' && f.name == class_name }
+            raise "#{class_name.inspect} not found" unless feature
+
+            features = feature.children
+          end
+
+          function = features.find { |f| f.to_h[:type] == 'function' && f.name == path_config.method_name && f.static == path_config.static }
+          function.handler_id = path_config.id.to_s
+
+          AppMap::Feature::Package.new(path_config.gem_name, "#{gem_dir}:0", {}).tap do |pkg|
+            parent = pkg
+            class_names = path_config.class_names.dup
+            until class_names.empty?
+              class_name = class_names.shift
+              cls = AppMap::Feature::Cls.new(class_name, "#{gem_dir}:0", {})
+              parent.children << cls
+              parent = cls
+            end
+            parent.children << function
+          end
+        }
 
         feature_builders[path_config.class].call
       end

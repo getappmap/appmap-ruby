@@ -19,7 +19,7 @@ module AppMap
 
         raise "Missing AppMap configuration setting: 'name'" unless @config.name
 
-        features = config.source_locations.map(&AppMap::Inspect.method(:detect_features))
+        features = config.source_locations.map(&AppMap::Inspect.method(:detect_features)).flatten
         @features = features.map(&:reparent)
         @features.each(&:prune)
         @functions = @features.map(&:collect_functions).flatten
@@ -38,8 +38,8 @@ module AppMap
         git_last_annotated_tag = nil if git_last_annotated_tag.blank?
         git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
         git_last_tag = nil if git_last_tag.blank?
-        git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] if git_last_annotated_tag
-        git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] if git_last_tag
+        git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_annotated_tag
+        git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_tag
 
         {
           repository: git_repo,
@@ -73,6 +73,42 @@ module AppMap
     end
 
     class << self
+      ScopeExample = Struct.new(:example) do
+        def description
+          example.description
+        end
+
+        def parent
+          ScopeExampleGroup.new(example.example_group)
+        end
+      end
+
+      # As you can see here, the way that RSpec stores the example description and
+      # represents the example group hierarchy is pretty weird.
+      ScopeExampleGroup = Struct.new(:example_group) do
+        def description_args
+          # Don't stringify any hashes that RSpec considers part of the example group description.
+          example_group.metadata[:description_args].reject { |arg| arg.is_a?(Hash) }
+        end
+
+        def description?
+          return true if example_group.respond_to?(:described_class) && example_group.described_class
+
+          return true if example_group.respond_to?(:description) && !description_args.empty?
+
+          false
+        end
+
+        def description
+          description? ? description_args.join(' ') : nil
+        end
+
+        def parent
+          # An example group always has a parent; but it might be 'self'...
+          example_group.parent != example_group ? ScopeExampleGroup.new(example_group.parent) : nil
+        end
+      end
+
       def appmap_enabled?
         ENV['APPMAP'] == 'true'
       end
@@ -93,7 +129,15 @@ module AppMap
               events << tracer.next_event.to_h
             end
 
-            recorder.save example.full_description, events
+            description = []
+            scope = ScopeExample.new(example)
+            while scope
+              description << scope.description
+              scope = scope.parent
+            end
+            description.reject! { |d| d.nil? || d == '' }
+
+            recorder.save description.reverse.join(' '), events
           end
         end
       end

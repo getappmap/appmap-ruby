@@ -223,7 +223,7 @@ module AppMap
     # function. Instance functions operate on the instance data of the class on which they are defined. Static
     # functions are used to perform operations which don't have want or need of instance data.
     class Function < Base
-      attr_accessor :static, :class_name
+      attr_accessor :static, :class_name, :handler_id
 
       alias static? static
       def instance?
@@ -249,6 +249,7 @@ module AppMap
         super.tap do |obj|
           obj.static = static
           obj.class_name = class_name
+          obj.handler_id = handler_id
         end
       end
     end

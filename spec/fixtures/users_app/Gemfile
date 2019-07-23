@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+
+gem 'rack'
+gem 'rack-app'
+gem 'rspec'
+gem 'pry-byebug'
+gem 'appmap', path: '/tmp/appmap-0.5.1'
