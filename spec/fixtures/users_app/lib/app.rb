@@ -26,14 +26,6 @@ class App < Rack::App
     response.status = 201
   end
 
-  post '/users/:login/authenticate' do
-    halt 422 unless (user_id = params['login'])
-    halt 404 unless (user = USERS[user_id])
-    password = request.body.read.strip
-    response.status = user['password'] == password ? 200 : 401
-    nil
-  end
-
   def halt(code)
     raise CodedError, code
   end

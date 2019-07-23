@@ -2,29 +2,29 @@ require 'appmap/config/path'
 require 'appmap/config/file'
 require 'appmap/config/directory'
 require 'appmap/config/package_dir'
-require 'appmap/config/dependency'
+require 'appmap/config/named_function'
 
 module AppMap
   module Config
     class Configuration
-      attr_reader :name, :packages, :files, :dependencies
+      attr_reader :name, :packages, :files, :named_functions
 
       def initialize(name)
         @name = name
         @packages = []
         @files = []
-        @dependencies = []
+        @named_functions = []
       end
 
       def source_locations
-        packages + files + dependencies
+        packages + files + named_functions
       end
     end
 
     class << self
-      SPECIAL_DEPENDENCIES = [
-        Config::Dependency.new(:rack_handler_webrick, 'rack', 'lib/rack/handler/webrick.rb',
-                               %w[Rack Handler WEBrick], 'service', false)
+      NAMED_FUNCTIONS = [
+        Config::NamedFunction.new(:rack_handler_webrick, 'rack', 'lib/rack/handler/webrick.rb',
+                                  %w[Rack Handler WEBrick], 'service', false)
       ].freeze
 
       # Loads configuration data from a file, specified by the file name.
@@ -53,8 +53,8 @@ module AppMap
             end
           end
 
-          SPECIAL_DEPENDENCIES.each do |dep|
-            config.dependencies << dep
+          NAMED_FUNCTIONS.each do |dep|
+            config.named_functions << dep
           end
         end
       end

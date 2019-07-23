@@ -33,7 +33,7 @@ describe 'RackHandlerWebrick' do
   let(:users_app_port) { users_app_host_and_port[1] }
 
   describe 'POST /users' do
-    it 'is created' do
+    it 'HTTP request and response are recorded in the appmap' do
       uri = URI("http://localhost:#{users_app_port}/users")
       res = Net::HTTP.post(uri, { 'login' => 'alice', 'password' => 'foobar' }.to_json)
       expect(res.code.to_i).to eq(201)

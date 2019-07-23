@@ -73,6 +73,8 @@ module AppMap
     end
 
     class << self
+      # ScopeExample and ScopeExampleGroup is a way to handle the weird way that RSpec
+      # stores the nested example names.
       ScopeExample = Struct.new(:example) do
         def description
           example.description

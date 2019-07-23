@@ -203,6 +203,9 @@ module AppMap
 
       protected
 
+      # Figure out which handler class should be used for a trace event. It may be
+      # a custom handler, e.g. in case we are processing a special named function such as a
+      # web server entry point, or it may be the standard :call or :return handler.
       def handler_class(function, event)
         cache_key = [function.location, event]
         cached_handler = @handler_classes[cache_key]

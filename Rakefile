@@ -1,10 +1,12 @@
 require 'bundler/gem_tasks'
 require 'rake/testtask'
 require 'rdoc/task'
+
 begin
   require 'rspec/core/rake_task'
   RSpec::Core::RakeTask.new(:spec)
 rescue LoadError
+  warn "Rake task 'spec' could not be loaded"
 end
 
 Rake::RDocTask.new do |rd|
@@ -22,12 +24,12 @@ end
 task build_docker: :build do
   require 'appmap/version'
   version = AppMap::VERSION
-  system "docker build --build-arg GEM_VERSION=#{version} -t appmap-ruby_with_appmap:2.5 -f Dockerfile.ruby ." \
-    or raise "Docker build failed"
+  system "docker build --build-arg GEM_VERSION=#{version} -t appmap-ruby_with_appmap:2.5 -f Dockerfile.ruby_with_appmap ." \
+    or raise 'Docker build failed'
 
   Dir.chdir 'spec/fixtures/users_app' do
-    system "docker build -t appmap-users_app ." \
-      or raise "Docker build failed"
+    system 'docker build -t appmap-users_app .' \
+      or raise 'Docker build failed'
   end
 end
 
