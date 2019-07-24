@@ -1,4 +1,4 @@
-FROM appmap-ruby_with_appmap:2.5
+FROM appmap-ruby_with_appmap:2.6
 
 RUN mkdir /app
 WORKDIR /app

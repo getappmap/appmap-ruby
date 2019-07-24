@@ -8,13 +8,16 @@ describe 'RackHandlerWebrick' do
   around(:each) do |example|
     FileUtils.mkdir_p tmpdir
     FileUtils.rm_f appmap_json
-    container_id = `cd spec/fixtures/users_app && docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 appmap-users_app`.strip
-    raise 'Failed to start users_app container' unless $CHILD_STATUS.exitstatus == 0
+    container_id = `cd spec/fixtures/rack_users_app && docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 appmap-rack_users_app`.strip
+    raise 'Failed to start rack_users_app container' unless $CHILD_STATUS.exitstatus == 0
 
     begin
       start_time = Time.now
       until (cid = `docker ps -q -f id=#{container_id} -f health=healthy`.strip) != '' && container_id.include?(cid)
-        $stderr.write '.' if Time.now - start_time > 3
+        elapsed = Time.now - start_time
+        raise "Timeout waiting for container #{container_id} to be ready" if elapsed > 10
+
+        $stderr.write '.' if elapsed > 3
         sleep 0.25
       end
       @container_id = container_id
@@ -22,7 +25,7 @@ describe 'RackHandlerWebrick' do
     ensure
       if ENV['NOKILL'] != 'true'
         `docker rm -f #{container_id}`
-        warn 'Failed to remove users_app container' unless $CHILD_STATUS.exitstatus == 0
+        warn 'Failed to remove rack_users_app container' unless $CHILD_STATUS.exitstatus == 0
       end
     end
   end

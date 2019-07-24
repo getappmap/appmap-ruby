@@ -4,7 +4,9 @@ require 'rdoc/task'
 
 begin
   require 'rspec/core/rake_task'
-  RSpec::Core::RakeTask.new(:spec)
+  RSpec::Core::RakeTask.new(:spec).tap do |task|
+    task.exclude_pattern = 'spec/fixtures/**/*_spec.rb'
+  end
 rescue LoadError
   warn "Rake task 'spec' could not be loaded"
 end
@@ -24,11 +26,16 @@ end
 task build_docker: :build do
   require 'appmap/version'
   version = AppMap::VERSION
-  system "docker build --build-arg GEM_VERSION=#{version} -t appmap-ruby_with_appmap:2.5 -f Dockerfile.ruby_with_appmap ." \
+  system "docker build --build-arg GEM_VERSION=#{version} -t appmap-ruby_with_appmap:2.6 -f Dockerfile.ruby_with_appmap ." \
     or raise 'Docker build failed'
 
-  Dir.chdir 'spec/fixtures/users_app' do
-    system 'docker build -t appmap-users_app .' \
+  Dir.chdir 'spec/fixtures/rack_users_app' do
+    system 'docker build -t appmap-rack_users_app .' \
+      or raise 'Docker build failed'
+  end
+
+  Dir.chdir 'spec/fixtures/rails_users_app' do
+    system 'docker build -t appmap-rails_users_app .' \
       or raise 'Docker build failed'
   end
 end

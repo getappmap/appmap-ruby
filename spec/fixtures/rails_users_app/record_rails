@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+exec bundle exec $(bundle show appmap)/exe/appmap record -o ./tmp/appmap.json \
+  $(which rails) server "$@"
