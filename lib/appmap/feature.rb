@@ -222,8 +222,12 @@ module AppMap
     # Function is a feature which represents a code function. It can be an instance function or static (aka 'class')
     # function. Instance functions operate on the instance data of the class on which they are defined. Static
     # functions are used to perform operations which don't have want or need of instance data.
+    #
+    # * `handler_id` If provided, identifies a trace handler which can apply specialized logic to the
+    #   event data which is recorded for this function. For example, if the function represents a handler
+    #   method for a web server, the custom handler can inspect and record the HTTP request method and path info.
     class Function < Base
-      attr_accessor :static, :class_name
+      attr_accessor :static, :class_name, :handler_id
 
       alias static? static
       def instance?
@@ -249,6 +253,7 @@ module AppMap
         super.tap do |obj|
           obj.static = static
           obj.class_name = class_name
+          obj.handler_id = handler_id
         end
       end
     end

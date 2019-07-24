@@ -1,8 +1,7 @@
 module AppMap
   module Trace
     MethodEventStruct =
-      Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id,
-                 :self, :parameters, :return_value)
+      Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
 
     class << self
       def tracer
@@ -48,6 +47,14 @@ module AppMap
           end
         end
 
+        # Gets a value, by key, from the trace point binding.
+        # If the method raises an error, it can be handled by the optional block.
+        def value_in_binding(tp, key, &block)
+          tp.binding.eval(key.to_s)
+        rescue NameError, ArgumentError
+          yield if block_given?
+        end
+
         # Gets a hash containing describing the current value of self.
         def inspect_self(tp)
           {
@@ -75,6 +82,8 @@ module AppMap
 
     # @appmap
     class MethodCall < MethodEvent
+      attr_accessor :self, :parameters
+
       class << self
         # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp, path)
@@ -92,10 +101,7 @@ module AppMap
 
           m.parameters.each_with_object({}) do |pinfo, memo|
             kind, key = pinfo
-            begin
-              value = tp.binding.eval(key.to_s)
-            rescue NameError, ArgumentError
-            end
+            value = value_in_binding(tp, key)
             memo[key] = {
               class: value.class.name,
               value: display_string(value),
@@ -105,23 +111,17 @@ module AppMap
         end
       end
 
-      # @appmap
-      def initialize(*args)
-        super
-      end
-
       def to_h
         super.tap do |h|
-          h.delete(:return_value)
-          h.delete(:parent_id)
-          h.delete(:elapsed)
+          h[:self] = self
+          h[:parameters] = parameters
         end
       end
     end
 
     # @appmap
     class MethodReturn < MethodEvent
-      attr_accessor :parent_id, :elapsed
+      attr_accessor :return_value, :parent_id, :elapsed
 
       class << self
         # @appmap
@@ -139,17 +139,11 @@ module AppMap
         end
       end
 
-      # @appmap
-      def initialize(*args)
-        super
-      end
-
       def to_h
         super.tap do |h|
-          h.delete(:self)
-          h.delete(:parameters)
           h[:parent_id] = parent_id
           h[:elapsed] = elapsed
+          h[:return_value] = return_value
         end
       end
     end
@@ -162,13 +156,17 @@ module AppMap
     class TracePointHandler
       attr_accessor :call_constructor, :return_constructor
 
+      DEFAULT_HANDLER_CLASSES = {
+        call: MethodCall,
+        return: MethodReturn
+      }.freeze
+
       # @appmap
       def initialize(tracer)
         @pwd = Dir.pwd
         @tracer = tracer
         @call_stack = Hash.new { |h, k| h[k] = [] }
-        @call_constructor = MethodCall.method(:build_from_tracepoint)
-        @return_constructor = MethodReturn.method(:build_from_tracepoint)
+        @handler_classes = {}
       end
 
       # @appmap
@@ -180,20 +178,20 @@ module AppMap
           path = path[@pwd.length+1..-1]
         end
 
-        if tp.defined_class.to_s =~ /^RSpec::Core::Example/
-#          require 'pry'; binding.pry
-        end
-
-        method_event = if tp.event == :call && @tracer.break_on_line?(path, tp.lineno)
-                         @call_constructor.call(tp, path).tap do |c|
-                           @call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now ]
-                         end
-                       elsif (c = @call_stack[Thread.current.object_id].last) &&
-                             c[0] == tp.defined_class &&
-                             c[1] == tp.method_id
-                         @call_stack[Thread.current.object_id].pop
-                         @return_constructor.call(tp, path, c[2], Time.now - c[3])
-                       end
+        method_event = \
+          if tp.event == :call && (function = @tracer.lookup_function(path, tp.lineno))
+            call_constructor = handler_class(function, tp.event)
+            call_constructor.build_from_tracepoint(tp, path).tap do |c|
+              @call_stack[Thread.current.object_id] << [ tp.defined_class, tp.method_id, c.id, Time.now, function ]
+            end
+          elsif (c = @call_stack[Thread.current.object_id].last) &&
+                c[0] == tp.defined_class &&
+                c[1] == tp.method_id
+            function = c[4]
+            @call_stack[Thread.current.object_id].pop
+            return_constructor = handler_class(function, tp.event)
+            return_constructor.build_from_tracepoint(tp, path, c[2], Time.now - c[3])
+          end
 
         @tracer.record_event method_event if method_event
 
@@ -202,12 +200,37 @@ module AppMap
         puts $!.message
         puts $!.backtrace.join("\n")
       end
+
+      protected
+
+      # Figure out which handler class should be used for a trace event. It may be
+      # a custom handler, e.g. in case we are processing a special named function such as a
+      # web server entry point, or it may be the standard :call or :return handler.
+      def handler_class(function, event)
+        cache_key = [function.location, event]
+        cached_handler = @handler_classes[cache_key]
+        return cached_handler if cached_handler
+
+        return default_handler_class(event) unless function.handler_id
+
+        require "appmap/trace/event_handler/#{function.handler_id}"
+
+        AppMap::Trace::EventHandler
+          .const_get(function.handler_id.to_s.camelize)
+          .const_get(event.to_s.capitalize).tap do |handler|
+          @handler_classes[cache_key] = handler
+        end
+      end
+
+      def default_handler_class(event)
+        DEFAULT_HANDLER_CLASSES[event] or raise "No handler class for #{event.inspect}"
+      end
     end
 
     # @appmap
     class Tracer
       class << self
-        # Trace program execution using a TracePoint hook. As methods are called and returned from,
+        # Trace program execution using a TracePoint hook. As functions are called and returned from,
         # the events are recorded via Tracer#record_event.
         # @appmap
         def trace(tracer)
@@ -216,14 +239,14 @@ module AppMap
         end
       end
 
-      # Trace a specified set of methods.
+      # Trace a specified set of functions.
       #
-      # methods Array of AppMap::Feature::Method.
+      # functions Array of AppMap::Feature::Function.
       # @appmap
-      def initialize(methods)
-        @methods = methods
+      def initialize(functions)
+        @functions = functions
 
-        @methods_by_location = methods.each_with_object({}) do |m, memo|
+        @functions_by_location = functions.each_with_object({}) do |m, memo|
           path, lineno = m.location.split(':', 2)
           memo[path] ||= {}
           memo[path][lineno.to_i] = m
@@ -237,8 +260,8 @@ module AppMap
       # Whether the indicated file path and lineno is a breakpoint on which
       # execution should interrupted.
       # @appmap
-      def break_on_line?(path, lineno)
-        (methods_by_path = @methods_by_location[path]) && methods_by_path[lineno]
+      def lookup_function(path, lineno)
+        (methods_by_path = @functions_by_location[path]) && methods_by_path[lineno]
       end
 
       # Record a program execution event.

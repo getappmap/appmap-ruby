@@ -7,135 +7,137 @@ require 'appmap'
 require 'appmap/version'
 
 # AppMap CLI.
-class App
-  extend GLI::App
+module AppMap
+  class App
+    extend GLI::App
 
-  program_desc 'AppMap client'
+    program_desc 'AppMap client'
 
-  version AppMap::VERSION
+    version AppMap::VERSION
 
-  subcommand_option_handling :normal
-  arguments :strict
-  preserve_argv true
+    subcommand_option_handling :normal
+    arguments :strict
+    preserve_argv true
 
-  class << self
-    protected
+    class << self
+      protected
 
-    def default_appmap_file
-      ENV['APPMAP_FILE'] || 'appmap.json'
-    end
-
-    def output_file_flag(c, default_value: nil)
-      c.desc 'Name of the output file'
-      c.long_desc <<~DESC
-      Use a single dash '-' for stdout.
-      DESC
-      c.default_value default_value if default_value
-      c.arg_name 'filename'
-      c.flag %i[o output]
-    end
-  end
-
-  desc 'AppMap configuration file name'
-  default_value ENV['APPMAP_CONFIG'] || 'appmap.yml'
-  arg_name 'filename'
-  flag %i[c config]
-
-  desc 'Inspect code and generate a classmap file'
-  command :inspect do |c|
-    output_file_flag(c, default_value: default_appmap_file)
-
-    c.action do
-      require 'appmap/command/inspect'
-      features = AppMap::Command::Inspect.new(@config).perform
-      @output_file.write JSON.pretty_generate(features)
-    end
-  end
-
-  desc 'Record the execution of a program and generate an AppMap.'
-  arg_name 'program'
-  command :record do |c|
-    output_file_flag(c, default_value: default_appmap_file)
-
-    c.action do |_, _, args|
-      # My subcommand name
-      ARGV.shift
-
-      # Consume the :output option, if provided
-      if %w[-o --output].find { |arg_name| ARGV[0] == arg_name.to_s }
-        ARGV.shift
-        ARGV.shift
+      def default_appmap_file
+        ENV['APPMAP_FILE'] || 'appmap.json'
       end
 
-      # Name of the program to execute. GLI will ensure that it's present.
-      program = args.shift or help_now!("'program' argument is required")
-
-      # Also pop the program name from ARGV, because the command will use raw ARGV
-      # to load the extra arguments into this Ruby process.
-      ARGV.shift
-
-      require 'appmap/command/record'
-      AppMap::Command::Record.new(@config, program).perform do |features, events|
-        @output_file.write JSON.generate(classMap: features, events: events)
+      def output_file_flag(c, default_value: nil)
+        c.desc 'Name of the output file'
+        c.long_desc <<~DESC
+        Use a single dash '-' for stdout.
+        DESC
+        c.default_value default_value if default_value
+        c.arg_name 'filename'
+        c.flag %i[o output]
       end
     end
-  end
 
-  desc 'Upload a scenario file to AppLand.'
-  arg_name 'filename'
-  command :upload do |c|
-    output_file_flag(c, default_value: '-')
+    desc 'AppMap configuration file name'
+    default_value ENV['APPMAP_CONFIG'] || 'appmap.yml'
+    arg_name 'filename'
+    flag %i[c config]
 
-    c.desc 'Whether to open the new scenario in the browser'
-    c.default_value true
-    c.switch [:open]
+    desc 'Inspect code and generate a classmap file'
+    command :inspect do |c|
+      output_file_flag(c, default_value: default_appmap_file)
 
-    c.desc 'AppLand website URL'
-    c.default_value ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
-    c.flag :url
-
-    c.desc 'User id to own the scenario'
-    # TODO: This will be replaced with proper login
-    c.default_value((ENV['APPLAND_OWNER'] || 1).to_i)
-    c.flag :owner
-
-    c.action do |_, options, args|
-      require 'appmap/command/upload'
-      filename = args.shift or help_now!("'filename' argument is required")
-      appmap = JSON.parse(File.read(filename))
-
-      url = options[:url]
-      owner = options[:owner]
-
-      scenario_uuid = AppMap::Command::Upload.new(@config, appmap, url, owner).perform
-      $stderr.write 'Uploaded new scenario: '
-      @output_file.puts scenario_uuid
-      system "open #{url}/scenarios/#{scenario_uuid}" if options[:open]
-    end
-  end
-
-  pre do |global, _, options, _|
-    @config = interpret_config_option(global[:config])
-    @output_file = interpret_output_file_option(options[:output])
-
-    true
-  end
-
-  class << self
-    protected
-
-    def interpret_config_option(fname)
-      require 'appmap/config'
-      AppMap::Config.load_from_file fname
+      c.action do
+        require 'appmap/command/inspect'
+        features = AppMap::Command::Inspect.new(@config).perform
+        @output_file.write JSON.pretty_generate(features)
+      end
     end
 
-    def interpret_output_file_option(file_name)
-      Hash.new { |_, fname| -> { File.new(fname, 'w') } }.tap do |open_output_file|
-        open_output_file[nil] = -> { nil }
-        open_output_file['-'] = -> { $stdout }
-      end[file_name].call
+    desc 'Record the execution of a program and generate an AppMap.'
+    arg_name 'program'
+    command :record do |c|
+      output_file_flag(c, default_value: default_appmap_file)
+
+      c.action do |_, _, args|
+        # My subcommand name
+        ARGV.shift
+
+        # Consume the :output option, if provided
+        if %w[-o --output].find { |arg_name| ARGV[0] == arg_name.to_s }
+          ARGV.shift
+          ARGV.shift
+        end
+
+        # Name of the program to execute. GLI will ensure that it's present.
+        program = args.shift or help_now!("'program' argument is required")
+
+        # Also pop the program name from ARGV, because the command will use raw ARGV
+        # to load the extra arguments into this Ruby process.
+        ARGV.shift
+
+        require 'appmap/command/record'
+        AppMap::Command::Record.new(@config, program).perform do |features, events|
+          @output_file.write JSON.generate(classMap: features, events: events)
+        end
+      end
+    end
+
+    desc 'Upload a scenario file to AppLand.'
+    arg_name 'filename'
+    command :upload do |c|
+      output_file_flag(c, default_value: '-')
+
+      c.desc 'Whether to open the new scenario in the browser'
+      c.default_value true
+      c.switch [:open]
+
+      c.desc 'AppLand website URL'
+      c.default_value ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
+      c.flag :url
+
+      c.desc 'User id to own the scenario'
+      # TODO: This will be replaced with proper login
+      c.default_value((ENV['APPLAND_OWNER'] || 1).to_i)
+      c.flag :owner
+
+      c.action do |_, options, args|
+        require 'appmap/command/upload'
+        filename = args.shift or help_now!("'filename' argument is required")
+        appmap = JSON.parse(File.read(filename))
+
+        url = options[:url]
+        owner = options[:owner]
+
+        scenario_uuid = AppMap::Command::Upload.new(@config, appmap, url, owner).perform
+        $stderr.write 'Uploaded new scenario: '
+        @output_file.puts scenario_uuid
+        system "open #{url}/scenarios/#{scenario_uuid}" if options[:open]
+      end
+    end
+
+    pre do |global, _, options, _|
+      @config = interpret_config_option(global[:config])
+      @output_file = interpret_output_file_option(options[:output])
+
+      true
+    end
+
+    class << self
+      protected
+
+      def interpret_config_option(fname)
+        require 'appmap/config'
+        AppMap::Config.load_from_file fname
+      end
+
+      def interpret_output_file_option(file_name)
+        Hash.new { |_, fname| -> { File.new(fname, 'w') } }.tap do |open_output_file|
+          open_output_file[nil] = -> { nil }
+          open_output_file['-'] = -> { $stdout }
+        end[file_name].call
+      end
     end
   end
 end
 
-exit App.run(ARGV)
+exit AppMap::App.run(ARGV)

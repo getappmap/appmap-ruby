@@ -1,3 +1,7 @@
+# v0.6.0
+
+* Web server requests and responses through WEBrick are recorded in AppMap events.
+
 # v0.5.1
 
 * Add RSpec test recorder.

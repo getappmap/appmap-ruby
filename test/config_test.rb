@@ -41,7 +41,7 @@ class ConfigTest < Minitest::Test
     config = AppMap::Config.load YAML.safe_load(config_yaml)
     features = Dir.chdir File.join(FIXTURE_DIR, 'inspect_multiple_subdirs') do
       config.source_locations.map(&AppMap::Inspect.method(:detect_features))
-    end
+    end.flatten
     features = features.map(&:reparent)
     assert_equal %w[module_a ModuleA ClassA module_b ModuleB ClassB ClassC], features.map(&method(:feature_names)).flatten
   end
@@ -57,7 +57,7 @@ class ConfigTest < Minitest::Test
     config = AppMap::Config.load YAML.safe_load(config_yaml)
     features = Dir.chdir File.join(FIXTURE_DIR, 'active_record_like') do
       config.source_locations.map(&AppMap::Inspect.method(:detect_features))
-    end
+    end.flatten
     features = features.map(&:reparent)
 
     assert_equal <<-FEATURES.strip, JSON.pretty_generate(features)
