@@ -119,21 +119,14 @@ module AppMap
       end
     end
 
-    # @appmap
-    class MethodReturn < MethodEvent
-      attr_accessor :return_value, :parent_id, :elapsed
+    class MethodReturnIgnoreValue < MethodEvent
+      attr_accessor :parent_id, :elapsed
 
       class << self
-        # @appmap
-        def build_from_tracepoint(mr = MethodReturn.new, tp, path, parent_id, elapsed)
+        def build_from_tracepoint(mr = MethodReturnIgnoreValue.new, tp, path, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
             mr.elapsed = elapsed
-            mr.return_value = {
-              class: tp.return_value.class.name,
-              value: display_string(tp.return_value),
-              object_id: tp.return_value.object_id
-            }
             MethodEvent.build_from_tracepoint(mr, tp, path)
           end
         end
@@ -143,6 +136,28 @@ module AppMap
         super.tap do |h|
           h[:parent_id] = parent_id
           h[:elapsed] = elapsed
+        end
+      end
+    end
+
+    class MethodReturn < MethodReturnIgnoreValue
+      attr_accessor :return_value
+
+      class << self
+        def build_from_tracepoint(mr = MethodReturn.new, tp, path, parent_id, elapsed)
+          mr.tap do |_|
+            mr.return_value = {
+              class: tp.return_value.class.name,
+              value: display_string(tp.return_value),
+              object_id: tp.return_value.object_id
+            }
+            MethodReturnIgnoreValue.build_from_tracepoint(mr, tp, path, parent_id, elapsed)
+          end
+        end
+      end
+
+      def to_h
+        super.tap do |h|
           h[:return_value] = return_value
         end
       end

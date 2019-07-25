@@ -11,12 +11,9 @@ RUN bundle
 
 COPY . .
 
+RUN bundle binstubs bundler --force
+RUN bundle binstubs appmap rspec-core
+
 EXPOSE 3000
-
-ENV GLI_DEBUG=true
-
-ENTRYPOINT [ "./record_rails" ]
-
-CMD [ "-b", "0.0.0.0", "-s", "webrick" ]
 
 HEALTHCHECK --interval=1s --retries=10 CMD curl --fail http://localhost:3000/health || exit 1

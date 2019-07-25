@@ -139,7 +139,7 @@ module AppMap
             end
             description.reject! { |d| d.nil? || d == '' }
 
-            recorder.save description.reverse.join(' '), events
+            recorder.save description.reverse.map { |d| d.gsub('/', '_') }.join(' '), events
           end
         end
       end

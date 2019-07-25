@@ -1,28 +1,22 @@
 module AppMap
   module Trace
     module EventHandler
-      # Use the `req` and `res` parameters on Rack::Handler::WEBrick to populate the
-      # `http_server_request` and `http_server_response` info on the trace event.
-      #
-      # See https://github.com/rack/rack/blob/b72bfc9435c118c54019efae1fedd119521b76df/lib/rack/handler/webrick.rb#L26
-      module RackHandlerWebrick
+      module AbstractControllerBase
         class Call < MethodEvent
-          attr_accessor :http_server_request
+          attr_accessor :http_server_request, :message
 
           class << self
             def build_from_tracepoint(mc = Call.new, tp, path)
               mc.tap do |_|
-                req = value_in_binding(tp, :req)
-
-                # Don't try and grab 'self' and 'parameters', because:
-                # a) They aren't needed.
-                # b) We want to avoid triggering side effects like reading the request body.
+                request = value_in_binding(tp, 'request')
+                params = value_in_binding(tp, 'request.filtered_parameters')
 
                 mc.http_server_request = {
-                  request_method: req.request_method,
-                  path_info: req.path_info,
-                  protocol: "HTTP/#{req.http_version}"
+                  request_method: request.request_method,
+                  path_info: request.filtered_path,
+                  protocol: request.protocol
                 }
+                mc.message = params
 
                 MethodEvent.build_from_tracepoint(mc, tp, path)
               end
@@ -32,6 +26,11 @@ module AppMap
           def to_h
             super.tap do |h|
               h[:http_server_request] = http_server_request
+              h[:message] = message.keys.reduce({}) do |memo, key|
+                memo.tap do |_|
+                  memo[key] = self.class.display_string(message[key])
+                end
+              end
             end
           end
         end
@@ -42,10 +41,10 @@ module AppMap
           class << self
             def build_from_tracepoint(mr = Return.new, tp, path, parent_id, elapsed)
               mr.tap do |_|
-                res = value_in_binding(tp, :res)
+                response = value_in_binding(tp, :response)
 
                 mr.http_server_response = {
-                  status: res.status
+                  status: response.status
                 }
 
                 MethodReturnIgnoreValue.build_from_tracepoint(mr, tp, path, parent_id, elapsed)

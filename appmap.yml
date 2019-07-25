@@ -1,4 +1,4 @@
-name: appmap-ruby
+name: AppMap Rubygem
 packages:
   - path: lib/appmap
     exclude:

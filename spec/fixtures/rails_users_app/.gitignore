@@ -33,3 +33,6 @@ vendor
 appmap.json
 capybara-*.html
 
+# appmap gem is pre-installed, don't lock to a version
+Gemfile.lock
+

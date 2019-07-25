@@ -1,7 +1,9 @@
-FROM ruby:2.5
+FROM ruby:2.6.3
+
+RUN apt-get update && apt-get install -y vim less
 
 ARG GEM_VERSION
 
 COPY pkg/appmap-$GEM_VERSION.gem /tmp
 
-RUN cd /tmp && gem unpack appmap-$GEM_VERSION.gem --target appmap
+RUN cd /tmp && gem install appmap-$GEM_VERSION.gem
