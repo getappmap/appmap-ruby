@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gem 'rack'
+gem 'rack-app'
+gem 'rspec'
+gem 'pry-byebug'
+
+appmap_gem_opts = {}
+appmap_gem_opts[:path] = '../../..' if File.exist?('../../../appmap.gemspec')
+gem 'appmap', appmap_gem_opts

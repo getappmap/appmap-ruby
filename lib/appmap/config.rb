@@ -24,7 +24,9 @@ module AppMap
     class << self
       NAMED_FUNCTIONS = [
         Config::NamedFunction.new(:rack_handler_webrick, 'rack', 'lib/rack/handler/webrick.rb',
-                                  %w[Rack Handler WEBrick], 'service', false)
+                                  %w[Rack Handler WEBrick], 'service', false),
+        Config::NamedFunction.new(:abstract_controller_base, 'actionpack', 'lib/abstract_controller/base.rb',
+                                  %w[AbstractController Base], 'process', false)
       ].freeze
 
       # Loads configuration data from a file, specified by the file name.
