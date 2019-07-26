@@ -1,6 +1,8 @@
 # v0.6.0
 
-* Web server requests and responses through WEBrick are recorded in AppMap events.
+* Web server requests and responses through WEBrick are reported as AppMap `http_server_request`.
+* Rails `params` hash is reported as an AppMap `message`
+* Rails `request` is reported as an AppMap `http_server_request`.
 
 # v0.5.1
 
