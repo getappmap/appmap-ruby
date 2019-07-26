@@ -1,5 +1,7 @@
 FROM appmap-ruby_with_appmap:2.6
 
+RUN apt-get update && apt-get install -y postgresql-client
+
 RUN mkdir /app
 WORKDIR /app
 

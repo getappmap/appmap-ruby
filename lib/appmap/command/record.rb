@@ -32,7 +32,7 @@ module AppMap
           yield features, events
         end
 
-        load program
+        load program if program
       end
     end
   end

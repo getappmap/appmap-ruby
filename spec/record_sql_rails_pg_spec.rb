@@ -1,6 +1,6 @@
 require 'rails_spec_helper'
 
-describe 'AbstractControllerBase' do
+describe 'Record SQL in a Rails with Postgres' do
   include_examples 'Rails app pg database'
 
   around(:each) do |example|
@@ -12,25 +12,18 @@ describe 'AbstractControllerBase' do
     example.run
   end
 
-  let(:tmpdir) { 'tmp/spec/AbstractControllerBase' }
+  let(:tmpdir) { 'tmp/spec/record_sql_rails_pg' }
   let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/UsersController POST users with required parameters creates a user.json') }
 
   describe 'testing with rspec' do
-    it 'Message fields are recorded in the appmap' do
+    it 'SQL query fields are recorded in the appmap' do
       expect(File).to exist(appmap_json)
       appmap = JSON.parse(File.read(appmap_json)).to_yaml
 
-      expect(appmap).to include(<<-MESSAGE.strip)
-  message:
-    login: alice
-    password: "[FILTERED]"
-      MESSAGE
-
-      expect(appmap).to include(<<-SERVER_REQUEST.strip)
-  http_server_request:
-    request_method: POST
-    path_info: "/users"
-      SERVER_REQUEST
+      expect(appmap).to include(<<-SQL_QUERY.strip)
+  sql_query:
+    sql: INSERT INTO "users" ("login") VALUES ('alice') RETURNING *
+      SQL_QUERY
     end
   end
 end

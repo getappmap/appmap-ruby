@@ -12,7 +12,7 @@ RSpec.describe UsersController, type: :controller, appmap: true do
     end
     describe 'with a missing parameter' do
       it 'reports error 422' do
-        post :create, params: { login: 'alice' }
+        post :create, params: { }
         expect(response.status).to eq(422)
       end
     end

@@ -4,11 +4,19 @@ module AppMap
       Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
 
     class << self
+      def tracer?
+        !@tracer.nil?
+      end
+
       def tracer
         @tracer || raise('No global tracer has been configured')
       end
 
-      attr_writer :tracer
+      def tracer=(tracer)
+        raise 'Global tracer has already been configured' if @tracer && tracer
+
+        @tracer = tracer
+      end
     end
 
     # @appmap
@@ -55,15 +63,6 @@ module AppMap
           yield if block_given?
         end
 
-        # Gets a hash containing describing the current value of self.
-        def inspect_self(tp)
-          {
-            class: tp.self.class.name,
-            value: display_string(tp.self),
-            object_id: tp.self.object_id
-          }
-        end
-
         # Gets a display string for a value. This is not meant to be a machine deserializable value.
         def display_string(value)
           return nil unless value
@@ -82,13 +81,12 @@ module AppMap
 
     # @appmap
     class MethodCall < MethodEvent
-      attr_accessor :self, :parameters
+      attr_accessor :parameters
 
       class << self
         # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp, path)
           mc.tap do |_|
-            mc.self = inspect_self(tp)
             mc.parameters = collect_parameters(tp)
             MethodEvent.build_from_tracepoint(mc, tp, path)
           end
@@ -113,7 +111,6 @@ module AppMap
 
       def to_h
         super.tap do |h|
-          h[:self] = self
           h[:parameters] = parameters
         end
       end

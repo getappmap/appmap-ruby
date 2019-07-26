@@ -7,10 +7,10 @@ RUN gem install -N bundler
 
 COPY Gemfile .
 
-COPY . .
-
 RUN bundle
 RUN bundle binstubs appmap rack
+
+COPY . .
 
 EXPOSE 9292
 

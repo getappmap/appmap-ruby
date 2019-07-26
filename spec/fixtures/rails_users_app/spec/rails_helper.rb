@@ -42,4 +42,23 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+
+  DatabaseCleaner.allow_remote_database_url = true
+  
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.around :each do |example|
+    # Enable the use of 'return' from a guard
+    -> {
+      return example.run unless %i[model controller].member?(example.metadata[:type])
+
+      DatabaseCleaner.cleaning do
+        example.run
+      end
+    }.call
+  end
 end

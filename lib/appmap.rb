@@ -18,3 +18,5 @@ module AppMap
     end
   end
 end
+
+# require 'appmap/railtie' if defined?(Rails)

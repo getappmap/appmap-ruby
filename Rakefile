@@ -33,8 +33,7 @@ end
 task :build_docker_tests do
   %w[rack_users_app rails_users_app].each do |dir|
     Dir.chdir "spec/fixtures/#{dir}" do
-      system "docker build -t appmap-#{dir} ." \
-        or raise 'Docker build failed'
+      system 'docker-compose build' or raise 'docker-compose build failed'
     end
   end
 end
