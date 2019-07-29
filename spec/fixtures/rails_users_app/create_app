@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+psql -h pg -U postgres -c "create database app_development"
+psql -h pg -U postgres -c "create database app_test"
+
+set -e
+
+./bin/rake db:migrate
+RAILS_ENV=test ./bin/rake db:migrate
+

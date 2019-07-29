@@ -112,7 +112,8 @@ module AppMap
       end
 
       def appmap_enabled?
-        ENV['APPMAP'] == 'true'
+        (defined?(::Rails) && ::Rails.application.config.appmap.enabled) ||
+          (!defined?(::Rails) && ENV['APPMAP'] == 'true')
       end
 
       def generate_appmaps_from_specs
@@ -122,13 +123,17 @@ module AppMap
         ::RSpec.configure do |config|
           config.around(:example, :appmap) do |example|
             tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
-            AppMap::Trace::Tracer.trace tracer
+            begin
+              AppMap::Trace::Tracer.trace tracer
 
-            example.run
+              example.run
 
-            events = []
-            while tracer.event?
-              events << tracer.next_event.to_h
+              events = []
+              while tracer.event?
+                events << tracer.next_event.to_h
+              end
+            ensure
+              AppMap::Trace.tracer = nil
             end
 
             description = []

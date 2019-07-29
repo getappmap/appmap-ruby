@@ -14,7 +14,7 @@ module AppMap
               mc.tap do |_|
                 req = value_in_binding(tp, :req)
 
-                # Don't try and grab 'self' and 'parameters', because:
+                # Don't try and grab 'parameters', because:
                 # a) They aren't needed.
                 # b) We want to avoid triggering side effects like reading the request body.
 
