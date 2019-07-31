@@ -102,16 +102,21 @@ module AppMap
 
       c.action do |_, options, args|
         require 'appmap/command/upload'
-        filename = args.shift or help_now!("'filename' argument is required")
-        appmap = JSON.parse(File.read(filename))
 
-        url = options[:url]
-        owner = options[:owner]
+        filenames = args
+        help_now!("'filename' argument is required") if filenames.empty?
 
-        scenario_uuid = AppMap::Command::Upload.new(@config, appmap, url, owner).perform
-        $stderr.write 'Uploaded new scenario: '
-        @output_file.puts scenario_uuid
-        system "open #{url}/scenarios/#{scenario_uuid}" if options[:open]
+        filenames.each do |filename|
+          appmap = JSON.parse(File.read(filename))
+
+          url = options[:url]
+          owner = options[:owner]
+
+          scenario_uuid = AppMap::Command::Upload.new(@config, appmap, url, owner).perform
+          $stderr.write 'Uploaded new scenario: '
+          @output_file.puts scenario_uuid
+          system "open #{url}/scenarios/#{scenario_uuid}" if options[:open]
+        end
       end
     end
 
