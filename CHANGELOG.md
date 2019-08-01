@@ -1,3 +1,7 @@
+# v0.8.0
+
+* `appmap upload` accepts multiple arguments, to upload multiple files in one command.
+
 # v0.7.0
 
 * Provide `appmap/railtie` for integrating AppMap recording into Rails apps.
