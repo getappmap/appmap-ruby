@@ -54,16 +54,18 @@ module AppMap
       end
 
       # TODO: Populate the 'layout' from appmap config or RSpec metadata
-      def save(example_name, events, layout: nil)
+      def save(example_name, events, layout: nil, feature_name: nil, feature_group_name: nil)
         appmap = {
           version: '1.0',
           classMap: features,
           metadata: {
             name: example_name,
-            app: @config.name,
+            feature: feature_name,
+            feature_group: feature_group_name,
+            app: @config.name
           }.tap do |m|
             m[:layout] = layout if layout
-            m[:git] = git_metadata if File.directory?('.git')
+            m[:git] = git_metadata if system('git status')
             m[:layout] = 'rails' if defined?(Rails)
           end,
           events: events
@@ -73,9 +75,31 @@ module AppMap
     end
 
     class << self
+      module FeatureAnnotations
+        def feature
+          return nil unless annotations
+
+          annotations[:feature]
+        end
+
+        def feature_group
+          return nil unless annotations
+
+          annotations[:feature_group]
+        end
+      end
+
       # ScopeExample and ScopeExampleGroup is a way to handle the weird way that RSpec
       # stores the nested example names.
       ScopeExample = Struct.new(:example) do
+        include FeatureAnnotations
+
+        def annotations
+          return unless example.respond_to?(:metadata)
+
+          example.metadata
+        end
+
         def description
           example.description
         end
@@ -88,6 +112,14 @@ module AppMap
       # As you can see here, the way that RSpec stores the example description and
       # represents the example group hierarchy is pretty weird.
       ScopeExampleGroup = Struct.new(:example_group) do
+        include FeatureAnnotations
+
+        def annotations
+          return unless example_group.respond_to?(:metadata)
+
+          example_group.metadata
+        end
+
         def description_args
           # Don't stringify any hashes that RSpec considers part of the example group description.
           example_group.metadata[:description_args].reject { |arg| arg.is_a?(Hash) }
@@ -176,13 +208,18 @@ module AppMap
               example = examples[loc]
               description = []
               scope = ScopeExample.new(example)
+              feature_group = feature = nil
               while scope
                 description << scope.description
+                feature ||= scope.feature
+                feature_group ||= scope.feature_group
                 scope = scope.parent
               end
               description.reject! { |d| d.nil? || d == '' }
+              description.reverse!
 
-              recorder.save description.reverse.map { |d| d.gsub('/', '_') }.join(' '), events
+              recorder.save description.map { |d| d.gsub('/', '_') }.join(' '), events,
+                            feature_name: feature, feature_group_name: feature_group
             end
           end
         end

@@ -14,6 +14,8 @@ class RSpecTest < Minitest::Test
         system({ 'APPMAP' => 'true' }, 'bundle exec rspec')
         assert File.file?(appmap_file), 'appmap output file does not exist'
         assert_includes File.read(appmap_file), %("class":"String","value":"Hello!")
+        assert_includes File.read(appmap_file), %("feature":"Say hello")
+        assert_includes File.read(appmap_file), %("feature_group":"Hello")
       end
     end
   end
