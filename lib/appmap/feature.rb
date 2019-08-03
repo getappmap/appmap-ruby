@@ -24,6 +24,7 @@ module AppMap
       def from_hash(hash)
         builder = FEATURE_BUILDERS[hash['type'].to_sym]
         raise "Unrecognized type of feature: #{type.inspect}" unless builder
+
         feature = builder.call(hash)
         feature.name = hash['name']
         feature.location = hash['location']

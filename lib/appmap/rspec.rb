@@ -116,35 +116,74 @@ module AppMap
           (!defined?(::Rails) && ENV['APPMAP'] == 'true')
       end
 
+      LOG = false
+
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
 
-        ::RSpec.configure do |config|
-          config.around(:example, :appmap) do |example|
-            tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
-            begin
+        require 'set'
+        trace_block_start = Set.new
+        trace_block_end = Set.new
+        rspec_blocks = {}
+        examples = {}
+
+        TracePoint.trace(:call, :b_call, :b_return) do |tp|
+          if tp.event == :call && tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>' && tp.method_id == :subclass
+            example_block = tp.binding.eval('example_group_block')
+            source_path, start_line = example_block.source_location
+            require 'appmap/rspec/parser'
+            nodes, = AppMap::RSpec::Parser.new(file_path: source_path).parse
+            nodes.each do |node|
+              start_loc = [ node.file_path, node.first_line ].join(':')
+              rspec_blocks[start_loc] = node
+            end
+          end
+
+          if tp.event == :call && tp.defined_class.to_s == 'RSpec::Core::Example' && tp.method_id == :initialize
+            example_block = tp.binding.eval('example_block')
+            if example_block
+              source_path, start_line = example_block.source_location
+              start_loc = [ source_path, start_line ].join(':')
+              if (rspec_block = rspec_blocks[start_loc])
+                end_loc = [ source_path, rspec_block.last_line ].join(':')
+                trace_block_start << start_loc.tap { |loc| puts "Start: #{loc}" if LOG }
+                trace_block_end << end_loc.tap { |loc| puts "End: #{loc}" if LOG }
+                examples[end_loc] = tp.binding.eval('self')
+              end
+            end
+          end
+
+          if %i[b_call b_return].member?(tp.event)
+            loc = [ tp.path, tp.lineno ].join(':')
+            puts loc if trace_block_start.member?(loc) || trace_block_end.member?(loc) if LOG
+
+            if  tp.event == :b_call && trace_block_start.member?(loc)
+              puts "Starting trace on #{loc}" if LOG
+              tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
               AppMap::Trace::Tracer.trace tracer
+            end
 
-              example.run
-
+            if AppMap::Trace.tracer? && tp.event == :b_return && trace_block_end.member?(loc)
+              puts "Ending trace on #{loc}" if LOG
+              tracer = AppMap::Trace.tracer
+              AppMap::Trace.tracer = nil
               events = []
               while tracer.event?
                 events << tracer.next_event.to_h
               end
-            ensure
-              AppMap::Trace.tracer = nil
-            end
 
-            description = []
-            scope = ScopeExample.new(example)
-            while scope
-              description << scope.description
-              scope = scope.parent
-            end
-            description.reject! { |d| d.nil? || d == '' }
+              example = examples[loc]
+              description = []
+              scope = ScopeExample.new(example)
+              while scope
+                description << scope.description
+                scope = scope.parent
+              end
+              description.reject! { |d| d.nil? || d == '' }
 
-            recorder.save description.reverse.map { |d| d.gsub('/', '_') }.join(' '), events
+              recorder.save description.reverse.map { |d| d.gsub('/', '_') }.join(' '), events
+            end
           end
         end
       end

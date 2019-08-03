@@ -1,8 +1,8 @@
 require 'appmap/parser'
-require 'appmap/inspect/parse_node'
+require 'appmap/rspec/parse_node'
 
 module AppMap
-  module Inspect
+  module RSpec
     # Parser processes a Ruby into a list of parse nodes and a list of comments.
     class Parser < ::AppMap::Parser
       protected
