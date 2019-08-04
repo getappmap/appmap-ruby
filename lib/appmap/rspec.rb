@@ -23,6 +23,7 @@ module AppMap
         @features = features.map(&:reparent)
         @features.each(&:prune)
         @functions = @features.map(&:collect_functions).flatten
+        @git_available = system('git status 2>&1 > /dev/null')
       end
 
       def setup
@@ -53,19 +54,18 @@ module AppMap
         }
       end
 
-      # TODO: Populate the 'layout' from appmap config or RSpec metadata
-      def save(example_name, events, layout: nil, feature_name: nil, feature_group_name: nil)
+      # TODO: Optionally populate the 'layout' from appmap config or RSpec metadata.
+      def save(example_name, events, feature_name: nil, feature_group_name: nil)
         appmap = {
           version: '1.0',
           classMap: features,
           metadata: {
             name: example_name,
-            feature: feature_name,
-            feature_group: feature_group_name,
             app: @config.name
           }.tap do |m|
-            m[:layout] = layout if layout
-            m[:git] = git_metadata if system('git status')
+            m[:feature] = feature_name if feature_name
+            m[:feature_group] = feature_group_name if feature_group_name
+            m[:git] = git_metadata if @git_available
             m[:layout] = 'rails' if defined?(Rails)
           end,
           events: events
