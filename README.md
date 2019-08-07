@@ -1,11 +1,12 @@
-- [About](#About)
-- [Installation](#Installation)
-- [Configuration](#Configuration)
+- [About](#about)
+- [Installation](#installation)
+- [Configuration](#configuration)
   - [`packages`](#packages)
-- [Running](#Running)
-  - [RSpec](#RSpec)
-- [Uploading](#Uploading)
-- [Build status](#Build-status)
+- [Running](#running)
+  - [RSpec](#rspec)
+  - [Rails](#rails)
+- [Uploading](#uploading)
+- [Build status](#build-status)
 
 # About
 
@@ -58,17 +59,20 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 ## RSpec
 
-To instrument RSpec tests, there are there steps:
+To instrument RSpec tests, follow these steps:
 
-1) Include the `appmap` gem in your Gemset
-2) Add `appmap: true` to the tests you want to instrument
-3) Export the environment variable `APPMAP=true`
+1) Include the `appmap` gem in your Gemfile
+2) Require `appmap/rspec` in your `spec_helper.rb` or `rails_helper.rb`
+3) Add `appmap: true` to the tests you want to instrument
+4) Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` to your 
+   examples. 
+5) Export the environment variable `APPMAP=true`
 
 Here's an example of an appmap-enabled RSpec test:
 
 ```ruby
-describe Hello do
-  it 'says hello', appmap: true do
+describe Hello, feature_group: 'Greeting' do
+  it 'says hello', feature: 'Print a greeting to the console', appmap: true do
     expect(Hello.new.say_hello).to eq('Hello!')
   end
 end
@@ -83,9 +87,35 @@ $ APPMAP=true bundle exec rspec
 Each RSpec test will output a data file into the directory `tmp/appmap/rspec`. For example:
 
 ```
-$ tmp/appmap/rspec
+$ find tmp/appmap/rspec
 Hello says hello.json
 ```
+
+If you include the `feature` and `feature_group` metadata, these attributes will be exported to the AppMap file in the
+`metadata` section. It will look something like this:
+
+```json
+
+```
+
+## Rails
+
+To capture ad-hoc AppMaps of your Rails app, use the AppMap Railtie.
+
+1) Include the `appmap` gem in your Gemfile and require both `appmap` and `appmap/railtie`, like this:
+
+```ruby
+gem "appmap", require: %w[appmap appmap/railtie]
+```
+
+2) Export `APPMAP=true` when you start your Rails application server. For example:
+
+```sh-session
+$ APPMAP=true bundle exec rails server
+```
+
+When the Rails app exits, an `appmap.json` file will be written to the project root directory. You can upload it using
+the `appmap upload` command.
 
 # Uploading
 

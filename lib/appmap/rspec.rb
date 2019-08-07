@@ -23,6 +23,7 @@ module AppMap
         @features = features.map(&:reparent)
         @features.each(&:prune)
         @functions = @features.map(&:collect_functions).flatten
+        @git_available = system('git status 2>&1 > /dev/null')
       end
 
       def setup
@@ -53,17 +54,18 @@ module AppMap
         }
       end
 
-      # TODO: Populate the 'layout' from appmap config or RSpec metadata
-      def save(example_name, events, layout: nil)
+      # TODO: Optionally populate the 'layout' from appmap config or RSpec metadata.
+      def save(example_name, events, feature_name: nil, feature_group_name: nil)
         appmap = {
           version: '1.0',
           classMap: features,
           metadata: {
             name: example_name,
-            app: @config.name,
+            app: @config.name
           }.tap do |m|
-            m[:layout] = layout if layout
-            m[:git] = git_metadata if File.directory?('.git')
+            m[:feature] = feature_name if feature_name
+            m[:feature_group] = feature_group_name if feature_group_name
+            m[:git] = git_metadata if @git_available
             m[:layout] = 'rails' if defined?(Rails)
           end,
           events: events
@@ -73,9 +75,49 @@ module AppMap
     end
 
     class << self
+      module FeatureAnnotations
+        def feature
+          return nil unless annotations
+
+          annotations[:feature]
+        end
+
+        def feature_group
+          return nil unless annotations
+
+          annotations[:feature_group]
+        end
+
+        def annotations
+          metadata.tap do |md|
+            description_args_hashes.each do |h|
+              md.merge! h
+            end
+          end
+        end
+
+        protected
+
+        def metadata
+          return {} unless example_obj.respond_to?(:metadata)
+
+          example_obj.metadata
+        end
+
+        def description_args_hashes
+          return [] unless example_obj.respond_to?(:metadata)
+
+          (example_obj.metadata[:description_args] || []).select { |arg| arg.is_a?(Hash) }
+        end
+      end
+
       # ScopeExample and ScopeExampleGroup is a way to handle the weird way that RSpec
       # stores the nested example names.
       ScopeExample = Struct.new(:example) do
+        include FeatureAnnotations
+
+        alias_method :example_obj, :example
+
         def description
           example.description
         end
@@ -88,6 +130,10 @@ module AppMap
       # As you can see here, the way that RSpec stores the example description and
       # represents the example group hierarchy is pretty weird.
       ScopeExampleGroup = Struct.new(:example_group) do
+        include FeatureAnnotations
+
+        alias_method :example_obj, :example_group
+
         def description_args
           # Don't stringify any hashes that RSpec considers part of the example group description.
           example_group.metadata[:description_args].reject { |arg| arg.is_a?(Hash) }
@@ -116,35 +162,104 @@ module AppMap
           (!defined?(::Rails) && ENV['APPMAP'] == 'true')
       end
 
+      LOG = false
+
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
 
-        ::RSpec.configure do |config|
-          config.around(:example, :appmap) do |example|
-            tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
-            begin
+        require 'set'
+        # file:lineno at which an Example block begins
+        trace_block_start = Set.new
+        # file:lineno at which an Example block ends
+        trace_block_end = Set.new
+
+        # value: a BlockParseNode from an RSpec file
+        # key: file:lineno at which the block begins
+        rspec_blocks = {}
+
+        # value: an Example instance
+        # key: file:lineno at which the Example block ends
+        examples = {}
+
+        TracePoint.trace(:call, :b_call, :b_return) do |tp|
+          # When a new ExampleGroup is encountered, parse the source file containing it and look
+          # for blocks that might be Examples. Index each BlockParseNode by the start file:lineno.
+          if tp.event == :call && tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>' && tp.method_id == :subclass
+            example_block = tp.binding.eval('example_group_block')
+            source_path, start_line = example_block.source_location
+            require 'appmap/rspec/parser'
+            nodes, = AppMap::RSpec::Parser.new(file_path: source_path).parse
+            nodes.each do |node|
+              start_loc = [ node.file_path, node.first_line ].join(':')
+              rspec_blocks[start_loc] = node
+            end
+          end
+
+          # When a new Example is constructed with a block, look for the BlockParseNode that starts at the block's
+          # file:lineno. If it exists, store the Example object, indexed by the file:lineno at which it ends.
+          if tp.event == :call && tp.defined_class.to_s == 'RSpec::Core::Example' && tp.method_id == :initialize
+            example_block = tp.binding.eval('example_block')
+            if example_block
+              source_path, start_line = example_block.source_location
+              start_loc = [ source_path, start_line ].join(':')
+              if (rspec_block = rspec_blocks[start_loc])
+                end_loc = [ source_path, rspec_block.last_line ].join(':')
+                trace_block_start << start_loc.tap { |loc| puts "Start: #{loc}" if LOG }
+                trace_block_end << end_loc.tap { |loc| puts "End: #{loc}" if LOG }
+                examples[end_loc] = tp.binding.eval('self')
+              end
+            end
+          end
+
+          if %i[b_call b_return].member?(tp.event)
+            loc = [ tp.path, tp.lineno ].join(':')
+            puts loc if (trace_block_start.member?(loc) || trace_block_end.member?(loc)) && LOG
+
+            # When a new block is started, check if an Example block is known to begin at that
+            # file:lineno. If it is, enable the AppMap tracer.
+            if  tp.event == :b_call && trace_block_start.member?(loc)
+              puts "Starting trace on #{loc}" if LOG
+              tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
               AppMap::Trace::Tracer.trace tracer
+            end
 
-              example.run
-
+            # When the tracer is enabled and a block is completed, check to see if there is an
+            # Example stored at the file:lineno. If so, finish tracing and emit the 
+            # AppMap file.
+            if AppMap::Trace.tracer? && tp.event == :b_return && trace_block_end.member?(loc)
+              puts "Ending trace on #{loc}" if LOG
+              tracer = AppMap::Trace.tracer
+              AppMap::Trace.tracer = nil
               events = []
               while tracer.event?
                 events << tracer.next_event.to_h
               end
-            ensure
-              AppMap::Trace.tracer = nil
-            end
 
-            description = []
-            scope = ScopeExample.new(example)
-            while scope
-              description << scope.description
-              scope = scope.parent
-            end
-            description.reject! { |d| d.nil? || d == '' }
+              example = examples[loc]
+              description = []
+              scope = ScopeExample.new(example)
+              feature_group = feature = nil
+              while scope
+                description << scope.description
+                feature ||= scope.feature
+                feature_group ||= scope.feature_group
+                scope = scope.parent
+              end
+              description.reject! { |d| d.nil? || d == '' }
+              description.reverse!
 
-            recorder.save description.reverse.map { |d| d.gsub('/', '_') }.join(' '), events
+              description.each do |token|
+                token.gsub! 'it should behave like', ''
+                token.gsub! '  ', ' '
+                token.gsub! '/', '_'
+                token.strip!
+              end
+              full_description = description.join(' ')
+
+              recorder.save full_description, events,
+                            feature_name: feature, feature_group_name: feature_group
+            end
           end
         end
       end

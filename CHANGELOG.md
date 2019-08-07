@@ -1,32 +1,39 @@
+# v0.9.0
+
+* **`appmap/rspec`** only records trace events which happen during an example block. `before` and `after` events are
+  excluded from the AppMap.
+* **`appmap/rspec`** exports `feature` and `feature_group` attributes to the AppMap `metadata`
+  section.
+
 # v0.8.0
 
-* `appmap upload` accepts multiple arguments, to upload multiple files in one command.
+* **`appmap upload`** accepts multiple arguments, to upload multiple files in one command.
 
 # v0.7.0
 
-* Provide `appmap/railtie` for integrating AppMap recording into Rails apps.
+* **`appmap/railtie`** is provided to integrate AppMap recording into Rails apps.
   * Use `gem :appmap, require: %w[appmap appmap/railtie]` to activate.
   * Set Rails configuration setting `config.appmap.enabled = true` to enable recording of the app via the Railtie, and
     to enable recording of RSpec tests via `appmap/rspec`.
   * In a non-Rails environment, set `APPMAP=true` to to enable recording of RSpec tests.
-* SQL queries are reported as AppMap event `sql_query` data.
-* Remove `self` attribute from `call` events.
+* **SQL queries** are reported as AppMap event `sql_query` data.
+* **`self` attribute** is removed from `call` events.
 
 # v0.6.0
 
-* Web server requests and responses through WEBrick are reported as AppMap event `http_server_request` data.
-* Rails `params` hash is reported as an AppMap event `message` data.
-* Rails `request` is reported as an AppMap event `http_server_request` data.
+* **Web server requests and responses** through WEBrick are reported as AppMap event `http_server_request` data.
+* **Rails `params` hash** is reported as an AppMap event `message` data.
+* **Rails `request`** is reported as an AppMap event `http_server_request` data.
 
 # v0.5.1
 
-* Add RSpec test recorder.
+* **RSpec** test recorder is added.
 
 # v0.5.0
 
-* Converted 'inspect', 'record' and 'upload' commands into a unified 'appmap' command with subcommands.
-* Changed the standard name of the config file from .appmap.yml to appmap.yml.
-* Updated appmap.yml configuration format.
+* **'inspect', 'record' and 'upload' commands** are converted into a unified 'appmap' command with subcommands.
+* **Config file name** is changed from .appmap.yml to appmap.yml.
+* **`appmap.yml`** configuration format is updated.
 
 # v0.4.0
 
