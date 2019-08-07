@@ -87,6 +87,28 @@ module AppMap
 
           annotations[:feature_group]
         end
+
+        def annotations
+          metadata.tap do |md|
+            description_args_hashes.each do |h|
+              md.merge! h
+            end
+          end
+        end
+
+        protected
+
+        def metadata
+          return {} unless example_obj.respond_to?(:metadata)
+
+          example_obj.metadata
+        end
+
+        def description_args_hashes
+          return [] unless example_obj.respond_to?(:metadata)
+
+          (example_obj.metadata[:description_args] || []).select { |arg| arg.is_a?(Hash) }
+        end
       end
 
       # ScopeExample and ScopeExampleGroup is a way to handle the weird way that RSpec
@@ -94,11 +116,7 @@ module AppMap
       ScopeExample = Struct.new(:example) do
         include FeatureAnnotations
 
-        def annotations
-          return unless example.respond_to?(:metadata)
-
-          example.metadata
-        end
+        alias_method :example_obj, :example
 
         def description
           example.description
@@ -114,11 +132,7 @@ module AppMap
       ScopeExampleGroup = Struct.new(:example_group) do
         include FeatureAnnotations
 
-        def annotations
-          return unless example_group.respond_to?(:metadata)
-
-          example_group.metadata
-        end
+        alias_method :example_obj, :example_group
 
         def description_args
           # Don't stringify any hashes that RSpec considers part of the example group description.
@@ -218,7 +232,15 @@ module AppMap
               description.reject! { |d| d.nil? || d == '' }
               description.reverse!
 
-              recorder.save description.map { |d| d.gsub('/', '_') }.join(' '), events,
+              description.each do |token|
+                token.gsub! 'it should behave like', ''
+                token.gsub! '  ', ' '
+                token.gsub! '/', '_'
+                token.strip!
+              end
+              full_description = description.join(' ')
+
+              recorder.save full_description, events,
                             feature_name: feature, feature_group_name: feature_group
             end
           end
