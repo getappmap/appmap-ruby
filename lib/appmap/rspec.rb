@@ -169,12 +169,22 @@ module AppMap
         recorder.setup
 
         require 'set'
+        # file:lineno at which an Example block begins
         trace_block_start = Set.new
+        # file:lineno at which an Example block ends
         trace_block_end = Set.new
+
+        # value: a BlockParseNode from an RSpec file
+        # key: file:lineno at which the block begins
         rspec_blocks = {}
+
+        # value: an Example instance
+        # key: file:lineno at which the Example block ends
         examples = {}
 
         TracePoint.trace(:call, :b_call, :b_return) do |tp|
+          # When a new ExampleGroup is encountered, parse the source file containing it and look
+          # for blocks that might be Examples. Index each BlockParseNode by the start file:lineno.
           if tp.event == :call && tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>' && tp.method_id == :subclass
             example_block = tp.binding.eval('example_group_block')
             source_path, start_line = example_block.source_location
@@ -186,6 +196,8 @@ module AppMap
             end
           end
 
+          # When a new Example is constructed with a block, look for the BlockParseNode that starts at the block's
+          # file:lineno. If it exists, store the Example object, indexed by the file:lineno at which it ends.
           if tp.event == :call && tp.defined_class.to_s == 'RSpec::Core::Example' && tp.method_id == :initialize
             example_block = tp.binding.eval('example_block')
             if example_block
@@ -202,14 +214,19 @@ module AppMap
 
           if %i[b_call b_return].member?(tp.event)
             loc = [ tp.path, tp.lineno ].join(':')
-            puts loc if trace_block_start.member?(loc) || trace_block_end.member?(loc) if LOG
+            puts loc if (trace_block_start.member?(loc) || trace_block_end.member?(loc)) && LOG
 
+            # When a new block is started, check if an Example block is known to begin at that
+            # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
               tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
               AppMap::Trace::Tracer.trace tracer
             end
 
+            # When the tracer is enabled and a block is completed, check to see if there is an
+            # Example stored at the file:lineno. If so, finish tracing and emit the 
+            # AppMap file.
             if AppMap::Trace.tracer? && tp.event == :b_return && trace_block_end.member?(loc)
               puts "Ending trace on #{loc}" if LOG
               tracer = AppMap::Trace.tracer
