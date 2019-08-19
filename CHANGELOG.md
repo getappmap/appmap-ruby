@@ -1,3 +1,8 @@
+# v0.10.0
+
+* **`AppMap::Algorithm::PruneClassMap`** prunes a class map so that only functions, classes and packages which are
+  referenced by some event are retained.
+
 # v0.9.0
 
 * **`appmap/rspec`** only records trace events which happen during an example block. `before` and `after` events are
