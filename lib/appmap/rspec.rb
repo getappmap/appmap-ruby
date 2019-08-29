@@ -23,51 +23,31 @@ module AppMap
         @features = features.map(&:reparent)
         @features.each(&:prune)
         @functions = @features.map(&:collect_functions).flatten
-        @git_available = system('git status 2>&1 > /dev/null')
       end
 
       def setup
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
-      def git_metadata
-        git_repo = `git config --get remote.origin.url`.strip
-        git_branch = `git rev-parse --abbrev-ref HEAD`.strip
-        git_sha = `git rev-parse HEAD`.strip
-        git_status = `git status -s`.split("\n").map(&:strip)
-        git_last_annotated_tag = `git describe --abbrev=0 2>/dev/null`.strip
-        git_last_annotated_tag = nil if git_last_annotated_tag.blank?
-        git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
-        git_last_tag = nil if git_last_tag.blank?
-        git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_annotated_tag
-        git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_tag
-
-        {
-          repository: git_repo,
-          branch: git_branch,
-          commit: git_sha,
-          status: git_status,
-          git_last_annotated_tag: git_last_annotated_tag,
-          git_last_tag: git_last_tag,
-          git_commits_since_last_annotated_tag: git_commits_since_last_annotated_tag,
-          git_commits_since_last_tag: git_commits_since_last_tag
-        }
-      end
-
       # TODO: Optionally populate the 'layout' from appmap config or RSpec metadata.
       def save(example_name, events, feature_name: nil, feature_group_name: nil)
+        require 'appmap/command/record'
+        metadata = AppMap::Command::Record.detect_metadata.tap do |m|
+          m[:name] = example_name
+          m[:app] = @config.name
+          m[:feature] = feature_name if feature_name
+          m[:feature_group] = feature_group_name if feature_group_name
+          m[:frameworks] ||= []
+          m[:frameworks] << {
+            name: 'rspec',
+            version: Gem.loaded_specs['rspec-core']&.version&.to_s
+          }
+        end
+
         appmap = {
           version: '1.0',
           classMap: features,
-          metadata: {
-            name: example_name,
-            app: @config.name
-          }.tap do |m|
-            m[:feature] = feature_name if feature_name
-            m[:feature_group] = feature_group_name if feature_group_name
-            m[:git] = git_metadata if @git_available
-            m[:layout] = 'rails' if defined?(Rails)
-          end,
+          metadata: metadata,
           events: events
         }
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{example_name}.json"), JSON.generate(appmap))
@@ -258,7 +238,8 @@ module AppMap
               full_description = description.join(' ')
 
               recorder.save full_description, events,
-                            feature_name: feature, feature_group_name: feature_group
+                            feature_name: feature,
+                            feature_group_name: feature_group
             end
           end
         end

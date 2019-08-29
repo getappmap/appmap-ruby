@@ -3,6 +3,59 @@ module AppMap
     RecordStruct = Struct.new(:config, :program)
 
     class Record < RecordStruct
+      class << self
+        # Builds a Hash of metadata which can be detected by inspecting the system.
+        def detect_metadata
+          {
+            language: {
+              name: 'ruby',
+              engine: RUBY_ENGINE,
+              version: RUBY_VERSION
+            }
+          }.tap do |m|
+            if defined?(::Rails)
+              m[:frameworks] ||= []
+              m[:frameworks] << {
+                name: 'rails',
+                version: ::Rails.version
+              }
+              m[:layout] = 'rails'
+            end
+            m[:git] = git_metadata if git_available
+          end
+        end
+
+        protected
+
+        def git_available
+          @git_available = system('git status 2>&1 > /dev/null') if @git_available.nil?
+        end
+
+        def git_metadata
+          git_repo = `git config --get remote.origin.url`.strip
+          git_branch = `git rev-parse --abbrev-ref HEAD`.strip
+          git_sha = `git rev-parse HEAD`.strip
+          git_status = `git status -s`.split("\n").map(&:strip)
+          git_last_annotated_tag = `git describe --abbrev=0 2>/dev/null`.strip
+          git_last_annotated_tag = nil if git_last_annotated_tag.blank?
+          git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
+          git_last_tag = nil if git_last_tag.blank?
+          git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_annotated_tag
+          git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_tag
+
+          {
+            repository: git_repo,
+            branch: git_branch,
+            commit: git_sha,
+            status: git_status,
+            git_last_annotated_tag: git_last_annotated_tag,
+            git_last_tag: git_last_tag,
+            git_commits_since_last_annotated_tag: git_commits_since_last_annotated_tag,
+            git_commits_since_last_tag: git_commits_since_last_tag
+          }
+        end
+      end
+
       def perform(&block)
         features = AppMap.inspect(config)
         functions = features.map(&:collect_functions).flatten
