@@ -150,7 +150,7 @@ module AppMap
       end
 
       def public_path
-        @public_path ||= Pathname.new(File.expand_path('../../public', __dir__))
+        @public_path ||= Pathname.new(File.expand_path('../../../public', __dir__))
       end
 
       def embedded_javascript
