@@ -1,3 +1,7 @@
+# v0.11.0
+
+* Information about `language` and `frameworks` is provided in the AppMap `metadata`.
+
 # v0.10.0
 
 * **`AppMap::Algorithm::PruneClassMap`** prunes a class map so that only functions, classes and packages which are
