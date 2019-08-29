@@ -1,0 +1,75 @@
+const applandUrl = '<%= appland_url %>';
+const statusElement = document.querySelector('#appmap-record-status');
+const recordButton = document.querySelector('#appmap-record');
+let ellipsisTimeoutId = -1;
+
+function makeRequest(method) {
+  const req = new XMLHttpRequest();
+  req.open(method, '/_appmap/record');
+  req.send();
+}
+
+function startRecording() {
+  const req = new XMLHttpRequest();
+  req.open('POST', '/_appmap/record');
+  req.send();
+  displayRecording(true);
+}
+
+function stopRecording() {
+  const req = new XMLHttpRequest();
+  req.open('DELETE', '/_appmap/record');
+  req.send();
+  req.onreadystatechange = () => {
+    if (req.status === 200) {
+      viewScenario(req.response);
+    }
+  };
+  displayRecording(false);
+}
+
+function viewScenario(scenarioId) {
+  if (!scenarioId) {
+    return;
+  }
+
+  window.open(`${applandUrl}/scenarios/${scenarioId}`, '_blank');
+}
+
+function animateEllipsis(isAnimating, numEllipsis) {
+  if (!isAnimating) {
+    if (ellipsisTimeoutId >= 0) {
+      clearTimeout(ellipsisTimeoutId);
+      ellipsisTimeoutId = -1;
+    }
+    return;
+  }
+
+  ellipsisTimeoutId = setTimeout(() => {
+    let n = numEllipsis;
+    if (!n || n > 3) {
+      n = 0;
+    }
+    
+    let text = statusElement.innerText.replace(/\./g, '');
+    for (let i = 0; i < n; ++i) {
+      text += '.';
+    }
+
+    statusElement.innerText = text;
+
+    animateEllipsis(true, n + 1);
+  }, 250);
+}
+
+function displayRecording(isRecording) {
+  recordButton.checked = isRecording;
+  statusElement.innerText = isRecording ? 'Recording' : 'Ready';
+  animateEllipsis(isRecording);
+}
+
+recordButton.addEventListener('change', (e) => {
+  e.target.checked ? startRecording() : stopRecording()
+});
+
+displayRecording(<%= recording? %>);

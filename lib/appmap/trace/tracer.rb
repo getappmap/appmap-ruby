@@ -68,11 +68,15 @@ module AppMap
           return nil unless value
 
           begin
-            value.to_s[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            value_string = value.to_s
+          rescue NoMethodError
+            value_string = value.inspect
           rescue StandardError
             warn $!.message
             '*Error inspecting variable*'
           end
+
+          value_string[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
       end
 
@@ -103,7 +107,7 @@ module AppMap
             memo[key] = {
               class: value.class.name,
               value: display_string(value),
-              object_id: value.object_id
+              object_id: value.__id__
             }
           end
         end
@@ -146,7 +150,7 @@ module AppMap
             mr.return_value = {
               class: tp.return_value.class.name,
               value: display_string(tp.return_value),
-              object_id: tp.return_value.object_id
+              object_id: tp.return_value.__id__
             }
             MethodReturnIgnoreValue.build_from_tracepoint(mr, tp, path, parent_id, elapsed)
           end
@@ -247,7 +251,11 @@ module AppMap
         # @appmap
         def trace(tracer)
           handler = TracePointHandler.new(tracer)
-          TracePoint.trace(:call, :return, &handler.method(:handle))
+          @trace = TracePoint.trace(:call, :return, &handler.method(:handle))
+        end
+
+        def disable
+          @trace.disable
         end
       end
 
