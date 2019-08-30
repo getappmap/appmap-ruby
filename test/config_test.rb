@@ -35,6 +35,7 @@ class ConfigTest < Minitest::Test
     packages:
       - path: module_a
       - path: module_b
+    named_functions: []
     YAML
 
     require 'yaml'
@@ -51,6 +52,7 @@ class ConfigTest < Minitest::Test
     packages:
       - path: .
         name: ROOT
+    named_functions: []
     YAML
 
     require 'yaml'

@@ -56,6 +56,8 @@ module AppMap
           end
 
           NAMED_FUNCTIONS.each do |dep|
+            next if config_data['named_functions'] && !config_data['named_functions'].member?(dep.gem_name)
+
             config.named_functions << dep
           end
         end

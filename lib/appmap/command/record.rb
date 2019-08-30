@@ -62,8 +62,7 @@ module AppMap
 
         require 'appmap/trace/tracer'
 
-        tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(functions)
-        AppMap::Trace::Tracer.trace tracer
+        tracer = AppMap::Trace.tracers.trace(functions)
 
         events = []
         quit = false

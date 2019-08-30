@@ -19,7 +19,6 @@ module AppMap
         @app = app
         @features = AppMap.inspect(config)
         functions = @features.map(&:collect_functions).flatten
-        @tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(functions)
       end
 
       def output_scenario(scenario_data)
@@ -45,21 +44,23 @@ module AppMap
 
       def start_recording
         @events = []
-        AppMap::Trace::Tracer.trace(@tracer)
+        @tracer = AppMap.tracers.trace(functions)
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
       end
 
       def stop_recording
-        AppMap::Trace::Tracer.disable
+        AppMap.tracers.delete(@tracer)
 
         @event_thread.exit
+        @event_thread.join
         @event_thread = nil
 
-        # Remove the last 'stop recording' event
-        @events.pop
+        @tracer = nil
 
-        output_scenario(JSON.generate(classMap: @features, events: @events))
+        require 'appmap/command/record'
+        metadata = AppMap::Command::Record.detect_metadata
+        output_scenario(JSON.generate(classMap: @features, metadata: metadata, events: @events))
       end
 
       def call(env)

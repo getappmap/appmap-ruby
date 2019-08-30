@@ -6,7 +6,7 @@ require 'appmap/inspect'
 require 'appmap/trace/tracer'
 
 module AppMap
-  # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will 
+  # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each scenario which has the metadata key `:appmap`.
   module RSpec
     APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
@@ -137,11 +137,6 @@ module AppMap
         end
       end
 
-      def appmap_enabled?
-        (defined?(::Rails) && ::Rails.application.config.appmap.enabled) ||
-          (!defined?(::Rails) && ENV['APPMAP'] == 'true')
-      end
-
       LOG = false
 
       def generate_appmaps_from_specs
@@ -161,6 +156,8 @@ module AppMap
         # value: an Example instance
         # key: file:lineno at which the Example block ends
         examples = {}
+
+        current_tracer = nil
 
         TracePoint.trace(:call, :b_call, :b_return) do |tp|
           # When a new ExampleGroup is encountered, parse the source file containing it and look
@@ -194,26 +191,25 @@ module AppMap
 
           if %i[b_call b_return].member?(tp.event)
             loc = [ tp.path, tp.lineno ].join(':')
-            puts loc if (trace_block_start.member?(loc) || trace_block_end.member?(loc)) && LOG
+            puts loc if LOG && (trace_block_start.member?(loc) || trace_block_end.member?(loc))
 
             # When a new block is started, check if an Example block is known to begin at that
             # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
-              tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(recorder.functions)
-              AppMap::Trace::Tracer.trace tracer
+              current_tracer = AppMap::Trace.tracers.trace(recorder.functions)
             end
 
             # When the tracer is enabled and a block is completed, check to see if there is an
             # Example stored at the file:lineno. If so, finish tracing and emit the 
             # AppMap file.
-            if AppMap::Trace.tracer? && tp.event == :b_return && trace_block_end.member?(loc)
+            if current_tracer && tp.event == :b_return && trace_block_end.member?(loc)
               puts "Ending trace on #{loc}" if LOG
-              tracer = AppMap::Trace.tracer
-              AppMap::Trace.tracer = nil
               events = []
-              while tracer.event?
-                events << tracer.next_event.to_h
+              AppMap::Trace.tracers.delete current_tracer
+
+              while current_tracer.event?
+                events << current_tracer.next_event.to_h
               end
 
               example = examples[loc]
@@ -246,6 +242,6 @@ module AppMap
       end
     end
 
-    generate_appmaps_from_specs if appmap_enabled?
+    generate_appmaps_from_specs if ENV['APPMAP'] == 'true'
   end
 end

@@ -33,5 +33,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rdoc'
 
   # Testing
+  spec.add_development_dependency 'launchy'
   spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'selenium-webdriver'
+  spec.add_development_dependency 'webdrivers', '~> 4.0'
 end

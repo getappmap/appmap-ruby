@@ -1,0 +1,7 @@
+%h1{style: 'margin-top: 2em'}
+  = pluralize @users.size, 'user'
+
+%ul
+  - for user in @users
+    %li
+      = user.login
