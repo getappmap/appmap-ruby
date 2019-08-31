@@ -20,7 +20,7 @@ function stopRecording() {
   const req = new XMLHttpRequest();
   req.open('DELETE', '/_appmap/record');
   req.send();
-  req.onreadystatechange = () => {
+  req.onload = () => {
     if (req.status === 200) {
       viewScenario(req.response);
     }
@@ -72,4 +72,18 @@ recordButton.addEventListener('change', (e) => {
   e.target.checked ? startRecording() : stopRecording()
 });
 
-displayRecording(<%= recording? %>);
+function onLoad() {
+  const req = new XMLHttpRequest();
+  req.open('GET', '/_appmap/record');
+  req.send();
+  req.onload = () => {
+    if (req.status === 200) {
+      const recordingState = JSON.parse(req.response);
+      displayRecording(recordingState.enabled);
+    }
+  };
+}
+
+document.addEventListener('DOMContentLoaded', onLoad, false);
+
+

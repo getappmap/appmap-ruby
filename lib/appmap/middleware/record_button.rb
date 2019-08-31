@@ -18,7 +18,7 @@ module AppMap
 
         @app = app
         @features = AppMap.inspect(config)
-        functions = @features.map(&:collect_functions).flatten
+        @functions = @features.map(&:collect_functions).flatten
       end
 
       def output_scenario(scenario_data)
@@ -28,12 +28,13 @@ module AppMap
           File.open("appmap-recording-#{Time.now.to_i}.json", 'w') do |file|
             file.puts(scenario_data)
           end
+          nil
         end
       end
 
       def event_loop
         loop do
-          event = @tracer.next_event
+          event = @tracer.next_event if @tracer
           if event
             @events << event.to_h
           else
@@ -43,24 +44,49 @@ module AppMap
       end
 
       def start_recording
+        return [ false, 'Recording is already in progress' ] if @tracer
+
         @events = []
-        @tracer = AppMap.tracers.trace(functions)
+        @tracer = AppMap::Trace.tracers.trace(@functions)
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
+
+        [ true ]
       end
 
       def stop_recording
-        AppMap.tracers.delete(@tracer)
+        return [ false, 'No recording is in progress' ] unless @tracer
+
+        tracer = @tracer
+        @tracer = nil
+
+        AppMap::Trace.tracers.delete(tracer)
 
         @event_thread.exit
         @event_thread.join
         @event_thread = nil
 
-        @tracer = nil
+        # Delete the events which are calls to or returns from the URL path _appmap/record
+        # because these are not of interest to the user.
+        is_control_command_event = lambda do |event|
+          event[:event] == :call &&
+            event[:http_server_request] &&
+            event[:http_server_request][:path_info] == '/_appmap/record'
+        end
+        control_command_events = @events.select(&is_control_command_event)
+
+        is_return_from_control_command_event = lambda do |event|
+          event[:parent_id] && control_command_events.find { |e| e[:id] == event[:parent_id] }
+        end
+
+        @events.delete_if(&is_control_command_event)
+        @events.delete_if(&is_return_from_control_command_event)
 
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata
-        output_scenario(JSON.generate(classMap: @features, metadata: metadata, events: @events))
+        uuid = output_scenario(JSON.generate(classMap: @features, metadata: metadata, events: @events))
+
+        [ true, uuid ]
       end
 
       def call(env)
@@ -92,19 +118,26 @@ module AppMap
         [status, headers, new_response]
       end
 
+      def recording_state
+        [ 200, { enabled: recording? }.to_json ]
+      end
+
       def handle_record_request(method)
-        body = ''
-        status = 200
+        status, body = \
+          if method.eql?('GET')
+            recording_state
+          elsif method.eql?('POST')
+            start_recording
+          elsif method.eql?('DELETE')
+            stop_recording
+          else
+            [ 404, '' ]
+          end
 
-        if method.eql?('POST')
-          start_recording
-        elsif method.eql?('DELETE')
-          body = stop_recording
-        else
-          status = 404
-        end
+        status = 200 if status == true
+        status = 500 if status == false
 
-        [status, { 'Content-Type' => 'application/text' }, [body]]
+        [status, { 'Content-Type' => 'application/text' }, [body || '']]
       end
 
       # write_content_security_policy will attempt to add an exemption to our
@@ -155,8 +188,7 @@ module AppMap
       end
 
       def embedded_javascript
-        @embedded_javascript ||= File.read(public_path.join('appmap.js.erb'))
-        ERB.new(@embedded_javascript).result(binding)
+        @embedded_javascript ||= File.read(public_path.join('appmap.js'))
       end
 
       def embedded_html

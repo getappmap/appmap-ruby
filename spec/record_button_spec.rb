@@ -34,10 +34,56 @@ describe 'AppMap Record Button', type: :feature do
     end
   end
 
+  def container; driver.find_element(id: 'appmap-record-container'); end
+  def label; container.find_element(class: 'appmap-record-button'); end
+  def status; driver.find_element(id: 'appmap-record-status'); end
+  def checkbox; driver.find_element(id: 'appmap-record'); end
+  let(:wait) { Selenium::WebDriver::Wait.new(timeout: 3) }
+
+  before do
+    driver.navigate.to "http://localhost:#{app_port}/"
+    wait.until do
+      status.text != ''
+    end
+
+    if checkbox.selected?
+      label.click
+      wait.until do
+        !checkbox.selected?
+      end
+    end
+  end
+
   it 'is displayed in the UI' do
+    expect(container).to be
+    expect(status).to be
+    expect(checkbox).to be
+  end
+
+  it 'click toggles recording' do
+    expect(status.text).to eq('Ready')
+    expect(checkbox).to_not be_selected
+
+    label.click
+
+    expect(status.text).to match(/Recording/)
+    expect(checkbox).to be_selected
+
+    label.click
+
+    expect(status.text).to eq('Ready')
+    expect(checkbox).to_not be_selected
+  end
+
+  it 'recording status is preserved across page loads' do
+    label.click
+
     driver.navigate.to "http://localhost:#{app_port}/"
 
-    element = driver.find_element(id: 'appmap-record-container')
-    expect(element).to be
+    wait.until do
+      status.text != ''
+    end
+    expect(status.text).to match(/Recording/)
+    expect(checkbox).to be_selected
   end
 end
