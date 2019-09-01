@@ -1,4 +1,3 @@
-const applandUrl = '<%= appland_url %>';
 const statusElement = document.querySelector('#appmap-record-status');
 const recordButton = document.querySelector('#appmap-record');
 let ellipsisTimeoutId = -1;
@@ -22,18 +21,33 @@ function stopRecording() {
   req.send();
   req.onload = () => {
     if (req.status === 200) {
-      viewScenario(req.response);
+      if ( req.response ) {
+        saveScenario(JSON.parse(req.response));
+      }
     }
   };
   displayRecording(false);
 }
 
-function viewScenario(scenarioId) {
-  if (!scenarioId) {
-    return;
-  }
+// POST the data to a new _blank window, so that AppLand
+// can handle authentication and permissions through the browser.
+function saveScenario(saveResponse) {
+  const url = saveResponse.url;
+  const data = saveResponse.data;
 
-  window.open(`${applandUrl}/scenarios/${scenarioId}`, '_blank');
+  const form = document.createElement("form");
+  form.setAttribute("method", "post");
+  form.setAttribute("action", url);
+  form.setAttribute("target", "_blank");
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'data';
+  input.value = JSON.stringify(data);
+  form.appendChild(input);
+
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
 }
 
 function animateEllipsis(isAnimating, numEllipsis) {

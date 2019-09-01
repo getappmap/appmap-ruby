@@ -7,7 +7,7 @@ module AppMap
       SCRIPT_SRC = 'script-src'
       UNSAFE_INLINE = "'unsafe-inline'"
 
-      def initialize(app)
+      def initialize(app, appland_url: ENV['APPLAND_URL'])
         require 'appmap/command/record'
         require 'appmap/command/upload'
         require 'appmap/trace/tracer'
@@ -17,16 +17,17 @@ module AppMap
         require 'json'
 
         @app = app
+        @appland_url = appland_url
         @features = AppMap.inspect(config)
         @functions = @features.map(&:collect_functions).flatten
       end
 
-      def output_scenario(scenario_data)
-        if appland_url
-          AppMap::Command::Upload.new(config, JSON.parse(scenario_data), appland_url, 1).perform
+      def output_scenario(scenario_data, url)
+        if url
+          JSON.generate(url: url, data: scenario_data)
         else
           File.open("appmap-recording-#{Time.now.to_i}.json", 'w') do |file|
-            file.puts(scenario_data)
+            file.puts(JSON.generate(scenario_data))
           end
           nil
         end
@@ -54,7 +55,7 @@ module AppMap
         [ true ]
       end
 
-      def stop_recording
+      def stop_recording(req)
         return [ false, 'No recording is in progress' ] unless @tracer
 
         tracer = @tracer
@@ -84,15 +85,22 @@ module AppMap
 
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata
-        uuid = output_scenario(JSON.generate(classMap: @features, metadata: metadata, events: @events))
 
-        [ true, uuid ]
+        redirect_url = appland_url(req)
+        if redirect_url && redirect_url != ''
+          redirect_url = URI.parse(redirect_url)
+          redirect_url += '/scenarios'
+        end
+
+        response = output_scenario({ classMap: @features, metadata: metadata, events: @events }, redirect_url)
+
+        [ true, response ]
       end
 
       def call(env)
         req = Rack::Request.new(env)
         if req.path == '/_appmap/record'
-          handle_record_request(env['REQUEST_METHOD'])
+          handle_record_request(req)
         else
           handle_response(*@app.call(env))
         end
@@ -119,17 +127,19 @@ module AppMap
       end
 
       def recording_state
-        [ 200, { enabled: recording? }.to_json ]
+        [ 200, JSON.generate({ enabled: recording? }) ]
       end
 
-      def handle_record_request(method)
+      def handle_record_request(req)
+        method = req.env['REQUEST_METHOD']
+
         status, body = \
           if method.eql?('GET')
             recording_state
           elsif method.eql?('POST')
             start_recording
           elsif method.eql?('DELETE')
-            stop_recording
+            stop_recording(req)
           else
             [ 404, '' ]
           end
@@ -164,11 +174,18 @@ module AppMap
 
       def do_html_injection(body)
         document = Nokogiri::HTML(body)
+        # Parsing as HTML will always wrap the content in an <html> element.
+        html = document.at('html')
+        # But it won't add a <head> element if non is actually present.
+        head = document.at('head')
 
-        head = document.at('head') || document.at('html').add_child('<head/>').first
+        # Allow services to return page fragments (e.g. Rails partials)
+        # without the Record Button being injected into them.
+        return body unless head
+
         head.add_child('<style/>').first.content = embedded_css
 
-        body = document.at('body') || document.at('html').add_child('<body/>').first
+        body = document.at('body') || html.add_child('<body/>').first
         body.add_child(embedded_html)
         body.add_child('<script/>').first.content = embedded_javascript
 
@@ -203,8 +220,14 @@ module AppMap
         !@event_thread.nil?
       end
 
-      def appland_url
-        ENV['APPLAND_URL']
+      def appland_url(req)
+        # Allow the AppLand URL to be computed on-demand from request parameters
+        # and headers.
+        if @appland_url.is_a?(Proc)
+          @appland_url.call(req)
+        else
+          @appland_url
+        end
       end
     end
   end

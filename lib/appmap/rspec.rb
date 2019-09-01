@@ -19,9 +19,7 @@ module AppMap
 
         raise "Missing AppMap configuration setting: 'name'" unless @config.name
 
-        features = config.source_locations.map(&AppMap::Inspect.method(:detect_features)).flatten
-        @features = features.map(&:reparent)
-        @features.each(&:prune)
+        @features = AppMap.inspect(@config)
         @functions = @features.map(&:collect_functions).flatten
       end
 
