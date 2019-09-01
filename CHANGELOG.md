@@ -1,3 +1,7 @@
+# v0.12.0
+
+* **Record Button** integrates into any HTML UI and provides a button to record and upload AppMaps.
+
 # v0.11.0
 
 * Information about `language` and `frameworks` is provided in the AppMap `metadata`.
