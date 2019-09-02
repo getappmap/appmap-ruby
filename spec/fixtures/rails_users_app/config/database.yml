@@ -1,4 +1,6 @@
 default: &default
+  host: pg
+  user: postgres
   adapter: postgresql
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide

@@ -4,11 +4,13 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2.3'
 
-gem 'pg'
-gem 'sequel', '= 5.20.0'
-gem 'sequel-rails'
-gem 'sequel_secure_password'
 gem 'haml-rails'
+
+gem 'activerecord', require: false
+gem 'pg'
+gem 'sequel', '= 5.20.0', require: false
+gem 'sequel-rails', require: false
+gem 'sequel_secure_password', require: false
 
 appmap_gem_opts = { require: %w[appmap appmap/railtie] }
 appmap_gem_opts[:path] = '../../..' if File.exist?('../../../appmap.gemspec')

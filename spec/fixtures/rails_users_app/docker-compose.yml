@@ -14,10 +14,10 @@ services:
     command:
       [ "./bin/rails", "server", "-b", "0.0.0.0", "webrick" ]
     environment:
-      DATABASE_URL: postgres://postgres@pg/postgres
       RAILS_ENV:
     volumes:
     - .:/src/app
+    - ../../..:/src/appmap-ruby
     ports:
     - "3000"
     links:
