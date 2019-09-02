@@ -18,12 +18,7 @@ module AppMap
               sql: payload[:sql],
               explain_sql: payload[:explain_sql],
               server_version: payload[:server_version],
-              database_type: payload[:database_type],
-              binds: (payload[:binds] || {}).keys.reduce({}) do |memo, key|
-                memo.tap do |_|
-                  memo[key] = self.class.display_string(payload[:binds][key])
-                end
-              end
+              database_type: payload[:database_type]
             }
           end
         end
@@ -35,6 +30,74 @@ module AppMap
 
           self.parent_id = parent_id
           self.elapsed = elapsed
+        end
+      end
+
+      module SQLExaminer
+        class << self
+          def examine(payload, sql:)
+            return unless (examinor = build_examinor)
+
+            payload[:server_version] = examinor.server_version
+            payload[:database_type] = examinor.database_type.to_s
+
+            # Sequel::Postgres::Database (2.2ms)  EXPLAIN SELECT "id" FROM "scenarios" WHERE ("uuid" = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f') LIMIT 1
+            # Limit  (cost=0.15..8.17 rows=1 width=4)
+            #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
+            #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
+            if examinor.database_type == :postgres
+              begin
+                payload[:explain_sql] = examinor.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
+              rescue
+                warn "Unable to explain query #{sql}: #{$!}"
+              end
+            end
+          end
+
+          protected
+
+          def build_examinor
+            if defined?(Sequel)
+              SequelExaminer.new
+            elsif defined?(ActiveRecord)
+              ActiveRecordExaminer.new
+            end
+          end
+        end
+
+        class SequelExaminer
+          def server_version
+            Sequel::Model.db.server_version
+          end
+
+          def database_type
+            Sequel::Model.db.database_type.to_sym
+          end
+
+          def execute_query(sql)
+            Sequel::Model.db[sql].all
+          end
+        end
+
+        class ActiveRecordExaminer
+          def server_version
+            case database_type
+            when :postgres
+              ActiveRecord::Base.connection.postgresql_version
+            else
+              raise "Unrecognized database type : #{database_type}"
+            end
+          end
+
+          def database_type
+            return :postgres if ActiveRecord::Base.connection.respond_to?(:postgresql_version)
+
+            raise "Unrecognized database type : #{ActiveRecord::Base.connection.adapter_name.downcase}"
+          end
+
+          def execute_query(sql)
+            ActiveRecord::Base.connection.execute(sql).inject([]) { |memo, r| memo << r; memo }
+          end
         end
       end
 
@@ -60,31 +123,22 @@ module AppMap
           end
 
           # Ignore SQL calls which are made while establishing a new connection.
+          #
           # Example:
           # /path/to/ruby/2.6.0/gems/sequel-5.20.0/lib/sequel/connection_pool.rb:122:in `make_new'
           return if find_in_backtrace.call('lib/sequel/connection_pool.rb', 'make_new')
+          # lib/active_record/connection_adapters/abstract/connection_pool.rb:811:in `new_connection'
+          return if find_in_backtrace.call('lib/active_record/connection_adapters/abstract/connection_pool.rb', 'new_connection')
 
           # Ignore SQL calls which are made while inspecting the DB schema.
+          #
           # Example:
           # /path/to/ruby/2.6.0/gems/sequel-5.20.0/lib/sequel/model/base.rb:812:in `get_db_schema'
           return if find_in_backtrace.call('lib/sequel/model/base.rb', 'get_db_schema')
+          # /usr/local/bundle/gems/activerecord-5.2.3/lib/active_record/model_schema.rb:466:in `load_schema!'
+          return if find_in_backtrace.call('lib/active_record/model_schema.rb', 'load_schema!')
 
-          require 'sequel'
-
-          payload[:server_version] = Sequel::Model.db.server_version
-          payload[:database_type] = Sequel::Model.db.database_type.to_s
-
-          # Sequel::Postgres::Database (2.2ms)  EXPLAIN SELECT "id" FROM "scenarios" WHERE ("uuid" = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f') LIMIT 1
-          # Limit  (cost=0.15..8.17 rows=1 width=4)
-          #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
-          #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
-          if Sequel::Model.db.database_type == :postgres
-            begin
-              payload[:explain_sql] = Sequel::Model.db[%(EXPLAIN #{sql})].all.map { |r| r.values[0] }.join("\n")
-            rescue
-              warn "Unable to explain query #{sql}: #{$!}"
-            end
-          end
+          SQLExaminer.examine payload, sql: sql
 
           call = SQLCall.new(__FILE__, __LINE__, payload)
           AppMap::Trace.tracers.record_event(call)

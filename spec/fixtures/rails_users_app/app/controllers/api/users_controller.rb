@@ -7,7 +7,7 @@ module Api
           code: 'invalid',
           target: 'User',
           message: @user.errors.full_messages.join(', '),
-          details: @user.errors.map { |k, v| { code: 'invalid', target: k, message: v.join(', ') } }
+          details: @user.errors.map { |k, v| { code: 'invalid', target: k, message: Array(v).join(', ') } }
         }
         return render json: error, status: :unprocessable_entity
       end

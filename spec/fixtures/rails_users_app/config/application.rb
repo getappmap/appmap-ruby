@@ -1,6 +1,8 @@
 require_relative 'boot'
 
-$model_driver = ENV['MODEL_MODULE'] || 'sequel'
+def orm_module
+  ENV['ORM_MODULE'] || 'sequel'
+end
 
 require "rails"
 # Pick the frameworks you want:
@@ -9,11 +11,12 @@ require "active_job/railtie"
 require "action_controller/railtie"
 require "action_view/railtie"
 
-case $model_driver
+case orm_module
 when 'sequel'
   require 'sequel-rails'
+  require 'sequel_secure_password'
 when 'activerecord'
-  require "active_record/railtie"
+  require 'active_record/railtie'
 end
 
 # require "active_storage/engine"
@@ -43,6 +46,6 @@ module UsersApp
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    config.autoload_paths << File.join(Rails.root, "app/models/#{$model_driver}")
+    config.autoload_paths << File.join(Rails.root, "app/models/#{orm_module}")
   end
 end

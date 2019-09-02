@@ -17,7 +17,6 @@ services:
       RAILS_ENV:
     volumes:
     - .:/src/app
-    - ../../..:/src/appmap-ruby
     ports:
     - "3000"
     links:

@@ -12,9 +12,31 @@ gem 'sequel', '= 5.20.0', require: false
 gem 'sequel-rails', require: false
 gem 'sequel_secure_password', require: false
 
-appmap_gem_opts = { require: %w[appmap appmap/railtie] }
-appmap_gem_opts[:path] = '../../..' if File.exist?('../../../appmap.gemspec')
-gem 'appmap', appmap_gem_opts
+appmap_path = \
+  # Support debugging inside the container with volume-mounted source
+  if File.directory?('/src/appmap-ruby')
+    '/src/appmap-ruby'
+  elsif File.exist?('../../../appmap.gemspec')
+    '../../..'
+  end
+
+if appmap_path
+  # Set the branch parameter, so that 'bundle config local.appmap' will work
+  appmap_branch = Dir.chdir appmap_path do
+    `git rev-parse --abbrev-ref HEAD`.strip
+  end
+end
+
+appmap_options = \
+  if appmap_path && appmap_branch
+    { git: appmap_path, branch: appmap_branch }
+  elsif appmap_path
+    { path: appmap_path }
+  else
+    {}
+  end.merge(require: %w[appmap appmap/railtie])
+
+gem 'appmap', appmap_options
 
 group :development, :test do
   gem 'rspec-rails'

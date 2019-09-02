@@ -11,7 +11,7 @@ RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, 
     end
     describe 'with a missing parameter' do
       it 'reports error 422' do
-        post :create, params: { }
+        post :create, params: {}
         expect(response.status).to eq(422)
       end
     end
