@@ -37,10 +37,10 @@ module AppMap
       module SQLExaminer
         class << self
           def examine(payload, sql:)
-            return unless (examinor = build_examinor)
+            return unless (examiner = build_examiner)
 
-            payload[:server_version] = examinor.server_version
-            payload[:database_type] = examinor.database_type.to_s
+            payload[:server_version] = examiner.server_version
+            payload[:database_type] = examiner.database_type.to_s
 
             # Unfortunately, it's not enough to simply handle exceptions, because if the
             # EXPLAIN fails then the transaction is aborted by Postgresql
@@ -49,15 +49,15 @@ module AppMap
               # Limit  (cost=0.15..8.17 rows=1 width=4)
               #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
               #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
-              if examinor.database_type == :postgres
-                payload[:explain_sql] = examinor.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
+              if examiner.database_type == :postgres
+                payload[:explain_sql] = examiner.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
               end
             end
           end
 
           protected
 
-          def build_examinor
+          def build_examiner
             if defined?(Sequel)
               SequelExaminer.new
             elsif defined?(ActiveRecord)
