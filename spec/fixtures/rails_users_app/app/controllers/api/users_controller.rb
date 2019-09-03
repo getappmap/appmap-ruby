@@ -1,5 +1,10 @@
 module Api
   class UsersController < ActionController::API
+    def index
+      @users = User.all
+      render json: @users
+    end
+
     def create
       @user = User.new(params.slice(:login).to_unsafe_h)
       unless @user.valid?

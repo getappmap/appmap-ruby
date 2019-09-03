@@ -16,10 +16,11 @@ module AppMap
           super.tap do |h|
             h[:sql_query] = {
               sql: payload[:sql],
-              explain_sql: payload[:explain_sql],
               server_version: payload[:server_version],
               database_type: payload[:database_type]
-            }
+            }.tap do |sql_query|
+              sql_query[:explain_sql] = payload[:explain_sql] if payload[:explain_sql]
+            end
           end
         end
       end
@@ -41,15 +42,15 @@ module AppMap
             payload[:server_version] = examinor.server_version
             payload[:database_type] = examinor.database_type.to_s
 
-            # Sequel::Postgres::Database (2.2ms)  EXPLAIN SELECT "id" FROM "scenarios" WHERE ("uuid" = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f') LIMIT 1
-            # Limit  (cost=0.15..8.17 rows=1 width=4)
-            #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
-            #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
-            if examinor.database_type == :postgres
-              begin
+            # Unfortunately, it's not enough to simply handle exceptions, because if the
+            # EXPLAIN fails then the transaction is aborted by Postgresql
+            if sql.upcase.index('SELECT') == 0
+              # Sequel::Postgres::Database (2.2ms)  EXPLAIN SELECT "id" FROM "scenarios" WHERE ("uuid" = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f') LIMIT 1
+              # Limit  (cost=0.15..8.17 rows=1 width=4)
+              #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
+              #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
+              if examinor.database_type == :postgres
                 payload[:explain_sql] = examinor.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
-              rescue
-                warn "Unable to explain query #{sql}: #{$!}"
               end
             end
           end
@@ -110,15 +111,17 @@ module AppMap
         Thread.current[reentry_key] = true
         begin
           sql = payload[:sql].strip
+          sql_upper = sql.upcase
 
-          return unless WHITELIST.find { |keyword| sql.index(keyword) == 0 }
+          return unless WHITELIST.find { |keyword| sql_upper.index(keyword) == 0 }
 
           # Detect whether a function call within a specified filename is present in the call stack.
-          find_in_backtrace = lambda do |file_name, function_name|
+          find_in_backtrace = lambda do |file_name, function_name = nil|
             Thread.current.backtrace.find do |line|
               tokens = line.split(':')
-              tokens.find { |t| t.rindex(file_name) == (t.length - file_name.length) } &&
-                tokens.find { |t| t == "in `#{function_name}'" }
+              matches_file = tokens.find { |t| t.rindex(file_name) == (t.length - file_name.length) }
+              matches_function = function_name.nil? || tokens.find { |t| t == "in `#{function_name}'" }
+              matches_file && matches_function
             end
           end
 
@@ -137,6 +140,8 @@ module AppMap
           return if find_in_backtrace.call('lib/sequel/model/base.rb', 'get_db_schema')
           # /usr/local/bundle/gems/activerecord-5.2.3/lib/active_record/model_schema.rb:466:in `load_schema!'
           return if find_in_backtrace.call('lib/active_record/model_schema.rb', 'load_schema!')
+          return if find_in_backtrace.call('lib/active_model/attribute_methods.rb', 'define_attribute_methods')
+          return if find_in_backtrace.call('lib/active_record/connection_adapters/schema_cache.rb')
 
           SQLExaminer.examine payload, sql: sql
 

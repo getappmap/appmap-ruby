@@ -16,4 +16,14 @@ RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, 
       end
     end
   end
+  describe 'GET /api/users', feature: 'List users' do
+    before do
+      post :create, params: { login: 'alice' }
+    end
+    it 'lists the users' do
+      post :index, params: {}
+      users = JSON.parse(response.body)
+      expect(users.map { |r| r['login'] }).to include('alice')
+    end
+  end
 end
