@@ -22,6 +22,7 @@ module AppMap
       lambda do
         require 'appmap/rails/sql_handler'
         ActiveSupport::Notifications.subscribe('sql.sequel', AppMap::Rails::SQLHandler.new)
+        ActiveSupport::Notifications.subscribe('sql.active_record', AppMap::Rails::SQLHandler.new)
       end.call
     end
   end

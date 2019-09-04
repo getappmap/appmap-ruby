@@ -1,14 +1,26 @@
 require_relative 'boot'
 
+def orm_module
+  ENV['ORM_MODULE'] || 'sequel'
+end
+
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"
 require "active_job/railtie"
-# require "active_record/railtie"
-# require "active_storage/engine"
 require "action_controller/railtie"
-# require "action_mailer/railtie"
 require "action_view/railtie"
+
+case orm_module
+when 'sequel'
+  require 'sequel-rails'
+  require 'sequel_secure_password'
+when 'activerecord'
+  require 'active_record/railtie'
+end
+
+# require "active_storage/engine"
+# require "action_mailer/railtie"
 # require "action_cable/engine"
 # require "sprockets/railtie"
 # require "rails/test_unit/railtie"
@@ -33,5 +45,7 @@ module UsersApp
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.autoload_paths << File.join(Rails.root, "app/models/#{orm_module}")
   end
 end

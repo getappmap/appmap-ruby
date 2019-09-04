@@ -1,2 +1,5 @@
 vendor
 node_modules
+spec/fixtures/rails_users_app
+spec/fixtures/rack_users_app
+

@@ -2,8 +2,6 @@ class User < Sequel::Model(:users)
   plugin :secure_password, cost: 12, include_validations: false
   plugin :validation_helpers
 
-  one_to_many :scenarios
-
   def authenticate(unencrypted)
     # Just be extra sure that empty passwords aren't accepted
     return false if unencrypted.blank? || password.blank?

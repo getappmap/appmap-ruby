@@ -1,3 +1,7 @@
+# v0.13.0
+
+* **SQL queries** are reported for ActiveRecord.
+
 # v0.12.0
 
 * **Record Button** integrates into any HTML UI and provides a button to record and upload AppMaps.
