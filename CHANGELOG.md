@@ -1,3 +1,7 @@
+# v0.14.0
+
+* **SQL queries** are reported for SQLite.
+
 # v0.13.0
 
 * **SQL queries** are reported for ActiveRecord.

@@ -16,10 +16,11 @@ module AppMap
           super.tap do |h|
             h[:sql_query] = {
               sql: payload[:sql],
-              server_version: payload[:server_version],
               database_type: payload[:database_type]
             }.tap do |sql_query|
-              sql_query[:explain_sql] = payload[:explain_sql] if payload[:explain_sql]
+              %i[server_version explain_sql].each do |attribute|
+                sql_query[attribute] = payload[attribute] if payload[attribute]
+              end
             end
           end
         end
@@ -49,9 +50,14 @@ module AppMap
               # Limit  (cost=0.15..8.17 rows=1 width=4)
               #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
               #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
-              if examiner.database_type == :postgres
-                payload[:explain_sql] = examiner.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
-              end
+              explain_sql = \
+                case examiner.database_type
+                when :postgres, :postgresql
+                  examiner.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
+                when :sqlite
+                  examiner.execute_query(%(EXPLAIN QUERY PLAN #{sql})).map { |r| r['detail'] }.join("\n")
+                end
+              payload[:explain_sql] = explain_sql if explain_sql
             end
           end
 
@@ -86,14 +92,14 @@ module AppMap
             when :postgres
               ActiveRecord::Base.connection.postgresql_version
             else
-              raise "Unrecognized database type : #{database_type}"
+              warn "Unable to determine database version for #{database_type.inspect}"
             end
           end
 
           def database_type
             return :postgres if ActiveRecord::Base.connection.respond_to?(:postgresql_version)
 
-            raise "Unrecognized database type : #{ActiveRecord::Base.connection.adapter_name.downcase}"
+            ActiveRecord::Base.connection.adapter_name.downcase.to_sym
           end
 
           def execute_query(sql)
