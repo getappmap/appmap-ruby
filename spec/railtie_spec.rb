@@ -5,7 +5,7 @@ describe 'AppMap tracer via Railtie' do
 
   let(:env) { {} }
 
-  let(:cmd) { %(docker-compose run --rm -e APPMAP app ./bin/rails r "puts Rails.configuration.appmap.enabled.inspect") }
+  let(:cmd) { %(docker-compose run --rm -e RAILS_ENV -e APPMAP app ./bin/rails r "puts Rails.configuration.appmap.enabled.inspect") }
   let(:command_capture2) do
     require 'open3'
     Open3.capture2(env, cmd, chdir: 'spec/fixtures/rails_users_app').tap do |result|
@@ -23,6 +23,12 @@ describe 'AppMap tracer via Railtie' do
     let(:env) { { 'APPMAP' => 'true' } }
     it 'is enabled' do
       expect(command_output).to eq('true')
+    end
+    context 'and RAILS_ENV=test' do
+      let(:env) { { 'APPMAP' => 'true', 'RAILS_ENV' => 'test' } }
+      it 'is disabled' do
+        expect(command_output).to eq('nil')
+      end
     end
   end
 end

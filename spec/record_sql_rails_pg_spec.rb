@@ -6,14 +6,14 @@ describe 'Record SQL in a Rails with Postgres' do
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
-    cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_spec.rb:8"
+    cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_api_spec.rb:8"
     system cmd, chdir: 'spec/fixtures/rails_users_app' or raise 'Failed to run rails_users_app container'
 
     example.run
   end
 
   let(:tmpdir) { 'tmp/spec/record_sql_rails_pg' }
-  let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/UsersController POST users with required parameters creates a user.json') }
+  let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api::UsersController POST _api_users with required parameters creates a user.json') }
 
   describe 'testing with rspec' do
     it 'SQL query fields are recorded in the appmap' do

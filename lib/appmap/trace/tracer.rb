@@ -3,19 +3,39 @@ module AppMap
     MethodEventStruct =
       Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
 
+    class Tracers
+      def initialize
+        @tracers = []
+      end
+
+      def empty?
+        @tracers.empty?
+      end
+
+      def trace(functions, enable: true)
+        AppMap::Trace::Tracer.new(functions).tap do |tracer|
+          @tracers << tracer
+          tracer.enable if enable
+        end
+      end
+
+      def record_event(event)
+        @tracers.each do |tracer|
+          tracer.record_event(event)
+        end
+      end
+
+      def delete(tracer)
+        return unless @tracers.member?(tracer)
+
+        @tracers.delete(tracer)
+        tracer.disable
+      end
+    end
+
     class << self
-      def tracer?
-        !@tracer.nil?
-      end
-
-      def tracer
-        @tracer || raise('No global tracer has been configured')
-      end
-
-      def tracer=(tracer)
-        raise 'Global tracer has already been configured' if @tracer && tracer
-
-        @tracer = tracer
+      def tracers
+        @tracers ||= Tracers.new
       end
     end
 
@@ -68,11 +88,15 @@ module AppMap
           return nil unless value
 
           begin
-            value.to_s[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            value_string = value.to_s
+          rescue NoMethodError
+            value_string = value.inspect
           rescue StandardError
             warn $!.message
             '*Error inspecting variable*'
           end
+
+          value_string[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
       end
 
@@ -103,7 +127,7 @@ module AppMap
             memo[key] = {
               class: value.class.name,
               value: display_string(value),
-              object_id: value.object_id
+              object_id: value.__id__
             }
           end
         end
@@ -146,7 +170,7 @@ module AppMap
             mr.return_value = {
               class: tp.return_value.class.name,
               value: display_string(tp.return_value),
-              object_id: tp.return_value.object_id
+              object_id: tp.return_value.__id__
             }
             MethodReturnIgnoreValue.build_from_tracepoint(mr, tp, path, parent_id, elapsed)
           end
@@ -241,16 +265,6 @@ module AppMap
 
     # @appmap
     class Tracer
-      class << self
-        # Trace program execution using a TracePoint hook. As functions are called and returned from,
-        # the events are recorded via Tracer#record_event.
-        # @appmap
-        def trace(tracer)
-          handler = TracePointHandler.new(tracer)
-          TracePoint.trace(:call, :return, &handler.method(:handle))
-        end
-      end
-
       # Trace a specified set of functions.
       #
       # functions Array of AppMap::Feature::Function.
@@ -267,6 +281,16 @@ module AppMap
 
         @events_mutex = Mutex.new
         @events = []
+      end
+
+      def enable
+        handler = TracePointHandler.new(self)
+        @trace_point = TracePoint.trace(:call, :return, &handler.method(:handle))
+      end
+
+      # Private function. Use AppMap.tracers#delete.
+      def disable # :nodoc:
+        @trace_point.disable
       end
 
       # Whether the indicated file path and lineno is a breakpoint on which

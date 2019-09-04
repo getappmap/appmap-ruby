@@ -5,17 +5,15 @@ class TraceTest < Minitest::Test
     def trace(program_file_path, &block)
       require 'appmap/inspect'
       features = AppMap::Inspect.inspect_file(:implicit, file_path: program_file_path).flatten
-      methods = features.map(&:collect_functions).flatten
+      functions = features.map(&:collect_functions).flatten
       require 'appmap/trace/tracer'
-      tracer = AppMap::Trace.tracer = AppMap::Trace::Tracer.new(methods)
+      tracer = AppMap::Trace.tracers.trace(functions)
       begin
-        AppMap::Trace::Tracer.trace tracer
-
         load program_file_path
 
         yield tracer
       ensure
-        AppMap::Trace.tracer = nil
+        AppMap::Trace.tracers.delete(tracer)
       end
     end
   end
