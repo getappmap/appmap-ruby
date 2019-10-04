@@ -105,29 +105,36 @@ module AppMap
 
     # @appmap
     class MethodCall < MethodEvent
-      attr_accessor :parameters
+      attr_accessor :parameters, :receiver
 
       class << self
         # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp, path)
           mc.tap do |_|
             mc.parameters = collect_parameters(tp)
+            mc.receiver = collect_self(tp)
             MethodEvent.build_from_tracepoint(mc, tp, path)
           end
         end
 
-        def collect_parameters(tp)
-          m = tp.self.method(tp.method_id) rescue nil
-          # 'method' method may be overridden and hidden
-          return {} unless m
+        def collect_self(tp)
+          {
+            class: tp.self.class.name,
+            object_id: tp.self.__id__,
+            value: display_string(tp.self)
+          }
+        end
 
-          m.parameters.each_with_object({}) do |pinfo, memo|
+        def collect_parameters(tp)
+          tp.parameters.map do |pinfo|
             kind, key = pinfo
             value = value_in_binding(tp, key)
-            memo[key] = {
+            {
+              name: key,
               class: value.class.name,
+              object_id: value.__id__,
               value: display_string(value),
-              object_id: value.__id__
+              kind: kind # :req, :rest, :key, :keyrest, :block
             }
           end
         end
@@ -136,6 +143,7 @@ module AppMap
       def to_h
         super.tap do |h|
           h[:parameters] = parameters
+          h[:receiver] = receiver
         end
       end
     end
