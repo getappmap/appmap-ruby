@@ -1,3 +1,7 @@
+# v0.14.1
+
+* **RSpec** don't try and modify a frozen string.
+
 # v0.14.0
 
 * **SQL queries** are reported for SQLite.
