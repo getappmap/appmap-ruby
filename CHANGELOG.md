@@ -1,3 +1,10 @@
+# v0.15.0
+
+**WARNING** Breaking changes
+
+* **Event `parameters`** are reported as an array rather than a map, so that parameter order is preserved.
+* **Event `receiver`** reports the `receiver/this/self` parameter of each method call.
+
 # v0.14.0
 
 * **SQL queries** are reported for SQLite.
