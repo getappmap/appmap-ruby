@@ -43,7 +43,7 @@ module AppMap
         end
 
         appmap = {
-          version: '1.0',
+          version: '1.1',
           classMap: features,
           metadata: metadata,
           events: events
