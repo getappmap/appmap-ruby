@@ -2,8 +2,13 @@
 
 **WARNING** Breaking changes
 
+* **AppMap version** updated to 1.1
 * **Event `parameters`** are reported as an array rather than a map, so that parameter order is preserved.
 * **Event `receiver`** reports the `receiver/this/self` parameter of each method call.
+
+# v0.14.1
+
+* **RSpec** don't try and modify a frozen string.
 
 # v0.14.0
 

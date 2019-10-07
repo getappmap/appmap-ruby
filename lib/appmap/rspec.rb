@@ -224,7 +224,7 @@ module AppMap
               description.reverse!
 
               description.each do |token|
-                token.gsub! 'it should behave like', ''
+                token = token.gsub 'it should behave like', ''
                 token.gsub! '  ', ' '
                 token.gsub! '/', '_'
                 token.strip!
