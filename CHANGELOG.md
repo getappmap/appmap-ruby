@@ -1,3 +1,7 @@
+# v0.15.1
+
+* **Record button** moved to the bottom of the window.
+
 # v0.15.0
 
 **WARNING** Breaking changes
@@ -20,7 +24,7 @@
 
 # v0.12.0
 
-* **Record Button** integrates into any HTML UI and provides a button to record and upload AppMaps.
+* **Record button** integrates into any HTML UI and provides a button to record and upload AppMaps.
 
 # v0.11.0
 
