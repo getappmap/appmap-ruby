@@ -48,7 +48,8 @@ module AppMap
           metadata: metadata,
           events: events
         }
-        File.write(File.join(APPMAP_OUTPUT_DIR, "#{example_name}.json"), JSON.generate(appmap))
+        fname = example_name.parameterize(separator: '_', preserve_case: true)
+        File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.json"), JSON.generate(appmap))
       end
     end
 
