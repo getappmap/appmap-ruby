@@ -1,3 +1,11 @@
+# v0.16.0
+
+**WARNING** Breaking changes
+
+* **Record button** removed. Frontend interactions are now recorded with a browser extension.
+  As a result, `AppMap::Middleware::RecordButton` has been renamed to 
+  `AppMap::Middleware::RemoteRecording`
+
 # v0.15.1
 
 * **Record button** moved to the bottom of the window.
@@ -12,7 +20,7 @@
 
 # v0.14.1
 
-* **RSpec** don't try and modify a frozen string.
+* **RSpec recorder** won't try to modify a frozen string.
 
 # v0.14.0
 
