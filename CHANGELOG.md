@@ -1,3 +1,11 @@
+# v0.17.0
+
+**WARNING** Breaking changes
+
+* **appmap upload** expects arguments `user` and `org`.
+* **appmap upload** receives and retransmits the scenario batch id
+* assigned by the server.
+
 # v0.16.0
 
 **WARNING** Breaking changes

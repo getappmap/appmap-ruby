@@ -97,10 +97,14 @@ module AppMap
       c.default_value ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
       c.flag :url
 
-      c.desc 'User id to own the scenario'
       # TODO: This will be replaced with proper login
-      c.default_value((ENV['APPLAND_OWNER'] || 1).to_i)
-      c.flag :owner
+      c.desc 'User id to own the scenario'
+      c.default_value(ENV['APPLAND_USER'])
+      c.flag :user
+
+      c.desc 'Organization id to own the scenario'
+      c.default_value(ENV['APPLAND_ORG'])
+      c.flag :org
 
       c.action do |_, options, args|
         require 'appmap/command/upload'
@@ -109,29 +113,30 @@ module AppMap
         help_now!("'filename' argument is required") if filenames.empty?
 
         url = options[:url]
-        owner = options[:owner]
+        user = options[:user]
+        org = options[:org]
 
+        batch_id = nil
         uuids = filenames.map do |filename|
           appmap = JSON.parse(File.read(filename))
 
           warn "Uploading #{filename.inspect}"
-          AppMap::Command::Upload.new(@config, appmap, url, owner).perform.tap do |uuid|
-            @output_file.puts uuid
+          upload = AppMap::Command::Upload.new(@config, appmap, url, user, org)
+          upload.batch_id = batch_id if batch_id
+          upload.perform.tap do |response|
+            batch_id ||= response.batch_id
+            @output_file.puts "Scenario Id: #{response.scenario_uuid}"
+          end.scenario_uuid
+        end
+        @output_file.puts "Batch Id: #{batch_id}"
+
+        if STDIN.tty?
+          if uuids.length == 1
+            system "open #{url}/scenarios/#{uuids.first}"
+          else
+            system "open #{url}/scenario_batches/#{batch_id}"
           end
         end
-
-        confirm_launch = lambda do
-          return false if filenames.empty?
-
-          return true if filenames.size == 1
-
-          warn "Open browser windows for #{filenames.size} scenarios? (y/n)"
-          return %w[y yes].include?(STDIN.gets.strip)
-        end
-
-        open_uuid = ->(uuid) { system "open #{url}/scenarios/#{uuid}" }
-
-        uuids.each(&open_uuid) if STDIN.tty? && confirm_launch.call
       end
     end
 

@@ -3,12 +3,15 @@ require 'faraday'
 
 module AppMap
   module Command
-    UploadStruct = Struct.new(:config, :data, :url, :owner)
+    UploadResponse = Struct.new(:batch_id, :scenario_uuid)
 
+    UploadStruct = Struct.new(:config, :data, :url, :user, :org)
     class Upload < UploadStruct
       MAX_DEPTH = 12
 
-      def initialize(config, data, url, owner)
+      attr_accessor :batch_id
+
+      def initialize(config, data, url, user, org)
         super
 
         # TODO: Make this an option
@@ -51,12 +54,13 @@ module AppMap
           appmap = { "classMap": class_map, "events": [] }
         end
 
-        upload_file = { owner_id: owner, data: appmap }
+        upload_file = { user: user, org: org, data: appmap }.compact
 
         conn = Faraday.new(url: url)
         response = conn.post do |req|
           req.url '/api/scenarios'
           req.headers['Content-Type'] = 'application/json'
+          req.headers['AppLandScenarioBatch'] = @batch_id if @batch_id
           req.body = JSON.generate(upload_file)
         end
 
@@ -75,16 +79,23 @@ module AppMap
           raise error.join
         end
 
-        message['uuid']
+        batch_id = @batch_id || response.headers['AppLandScenarioBatch']
+
+        uuid = message['uuid']
+        UploadResponse.new(batch_id, uuid)
       end
 
       protected
+
+      def debug?
+        ENV['DEBUG'] == 'true' || ENV['GLI_DEBUG'] == 'true'
+      end
 
       def prune(class_map, events: nil)
         require 'appmap/algorithm/prune_class_map'
         Algorithm::PruneClassMap.new(class_map).tap do |alg|
           alg.events = events if events
-          alg.logger = ->(msg) { warn msg }
+          alg.logger = ->(msg) { warn msg } if debug?
         end.prune
       end
     end
