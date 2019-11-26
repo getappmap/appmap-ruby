@@ -17,7 +17,7 @@ describe 'Record SQL queries in a Rails app' do
 
   context 'while creating a new record' do
     let(:test_line_number) { 8 }
-    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api::UsersController POST _api_users with required parameters creates a user.json') }
+    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.json') }
 
     context 'using Sequel ORM' do
       let(:orm_module) { 'sequel' }
@@ -45,7 +45,7 @@ describe 'Record SQL queries in a Rails app' do
 
   context 'while listing records' do
     let(:test_line_number) { 23 }
-    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api::UsersController GET _api_users lists the users.json') }
+    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_GET_api_users_lists_the_users.json') }
 
     context 'using Sequel ORM' do
       let(:orm_module) { 'sequel' }
