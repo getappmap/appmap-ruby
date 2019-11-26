@@ -4,5 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: rack-users-app:${RUBY_VERSION}
     ports:
       - "9292"
