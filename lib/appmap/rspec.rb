@@ -29,14 +29,14 @@ module AppMap
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
-      # TODO: Optionally populate the 'layout' from appmap config or RSpec metadata.
-      def save(example_name, events, feature_name: nil, feature_group_name: nil)
+      def save(example_name, events, feature_name: nil, feature_group_name: nil, labels: nil)
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata.tap do |m|
           m[:name] = example_name
           m[:app] = @config.name
           m[:feature] = feature_name if feature_name
           m[:feature_group] = feature_group_name if feature_group_name
+          m[:labels] = labels if labels
           m[:frameworks] ||= []
           m[:frameworks] << {
             name: 'rspec',
@@ -83,6 +83,17 @@ module AppMap
           annotations[:feature]
         end
 
+        def labels
+          labels = metadata[:appmap]
+          if labels.is_a?(Array)
+            labels
+          elsif labels.is_a?(String) || labels.is_a?(Symbol)
+            [ labels ]
+          else
+            []
+          end
+        end
+
         def feature_group
           return nil unless annotations
 
@@ -118,6 +129,10 @@ module AppMap
         include FeatureAnnotations
 
         alias_method :example_obj, :example
+
+        def description?
+          true
+        end
 
         def description
           example.description
@@ -255,28 +270,46 @@ module AppMap
 
               example = examples[loc]
               description = []
-              scope = ScopeExample.new(example)
+              leaf = scope = ScopeExample.new(example)
               feature_group = feature = nil
+              labels = scope.labels.map(&:to_s).map(&:strip).reject(&:blank?).map(&:downcase).uniq
+
               while scope
                 description << scope.description
                 feature ||= scope.feature
                 feature_group ||= scope.feature_group
                 scope = scope.parent
               end
-              description.reject! { |d| d.nil? || d == '' }
+              description.reject!(&:nil?).reject(&:blank?)
+              default_description = description.last
               description.reverse!
 
-              description.each do |token|
-                token = token.gsub 'it should behave like', ''
-                token.gsub! '  ', ' '
-                token.gsub! '/', '_'
-                token.strip!
+              normalize = lambda do |desc|
+                desc.gsub('it should behave like', '')
+                    .gsub(/\w(Controller)$/, '')
+                    .gsub(/\s+/, ' ')
+                    .strip
               end
-              full_description = description.join(' ')
 
-              recorder.save full_description, events,
-                            feature_name: feature,
-                            feature_group_name: feature_group
+              full_description = normalize.call(description.join(' '))
+
+              compute_feature_name = lambda do
+                return 'unknown' if description.empty?
+
+                feature_description = description.dup
+                num_tokens = [2, feature_description.length - 1].min
+                feature_description[0...num_tokens].map(&:strip).join(' ')
+              end
+
+              feature_group ||= normalize.call(default_description).underscore.gsub('/', '_').humanize
+              feature_name = feature || compute_feature_name.call if feature_group
+              feature_name = normalize.call(feature_name) if feature_name
+
+              recorder.save full_description,
+                            events,
+                            feature_name: feature_name,
+                            feature_group_name: feature_group,
+                            labels: labels.blank? ? nil : labels
             end
           end
         end
