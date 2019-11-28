@@ -160,6 +160,26 @@ module AppMap
 
       LOG = false
 
+      def is_example_group_subclass_call?(tp)
+        # Order is important here. Checking for method_id == :subclass
+        # first will avoid calling defined_class.to_s in many cases,
+        # some of which will fail.
+        #
+        # For example, ActiveRecord in Rails 4 defines #inspect (and
+        # therefore #to_s) in such a way that it will fail if called
+        # here.
+        tp.event == :call &&
+          tp.method_id == :subclass &&
+          tp.defined_class.singleton_class? &&
+          tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>'
+      end
+
+      def is_example_initialize_call?(tp)
+        tp.event == :call &&
+          tp.method_id == :initialize &&
+          tp.defined_class.to_s == 'RSpec::Core::Example'
+      end
+      
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
@@ -183,7 +203,7 @@ module AppMap
         TracePoint.trace(:call, :b_call, :b_return) do |tp|
           # When a new ExampleGroup is encountered, parse the source file containing it and look
           # for blocks that might be Examples. Index each BlockParseNode by the start file:lineno.
-          if tp.event == :call && tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>' && tp.method_id == :subclass
+          if is_example_group_subclass_call?(tp)
             example_block = tp.binding.eval('example_group_block')
             source_path, start_line = example_block.source_location
             require 'appmap/rspec/parser'
@@ -196,7 +216,7 @@ module AppMap
 
           # When a new Example is constructed with a block, look for the BlockParseNode that starts at the block's
           # file:lineno. If it exists, store the Example object, indexed by the file:lineno at which it ends.
-          if tp.event == :call && tp.defined_class.to_s == 'RSpec::Core::Example' && tp.method_id == :initialize
+          if is_example_initialize_call?(tp)
             example_block = tp.binding.eval('example_block')
             if example_block
               source_path, start_line = example_block.source_location
