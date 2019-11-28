@@ -126,7 +126,7 @@ module AppMap
         end
 
         def collect_parameters(tp)
-          tp.parameters.map do |pinfo|
+          tp.self.method(tp.method_id) do |pinfo|
             kind, key = pinfo
             value = value_in_binding(tp, key)
             {
