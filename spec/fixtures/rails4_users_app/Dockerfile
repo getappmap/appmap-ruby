@@ -15,7 +15,8 @@ RUN gem install -v '~> 1.17' -N bundler
 COPY Gemfile .
 
 RUN bundle
-RUN bundle binstubs bundler rspec-core --force
+RUN bundle binstubs --force \
+    bundler rake rspec-core
 
 COPY . .
 

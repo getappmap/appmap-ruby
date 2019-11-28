@@ -6,18 +6,21 @@ namespace 'gem' do
 end
 
 RUBY_VERSIONS=%w[2.5 2.6]
-FIXTURE_APPS=%w[rack_users_app rails_users_app]
+FIXTURE_APPS=%w[rack_users_app rails_users_app rails4_users_app]
 
 def build_base_image(ruby_version)
-  system "docker build"\
-         " --build-arg RUBY_VERSION=#{ruby_version} --build-arg GEM_VERSION=#{GEM_VERSION}"\
+  system "docker build" \
+         " --build-arg RUBY_VERSION=#{ruby_version} --build-arg GEM_VERSION=#{GEM_VERSION}" \
          " -t appmap:#{GEM_VERSION} -f Dockerfile.appmap ." \
   or raise 'Docker build failed'
 end
   
 def build_app_image(app, ruby_version)
   Dir.chdir "spec/fixtures/#{app}" do
-    system "env RUBY_VERSION=#{ruby_version} docker-compose build --build-arg RUBY_VERSION=#{ruby_version} --build-arg GEM_VERSION=#{GEM_VERSION}"\
+    system "env RUBY_VERSION=#{ruby_version} GEM_VERSION=#{GEM_VERSION}" \
+           " docker-compose build" \
+           " --build-arg RUBY_VERSION=#{ruby_version}" \
+           " --build-arg GEM_VERSION=#{GEM_VERSION}" \
     or raise 'docker-compose build failed'
   end
 end
@@ -92,7 +95,7 @@ namespace :spec do
     end.tap do|t|
       desc "Run all specs"
       # multitask all: t
-      task all: t
+      task :all, [:specs] => t
     end
   end
 end

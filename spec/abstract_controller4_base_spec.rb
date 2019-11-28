@@ -1,8 +1,8 @@
 require 'rails_spec_helper'
 
 describe 'AbstractControllerBase' do
-  before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
-  include_context 'Rails app pg database'
+  before(:all) { @fixture_dir = 'spec/fixtures/rails4_users_app' }
+  include_examples 'Rails app pg database'
   
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
@@ -30,7 +30,7 @@ describe 'AbstractControllerBase' do
       expect(appmap).to include(<<-SERVER_REQUEST.strip)
   http_server_request:
     request_method: POST
-    path_info: "/api/users"
+    path_info: "/api/users?login=alice&password=[FILTERED]"
       SERVER_REQUEST
     end
   end
