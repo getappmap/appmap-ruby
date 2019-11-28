@@ -5,6 +5,8 @@ require 'appmap/config'
 require 'appmap/inspect'
 require 'appmap/trace/tracer'
 
+require 'active_support/inflector/transliterate'
+
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each scenario which has the metadata key `:appmap`.
@@ -48,11 +50,31 @@ module AppMap
           metadata: metadata,
           events: events
         }
-        fname = example_name.parameterize(separator: '_', preserve_case: true)
+        fname = sanitize_filename(example_name)
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.json"), JSON.generate(appmap))
       end
-    end
 
+      # Cribbed from v5 version of ActiveSupport:Inflector#parameterize:
+      # https://github.com/rails/rails/blob/v5.2.4/activesupport/lib/active_support/inflector/transliterate.rb#L92
+      def sanitize_filename(fname, separator: '_')
+        # Replace accented chars with their ASCII equivalents.
+        fname = ActiveSupport::Inflector.transliterate(fname)
+
+        # Turn unwanted chars into the separator.
+        fname.gsub!(/[^a-z0-9\-_]+/i, separator)
+
+        re_sep = Regexp.escape(separator)
+        re_duplicate_separator        = /#{re_sep}{2,}/
+        re_leading_trailing_separator = /^#{re_sep}|#{re_sep}$/i
+
+        # No more than one of the separator in a row.
+        fname.gsub!(re_duplicate_separator, separator)
+        
+        # Finally, Remove leading/trailing separator.
+        fname.gsub(re_leading_trailing_separator, "")
+      end
+    end
+    
     class << self
       module FeatureAnnotations
         def feature
