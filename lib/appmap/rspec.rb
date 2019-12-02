@@ -5,6 +5,8 @@ require 'appmap/config'
 require 'appmap/inspect'
 require 'appmap/trace/tracer'
 
+require 'active_support/inflector/transliterate'
+
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each scenario which has the metadata key `:appmap`.
@@ -48,11 +50,31 @@ module AppMap
           metadata: metadata,
           events: events
         }
-        fname = example_name.parameterize(separator: '_', preserve_case: true)
+        fname = sanitize_filename(example_name)
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.json"), JSON.generate(appmap))
       end
-    end
 
+      # Cribbed from v5 version of ActiveSupport:Inflector#parameterize:
+      # https://github.com/rails/rails/blob/v5.2.4/activesupport/lib/active_support/inflector/transliterate.rb#L92
+      def sanitize_filename(fname, separator: '_')
+        # Replace accented chars with their ASCII equivalents.
+        fname = ActiveSupport::Inflector.transliterate(fname)
+
+        # Turn unwanted chars into the separator.
+        fname.gsub!(/[^a-z0-9\-_]+/i, separator)
+
+        re_sep = Regexp.escape(separator)
+        re_duplicate_separator        = /#{re_sep}{2,}/
+        re_leading_trailing_separator = /^#{re_sep}|#{re_sep}$/i
+
+        # No more than one of the separator in a row.
+        fname.gsub!(re_duplicate_separator, separator)
+        
+        # Finally, Remove leading/trailing separator.
+        fname.gsub(re_leading_trailing_separator, "")
+      end
+    end
+    
     class << self
       module FeatureAnnotations
         def feature
@@ -138,6 +160,26 @@ module AppMap
 
       LOG = false
 
+      def is_example_group_subclass_call?(tp)
+        # Order is important here. Checking for method_id == :subclass
+        # first will avoid calling defined_class.to_s in many cases,
+        # some of which will fail.
+        #
+        # For example, ActiveRecord in Rails 4 defines #inspect (and
+        # therefore #to_s) in such a way that it will fail if called
+        # here.
+        tp.event == :call &&
+          tp.method_id == :subclass &&
+          tp.defined_class.singleton_class? &&
+          tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>'
+      end
+
+      def is_example_initialize_call?(tp)
+        tp.event == :call &&
+          tp.method_id == :initialize &&
+          tp.defined_class.to_s == 'RSpec::Core::Example'
+      end
+      
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
@@ -161,7 +203,7 @@ module AppMap
         TracePoint.trace(:call, :b_call, :b_return) do |tp|
           # When a new ExampleGroup is encountered, parse the source file containing it and look
           # for blocks that might be Examples. Index each BlockParseNode by the start file:lineno.
-          if tp.event == :call && tp.defined_class.to_s == '#<Class:RSpec::Core::ExampleGroup>' && tp.method_id == :subclass
+          if is_example_group_subclass_call?(tp)
             example_block = tp.binding.eval('example_group_block')
             source_path, start_line = example_block.source_location
             require 'appmap/rspec/parser'
@@ -174,7 +216,7 @@ module AppMap
 
           # When a new Example is constructed with a block, look for the BlockParseNode that starts at the block's
           # file:lineno. If it exists, store the Example object, indexed by the file:lineno at which it ends.
-          if tp.event == :call && tp.defined_class.to_s == 'RSpec::Core::Example' && tp.method_id == :initialize
+          if is_example_initialize_call?(tp)
             example_block = tp.binding.eval('example_block')
             if example_block
               source_path, start_line = example_block.source_location
