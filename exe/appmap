@@ -130,7 +130,7 @@ module AppMap
         end
         @output_file.puts "Batch Id: #{batch_id}"
 
-        if STDIN.tty?
+        if options[:open] && STDIN.tty?
           if uuids.length == 1
             system "open #{url}/scenarios/#{uuids.first}"
           else

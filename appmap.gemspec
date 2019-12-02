@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  spec.files         = `git ls-files`.split("
+  spec.files         = `git ls-files --no-deleted`.split("
 ")
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
@@ -37,4 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'selenium-webdriver'
   spec.add_development_dependency 'webdrivers', '~> 4.0'
+  spec.add_development_dependency 'climate_control'
 end

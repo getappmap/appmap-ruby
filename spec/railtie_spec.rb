@@ -1,14 +1,15 @@
 require 'rails_spec_helper'
 
 describe 'AppMap tracer via Railtie' do
-  include_examples 'Rails app pg database'
-
+  before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
+  include_context 'Rails app pg database'
+  
   let(:env) { {} }
 
   let(:cmd) { %(docker-compose run --rm -e RAILS_ENV -e APPMAP app ./bin/rails r "puts Rails.configuration.appmap.enabled.inspect") }
   let(:command_capture2) do
     require 'open3'
-    Open3.capture2(env, cmd, chdir: 'spec/fixtures/rails_users_app').tap do |result|
+    Open3.capture2(env, cmd, chdir: @fixture_dir).tap do |result|
       raise 'Failed to run rails_users_app container' unless result[1] == 0
     end
   end

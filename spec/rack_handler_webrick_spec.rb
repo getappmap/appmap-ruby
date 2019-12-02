@@ -4,7 +4,7 @@ describe 'RackHandlerWebrick' do
   around(:each) do |example|
     FileUtils.mkdir_p tmpdir
     FileUtils.rm_f appmap_json
-    cmd = "docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 rack_users_app_app bin/rackup -o 0.0.0.0 -s webrick"
+    cmd = "docker run -d -v #{File.absolute_path tmpdir}:/app/tmp -p 9292 rack-users-app:#{ENV['RUBY_VERSION']} bin/rackup -o 0.0.0.0 -s webrick"
     container_id = `cd spec/fixtures/rack_users_app && #{cmd}`.strip
     raise 'Failed to start rack_users_app container' unless $CHILD_STATUS.exitstatus == 0
 

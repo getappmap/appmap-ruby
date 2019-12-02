@@ -1,3 +1,3 @@
-require 'appmap/middleware/record_button'
-Rails.application.config.middleware.insert_after Rails::Rack::Logger, AppMap::Middleware::RecordButton \
+require 'appmap/middleware/remote_recording'
+Rails.application.config.middleware.insert_after Rails::Rack::Logger, AppMap::Middleware::RemoteRecording \
   unless Rails.env.test?

@@ -243,6 +243,11 @@ module AppMap
       rescue
         puts $!.message
         puts $!.backtrace.join("\n")
+        # XXX If this exception doesn't get reraised, internal errors
+        # (e.g. a missing method on TracePoint) get silently
+        # ignored. This allows tests to pass that should fail, which
+        # is bad, but is it desirable otherwise?
+        raise
       end
 
       protected

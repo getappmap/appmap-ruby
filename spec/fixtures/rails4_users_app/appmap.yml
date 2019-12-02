@@ -1,0 +1,3 @@
+name: rails4_users_app
+packages:
+  - path: app

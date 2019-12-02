@@ -8,7 +8,7 @@ class RSpecTest < Minitest::Test
   def test_record_rspec
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/rspec_recorder' do
-        appmap_file = 'tmp/appmap/rspec/Hello says hello.json'
+        appmap_file = 'tmp/appmap/rspec/Hello_says_hello.json'
         FileUtils.rm_rf 'tmp'
         system 'bundle'
         system({ 'APPMAP' => 'true' }, 'bundle exec rspec')

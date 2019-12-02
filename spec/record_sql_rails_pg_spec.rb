@@ -1,13 +1,14 @@
 require 'rails_spec_helper'
 
 describe 'Record SQL queries in a Rails app' do
-  include_examples 'Rails app pg database'
-
+  before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
+  include_context 'Rails app pg database'
+  
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
     cmd = "docker-compose run --rm -e ORM_MODULE=#{orm_module} -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_api_spec.rb:#{test_line_number}"
-    system cmd, chdir: 'spec/fixtures/rails_users_app' or raise 'Failed to run rails_users_app container'
+    system cmd, chdir: @fixture_dir or raise 'Failed to run rails_users_app container'
 
     example.run
   end
@@ -17,7 +18,7 @@ describe 'Record SQL queries in a Rails app' do
 
   context 'while creating a new record' do
     let(:test_line_number) { 8 }
-    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api::UsersController POST _api_users with required parameters creates a user.json') }
+    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.json') }
 
     context 'using Sequel ORM' do
       let(:orm_module) { 'sequel' }
@@ -45,7 +46,7 @@ describe 'Record SQL queries in a Rails app' do
 
   context 'while listing records' do
     let(:test_line_number) { 23 }
-    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api::UsersController GET _api_users lists the users.json') }
+    let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_GET_api_users_lists_the_users.json') }
 
     context 'using Sequel ORM' do
       let(:orm_module) { 'sequel' }

@@ -1,0 +1,24 @@
+version: "3"
+services:
+  pg:
+    build:
+      context: .
+      dockerfile: Dockerfile.pg
+    ports:
+      - "5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rails4-app:${RUBY_VERSION}
+    command:
+      [ "./bin/rails", "server", "-b", "0.0.0.0", "webrick" ]
+    environment:
+      RAILS_ENV:
+    volumes:
+    - .:/src/app
+    ports:
+    - "3000"
+    links:
+    - pg:pg
