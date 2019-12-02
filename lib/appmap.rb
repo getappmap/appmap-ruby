@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 begin
   require 'active_support'
   require 'active_support/core_ext'
@@ -8,6 +10,8 @@ end
 require 'appmap/version'
 
 module AppMap
+  BATCH_HEADER_NAME = 'AppLand-Scenario-Batch'
+
   class << self
     # Simplified entry point to inspect code for features.
     def inspect(config)

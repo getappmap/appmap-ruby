@@ -60,7 +60,7 @@ module AppMap
         response = conn.post do |req|
           req.url '/api/scenarios'
           req.headers['Content-Type'] = 'application/json'
-          req.headers['AppLandScenarioBatch'] = @batch_id if @batch_id
+          req.headers[AppMap::BATCH_HEADER_NAME] = @batch_id if @batch_id
           req.body = JSON.generate(upload_file)
         end
 
@@ -79,7 +79,7 @@ module AppMap
           raise error.join
         end
 
-        batch_id = @batch_id || response.headers['AppLandScenarioBatch']
+        batch_id = @batch_id || response.headers[AppMap::BATCH_HEADER_NAME]
 
         uuid = message['uuid']
         UploadResponse.new(batch_id, uuid)
