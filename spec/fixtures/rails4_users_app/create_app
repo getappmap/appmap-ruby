@@ -4,12 +4,17 @@ set -e
 # Just checking for a healthy container isn't enough, apparently. If
 # we don't wait here, sometimes the database is inaccessible.
 for i in {1..10}; do
-  psql -h pg -U postgres postgres -c 'select 1' && break
+  psql -h pg -U postgres postgres -c 'select 1' >/dev/null 2>&1 && break
   printf ' .'
   sleep 1
 done
 echo
-psql -h pg -U postgres postgres -c 'select 1'
+out="$(psql -h pg -U postgres postgres -c 'select 1' 2>&1)"
+if [[ $? != 0 ]]; then
+   echo "Postgres didn't start in time:"
+   echo "$out"
+   exit 1
+fi
 
 export RAILS_ENV=test
 ./bin/rake db:{create,migrate,setup}
