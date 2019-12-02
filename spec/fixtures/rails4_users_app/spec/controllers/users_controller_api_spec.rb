@@ -2,6 +2,7 @@ require 'rails_helper'
 require 'rack/test'
 
 RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, appmap: true do
+
   describe 'POST /api/users', feature: 'Create a user' do
     describe 'with required parameters' do
       it 'creates a user' do
@@ -24,6 +25,25 @@ RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, 
       post :index, {}
       users = JSON.parse(response.body)
       expect(users.map { |r| r['login'] }).to include('alice')
+    end
+  end
+
+  context 'when parameterizing a string' do
+    context 'using the inflector' do
+      it 'uses the default separator' do
+        expect(ActiveSupport::Inflector.parameterize('foo bar baz')).to eq('foo-bar-baz')
+      end
+      it 'uses a specified separator' do
+        expect(ActiveSupport::Inflector.parameterize('foo bar baz', '+')).to eq('foo+bar+baz')
+      end
+    end
+    context 'with #parameterize' do
+      it 'uses the default separator' do
+        expect('foo bar baz'.parameterize).to eq('foo-bar-baz')
+      end
+      it 'uses a specified separator' do
+        expect('foo bar baz'.parameterize('+')).to eq('foo+bar+baz')
+      end
     end
   end
 end

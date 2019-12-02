@@ -7,7 +7,7 @@ describe 'Record SQL queries in a Rails4 app' do
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
-    cmd = "docker-compose run --rm -e ORM_MODULE=#{orm_module} -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec -b spec/controllers/users_controller_api_spec.rb:#{test_line_number}"
+    cmd = "docker-compose run --rm -e ORM_MODULE=#{orm_module} -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec -f doc -b spec/controllers/users_controller_api_spec.rb:#{test_line_number}"
     system cmd, chdir: @fixture_dir or raise 'Failed to run rails_users_app container'
 
     example.run
@@ -16,6 +16,13 @@ describe 'Record SQL queries in a Rails4 app' do
   let(:tmpdir) { "tmp/spec/record_sql_rails_pg_spec" }
   let(:appmap) { JSON.parse(File.read(appmap_json)).to_yaml }
 
+  context 'when running specs' do
+    let(:test_line_number) { 31 }
+    let(:orm_module) { 'activerecord' }
+
+    it { is_expected.to be }
+  end
+  
   context 'while creating a new record' do
     let(:test_line_number) { 8 }
     let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.json') }
