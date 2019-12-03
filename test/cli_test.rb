@@ -71,9 +71,11 @@ class CLITest < Minitest::Test
   def test_upload
     `./exe/appmap inspect -o #{OUTPUT_FILENAME}`
 
-    scenario_uuid = `./exe/appmap upload --no-open #{OUTPUT_FILENAME}`
+    upload_output = `./exe/appmap upload --no-open #{OUTPUT_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     # Example: 93e1e07d-4b39-49ac-82bf-27d63e296cae
-    assert_match(/^[0-9a-f]+\-[0-9a-f\-]+$/, scenario_uuid)
+    assert_match(/Scenario Id/, upload_output)
+    assert_match(/Batch Id/, upload_output)
+    assert_match(/[0-9a-f]+\-[0-9a-f\-]+/, upload_output)
   end
 end

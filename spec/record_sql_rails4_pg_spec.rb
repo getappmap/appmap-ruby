@@ -34,8 +34,6 @@ describe 'Record SQL queries in a Rails4 app' do
   sql_query:
     sql: INSERT INTO "users" ("login") VALUES ('alice') RETURNING *
         SQL_QUERY
-        # INSERT queries are not explained
-        expect(appmap).to_not include('explain_sql:')
       end
     end
     context 'using ActiveRecord ORM' do
@@ -46,8 +44,6 @@ describe 'Record SQL queries in a Rails4 app' do
     sql: INSERT INTO "users" ("login", "created_at", "updated_at") VALUES ($1, $2,
       $3) RETURNING "id"
         SQL_QUERY
-        # INSERT queries are not explained
-        expect(appmap).to_not include('explain_sql:')
       end
     end
   end
@@ -58,24 +54,22 @@ describe 'Record SQL queries in a Rails4 app' do
 
     xcontext 'using Sequel ORM' do
       let(:orm_module) { 'sequel' }
-      it 'detects the sql SELECT and computes explain_sql' do
+      it 'detects the sql SELECT' do
         expect(appmap).to include(<<-SQL_QUERY.strip)
   sql_query:
     sql: SELECT * FROM "users"
         SQL_QUERY
 
         expect(appmap).to include('sql:')
-        expect(appmap).to include('explain_sql:')
       end
     end
     context 'using ActiveRecord ORM' do
       let(:orm_module) { 'activerecord' }
-      it 'detects the sql SELECT and computes explain_sql' do
+      it 'detects the sql SELECT' do
         expect(appmap).to include(<<-SQL_QUERY.strip)
   sql_query:
     sql: SELECT "users".* FROM "users"
         SQL_QUERY
-        expect(appmap).to include('explain_sql:')
       end
     end
   end
