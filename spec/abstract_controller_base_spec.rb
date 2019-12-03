@@ -14,7 +14,7 @@ describe 'AbstractControllerBase' do
   end
 
   let(:tmpdir) { 'tmp/spec/AbstractControllerBase' }
-  let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.json') }
+  let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json') }
 
   describe 'testing with rspec' do
     it 'Message fields are recorded in the appmap' do

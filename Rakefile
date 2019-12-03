@@ -1,8 +1,8 @@
-require 'rake/testtask'
-require 'rdoc/task'
-
 require 'appmap/version'
 GEM_VERSION = AppMap::VERSION
+
+require 'rake/testtask'
+require 'rdoc/task'
 
 namespace 'gem' do
   require 'bundler/gem_tasks'

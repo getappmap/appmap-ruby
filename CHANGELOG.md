@@ -1,4 +1,4 @@
-# v0.18.0
+# v0.18.1
 
 * Now tested with Rails 4, 5, and 6.
 * Now tested with Ruby 2.5 and 2.6.

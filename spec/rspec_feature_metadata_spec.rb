@@ -14,7 +14,7 @@ describe 'RSpec feature and feature group metadata' do
   end
 
   let(:tmpdir) { 'tmp/spec/RSpec feature and feature group metadata' }
-  let(:appmap_json) { File.join(tmpdir, %(appmap/rspec/User_creation_creates_charles.json)) }
+  let(:appmap_json) { File.join(tmpdir, %(appmap/rspec/User_creation_creates_charles.appmap.json)) }
 
   describe do
     it 'are recorded in the appmap' do
