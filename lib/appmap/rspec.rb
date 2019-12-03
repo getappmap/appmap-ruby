@@ -51,7 +51,7 @@ module AppMap
           events: events
         }
         fname = sanitize_filename(example_name)
-        File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.json"), JSON.generate(appmap))
+        File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.appmap.json"), JSON.generate(appmap))
       end
 
       # Cribbed from v5 version of ActiveSupport:Inflector#parameterize:
@@ -69,12 +69,12 @@ module AppMap
 
         # No more than one of the separator in a row.
         fname.gsub!(re_duplicate_separator, separator)
-        
+
         # Finally, Remove leading/trailing separator.
-        fname.gsub(re_leading_trailing_separator, "")
+        fname.gsub(re_leading_trailing_separator, '')
       end
     end
-    
+
     class << self
       module FeatureAnnotations
         def feature
@@ -179,7 +179,7 @@ module AppMap
           tp.method_id == :initialize &&
           tp.defined_class.to_s == 'RSpec::Core::Example'
       end
-      
+
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
