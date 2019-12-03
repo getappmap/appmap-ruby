@@ -87,14 +87,23 @@ module AppMap
         def display_string(value)
           return nil unless value
 
-          begin
-            value_string = value.to_s
-          rescue NoMethodError
-            value_string = value.inspect
-          rescue StandardError
-            warn $!.message
+          last_resort_string = lambda do
+            warn "AppMap encountered an error inspecting an object: #{$!.message}"
             '*Error inspecting variable*'
           end
+
+          value_string = \
+            begin
+              value.to_s
+            rescue NoMethodError
+              begin
+                value.inspect
+              rescue StandardError
+                last_resort_string.call
+              end
+            rescue StandardError
+              last_resort_string.call
+            end
 
           value_string[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
