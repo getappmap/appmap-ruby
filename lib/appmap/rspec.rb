@@ -58,7 +58,7 @@ module AppMap
       # https://github.com/rails/rails/blob/v5.2.4/activesupport/lib/active_support/inflector/transliterate.rb#L92
       def sanitize_filename(fname, separator: '_')
         # Replace accented chars with their ASCII equivalents.
-        fname = ActiveSupport::Inflector.transliterate(fname)
+        fname = fname.encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
 
         # Turn unwanted chars into the separator.
         fname.gsub!(/[^a-z0-9\-_]+/i, separator)
