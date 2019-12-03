@@ -286,7 +286,7 @@ module AppMap
 
               normalize = lambda do |desc|
                 desc.gsub('it should behave like', '')
-                    .gsub(/\w(Controller)$/, '')
+                    .gsub(/Controller$/, '')
                     .gsub(/\s+/, ' ')
                     .strip
               end
