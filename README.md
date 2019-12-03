@@ -78,16 +78,15 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 ## RSpec
 
-To instrument RSpec tests, follow these steps:
+To instrument RSpec tests, follow these additional steps:
 
-1) Include the `appmap` gem in your Gemfile.
-2) Require `appmap/rspec` in your `spec_helper.rb`.
-3) Add `appmap: true` to the tests you want to instrument.
-4) Export the environment variable `APPMAP=true`.
-5) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
-   examples. 
+1) Require `appmap/rspec` in your `spec_helper.rb`.
 
-Here's an example of an appmap-enabled RSpec test:
+```ruby
+require 'appmap/rspec'
+```
+
+2) Add `appmap: true` to the tests you want to instrument.
 
 ```ruby
 describe Hello, appmap: true do
@@ -99,7 +98,10 @@ describe Hello, appmap: true do
 end
 ```
 
-Run the tests like this:
+3) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
+   examples. 
+
+4) Run the tests with the environment variable `APPMAP=true`:
 
 ```sh-session
 $ APPMAP=true bundle exec rspec -t appmap
