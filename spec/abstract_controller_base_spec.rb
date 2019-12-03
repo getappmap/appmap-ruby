@@ -33,5 +33,27 @@ describe 'AbstractControllerBase' do
     path_info: "/api/users"
       SERVER_REQUEST
     end
+
+    it 'Properly captures method parameters in the appmap' do
+      expect(File).to exist(appmap_json)
+      appmap = JSON.parse(File.read(appmap_json)).to_yaml
+
+      expect(appmap).to match(<<-CREATE_CALL.strip)
+  event: call
+  defined_class: Api::UsersController
+  method_id: create_user
+  path: app/controllers/api/users_controller.rb
+  lineno: 23
+  static: false
+  thread_id: .*
+  parameters:
+  - name: params
+    class: ActiveSupport::HashWithIndifferentAccess
+    object_id: .*
+    value: '{"login"=>"alice"}'
+    kind: req
+  receiver:
+      CREATE_CALL
+    end
   end
 end

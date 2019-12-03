@@ -6,7 +6,7 @@ module Api
     end
 
     def create
-      @user = User.new(params.slice(:login).to_unsafe_h)
+      @user = create_user(params.slice(:login).to_unsafe_h)
       unless @user.valid?
         error = {
           code: 'invalid',
@@ -18,6 +18,10 @@ module Api
       end
       @user.save
       render json: @user, status: :created
+    end 
+
+    def create_user(params)
+      User.new(params)
     end
   end
 end
