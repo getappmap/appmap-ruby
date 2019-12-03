@@ -1,3 +1,10 @@
+# v0.18.0
+
+* Now tested with Rails 4, 5, and 6.
+* Now tested with Ruby 2.5 and 2.6.
+* `explain_sql` is no longer collected.
+* `appmap/railtie` is automatically required when running in a Rails environment.
+
 # v0.17.0
 
 **WARNING** Breaking changes

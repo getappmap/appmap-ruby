@@ -42,23 +42,6 @@ module AppMap
 
             payload[:server_version] = examiner.server_version
             payload[:database_type] = examiner.database_type.to_s
-
-            # Unfortunately, it's not enough to simply handle exceptions, because if the
-            # EXPLAIN fails then the transaction is aborted by Postgresql
-            if sql.upcase.index('SELECT') == 0
-              # Sequel::Postgres::Database (2.2ms)  EXPLAIN SELECT "id" FROM "scenarios" WHERE ("uuid" = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f') LIMIT 1
-              # Limit  (cost=0.15..8.17 rows=1 width=4)
-              #   ->  Index Scan using scenarios_uuid_key on scenarios  (cost=0.15..8.17 rows=1 width=4)
-              #         Index Cond: (uuid = 'd82ac3ef-dd71-4948-8ac1-5bce8bee1d0f'::uuid)
-              explain_sql = \
-                case examiner.database_type
-                when :postgres, :postgresql
-                  examiner.execute_query(%(EXPLAIN #{sql})).map { |r| r.values[0] }.join("\n")
-                when :sqlite
-                  examiner.execute_query(%(EXPLAIN QUERY PLAN #{sql})).map { |r| r['detail'] }.join("\n")
-                end
-              payload[:explain_sql] = explain_sql if explain_sql
-            end
           end
 
           protected

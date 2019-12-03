@@ -30,7 +30,7 @@ describe 'AbstractControllerBase' do
       expect(appmap).to include(<<-SERVER_REQUEST.strip)
   http_server_request:
     request_method: POST
-    path_info: "/api/users?login=alice&password=[FILTERED]"
+    path_info: "/api/users?login=alice&password=foobar
       SERVER_REQUEST
     end
     it 'Properly captures method parameters in the appmap' do

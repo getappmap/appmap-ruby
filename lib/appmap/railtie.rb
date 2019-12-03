@@ -21,8 +21,11 @@ module AppMap
     initializer 'appmap.subscribe', after: 'appmap.trace' do |_| # params: app
       lambda do
         require 'appmap/rails/sql_handler'
+        require 'appmap/rails/action_handler'
         ActiveSupport::Notifications.subscribe('sql.sequel', AppMap::Rails::SQLHandler.new)
         ActiveSupport::Notifications.subscribe('sql.active_record', AppMap::Rails::SQLHandler.new)
+        ActiveSupport::Notifications.subscribe('start_processing.action_controller', AppMap::Rails::ActionHandler::HTTPServerRequest.new)
+        ActiveSupport::Notifications.subscribe('process_action.action_controller', AppMap::Rails::ActionHandler::HTTPServerResponse.new)
       end.call
     end
   end

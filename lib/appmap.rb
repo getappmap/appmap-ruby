@@ -23,4 +23,4 @@ module AppMap
   end
 end
 
-# require 'appmap/railtie' if defined?(Rails)
+require 'appmap/railtie' if defined?(::Rails::Railtie)
