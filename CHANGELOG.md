@@ -1,3 +1,9 @@
+# v0.19.0
+
+* **RSpec** feature and feature group names can be inferred from example group and example names.
+* Stop using `ActiveSupport::Inflector.transliterate`, since it can cause exceptions.
+* Handle StandardError which occurs while calling `#inspect` of an object.
+
 # v0.18.1
 
 * Now tested with Rails 4, 5, and 6.

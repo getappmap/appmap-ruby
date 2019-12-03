@@ -1,35 +1,54 @@
 - [About](#about)
 - [Installation](#installation)
 - [Configuration](#configuration)
-  - [`packages`](#packages)
 - [Running](#running)
   - [RSpec](#rspec)
-  - [Rails](#rails)
-- [Uploading](#uploading)
+  - [Remote recording](#remote-recording)
+- [Uploading AppMaps](#uploading-appmaps)
 - [Build status](#build-status)
 
 # About
 
-`appmap-ruby` is a Ruby client for recording and uploading [AppMap](https://github.com/applandinc/appmap) data.
-
+`appmap-ruby` is a Ruby Gem for recording and uploading
+[AppMaps](https://github.com/applandinc/appmap) of your code. 
 AppMap is a data format which records code structure (modules, classes, and methods), code execution events
-(function calls and returns), and code metadata (repo name, repo URL, commit SHA, etc).
+(function calls and returns), and code metadata (repo name, repo URL, commit
+SHA, etc). It's more granular than a performance profile, but it's less
+granular than a full debug trace. It's designed to be optimal for understanding the design intent and behavior of code.
 
-The normal usage of an AppMap client is to run a test case (such as an RSpec test) with AppMap instrumentation enabled.
-The AppMap client will observe and record information about the code execution, and store it in an AppMap file.
+There are several ways to record AppMaps of your Ruby program using the `appmap` gem:
 
-The command `appmap upload` is then used to upload the AppMap file to the App.Land server, which processes the file into
-useful displays such as graphical depiction of the code structure and execution.
+* Run your RSpec tests. An AppMap will be generated for each one.
+* Run your application server with AppMap remote recording enabled, and use the AppMap
+  browser extension to start, stop, and upload recordings. 
+
+When you record AppMaps on the command line (for example, by running RSpec tests), you use the `appmap upload` command to
+upload them to the AppLand website. On the AppLand website, you'll be able to
+visualize the design of your code and share links with collaborators.
 
 # Installation
 
-Add `gem 'appmap'` to your Gemfile just as you would any other dependency. You can place the gem in the `test` group.
+Add `gem 'appmap'` to your Gemfile just as you would any other dependency.
+
+**Global installation**
+
+```
+gem 'appmap'
+```
+
+**Install in test, development groups**
+
+```
+group :development, :test do
+  gem 'appmap'
+end
+```
 
 Then install with `bundle`. 
 
 # Configuration
 
-When you run the AppMap client, it will look for configuration settings in `appmap.yml`. Here's a sample configuration
+When you run your program, the `appmap` gem reads configuration settings from `appmap.yml`. Here's a sample configuration
 file for a typical Rails project:
 
 ```yaml
@@ -44,7 +63,7 @@ packages:
 * **files** A list of individual files which should be instrumented. This is only used for files which are
   not part of the `packages` list.
 
-## `packages`
+**packages**
 
 Each entry in the `packages` list is a YAML object which has the following keys:
 
@@ -61,71 +80,90 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 To instrument RSpec tests, follow these steps:
 
-1) Include the `appmap` gem in your Gemfile
-2) Require `appmap/rspec` in your `spec_helper.rb` or `rails_helper.rb`
-3) Add `appmap: true` to the tests you want to instrument
-4) Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` to your 
+1) Include the `appmap` gem in your Gemfile.
+2) Require `appmap/rspec` in your `spec_helper.rb`.
+3) Add `appmap: true` to the tests you want to instrument.
+4) Export the environment variable `APPMAP=true`.
+5) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
    examples. 
-5) Export the environment variable `APPMAP=true`
 
 Here's an example of an appmap-enabled RSpec test:
 
 ```ruby
-describe Hello, feature_group: 'Greeting' do
-  it 'says hello', feature: 'Print a greeting to the console', appmap: true do
-    expect(Hello.new.say_hello).to eq('Hello!')
+describe Hello, appmap: true do
+  describe 'says hello' do
+    it 'when prompted' do
+      expect(Hello.new.say_hello).to eq('Hello!')
+    end
   end
 end
 ```
 
-Then run the tests:
+Run the tests like this:
 
 ```sh-session
-$ APPMAP=true bundle exec rspec
+$ APPMAP=true bundle exec rspec -t appmap
 ```
 
 Each RSpec test will output a data file into the directory `tmp/appmap/rspec`. For example:
 
 ```
 $ find tmp/appmap/rspec
-Hello says hello.json
+Hello_says_hello_when_prompted.appmap.json
 ```
 
 If you include the `feature` and `feature_group` metadata, these attributes will be exported to the AppMap file in the
 `metadata` section. It will look something like this:
 
 ```json
-
+{
+  ...
+  "metadata": {
+    "name": "Hello app says hello when prompted",
+    "feature": "Hello app says hello",
+    "feature_group": "Hello"
+  },
+  ...
+}
 ```
 
-## Rails
+## Remote recording
 
-To capture ad-hoc AppMaps of your Rails app, use the AppMap Railtie.
+To manually record ad-hoc AppMaps of your Ruby app, use AppMap remote recording.
 
-1) Include the `appmap` gem in your Gemfile and require both `appmap` and `appmap/railtie`, like this:
+1. Add the AppMap remote recording middleware. For example, in `config/initializers/appmap_remote_recording.rb`:
 
 ```ruby
-gem "appmap", require: %w[appmap appmap/railtie]
+require 'appmap/middleware/remote_recording'
+
+unless Rails.env.test?
+  Rails.application.config.middleware.insert_after \
+    Rails::Rack::Logger,
+    AppMap::Middleware::RemoteRecording
+end
 ```
 
-2) Export `APPMAP=true` when you start your Rails application server. For example:
+2. Start your Rails application server. For example:
 
 ```sh-session
-$ APPMAP=true bundle exec rails server
+$ bundle exec rails server
 ```
 
-When the Rails app exits, an `appmap.json` file will be written to the project root directory. You can upload it using
-the `appmap upload` command.
+3. Open the AppApp browser extension and push `Start`.
 
-# Uploading
+4. Use your app. For example, perform a login flow, or run through a manual UI test.
 
-To upload an AppMap file to App.Land, run the `appmap upload` command. For example:
+5. Open the AppApp browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
+
+# Uploading AppMaps
+
+To upload an AppMap file to AppLand, run the `appmap upload` command. For example:
 
 ```sh-session
-$ appmap upload tmp/appmap/rspec/Hello says hello.json
-Full classMap contains 1 classes
-Pruned classMap contains 1 classes
-Uploaded new scenario: d49f3d16-e9f2-4775-a731-6cb95193927e
+$ appmap upload tmp/appmap/rspec/Hello_app_says_hello_when_prompted.appmap.json
+Uploading "tmp/appmap/rspec/Hello_app_says_hello_when_prompted.appmap.json"
+Scenario Id: 4da4f267-bdea-48e8-bf67-f39463844230
+Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
 ```
 
 # Build status
