@@ -88,7 +88,7 @@ module AppMap
           return nil unless value
 
           last_resort_string = lambda do
-            warn "AppMap encountered an error inspecting an object: #{$!.message}"
+            warn "AppMap encountered an error inspecting a #{value.class.name}: #{$!.message}"
             '*Error inspecting variable*'
           end
 
