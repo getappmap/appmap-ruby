@@ -23,8 +23,17 @@ describe 'AbstractControllerBase' do
 
       expect(appmap).to include(<<-MESSAGE.strip)
   message:
-    login: alice
-    password: "[FILTERED]"
+  - name: login
+    class: String
+    value: alice
+    object_id:
+      MESSAGE
+
+      expect(appmap).to include(<<-MESSAGE.strip)
+  - name: password
+    class: String
+    value: "[FILTERED]"
+    object_id:
       MESSAGE
 
       expect(appmap).to include(<<-SERVER_REQUEST.strip)

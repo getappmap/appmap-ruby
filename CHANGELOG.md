@@ -1,3 +1,9 @@
+# v0.20.0
+
+**WARNING** Breaking changes
+
+* **Event `message`** is now an array of value objects
+
 # v0.19.0
 
 * **RSpec** feature and feature group names can be inferred from example group and example names.
