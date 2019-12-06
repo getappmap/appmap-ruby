@@ -51,7 +51,7 @@ module AppMap
           appmap[:events] = events
         else
           class_map = prune(data)
-          appmap = { "classMap": class_map, "events": [] }
+          appmap = { "version": AppMap::APPMAP_FORMAT_VERSION, "classMap": class_map, "events": [] }
         end
 
         upload_file = { user: user, org: org, data: appmap }.compact

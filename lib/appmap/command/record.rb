@@ -19,7 +19,6 @@ module AppMap
                 name: 'rails',
                 version: ::Rails.version
               }
-              m[:layout] = 'rails'
             end
             m[:git] = git_metadata if git_available
           end

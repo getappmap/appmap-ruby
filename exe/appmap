@@ -77,7 +77,8 @@ module AppMap
 
         require 'appmap/command/record'
         AppMap::Command::Record.new(@config, program).perform do |features, events|
-          @output_file.write JSON.generate(classMap: features,
+          @output_file.write JSON.generate(version: AppMap::APPMAP_FORMAT_VERSION,
+                                           classMap: features,
                                            metadata: AppMap::Command::Record.detect_metadata,
                                            events: events)
         end

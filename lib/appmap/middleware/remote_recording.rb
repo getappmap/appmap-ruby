@@ -70,7 +70,7 @@ module AppMap
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata
 
-        response = JSON.generate(classMap: @features, metadata: metadata, events: @events)
+        response = JSON.generate(version: AppMap::APPMAP_FORMAT_VERSION, classMap: @features, metadata: metadata, events: @events)
 
         [ true, response ]
       end

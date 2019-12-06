@@ -27,7 +27,17 @@ module AppMap
                 request_method: payload[:method],
                 path_info: payload[:path]
               }
-              h[:message] = payload[:params]
+
+              params = payload[:params]
+              h[:message] = params.keys.map do |key|
+                val = params[key]
+                {
+                  name: key,
+                  class: val.class.name,
+                  value: self.class.display_string(val),
+                  object_id: val.__id__
+                }
+              end
             end
           end
         end

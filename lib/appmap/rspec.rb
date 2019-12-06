@@ -45,7 +45,7 @@ module AppMap
         end
 
         appmap = {
-          version: '1.1',
+          version: AppMap::APPMAP_FORMAT_VERSION,
           classMap: features,
           metadata: metadata,
           events: events

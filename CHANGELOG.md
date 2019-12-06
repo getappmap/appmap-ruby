@@ -1,3 +1,11 @@
+# v0.20.0
+
+Updated to [AppMap file format](https://github.com/applandinc/appmap) version 1.2.
+
+* **Event `message`** is now an array of parameter objects.
+* The value of each `appmap:` tags in an RSpec is recorded as a `label` in the AppMap file metadata.
+* `layout` is removed from AppMap file metadata.
+
 # v0.19.0
 
 * **RSpec** feature and feature group names can be inferred from example group and example names.
