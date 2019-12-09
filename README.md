@@ -145,17 +145,19 @@ unless Rails.env.test?
 end
 ```
 
-2. Start your Rails application server. For example:
+2. Download and unpack the [AppLand browser extension](https://github.com/applandinc/appland-browser-extension). Install into Chrome using `chrome://extensions/`. Turn on "Developer Mode" and then load the extension using the "Load unpacked" button.
+
+3. Start your Rails application server. For example:
 
 ```sh-session
 $ bundle exec rails server
 ```
 
-3. Open the AppApp browser extension and push `Start`.
+4. Open the AppApp browser extension and push `Start`.
 
-4. Use your app. For example, perform a login flow, or run through a manual UI test.
+5. Use your app. For example, perform a login flow, or run through a manual UI test.
 
-5. Open the AppApp browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
+6. Open the AppApp browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
 
 # Uploading AppMaps
 
