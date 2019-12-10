@@ -69,6 +69,10 @@ module AppMap
 
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata
+        metadata[:recorder] = {
+          name: 'remote_recording',
+          version: AppMap::VERSION
+        }
 
         response = JSON.generate(version: AppMap::APPMAP_FORMAT_VERSION, classMap: @features, metadata: metadata, events: @events)
 

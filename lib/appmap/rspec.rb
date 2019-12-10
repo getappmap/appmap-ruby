@@ -42,6 +42,10 @@ module AppMap
             name: 'rspec',
             version: Gem.loaded_specs['rspec-core']&.version&.to_s
           }
+          m[:recorder] = {
+            name: 'rspec',
+            version: AppMap::VERSION
+          }
         end
 
         appmap = {
