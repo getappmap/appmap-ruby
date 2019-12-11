@@ -11,6 +11,11 @@ module AppMap
               name: 'ruby',
               engine: RUBY_ENGINE,
               version: RUBY_VERSION
+            },
+            client: {
+              name: 'appmap',
+              url: AppMap::URL,
+              version: AppMap::VERSION
             }
           }.tap do |m|
             if defined?(::Rails)
