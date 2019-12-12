@@ -42,6 +42,9 @@ module AppMap
             name: 'rspec',
             version: Gem.loaded_specs['rspec-core']&.version&.to_s
           }
+          m[:recorder] = {
+            name: 'rspec'
+          }
         end
 
         appmap = {
@@ -272,14 +275,17 @@ module AppMap
               description = []
               leaf = scope = ScopeExample.new(example)
               feature_group = feature = nil
-              labels = scope.labels.map(&:to_s).map(&:strip).reject(&:blank?).map(&:downcase).uniq
 
+              labels = []
               while scope
+                labels += scope.labels
                 description << scope.description
                 feature ||= scope.feature
                 feature_group ||= scope.feature_group
                 scope = scope.parent
               end
+
+              labels = labels.map(&:to_s).map(&:strip).reject(&:blank?).map(&:downcase).uniq
               description.reject!(&:nil?).reject(&:blank?)
               default_description = description.last
               description.reverse!

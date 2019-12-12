@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module AppMap
-  VERSION = '0.20.0'
+  URL = 'https://github.com/applandinc/appmap-ruby'
+
+  VERSION = '0.21.0'
 
   APPMAP_FORMAT_VERSION = '1.2'
 end

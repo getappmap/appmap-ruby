@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
@@ -9,8 +10,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Kevin Gilpin']
   spec.email         = ['kgilpin@gmail.com']
 
-  spec.summary       = %q{Inspect and trace your Ruby code, generating a JSON data file.}
-  spec.homepage      = 'https://github.com/kgilpin/appmap-ruby'
+  spec.summary       = %q{Record the operation of a Ruby program, using the AppLand 'AppMap' format.}
+  spec.homepage      = AppMap::URL
   spec.license       = 'MIT'
 
   # Specify which files should be added to the gem when it is released.

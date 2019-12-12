@@ -1,3 +1,7 @@
+# v0.21.0
+
+* Scenario data includes `recorder` and `client` info, describing how the data was recorded.
+
 # v0.20.0
 
 Updated to [AppMap file format](https://github.com/applandinc/appmap) version 1.2.
