@@ -1,3 +1,8 @@
+# v0.22.0
+
+* **RSpec** recorder generates an "inventory" (AppMap with classMap, without events) named `Inventory.appmap.json`.
+* **appmap inspect** generates an inventory AppMap which includes `version`, `metadata`, and `classMap`. Previously, the file output by this command was the class map represented as an array.
+
 # v0.21.0
 
 * Scenario data includes `recorder` and `client` info, describing how the data was recorded.

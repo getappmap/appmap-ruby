@@ -21,11 +21,10 @@ module AppMap
       def perform
         appmap = data.clone
 
-        # If it's a list, upload it as a classMap
-        if data.is_a?(Hash)
-          events = data.delete('events') || []
-          class_map = data.delete('classMap') || []
+        events = data.delete('events')
+        class_map = data.delete('classMap') || []
 
+        unless events.blank?
           pruned_events = []
           stack = []
           events.each do |evt|
@@ -44,14 +43,11 @@ module AppMap
 
           warn "Pruned events to #{pruned_events.length}" if events.length > pruned_events.length
 
-          events = pruned_events
-
-          class_map = prune(class_map, events: events)
-          appmap[:classMap] = class_map
-          appmap[:events] = events
+          appmap[:events] = pruned_events
+          appmap[:classMap] = prune(class_map, events: pruned_events)
         else
-          class_map = prune(data)
-          appmap = { "version": AppMap::APPMAP_FORMAT_VERSION, "classMap": class_map, "events": [] }
+          appmap[:events] = []
+          appmap[:classMap] = prune(class_map)
         end
 
         upload_file = { user: user, org: org, data: appmap }.compact
