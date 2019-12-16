@@ -48,8 +48,8 @@ module AppMap
 
       c.action do
         require 'appmap/command/inspect'
-        features = AppMap::Command::Inspect.new(@config).perform
-        @output_file.write JSON.pretty_generate(features)
+        appmap = AppMap::Command::Inspect.new(@config).perform
+        @output_file.write JSON.pretty_generate(appmap)
       end
     end
 

@@ -4,7 +4,10 @@ module AppMap
 
     class Inspect < InspectStruct
       def perform
-        AppMap.inspect(config)
+        require 'appmap/command/record'
+
+        features = AppMap.inspect(config)
+        { version: AppMap::APPMAP_FORMAT_VERSION, metadata: AppMap::Command::Record.detect_metadata, classMap: features }
       end
     end
   end

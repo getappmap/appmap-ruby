@@ -33,7 +33,16 @@ class CLITest < Minitest::Test
 
     assert_equal 0, $CHILD_STATUS.exitstatus
     assert !output.blank?, 'Output should exist in stdout'
-    JSON.parse(output)
+  end
+
+  def test_inspect_fields
+    output = `./exe/appmap inspect -o -`
+
+    output = JSON.parse(output)
+    assert_includes output.keys, 'version'
+    assert_includes output.keys, 'classMap'
+    assert_includes output.keys, 'metadata'
+    assert !output.keys.include?('events')
   end
 
   def test_record

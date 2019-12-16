@@ -29,7 +29,7 @@ module AppMap
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
-      def save(example_name, events, feature_name: nil, feature_group_name: nil, labels: nil)
+      def save(example_name, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata.tap do |m|
           m[:name] = example_name
@@ -52,7 +52,7 @@ module AppMap
           classMap: features,
           metadata: metadata,
           events: events
-        }
+        }.compact
         fname = sanitize_filename(example_name)
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.appmap.json"), JSON.generate(appmap))
       end
@@ -198,6 +198,12 @@ module AppMap
           tp.defined_class.to_s == 'RSpec::Core::Example'
       end
 
+      def generate_inventory
+        Recorder.new.tap do |recorder|
+          recorder.setup
+        end.save 'Inventory', labels: %w[inventory]
+      end
+
       def generate_appmaps_from_specs
         recorder = Recorder.new
         recorder.setup
@@ -312,7 +318,7 @@ module AppMap
               feature_name = normalize.call(feature_name) if feature_name
 
               recorder.save full_description,
-                            events,
+                            events: events,
                             feature_name: feature_name,
                             feature_group_name: feature_group,
                             labels: labels.blank? ? nil : labels
@@ -320,8 +326,17 @@ module AppMap
           end
         end
       end
-    end
 
-    generate_appmaps_from_specs if ENV['APPMAP'] == 'true'
+      def enabled?
+        ENV['APPMAP'] == 'true'
+      end
+
+      def run
+        generate_inventory
+        generate_appmaps_from_specs
+      end
+    end
   end
 end
+
+AppMap::RSpec.run if AppMap::RSpec.enabled?

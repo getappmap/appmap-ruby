@@ -17,6 +17,21 @@ class RSpecTest < Minitest::Test
     end
   end
 
+  def test_inventory
+    perform_test 'plain_hello_spec' do
+      appmap_file = 'tmp/appmap/rspec/Inventory.appmap.json'
+
+      assert File.file?(appmap_file), 'appmap output file does not exist'
+      appmap = JSON.parse(File.read(appmap_file))
+      assert_equal AppMap::APPMAP_FORMAT_VERSION, appmap['version']
+      assert_includes appmap.keys, 'metadata'
+      metadata = appmap['metadata']
+      assert_equal 'Inventory', metadata['name']
+      assert_includes metadata.keys, 'labels'
+      assert_equal metadata['labels'], %w[inventory]
+    end
+  end
+
   def test_record_decorated_rspec
     perform_test 'decorated_hello_spec' do
       appmap_file = 'tmp/appmap/rspec/Hello_says_hello.appmap.json'
