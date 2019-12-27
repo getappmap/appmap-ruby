@@ -1,0 +1,38 @@
+language: ruby
+
+services:
+- docker
+
+# We expect RAILS_ENV to start off unset, then adjust its value as
+# necessary.
+before_script:
+  - unset RAILS_ENV
+  
+jobs:
+  include:
+  - stage: minitest
+    script:
+    - mkdir tmp
+    - bundle exec rake minitest
+    
+  - stage: base
+    script:
+    - bundle exec rake build:base:2.5
+  - stage: base
+    script:
+    - bundle exec rake build:base:2.6
+      
+  - stage: fixtures
+    script:
+    - bundle exec rake build:fixtures:2.5:all
+  - stage: fixtures
+    script:
+    - bundle exec rake build:fixtures:2.6:all
+
+  - stage: spec
+    script:
+    - bundle exec rake spec:2.5
+  - stage: spec
+    script:
+    - bundle exec rake spec:2.6
+    
