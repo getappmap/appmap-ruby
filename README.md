@@ -171,5 +171,5 @@ Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
 ```
 
 # Build status
+[![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
 
-![Build status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)
