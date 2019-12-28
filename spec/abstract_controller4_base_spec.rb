@@ -8,7 +8,7 @@ describe 'AbstractControllerBase' do
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
     cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_api_spec.rb:8"
-    system cmd, chdir: @fixture_dir or raise 'Failed to run rails_users_app container'
+    run_cmd cmd, chdir: @fixture_dir
 
     example.run
   end

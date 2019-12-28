@@ -4,6 +4,8 @@ GEM_VERSION = AppMap::VERSION
 require 'rake/testtask'
 require 'rdoc/task'
 
+require 'open3'
+
 namespace 'gem' do
   require 'bundler/gem_tasks'
 end
@@ -11,20 +13,32 @@ end
 RUBY_VERSIONS=%w[2.5 2.6]
 FIXTURE_APPS=%w[rack_users_app rails_users_app rails4_users_app]
 
+def run_cmd(*cmd)
+  $stderr.puts "Running: #{cmd}"
+  out,s = Open3.capture2e(*cmd)
+  unless s.success?
+    $stderr.puts <<-END
+      Command failed:
+      <<< Output:
+      #{out}
+      >>> End of output
+    END
+    raise 'Docker build failed'
+  end
+end
+  
 def build_base_image(ruby_version)
-  system "docker build" \
+  run_cmd "docker build" \
          " --build-arg RUBY_VERSION=#{ruby_version} --build-arg GEM_VERSION=#{GEM_VERSION}" \
-         " -t appmap:#{GEM_VERSION} -f Dockerfile.appmap ." \
-  or raise 'Docker build failed'
+         " -t appmap:#{GEM_VERSION} -f Dockerfile.appmap ."
 end
   
 def build_app_image(app, ruby_version)
   Dir.chdir "spec/fixtures/#{app}" do
-    system "env RUBY_VERSION=#{ruby_version} GEM_VERSION=#{GEM_VERSION}" \
-           " docker-compose build" \
-           " --build-arg RUBY_VERSION=#{ruby_version}" \
-           " --build-arg GEM_VERSION=#{GEM_VERSION}" \
-    or raise 'docker-compose build failed'
+    run_cmd( {"RUBY_VERSION" => ruby_version, "GEM_VERSION" => GEM_VERSION},
+      " docker-compose build" \
+      " --build-arg RUBY_VERSION=#{ruby_version}" \
+      " --build-arg GEM_VERSION=#{GEM_VERSION}")
   end
 end
 
@@ -76,8 +90,7 @@ def run_specs(ruby_version, task_args)
       # cause it to be ignored. Setting it to '' or +nil+ causes an
       # empty argument to get passed to rspec, which confuses it.
       task.pattern = 'never match this'
-      task.rspec_opts = '-f doc '
-      task.rspec_opts += args.to_a.join(' ')
+      task.rspec_opts = args.to_a.join(' ')
     end
   end
   
@@ -111,6 +124,8 @@ Rake::TestTask.new(:minitest) do |t|
   t.libs << 'lib'
   t.test_files = FileList['test/**/*_test.rb']
 end
+
+task spec: "spec:all"
 
 task test: %i[spec:all minitest]
 

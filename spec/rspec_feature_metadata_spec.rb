@@ -8,7 +8,7 @@ describe 'RSpec feature and feature group metadata' do
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
     cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path(tmpdir).shellescape}:/app/tmp app ./bin/rspec spec/models/user_spec.rb"
-    system cmd, chdir: @fixture_dir or raise 'Failed to run rails_users_app container'
+    run_cmd cmd, chdir: @fixture_dir
 
     example.run
   end
