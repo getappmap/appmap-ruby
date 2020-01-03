@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'open3'
 
 def wait_for_container(app_name)
   start_time = Time.now
@@ -11,24 +12,38 @@ def wait_for_container(app_name)
   end
 end
 
+def run_cmd(*cmd)
+  out,s = Open3.capture2e(*cmd)
+  unless s.success?
+    $stderr.puts <<~END
+      Command failed:
+      #{cmd}
+      <<< Output:
+      #{out}
+      >>> End of output
+    END
+    raise 'Command failed'
+  end
+end
+
 shared_context 'Rails app pg database' do
   before(:all) do
     raise "you must set @fixure_dir" unless @fixture_dir
     
     Dir.chdir @fixture_dir do 
       cmd = 'docker-compose up -d pg'
-      system cmd or raise "Command failed: #{cmd}"
+      run_cmd cmd
       wait_for_container 'pg'
 
       cmd = 'docker-compose run --rm app ./create_app'
-      system cmd or raise "Command failed: #{cmd}"
+      run_cmd cmd
     end
   end
 
   after(:all) do
     if ENV['NOKILL'] != 'true'
       cmd = 'docker-compose down -v'
-      system cmd, chdir: @fixture_dir or raise "Command failed: #{cmd}"
+      run_cmd cmd, chdir: @fixture_dir
     end
   end
 end
