@@ -1,3 +1,7 @@
+# v0.23.0
+
+* **appmap stats** command added.
+
 # v0.22.0
 
 * **RSpec** recorder generates an "inventory" (AppMap with classMap, without events) named `Inventory.appmap.json`.
