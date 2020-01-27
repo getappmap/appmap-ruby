@@ -92,7 +92,7 @@ module AppMap
         Algorithm::PruneClassMap.new(class_map).tap do |alg|
           alg.events = events if events
           alg.logger = ->(msg) { warn msg } if debug?
-        end.prune
+        end.perform
       end
     end
   end

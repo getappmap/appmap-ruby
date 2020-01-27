@@ -85,6 +85,57 @@ module AppMap
       end
     end
 
+    desc 'Calculate and print statistics of scenario files.'
+    arg_name 'filename'
+    command :stats do |c|
+      output_file_flag(c, default_value: '-')
+
+      c.desc 'Display format for the result (text | json)'
+      c.default_value 'text'
+      c.flag %i[f format]
+
+      c.desc 'Maximum number of lines to display for each stat'
+      c.flag %i[l limit]
+
+      c.action do |_, options, args|
+        require 'appmap/command/stats'
+
+        limit = options[:limit].to_i if options[:limit]
+
+        # Name of the file to analyze. GLI will ensure that it's present.
+        filenames = args
+        help_now!("'filename' argument is required") if filenames.empty?
+
+        require 'appmap/algorithm/stats'
+        result = filenames.inject(::AppMap::Algorithm::Stats::Result.new([], [])) do |stats_result, filename|
+          appmap = begin
+            JSON.parse(File.read(filename))
+          rescue JSON::ParserError
+            STDERR.puts "#{filename} is not valid JSON : #{$!}"
+            nil
+          end
+          stats_result.tap do
+            if appmap
+              limit = options[:limit].to_i if options[:limit]
+              stats_for_file = AppMap::Command::Stats.new(appmap).perform(limit: limit)
+              stats_result.merge!(stats_for_file)
+            end
+          end
+        end
+
+        result.sort!
+        result.limit!(limit) if limit
+
+        display = case options[:format]
+        when 'json'
+          JSON.pretty_generate(result.as_json)
+        else
+          result.as_text
+        end
+        @output_file.write display
+      end
+    end
+
     desc 'Upload a scenario file to AppLand.'
     arg_name 'filename'
     command :upload do |c|

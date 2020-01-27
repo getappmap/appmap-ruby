@@ -14,7 +14,7 @@ module AppMap
         @logger = ->(msg) {}
       end
 
-      def prune
+      def perform
         # This proc counts the number of objects in the class map whose type is 'k'
         count = proc do |k, e|
           n = 0
