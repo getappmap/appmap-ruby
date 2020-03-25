@@ -301,7 +301,6 @@ module AppMap
           memo
         end
 
-        @events_mutex = Mutex.new
         @events = []
       end
 
@@ -325,31 +324,19 @@ module AppMap
       # Record a program execution event.
       #
       # The event should be one of the MethodEvent subclasses.
-      #
-      # This method is thread-safe.
       # @appmap
       def record_event(event)
-        @events_mutex.synchronize do
-          @events << event
-        end
+        @events << event
       end
 
       # Whether there is an event available for processing.
-      #
-      # This method is thread-safe.
       def event?
-        @events_mutex.synchronize do
-          !@events.empty?
-        end
+        !@events.empty?
       end
 
       # Gets the next available event, if any.
-      #
-      # This method is thread-safe.
       def next_event
-        @events_mutex.synchronize do
-          @events.shift
-        end
+        @events.shift
       end
     end
   end
