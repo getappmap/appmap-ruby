@@ -109,7 +109,7 @@ module AppMap
               last_resort_string.call
             end
 
-          value_string[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
       end
 
