@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+
 require 'appmap/parser'
 require 'appmap/inspect/parse_node'
 

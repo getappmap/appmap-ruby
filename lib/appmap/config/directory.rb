@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+
 module AppMap
   module Config
     # A normal directory is scanned for AppMap features without interpreting the

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   module Config
     NamedFunctionStruct = Struct.new(:id, :gem_name, :file_path, :class_names, :method_name, :static)

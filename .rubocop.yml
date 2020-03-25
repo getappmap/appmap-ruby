@@ -1,18 +1,27 @@
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+# We have squiggly heredocs
+Layout/HeredocIndentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 120
+
 Style/MultilineBlockChain:
   Enabled: false
 
 Style/NumericPredicate:
   Enabled: false
-
-Layout/SpaceInsideArrayLiteralBrackets:
-  Enabled: false
-
-# We have squiggly heredocs
-Layout/IndentHeredoc:
-  Enabled: false
-
+  
 Style/AndOr:
   Enabled: false
 
-Metrics/LineLength:
-  Max: 120
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true

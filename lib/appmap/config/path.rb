@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   module Config
     PathStruct = Struct.new(:path)

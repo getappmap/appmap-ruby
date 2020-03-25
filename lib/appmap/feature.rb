@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   # A Feature is a construct within the code that will be observed. Examples features include
   # modules, classes and functions.

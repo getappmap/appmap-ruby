@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'appmap/inspect/inspector'
 require 'appmap/inspect/parser'
 

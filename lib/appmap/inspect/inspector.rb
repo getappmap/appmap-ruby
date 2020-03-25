@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   module Inspect
     # Inspector is an abstract class for extracting features from a Ruby program.

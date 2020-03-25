@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   class Railtie < ::Rails::Railtie
     config.appmap = ActiveSupport::OrderedOptions.new

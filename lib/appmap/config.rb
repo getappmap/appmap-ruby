@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'appmap/config/path'
 require 'appmap/config/file'
 require 'appmap/config/directory'
