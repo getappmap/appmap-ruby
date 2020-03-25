@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   module Trace
     MethodEventStruct =
@@ -12,11 +14,15 @@ module AppMap
         @tracers.empty?
       end
 
-      def trace(functions, enable: true)
+      def trace(functions = [], enable: true)
         AppMap::Trace::Tracer.new(functions).tap do |tracer|
           @tracers << tracer
           tracer.enable if enable
         end
+      end
+
+      def enabled?
+        @tracers.any?(&:enabled?)
       end
 
       def record_event(event)
@@ -39,7 +45,6 @@ module AppMap
       end
     end
 
-    # @appmap
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
@@ -68,7 +73,6 @@ module AppMap
         # Gets the next serial id.
         #
         # This method is thread-safe.
-        # @appmap
         def next_id
           COUNTER_LOCK.synchronize do
             @@id_counter += 1
@@ -112,12 +116,10 @@ module AppMap
       alias static? static
     end
 
-    # @appmap
     class MethodCall < MethodEvent
       attr_accessor :parameters, :receiver
 
       class << self
-        # @appmap
         def build_from_tracepoint(mc = MethodCall.new, tp, path)
           mc.tap do |_|
             mc.parameters = collect_parameters(tp)
@@ -205,7 +207,6 @@ module AppMap
     # Each call to the handle should provide a TracePoint (or duck-typed object) as the argument.
     # On each call, a MethodEvent is constructed according to the nature of the TracePoint, and then
     # stored using the record_event method.
-    # @appmap
     class TracePointHandler
       attr_accessor :call_constructor, :return_constructor
 
@@ -214,7 +215,6 @@ module AppMap
         return: MethodReturn
       }.freeze
 
-      # @appmap
       def initialize(tracer)
         @pwd = Dir.pwd
         @tracer = tracer
@@ -222,14 +222,11 @@ module AppMap
         @handler_classes = {}
       end
 
-      # @appmap
       def handle(tp)
         # Absoute paths which are within the current working directory are normalized
         # to be relative paths.
         path = tp.path
-        if path.index(@pwd) == 0
-          path = path[@pwd.length+1..-1]
-        end
+        path = path[@pwd.length + 1..-1] if path.index(@pwd) == 0
 
         method_event = \
           if tp.event == :call && (function = @tracer.lookup_function(path, tp.lineno))
@@ -285,13 +282,12 @@ module AppMap
       end
     end
 
-    # @appmap
     class Tracer
       # Trace a specified set of functions.
       #
-      # functions Array of AppMap::Feature::Function.
-      # @appmap
-      def initialize(functions)
+      # functions Array of AppMap::Feature::Function which should be observed 
+      # using TracePoint.
+      def initialize(functions = [])
         @functions = functions
 
         @functions_by_location = functions.each_with_object({}) do |m, memo|
@@ -302,21 +298,29 @@ module AppMap
         end
 
         @events = []
+        @enabled = false
       end
 
       def enable
-        handler = TracePointHandler.new(self)
-        @trace_point = TracePoint.trace(:call, :return, &handler.method(:handle))
+        unless @functions.empty?
+          handler = TracePointHandler.new(self)
+          @trace_point = TracePoint.trace(:call, :return, &handler.method(:handle))
+        end
+        @enabled = true
+      end
+
+      def enabled?
+        @enabled
       end
 
       # Private function. Use AppMap.tracers#delete.
       def disable # :nodoc:
-        @trace_point.disable
+        @trace_point&.disable
+        @enabled = false
       end
 
       # Whether the indicated file path and lineno is a breakpoint on which
       # execution should interrupted.
-      # @appmap
       def lookup_function(path, lineno)
         (methods_by_path = @functions_by_location[path]) && methods_by_path[lineno]
       end
@@ -324,9 +328,8 @@ module AppMap
       # Record a program execution event.
       #
       # The event should be one of the MethodEvent subclasses.
-      # @appmap
       def record_event(event)
-        @events << event
+        @events << event if @enabled
       end
 
       # Whether there is an event available for processing.
