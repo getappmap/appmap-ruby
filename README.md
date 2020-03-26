@@ -172,4 +172,9 @@ Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
 
 # Build status
 [![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fapplandinc%2Fappmap-ruby.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fapplandinc%2Fappmap-ruby?ref=badge_shield)
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fapplandinc%2Fappmap-ruby.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fapplandinc%2Fappmap-ruby?ref=badge_large)
