@@ -7,13 +7,13 @@ module AppMap
   module Command
     UploadResponse = Struct.new(:batch_id, :scenario_uuid)
 
-    UploadStruct = Struct.new(:config, :data, :url, :user, :org)
+    UploadStruct = Struct.new(:data, :url, :user, :org)
     class Upload < UploadStruct
       MAX_DEPTH = 12
 
       attr_accessor :batch_id
 
-      def initialize(config, data, url, user, org)
+      def initialize(data, url, user, org)
         super
 
         # TODO: Make this an option

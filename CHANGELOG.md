@@ -1,3 +1,8 @@
+# v0.24.0
+
+Internals of this Gem have been changed to rely less on `TracePoint` and more on `alias_method`.
+Performance is much better as a result.
+
 # v0.23.0
 
 * **appmap stats** command added.

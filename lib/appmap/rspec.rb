@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'appmap'
-require 'appmap/config'
-require 'appmap/inspect'
 require 'appmap/trace/tracer'
 
 require 'active_support/inflector/transliterate'
@@ -14,15 +12,12 @@ module AppMap
     APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
 
     class Recorder
-      attr_reader :config, :features, :functions
+      attr_reader :config
 
-      def initialize
-        @config = AppMap::Config.load_from_file('appmap.yml')
+      def initialize(config)
+        raise "Missing AppMap configuration setting: 'name'" unless config.name
 
-        raise "Missing AppMap configuration setting: 'name'" unless @config.name
-
-        @features = AppMap.inspect(@config)
-        @functions = @features.map(&:collect_functions).flatten
+        @config = config
       end
 
       def setup
@@ -49,7 +44,7 @@ module AppMap
 
         appmap = {
           version: AppMap::APPMAP_FORMAT_VERSION,
-          classMap: features,
+          # classMap: features,
           metadata: metadata,
           events: events
         }.compact
@@ -198,14 +193,23 @@ module AppMap
           tp.defined_class.to_s == 'RSpec::Core::Example'
       end
 
-      def generate_inventory
-        Recorder.new.tap do |recorder|
-          recorder.setup
-        end.save 'Inventory', labels: %w[inventory]
+      def init
+        warn 'Configuring AppMap recorder for RSpec'
+        require 'appmap/hook'
+        @config = AppMap.configure
+        AppMap::Hook.hook(@config)
+      end
+
+      def print_inventory
+        # TODO: restore
+        warn 'Skipping generate_inventory; not implemented'
+        #Recorder.new(@config).tap do |recorder|
+        #  recorder.setup
+        #end.save 'Inventory', labels: %w[inventory]
       end
 
       def generate_appmaps_from_specs
-        recorder = Recorder.new
+        recorder = Recorder.new(@config)
         recorder.setup
 
         require 'set'
@@ -262,7 +266,7 @@ module AppMap
             # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
-              current_tracer = AppMap::Trace.tracers.trace(recorder.functions)
+              current_tracer = AppMap::Trace.tracers.trace
             end
 
             # When the tracer is enabled and a block is completed, check to see if there is an
@@ -279,7 +283,7 @@ module AppMap
 
               example = examples[loc]
               description = []
-              leaf = scope = ScopeExample.new(example)
+              scope = ScopeExample.new(example)
               feature_group = feature = nil
 
               labels = []
@@ -332,8 +336,9 @@ module AppMap
       end
 
       def run
-        generate_inventory
+        init
         generate_appmaps_from_specs
+        print_inventory
       end
     end
   end

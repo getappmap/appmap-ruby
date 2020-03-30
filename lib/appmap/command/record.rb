@@ -63,12 +63,10 @@ module AppMap
       end
 
       def perform(&block)
-        features = AppMap.inspect(config)
-        functions = features.map(&:collect_functions).flatten
+        AppMap::Hook.hook(config)
 
         require 'appmap/trace/tracer'
-
-        tracer = AppMap::Trace.tracers.trace(functions)
+        tracer = AppMap::Trace.tracers.trace
 
         events = []
         quit = false
@@ -87,7 +85,7 @@ module AppMap
         at_exit do
           quit = true
           event_thread.join
-          yield features, events
+          yield events
         end
 
         load program if program

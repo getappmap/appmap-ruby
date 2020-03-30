@@ -14,6 +14,7 @@ module AppMap
         @tracers.empty?
       end
 
+      # TODO: remove functions argument
       def trace(functions = [], enable: true)
         AppMap::Trace::Tracer.new(functions).tap do |tracer|
           @tracers << tracer
@@ -52,6 +53,23 @@ module AppMap
       @@id_counter = 0
 
       class << self
+        def build_from_invocation(me, event_type, method)
+          singleton = method.owner.singleton_class?
+
+          require 'appmap/util'
+
+          me.id = next_id
+          me.event = event_type
+          me.defined_class = singleton ? AppMap::Util.descendant_class(method.owner).name : method.owner.name
+          me.method_id = method.name.to_s
+          path = method.source_location[0]
+          path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
+          me.path = path
+          me.lineno = method.source_location[1]
+          me.static = singleton
+          me.thread_id = Thread.current.object_id
+        end
+
         # Build a new instance from a TracePoint.
         def build_from_tracepoint(me, tp, path)
           me.id = next_id
@@ -120,6 +138,28 @@ module AppMap
       attr_accessor :parameters, :receiver
 
       class << self
+        def build_from_invocation(mc = MethodCall.new, method, receiver, arguments)
+          mc.tap do
+            mc.parameters = method.parameters.map.with_index do |method_param, idx|
+              param_type, param_name = method_param
+              value = arguments[idx]
+              {
+                name: param_name,
+                class: value.class.name,
+                object_id: value.__id__,
+                value: display_string(value),
+                kind: param_type
+              }
+            end
+            mc.receiver = {
+              class: receiver.class.name,
+              object_id: receiver.__id__,
+              value: display_string(receiver)
+            }
+            MethodEvent.build_from_invocation(mc, :call, method)
+          end
+        end
+
         def build_from_tracepoint(mc = MethodCall.new, tp, path)
           mc.tap do |_|
             mc.parameters = collect_parameters(tp)
@@ -163,6 +203,14 @@ module AppMap
       attr_accessor :parent_id, :elapsed
 
       class << self
+        def build_from_invocation(mr = MethodReturnIgnoreValue.new, method, parent_id, elapsed)
+          mr.tap do |_|
+            mr.parent_id = parent_id
+            mr.elapsed = elapsed
+            MethodEvent.build_from_invocation(mr, :return, method)
+          end
+        end
+
         def build_from_tracepoint(mr = MethodReturnIgnoreValue.new, tp, path, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
@@ -184,6 +232,17 @@ module AppMap
       attr_accessor :return_value
 
       class << self
+        def build_from_invocation(mr = MethodReturn.new, method, parent_id, elapsed, return_value)
+          mr.tap do |_|
+            mr.return_value = {
+              class: return_value.class.name,
+              value: display_string(return_value),
+              object_id: return_value.__id__
+            }
+            MethodReturnIgnoreValue.build_from_invocation(mr, method, parent_id, elapsed)
+          end
+        end
+
         def build_from_tracepoint(mr = MethodReturn.new, tp, path, parent_id, elapsed)
           mr.tap do |_|
             mr.return_value = {

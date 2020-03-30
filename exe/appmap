@@ -42,17 +42,6 @@ module AppMap
     arg_name 'filename'
     flag %i[c config]
 
-    desc 'Inspect code and generate a classmap file'
-    command :inspect do |c|
-      output_file_flag(c, default_value: default_appmap_file)
-
-      c.action do
-        require 'appmap/command/inspect'
-        appmap = AppMap::Command::Inspect.new(@config).perform
-        @output_file.write JSON.pretty_generate(appmap)
-      end
-    end
-
     desc 'Record the execution of a program and generate an AppMap.'
     arg_name 'program'
     command :record do |c|
@@ -76,9 +65,9 @@ module AppMap
         ARGV.shift
 
         require 'appmap/command/record'
-        AppMap::Command::Record.new(@config, program).perform do |features, events|
+        AppMap::Command::Record.new(@config, program).perform do |events|
           @output_file.write JSON.generate(version: AppMap::APPMAP_FORMAT_VERSION,
-                                           classMap: features,
+                                           classMap: AppMap.class_map(events),
                                            metadata: AppMap::Command::Record.detect_metadata,
                                            events: events)
         end
@@ -173,7 +162,7 @@ module AppMap
           appmap = JSON.parse(File.read(filename))
 
           warn "Uploading #{filename.inspect}"
-          upload = AppMap::Command::Upload.new(@config, appmap, url, user, org)
+          upload = AppMap::Command::Upload.new(appmap, url, user, org)
           upload.batch_id = batch_id if batch_id
           upload.perform.tap do |response|
             batch_id ||= response.batch_id
@@ -203,8 +192,7 @@ module AppMap
       protected
 
       def interpret_config_option(fname)
-        require 'appmap/config'
-        AppMap::Config.load_from_file fname
+        AppMap.configure fname
       end
 
       def interpret_output_file_option(file_name)

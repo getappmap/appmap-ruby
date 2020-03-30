@@ -78,8 +78,6 @@ module AppMap
       # rubocop:enable Metrics/MethodLength
 
       # Inspect a specific file for features.
-      #
-      # @appmap
       def inspect_file(strategy, file_path: nil)
         parse_nodes, comments = Parser.new(file_path: file_path).parse
         inspector_class = {

@@ -1,2 +1,3 @@
+name: cli_record_test
 packages:
-  - path: lib/cli_record_test
+  - path: lib

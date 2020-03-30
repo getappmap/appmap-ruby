@@ -33,7 +33,7 @@ module AppMap
           comparator = ->(a,b) { b.count <=> a.count }
           class_frequency.sort!(&comparator)
           method_frequency.sort!(&comparator)
-          
+
           self
         end
 
@@ -57,7 +57,7 @@ module AppMap
         end
       end
       Frequency = Struct.new(:name, :count)
-      
+
       def perform(limit: nil)
         events = appmap['events'] || []
         frequency_calc = lambda do |key_func|
