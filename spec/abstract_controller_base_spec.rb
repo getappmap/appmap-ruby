@@ -50,7 +50,7 @@ describe 'AbstractControllerBase' do
       expect(appmap).to match(<<-CREATE_CALL.strip)
   event: call
   defined_class: Api::UsersController
-  method_id: create_user
+  method_id: build_user
   path: app/controllers/api/users_controller.rb
   lineno: 23
   static: false

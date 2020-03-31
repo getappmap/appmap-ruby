@@ -5,6 +5,19 @@ module AppMap
     MethodEventStruct =
       Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
 
+    @@id_counter = 0
+
+    class << self
+      # reset_id_counter is used by test cases to get consistent event ids.
+      def reset_id_counter
+        @@id_counter = 0
+      end
+
+      def next_id_counter
+        @@id_counter += 1
+      end
+    end
+
     class Tracers
       def initialize
         @tracers = []
@@ -49,16 +62,13 @@ module AppMap
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
-      COUNTER_LOCK = Mutex.new # :nodoc:
-      @@id_counter = 0
-
       class << self
         def build_from_invocation(me, event_type, method)
           singleton = method.owner.singleton_class?
 
           require 'appmap/util'
 
-          me.id = next_id
+          me.id = AppMap::Trace.next_id_counter
           me.event = event_type
           me.defined_class = singleton ? AppMap::Util.descendant_class(method.owner).name : method.owner.name
           me.method_id = method.name.to_s
@@ -72,7 +82,7 @@ module AppMap
 
         # Build a new instance from a TracePoint.
         def build_from_tracepoint(me, tp, path)
-          me.id = next_id
+          me.id = AppMap::Trace.next_id_counter
           me.event = tp.event
 
           if tp.defined_class.singleton_class?
@@ -86,15 +96,6 @@ module AppMap
           me.lineno = tp.lineno
           me.static = tp.defined_class.name.nil?
           me.thread_id = Thread.current.object_id
-        end
-
-        # Gets the next serial id.
-        #
-        # This method is thread-safe.
-        def next_id
-          COUNTER_LOCK.synchronize do
-            @@id_counter += 1
-          end
         end
 
         # Gets a value, by key, from the trace point binding.

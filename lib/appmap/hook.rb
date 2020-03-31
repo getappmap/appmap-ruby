@@ -1,14 +1,12 @@
+# frozen_string_literal: true
+
 module AppMap
   class Hook
     Package = Struct.new(:path, :exclude) do
-      def initialize(path, exclude)
-        super path, exclude || []
-      end
-
       def to_h
         {
           path: path,
-          exclude: exclude
+          exclude: exclude.blank? ? nil : exclude
         }.compact
       end
     end
@@ -24,7 +22,7 @@ module AppMap
         # Loads configuration from a Hash.
         def load(config_data)
           packages = (config_data['packages'] || []).map do |package|
-            Package.new(package['path'], package['exclude'])
+            Package.new(package['path'], package['exclude'] || [])
           end
           Config.new config_data['name'], packages
         end
@@ -42,6 +40,8 @@ module AppMap
       end
     end
 
+    HOOK_DISABLE_KEY = 'AppMap::Hook.disable'
+
     class << self
       # Observe class loading and hook all methods which match the config.
       def hook(config = AppMap.configure)
@@ -56,6 +56,8 @@ module AppMap
           cls = tp.self
           methods = cls.public_instance_methods(false)
           methods.map do |m|
+            next if m.to_s =~ /_hooked_by_appmap$/
+
             method = cls.public_instance_method(m)
             location = method.source_location
             location_file, = location
@@ -93,13 +95,31 @@ module AppMap
                 AppMap::Trace.tracers.record_event return_event
               end
 
-              enabled = AppMap::Trace.tracers.enabled?
-              call_event, start_time = before_hook.call if enabled
+              with_disabled_hook = lambda do |enabled, &fn|
+                if enabled
+                  # Don't hook functions such as to_s and inspect that might be called
+                  # by the fn.
+                  Thread.current[HOOK_DISABLE_KEY] = true
+                  begin
+                    fn.call
+                  ensure
+                    Thread.current[HOOK_DISABLE_KEY] = false
+                  end
+                end
+              end
+
+              hook_disabled = Thread.current[HOOK_DISABLE_KEY]
+              enabled = true if !hook_disabled && AppMap::Trace.tracers.enabled?
+              call_event, start_time = with_disabled_hook.call(enabled) do
+                before_hook.call
+              end
               return_value = nil
               begin
                 return_value = send "#{m}_hooked_by_appmap", *args, &block
               ensure
-                after_hook.call(call_event, start_time, return_value) if enabled
+                with_disabled_hook.call(enabled) do
+                  after_hook.call(call_event, start_time, return_value)
+                end
               end
             end
             location_file

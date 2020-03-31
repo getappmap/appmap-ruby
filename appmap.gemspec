@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
 
   # Testing
   spec.add_development_dependency 'climate_control'
+  spec.add_development_dependency 'diffy'
   spec.add_development_dependency 'launchy'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'selenium-webdriver'

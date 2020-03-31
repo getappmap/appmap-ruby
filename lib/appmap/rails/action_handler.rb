@@ -18,7 +18,7 @@ module AppMap
           attr_accessor :payload
 
           def initialize(path, lineno, payload)
-            super AppMap::Trace::MethodEvent.next_id, :call, HTTPServerRequest, :call, path, lineno, false, Thread.current.object_id
+            super AppMap::Trace.next_id_counter, :call, HTTPServerRequest, :call, path, lineno, false, Thread.current.object_id
 
             self.payload = payload
           end
@@ -58,7 +58,7 @@ module AppMap
           attr_accessor :payload
 
           def initialize(path, lineno, payload, parent_id, elapsed)
-            super AppMap::Trace::MethodEvent.next_id, :return, HTTPServerResponse, :call, path, lineno, false, Thread.current.object_id
+            super AppMap::Trace.next_id_counter, :return, HTTPServerResponse, :call, path, lineno, false, Thread.current.object_id
 
             self.payload = payload
             self.parent_id = parent_id
