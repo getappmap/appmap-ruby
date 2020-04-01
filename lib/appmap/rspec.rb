@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require 'appmap'
-require 'appmap/trace/tracer'
-
-require 'active_support/inflector/transliterate'
-
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each scenario which has the metadata key `:appmap`.
@@ -24,7 +19,7 @@ module AppMap
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
-      def save(example_name, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
+      def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
         require 'appmap/command/record'
         metadata = AppMap::Command::Record.detect_metadata.tap do |m|
           m[:name] = example_name
@@ -44,8 +39,8 @@ module AppMap
 
         appmap = {
           version: AppMap::APPMAP_FORMAT_VERSION,
-          # classMap: features,
           metadata: metadata,
+          classMap: class_map,
           events: events
         }.compact
         fname = sanitize_filename(example_name)
@@ -197,15 +192,8 @@ module AppMap
         warn 'Configuring AppMap recorder for RSpec'
         require 'appmap/hook'
         @config = AppMap.configure
+        @event_methods = Set.new
         AppMap::Hook.hook(@config)
-      end
-
-      def print_inventory
-        # TODO: restore
-        warn 'Skipping generate_inventory; not implemented'
-        #Recorder.new(@config).tap do |recorder|
-        #  recorder.setup
-        #end.save 'Inventory', labels: %w[inventory]
       end
 
       def generate_appmaps_from_specs
@@ -270,7 +258,7 @@ module AppMap
             end
 
             # When the tracer is enabled and a block is completed, check to see if there is an
-            # Example stored at the file:lineno. If so, finish tracing and emit the 
+            # Example stored at the file:lineno. If so, finish tracing and emit the
             # AppMap file.
             if current_tracer && tp.event == :b_return && trace_block_end.member?(loc)
               puts "Ending trace on #{loc}" if LOG
@@ -280,6 +268,7 @@ module AppMap
               while current_tracer.event?
                 events << current_tracer.next_event.to_h
               end
+              @event_methods += current_tracer.event_methods
 
               example = examples[loc]
               description = []
@@ -322,6 +311,7 @@ module AppMap
               feature_name = normalize.call(feature_name) if feature_name
 
               recorder.save full_description,
+                            AppMap::ClassMap.build_from_methods(@config, current_tracer.event_methods),
                             events: events,
                             feature_name: feature_name,
                             feature_group_name: feature_group,
@@ -331,6 +321,12 @@ module AppMap
         end
       end
 
+      def print_inventory
+        recorder = Recorder.new(@config).tap(&:setup)
+        class_map = AppMap::ClassMap.build_from_methods(@config, @event_methods)
+        recorder.save 'Inventory', class_map, labels: %w[inventory]
+      end
+
       def enabled?
         ENV['APPMAP'] == 'true'
       end
@@ -338,10 +334,20 @@ module AppMap
       def run
         init
         generate_appmaps_from_specs
-        print_inventory
+        at_exit do
+          print_inventory
+        end
       end
     end
   end
 end
 
-AppMap::RSpec.run if AppMap::RSpec.enabled?
+if AppMap::RSpec.enabled?
+  require 'appmap'
+  require 'appmap/class_map'
+  require 'appmap/trace/tracer'
+  require 'active_support/inflector/transliterate'
+
+  AppMap::RSpec.run
+end
+

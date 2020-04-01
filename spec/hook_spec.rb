@@ -2,6 +2,7 @@
 
 require 'rails_spec_helper'
 require 'appmap/hook'
+require 'appmap/class_map'
 require 'diffy'
 
 describe 'AppMap class Hooking' do
@@ -28,7 +29,7 @@ describe 'AppMap class Hooking' do
     end.to_yaml
   end
 
-  def test_hook_behavior(file, events_yaml, &block)
+  def invoke_test_file(file, &block)
     package = AppMap::Hook::Package.new(file, [])
     config = AppMap::Hook::Config.new('hook_spec', [ package ])
     AppMap::Hook.hook(config)
@@ -42,11 +43,16 @@ describe 'AppMap class Hooking' do
     ensure
       AppMap::Trace.tracers.delete(tracer)
     end
+    [ config, tracer ]
+  end
+
+  def test_hook_behavior(file, events_yaml, &block)
+    config, tracer = invoke_test_file(file, &block)
 
     events = collect_events(tracer)
     expect(Diffy::Diff.new(events, events_yaml).to_s).to eq('')
 
-    tracer
+    [ config, tracer ]
   end
 
   it 'hooks an instance method that takes no arguments' do
@@ -70,11 +76,36 @@ describe 'AppMap class Hooking' do
         :class: String
         :value: default
     YAML
-    tracer = test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+    config, tracer = test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
       expect(InstanceMethod.new.say_default).to eq('default')
     end
+  end
 
+  it 'collects the methods that are invoked' do
+    _, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
+      InstanceMethod.new.say_default
+    end
     expect(tracer.event_methods.to_a.map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
+  end
+
+  it 'builds a class map of invoked methods' do
+    config, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
+      InstanceMethod.new.say_default
+    end
+    class_map = AppMap::ClassMap.build_from_methods(config, tracer.event_methods).to_yaml
+    expect(Diffy::Diff.new(class_map, <<~YAML).to_s).to eq('')
+    ---
+    - :name: spec/fixtures/hook/instance_method.rb
+      :type: package
+      :children:
+      - :name: InstanceMethod
+        :type: class
+        :children:
+        - :name: say_default
+          :type: function
+          :location: spec/fixtures/hook/instance_method.rb:8
+          :static: false
+    YAML
   end
 
   it 'hooks an instance method that takes an argument' do

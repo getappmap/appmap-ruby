@@ -85,7 +85,7 @@ module AppMap
         at_exit do
           quit = true
           event_thread.join
-          yield events
+          yield AppMap::APPMAP_FORMAT_VERSION, detect_metadata, class_map, events
         end
 
         load program if program

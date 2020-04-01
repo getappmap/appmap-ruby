@@ -2,6 +2,8 @@
 
 module AppMap
   class Hook
+    LOG = false
+
     Package = Struct.new(:path, :exclude) do
       def to_h
         {
@@ -80,7 +82,7 @@ module AppMap
                   [ method.owner.name, '#' ]
                 end
 
-              warn "AppMap: Hooking #{owner_name}#{method_symbol}#{method.name}"
+              LOG.warn "AppMap: Hooking #{owner_name}#{method_symbol}#{method.name}" if LOG
 
               cls.alias_method "#{method_id}_hooked_by_appmap".to_sym, method_id
               cls.define_method method_id do |*args, &block|

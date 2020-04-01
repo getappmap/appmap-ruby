@@ -37,14 +37,6 @@ module AppMap
       end
     end
 
-    # class_map returns the class map of code which is referenced by an event list.
-    # If the event list is empty or nil, all code which was loaded by the program is included
-    # in the result.
-    def class_map(events)
-      # TODO: Generate the class map
-      []
-    end
-
     # Simplified entry point to add hooks to code as it's loaded.
     def hook(config = configure)
       require 'appmap/hook'

@@ -31,11 +31,11 @@ module AppMap
 
         require 'appmap/command/record'
         require 'json'
-        AppMap::Command::Record.new(AppMap.configuration).perform do |events|
+        AppMap::Command::Record.new(AppMap.configuration).perform do |version, metadata, class_map, events|
           appmap = JSON.generate \
-            version: AppMap::APPMAP_FORMAT_VERSION,
-            metadata: AppMap::Command::Record.detect_metadata,
-            classMap: AppMap.class_map(events),
+            version: version,
+            metadata: metadata,
+            classMap: class_map,
             events: events
           File.open('appmap.json', 'w').write(appmap)
         end
