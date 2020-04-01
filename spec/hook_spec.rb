@@ -227,7 +227,7 @@ describe 'AppMap class Hooking' do
       :defined_class: ClassMethod
       :method_id: say_class_defined
       :path: spec/fixtures/hook/class_method.rb
-      :lineno: 9
+      :lineno: 10
       :static: true
       :parameters: []
       :receiver:
@@ -238,7 +238,7 @@ describe 'AppMap class Hooking' do
       :parent_id: 1
       :return_value:
         :class: String
-        :value: default
+        :value: defined with explicit class scope
     YAML
     test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
       expect(ClassMethod.say_class_defined).to eq('defined with explicit class scope')
@@ -264,7 +264,7 @@ describe 'AppMap class Hooking' do
       :parent_id: 1
       :return_value:
         :class: String
-        :value: default
+        :value: defined with self class scope
     YAML
     test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
       expect(ClassMethod.say_self_defined).to eq('defined with self class scope')

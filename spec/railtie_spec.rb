@@ -32,7 +32,7 @@ describe 'AppMap tracer via Railtie' do
   describe 'with APPMAP=true' do
     let(:env) { { 'APPMAP' => 'true' } }
     it 'is enabled' do
-      expect(command_output).to eq('true')
+      expect(command_output.split("\n")).to include('true')
     end
     context 'and RAILS_ENV=test' do
       let(:env) { { 'APPMAP' => 'true', 'RAILS_ENV' => 'test' } }
