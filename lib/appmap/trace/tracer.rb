@@ -41,7 +41,7 @@ module AppMap
 
       def record_event(event, method: nil)
         @tracers.each do |tracer|
-          tracer.record_event(event, method: nil)
+          tracer.record_event(event, method: method)
         end
       end
 
@@ -192,7 +192,7 @@ module AppMap
       # Records the events which happen in a program.
       def initialize
         @events = []
-        @methods = []
+        @methods = Set.new
         @enabled = false
       end
 
@@ -220,8 +220,8 @@ module AppMap
       end
 
       # Gets a unique list of the methods that were invoked by the program.
-      def methods
-        @methods.uniq
+      def event_methods
+        @methods.to_a
       end
 
       # Whether there is an event available for processing.

@@ -45,6 +45,8 @@ describe 'AppMap class Hooking' do
 
     events = collect_events(tracer)
     expect(Diffy::Diff.new(events, events_yaml).to_s).to eq('')
+
+    tracer
   end
 
   it 'hooks an instance method that takes no arguments' do
@@ -68,9 +70,11 @@ describe 'AppMap class Hooking' do
         :class: String
         :value: default
     YAML
-    test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+    tracer = test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
       expect(InstanceMethod.new.say_default).to eq('default')
     end
+
+    expect(tracer.event_methods.to_a.map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
   end
 
   it 'hooks an instance method that takes an argument' do
