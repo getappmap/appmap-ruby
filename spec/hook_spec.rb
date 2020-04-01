@@ -2,6 +2,7 @@
 
 require 'rails_spec_helper'
 require 'appmap/hook'
+require 'appmap/event'
 require 'appmap/class_map'
 require 'diffy'
 
@@ -34,14 +35,14 @@ describe 'AppMap class Hooking' do
     config = AppMap::Hook::Config.new('hook_spec', [ package ])
     AppMap::Hook.hook(config)
 
-    require 'appmap/trace/tracer'
-    tracer = AppMap::Trace.tracers.trace
-    AppMap::Trace.reset_id_counter
+    require 'appmap/tracer'
+    tracer = AppMap.tracers.trace
+    AppMap::Event.reset_id_counter
     begin
       load file
       yield
     ensure
-      AppMap::Trace.tracers.delete(tracer)
+      AppMap.tracers.delete(tracer)
     end
     [ config, tracer ]
   end

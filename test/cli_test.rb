@@ -110,8 +110,7 @@ class CLITest < Minitest::Test
     # Event path
     assert_includes output, %("path":"lib/cli_record_test/main.rb")
     # Function location
-    # TODO: re-enable
-    # assert_includes output, %("location":"lib/cli_record_test/main.rb:3")
+    assert_includes output, %("location":"lib/cli_record_test/main.rb:3")
     assert !File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} should not exist"
   end
 

@@ -86,19 +86,20 @@ module AppMap
 
               cls.alias_method "#{method_id}_hooked_by_appmap".to_sym, method_id
               cls.define_method method_id do |*args, &block|
-                require 'appmap/trace/tracer'
+                require 'appmap/event'
+                require 'appmap/tracer'
 
                 before_hook = lambda do
-                  call_event = AppMap::Trace::MethodCall.build_from_invocation(method, self, args)
-                  AppMap::Trace.tracers.record_event call_event, method: method
+                  call_event = AppMap::Event::MethodCall.build_from_invocation(method, self, args)
+                  AppMap.tracers.record_event call_event, method: method
                   [ call_event, Time.now ]
                 end
 
                 after_hook = lambda do |call_event, start_time, return_value|
                   elapsed = Time.now - start_time
-                  return_event = AppMap::Trace::MethodReturn.build_from_invocation \
+                  return_event = AppMap::Event::MethodReturn.build_from_invocation \
                     method, call_event.id, elapsed, return_value
-                  AppMap::Trace.tracers.record_event return_event
+                  AppMap.tracers.record_event return_event
                 end
 
                 with_disabled_hook = lambda do |enabled, &fn|
@@ -115,7 +116,7 @@ module AppMap
                 end
 
                 hook_disabled = Thread.current[HOOK_DISABLE_KEY]
-                enabled = true if !hook_disabled && AppMap::Trace.tracers.enabled?
+                enabled = true if !hook_disabled && AppMap.tracers.enabled?
                 call_event, start_time = with_disabled_hook.call(enabled) do
                   before_hook.call
                 end

@@ -8,7 +8,7 @@ module AppMap
       def initialize(app)
         require 'appmap/command/record'
         require 'appmap/command/upload'
-        require 'appmap/trace/tracer'
+        require 'appmap/tracer'
         require 'json'
 
         @app = app
@@ -31,7 +31,7 @@ module AppMap
         return [ false, 'Recording is already in progress' ] if @tracer
 
         @events = []
-        @tracer = AppMap::Trace.tracers.trace
+        @tracer = AppMap.tracers.trace
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
 
@@ -44,7 +44,7 @@ module AppMap
         tracer = @tracer
         @tracer = nil
 
-        AppMap::Trace.tracers.delete(tracer)
+        AppMap.tracers.delete(tracer)
 
         @event_thread.exit
         @event_thread.join

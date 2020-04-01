@@ -65,8 +65,9 @@ module AppMap
       def perform(&block)
         AppMap::Hook.hook(config)
 
-        require 'appmap/trace/tracer'
-        tracer = AppMap::Trace.tracers.trace
+        require 'appmap/class_map'
+        require 'appmap/tracer'
+        tracer = AppMap.tracers.trace
 
         events = []
         quit = false
@@ -85,7 +86,10 @@ module AppMap
         at_exit do
           quit = true
           event_thread.join
-          yield AppMap::APPMAP_FORMAT_VERSION, detect_metadata, class_map, events
+          yield AppMap::APPMAP_FORMAT_VERSION,
+                self.class.detect_metadata,
+                ClassMap.build_from_methods(config, tracer.event_methods),
+                events
         end
 
         load program if program

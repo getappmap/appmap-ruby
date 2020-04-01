@@ -3,6 +3,11 @@
 Internals of this Gem have been changed to rely less on `TracePoint` and more on `alias_method`.
 Performance is much better as a result.
 
+**WARNING** Breaking changes
+
+* **Rack** apps no longer generate `http_server_request` events.
+* **appmap inspect** has been removed.
+
 # v0.23.0
 
 * **appmap stats** command added.

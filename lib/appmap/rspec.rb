@@ -254,7 +254,7 @@ module AppMap
             # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
-              current_tracer = AppMap::Trace.tracers.trace
+              current_tracer = AppMap.tracers.trace
             end
 
             # When the tracer is enabled and a block is completed, check to see if there is an
@@ -263,7 +263,7 @@ module AppMap
             if current_tracer && tp.event == :b_return && trace_block_end.member?(loc)
               puts "Ending trace on #{loc}" if LOG
               events = []
-              AppMap::Trace.tracers.delete current_tracer
+              AppMap.tracers.delete current_tracer
 
               while current_tracer.event?
                 events << current_tracer.next_event.to_h
@@ -345,7 +345,7 @@ end
 if AppMap::RSpec.enabled?
   require 'appmap'
   require 'appmap/class_map'
-  require 'appmap/trace/tracer'
+  require 'appmap/tracer'
   require 'active_support/inflector/transliterate'
 
   AppMap::RSpec.run
