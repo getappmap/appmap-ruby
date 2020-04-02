@@ -3,7 +3,7 @@ require 'rails_spec_helper'
 describe 'AbstractControllerBase' do
   before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
   include_context 'Rails app pg database'
-  
+
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
