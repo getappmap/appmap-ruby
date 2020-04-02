@@ -1,12 +1,12 @@
 # v0.24.0
 
-Internals of this Gem have been changed to rely less on `TracePoint` and more on `alias_method`.
-Performance is much better as a result.
+Internals of `appmap-ruby` have been changed to record each method event using `alias_method`,
+rather than `TracePoint`. Performance is much better as a result.
 
 **WARNING** Breaking changes
 
 * **Rack** apps no longer generate `http_server_request` events.
-* **appmap inspect** has been removed.
+* **appmap inspect** has been removed. `appmap-ruby` no longer parses the source tree. Instead, it observes the methods as they are loaded by the VM. So, to get a class map, you have to create a recording. The `RSpec` recorder still prints an inventory to `Inventory.appmap.json` when it exits. The class map in this file contains every class and method which was loaded by any of the tests.
 
 # v0.23.0
 

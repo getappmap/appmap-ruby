@@ -15,8 +15,7 @@ module AppMap
       end
     end
 
-    MethodEventStruct =
-    Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
+    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
 
     class MethodEvent < MethodEventStruct
       LIMIT = 100
