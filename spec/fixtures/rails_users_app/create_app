@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # Just checking for a healthy container isn't enough, apparently. If
 # we don't wait here, sometimes the database is inaccessible.

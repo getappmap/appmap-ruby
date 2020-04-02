@@ -12,7 +12,7 @@ def wait_for_container(app_name)
   end
 end
 
-def run_cmd(*cmd)
+def run_cmd(*cmd, &failed)
   out, status = Open3.capture2e(*cmd)
   return [ out, status ] if status.success?
 
@@ -23,12 +23,20 @@ def run_cmd(*cmd)
     #{out}
     >>> End of output
   WARNING
+  failed&.call
   raise 'Command failed'
 end
 
 shared_context 'Rails app pg database' do
   before(:all) do
     raise 'you must set @fixure_dir' unless @fixture_dir
+
+    print_pg_logs = lambda do
+      logs, = run_cmd 'docker-compose logs pg'
+      puts "docker-compose logs for pg:"
+      puts
+      puts logs
+    end
 
     Dir.chdir @fixture_dir do 
       run_cmd 'docker-compose down -v'
@@ -37,7 +45,7 @@ shared_context 'Rails app pg database' do
       wait_for_container 'pg'
 
       cmd = 'docker-compose run --rm app ./create_app'
-      run_cmd cmd
+      run_cmd cmd, &print_pg_logs
     end
   end
 
