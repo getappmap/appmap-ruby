@@ -4,11 +4,9 @@ module AppMap
   module Middleware
     # RemoteRecording adds `/_appmap/record` routes to control recordings via HTTP requests
     class RemoteRecording
-
       def initialize(app)
         require 'appmap/command/record'
         require 'appmap/command/upload'
-        require 'appmap/tracer'
         require 'json'
 
         @app = app
@@ -31,7 +29,7 @@ module AppMap
         return [ false, 'Recording is already in progress' ] if @tracer
 
         @events = []
-        @tracer = AppMap.tracers.trace
+        @tracer = AppMap.tracing.trace
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
 
@@ -44,7 +42,7 @@ module AppMap
         tracer = @tracer
         @tracer = nil
 
-        AppMap.tracers.delete(tracer)
+        AppMap.tracing.delete(tracer)
 
         @event_thread.exit
         @event_thread.join

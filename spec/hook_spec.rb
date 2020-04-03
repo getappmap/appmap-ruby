@@ -3,7 +3,6 @@
 require 'rails_spec_helper'
 require 'appmap/hook'
 require 'appmap/event'
-require 'appmap/class_map'
 require 'diffy'
 
 describe 'AppMap class Hooking' do
@@ -35,14 +34,13 @@ describe 'AppMap class Hooking' do
     config = AppMap::Hook::Config.new('hook_spec', [ package ])
     AppMap::Hook.hook(config)
 
-    require 'appmap/tracer'
-    tracer = AppMap.tracers.trace
+    tracer = AppMap.tracing.trace
     AppMap::Event.reset_id_counter
     begin
       load file
       yield
     ensure
-      AppMap.tracers.delete(tracer)
+      AppMap.tracing.delete(tracer)
     end
     [ config, tracer ]
   end
@@ -93,7 +91,7 @@ describe 'AppMap class Hooking' do
     config, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
       InstanceMethod.new.say_default
     end
-    class_map = AppMap::ClassMap.build_from_methods(config, tracer.event_methods).to_yaml
+    class_map = AppMap.class_map(config, tracer.event_methods).to_yaml
     expect(Diffy::Diff.new(class_map, <<~YAML).to_s).to eq('')
     ---
     - :name: spec/fixtures/hook/instance_method.rb

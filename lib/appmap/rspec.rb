@@ -254,7 +254,7 @@ module AppMap
             # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
-              current_tracer = AppMap.tracers.trace
+              current_tracer = AppMap.tracing.trace
             end
 
             # When the tracer is enabled and a block is completed, check to see if there is an
@@ -263,7 +263,7 @@ module AppMap
             if current_tracer && tp.event == :b_return && trace_block_end.member?(loc)
               puts "Ending trace on #{loc}" if LOG
               events = []
-              AppMap.tracers.delete current_tracer
+              AppMap.tracing.delete current_tracer
 
               while current_tracer.event?
                 events << current_tracer.next_event.to_h
@@ -311,7 +311,7 @@ module AppMap
               feature_name = normalize.call(feature_name) if feature_name
 
               recorder.save full_description,
-                            AppMap::ClassMap.build_from_methods(@config, current_tracer.event_methods),
+                            AppMap.class_map(@config, current_tracer.event_methods),
                             events: events,
                             feature_name: feature_name,
                             feature_group_name: feature_group,
@@ -323,7 +323,7 @@ module AppMap
 
       def print_inventory
         recorder = Recorder.new(@config).tap(&:setup)
-        class_map = AppMap::ClassMap.build_from_methods(@config, @event_methods)
+        class_map = AppMap.class_map(@config, @event_methods)
         recorder.save 'Inventory', class_map, labels: %w[inventory]
       end
 
@@ -344,8 +344,6 @@ end
 
 if AppMap::RSpec.enabled?
   require 'appmap'
-  require 'appmap/class_map'
-  require 'appmap/tracer'
   require 'active_support/inflector/transliterate'
 
   AppMap::RSpec.run

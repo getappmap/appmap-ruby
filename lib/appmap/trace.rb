@@ -1,12 +1,6 @@
 # frozen_string_literal: true
 
 module AppMap
-  class << self
-    def tracers
-      @tracers ||= Trace::Tracers.new
-    end
-  end
-
   module Trace
     class Tracers
       def initialize
@@ -59,7 +53,7 @@ module AppMap
       @enabled
     end
 
-    # Private function. Use AppMap.tracers#delete.
+    # Private function. Use AppMap.tracing#delete.
     def disable # :nodoc:
       @enabled = false
     end

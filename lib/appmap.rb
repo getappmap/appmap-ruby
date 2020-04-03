@@ -16,12 +16,17 @@ module AppMap
     @config = nil
     @config_file_path = nil
 
+    # configuration gets the AppMap configuration.
     def configuration
       raise "AppMap is not configured" unless @config
 
       @config
     end
 
+    # configure applies the configuration from a file. This method can only be performed once.
+    # Be sure and call it before +hook+ if you want non-default configuration.
+    #
+    # Default behavior is to configure from "appmap.yml".
     def configure(config_file_path = 'appmap.yml')
       if @config
         return @config if @config_file_path == config_file_path
@@ -37,10 +42,24 @@ module AppMap
       end
     end
 
-    # Simplified entry point to add hooks to code as it's loaded.
+    # Activate the code hooks which record function calls as trace events.
+    # Call this function before the program code is loaded by the Ruby VM, otherwise
+    # the load events won't be seen and the hooks won't activate.
     def hook(config = configure)
       require 'appmap/hook'
       AppMap::Hook.hook(config)
+    end
+
+    # Access the AppMap::Tracers, which can be used to start tracing, stop tracing, and record events.
+    def tracing
+      require 'appmap/trace'
+      @tracing ||= Trace::Tracers.new
+    end
+
+    # Build a class map from a config and a list of Ruby methods.
+    def class_map(config, methods)
+      require 'appmap/class_map'
+      AppMap::ClassMap.build_from_methods(config, methods)
     end
   end
 end

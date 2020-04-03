@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'appmap/event'
-require 'appmap/tracer'
 
 module AppMap
   module Rails
@@ -50,7 +49,7 @@ module AppMap
         def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
           event = Call.new(__FILE__, __LINE__, payload)
           Thread.current[context_key] = Context.new(event.id, Time.now)
-          AppMap.tracers.record_event(event)
+          AppMap.tracing.record_event(event)
         end
       end
 
@@ -84,7 +83,7 @@ module AppMap
           Thread.current[context_key] = nil
 
           event = Call.new(__FILE__, __LINE__, payload, context.id, Time.now - context.start_time)
-          AppMap.tracers.record_event(event)
+          AppMap.tracing.record_event(event)
         end
       end
     end

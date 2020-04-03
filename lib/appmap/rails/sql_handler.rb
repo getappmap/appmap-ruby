@@ -94,7 +94,7 @@ module AppMap
       end
 
       def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
-        return if AppMap.tracers.empty?
+        return if AppMap.tracing.empty?
 
         reentry_key = "#{self.class.name}#call"
         return if Thread.current[reentry_key] == true
@@ -137,8 +137,8 @@ module AppMap
           SQLExaminer.examine payload, sql: sql
 
           call = SQLCall.new(__FILE__, __LINE__, payload)
-          AppMap.tracers.record_event(call)
-          AppMap.tracers.record_event(SQLReturn.new(__FILE__, __LINE__, call.id, finished - started))
+          AppMap.tracing.record_event(call)
+          AppMap.tracing.record_event(SQLReturn.new(__FILE__, __LINE__, call.id, finished - started))
         ensure
           Thread.current[reentry_key] = nil
         end
