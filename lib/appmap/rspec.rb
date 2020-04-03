@@ -44,6 +44,15 @@ module AppMap
           events: events
         }.compact
         fname = sanitize_filename(example_name)
+
+        if ENV['APPMAP_PROFILE'] == 'true'
+          result = RubyProf.stop
+          printer = RubyProf::CallStackPrinter.new(result)
+          File.open(File.join(APPMAP_OUTPUT_DIR, "#{fname}.html"), 'w') do |f|
+            printer.print(f, {})
+          end
+        end
+
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.appmap.json"), JSON.generate(appmap))
       end
 
@@ -254,6 +263,13 @@ module AppMap
             # file:lineno. If it is, enable the AppMap tracer.
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
+
+              if ENV['APPMAP_PROFILE'] == 'true'
+                require 'ruby-prof'
+                # profile the code
+                RubyProf.start
+              end
+
               current_tracer = AppMap.tracing.trace
             end
 
