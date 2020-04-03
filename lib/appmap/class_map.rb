@@ -80,7 +80,7 @@ module AppMap
       protected
 
       def package_for_method(packages, method)
-        location = method.source_location
+        location = method.method.source_location
         location_file, = location
         location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
 
@@ -91,17 +91,11 @@ module AppMap
       end
 
       def add_function(root, package_name, method)
-        location = method.source_location
+        location = method.method.source_location
         location_file, lineno = location
         location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
 
-        owner_class_name, static = \
-          if method.owner.singleton_class?
-            require 'appmap/util'
-            [ AppMap::Util.descendant_class(method.owner).name, true ]
-          else
-            [ method.owner.name, false ]
-          end
+        static = method.method.owner.singleton_class?
 
         object_infos = [
           {
@@ -109,14 +103,14 @@ module AppMap
             type: 'package'
           }
         ]
-        object_infos += owner_class_name.split('::').map do |name|
+        object_infos += method.defined_class.split('::').map do |name|
           {
             name: name,
             type: 'class'
           }
         end
         object_infos << {
-          name: method.name,
+          name: method.method.name,
           type: 'function',
           location: [ location_file, lineno ].join(':'),
           static: static
@@ -142,16 +136,6 @@ module AppMap
 
         yield.tap do |new_obj|
           list << new_obj
-        end
-      end
-
-      def class_names_for_method(method, static)
-        owner_name, static = \
-        if method.owner.singleton_class?
-          require 'appmap/util'
-          [ AppMap::Util.descendant_class(method.owner).name, '.' ]
-        else
-          [ method.owner.name, '#' ]
         end
       end
     end

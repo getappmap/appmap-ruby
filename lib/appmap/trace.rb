@@ -2,6 +2,8 @@
 
 module AppMap
   module Trace
+    ScopedMethod = Struct.new(:defined_class, :method)
+
     class Tracers
       def initialize
         @tracers = []
@@ -22,9 +24,9 @@ module AppMap
         @tracers.any?(&:enabled?)
       end
 
-      def record_event(event, method: nil)
+      def record_event(event, defined_class: nil, method: nil)
         @tracers.each do |tracer|
-          tracer.record_event(event, method: method)
+          tracer.record_event(event, defined_class: defined_class, method: method)
         end
       end
 
@@ -61,11 +63,11 @@ module AppMap
     # Record a program execution event.
     #
     # The event should be one of the MethodEvent subclasses.
-    def record_event(event, method: nil)
+    def record_event(event, defined_class: nil, method: nil)
       return unless @enabled
 
       @events << event
-      @methods << method if method
+      @methods << Trace::ScopedMethod.new(defined_class, method) if defined_class && method
     end
 
     # Gets a unique list of the methods that were invoked by the program.

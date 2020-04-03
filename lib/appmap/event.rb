@@ -21,14 +21,12 @@ module AppMap
       LIMIT = 100
 
       class << self
-        def build_from_invocation(me, event_type, method)
+        def build_from_invocation(me, event_type, defined_class, method)
           singleton = method.owner.singleton_class?
-
-          require 'appmap/util'
 
           me.id = AppMap::Event.next_id_counter
           me.event = event_type
-          me.defined_class = singleton ? AppMap::Util.descendant_class(method.owner).name : method.owner.name
+          me.defined_class = defined_class
           me.method_id = method.name.to_s
           path = method.source_location[0]
           path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
@@ -71,7 +69,7 @@ module AppMap
       attr_accessor :parameters, :receiver
 
       class << self
-        def build_from_invocation(mc = MethodCall.new, method, receiver, arguments)
+        def build_from_invocation(mc = MethodCall.new, defined_class, method, receiver, arguments)
           mc.tap do
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
@@ -89,7 +87,7 @@ module AppMap
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
-            MethodEvent.build_from_invocation(mc, :call, method)
+            MethodEvent.build_from_invocation(mc, :call, defined_class, method)
           end
         end
       end
@@ -106,11 +104,11 @@ module AppMap
       attr_accessor :parent_id, :elapsed
 
       class << self
-        def build_from_invocation(mr = MethodReturnIgnoreValue.new, method, parent_id, elapsed)
+        def build_from_invocation(mr = MethodReturnIgnoreValue.new, defined_class, method, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
             mr.elapsed = elapsed
-            MethodEvent.build_from_invocation(mr, :return, method)
+            MethodEvent.build_from_invocation(mr, :return, defined_class, method)
           end
         end
       end
@@ -127,14 +125,14 @@ module AppMap
       attr_accessor :return_value
 
       class << self
-        def build_from_invocation(mr = MethodReturn.new, method, parent_id, elapsed, return_value)
+        def build_from_invocation(mr = MethodReturn.new, defined_class, method, parent_id, elapsed, return_value)
           mr.tap do |_|
             mr.return_value = {
               class: return_value.class.name,
               value: display_string(return_value),
               object_id: return_value.__id__
             }
-            MethodReturnIgnoreValue.build_from_invocation(mr, method, parent_id, elapsed)
+            MethodReturnIgnoreValue.build_from_invocation(mr, defined_class, method, parent_id, elapsed)
           end
         end
       end

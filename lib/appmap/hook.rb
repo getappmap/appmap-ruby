@@ -54,6 +54,32 @@ module AppMap
           end
         end.flatten
 
+        before_hook = lambda do |defined_class, method, receiver, args|
+          require 'appmap/event'
+          call_event = AppMap::Event::MethodCall.build_from_invocation(defined_class, method, receiver, args)
+          AppMap.tracing.record_event call_event, defined_class: defined_class, method: method
+          [ call_event, Time.now ]
+        end
+
+        after_hook = lambda do |call_event, defined_class, method, start_time, return_value|
+          require 'appmap/event'
+          elapsed = Time.now - start_time
+          return_event = AppMap::Event::MethodReturn.build_from_invocation \
+            defined_class, method, call_event.id, elapsed, return_value
+          AppMap.tracing.record_event return_event
+        end
+
+        with_disabled_hook = lambda do |&fn|
+          # Don't record functions, such as to_s and inspect, that might be called
+          # by the fn. Otherwise there can be a stack oveflow.
+          Thread.current[HOOK_DISABLE_KEY] = true
+          begin
+            fn.call
+          ensure
+            Thread.current[HOOK_DISABLE_KEY] = false
+          end
+        end
+
         TracePoint.trace(:end) do |tp|
           cls = tp.self
 
@@ -74,57 +100,33 @@ module AppMap
               match &&= !package_exclude_paths.find { |p| location_file.index(p) }
               next unless match
 
-              owner_name, method_symbol = \
+              defined_class, method_symbol = \
                 if method.owner.singleton_class?
-                  require 'appmap/util'
-                  [ AppMap::Util.descendant_class(method.owner).name, '.' ]
+                  # Singleton class name is like: #<Class:<(.*)>>
+                  class_name = method.owner.to_s['#<Class:<'.length-1..-2]
+                  [ class_name, '.' ]
                 else
                   [ method.owner.name, '#' ]
                 end
 
-              warn "AppMap: Hooking #{owner_name}#{method_symbol}#{method.name}" if LOG
+              warn "AppMap: Hooking #{defined_class}#{method_symbol}#{method.name}" if LOG
 
-              cls.alias_method "#{method_id}_hooked_by_appmap".to_sym, method_id
+              original_method = "#{method_id}_hooked_by_appmap".to_sym
+              cls.alias_method original_method, method_id
               cls.define_method method_id do |*args, &block|
-                require 'appmap/event'
-
-                before_hook = lambda do
-                  call_event = AppMap::Event::MethodCall.build_from_invocation(method, self, args)
-                  AppMap.tracing.record_event call_event, method: method
-                  [ call_event, Time.now ]
-                end
-
-                after_hook = lambda do |call_event, start_time, return_value|
-                  elapsed = Time.now - start_time
-                  return_event = AppMap::Event::MethodReturn.build_from_invocation \
-                    method, call_event.id, elapsed, return_value
-                  AppMap.tracing.record_event return_event
-                end
-
-                with_disabled_hook = lambda do |enabled, &fn|
-                  if enabled
-                    # Don't record functions, such as to_s and inspect, that might be called
-                    # by the fn. Otherwise there can be a stack oveflow.
-                    Thread.current[HOOK_DISABLE_KEY] = true
-                    begin
-                      fn.call
-                    ensure
-                      Thread.current[HOOK_DISABLE_KEY] = false
-                    end
-                  end
-                end
-
                 hook_disabled = Thread.current[HOOK_DISABLE_KEY]
                 enabled = true if !hook_disabled && AppMap.tracing.enabled?
-                call_event, start_time = with_disabled_hook.call(enabled) do
-                  before_hook.call
+                return send(original_method, *args, &block) unless enabled
+
+                call_event, start_time = with_disabled_hook.call do
+                  before_hook.call(defined_class, method, self, args)
                 end
                 return_value = nil
                 begin
-                  return_value = send "#{method_id}_hooked_by_appmap", *args, &block
+                  return_value = send(original_method, *args, &block)
                 ensure
-                  with_disabled_hook.call(enabled) do
-                    after_hook.call(call_event, start_time, return_value)
+                  with_disabled_hook.call do
+                    after_hook.call(call_event, defined_class, method, start_time, return_value)
                   end
                 end
               end

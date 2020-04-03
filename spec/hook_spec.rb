@@ -84,7 +84,8 @@ describe 'AppMap class Hooking' do
     _, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
       InstanceMethod.new.say_default
     end
-    expect(tracer.event_methods.to_a.map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
+    expect(tracer.event_methods.to_a.map(&:defined_class)).to eq([ 'InstanceMethod' ])
+    expect(tracer.event_methods.to_a.map(&:method).map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
   end
 
   it 'builds a class map of invoked methods' do
