@@ -4,6 +4,7 @@
 - [Running](#running)
   - [RSpec](#rspec)
   - [Remote recording](#remote-recording)
+  - [Ruby on Rails](#ruby-on-rails)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Build status](#build-status)
 
@@ -11,16 +12,17 @@
 
 `appmap-ruby` is a Ruby Gem for recording and uploading
 [AppMaps](https://github.com/applandinc/appmap) of your code. 
-AppMap is a data format which records code structure (modules, classes, and methods), code execution events
+"AppMap" is a data format which records code structure (modules, classes, and methods), code execution events
 (function calls and returns), and code metadata (repo name, repo URL, commit
-SHA, etc). It's more granular than a performance profile, but it's less
+SHA, labels, etc). It's more granular than a performance profile, but it's less
 granular than a full debug trace. It's designed to be optimal for understanding the design intent and behavior of code.
 
 There are several ways to record AppMaps of your Ruby program using the `appmap` gem:
 
-* Run your RSpec tests. An AppMap will be generated for each one.
-* Run your application server with AppMap remote recording enabled, and use the AppMap
+* Run your RSpec tests with the environment variable `APPMAP=true`. An AppMap will be generated for each spec.
+* Run your application server with AppMap remote recording enabled, and use the AppMap.
   browser extension to start, stop, and upload recordings. 
+* Run the command `appmap record <program>` to record the entire execution of a program.
 
 When you record AppMaps on the command line (for example, by running RSpec tests), you use the `appmap upload` command to
 upload them to the AppLand website. On the AppLand website, you'll be able to
@@ -60,8 +62,6 @@ packages:
 
 * **name** Provides the project name (required)
 * **packages** A list of source code directories which should be instrumented.
-* **files** A list of individual files which should be instrumented. This is only used for files which are
-  not part of the `packages` list.
 
 **packages**
 
@@ -69,9 +69,7 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 * **path** The path to the source code directory. The path may be relative to the current working directory, or it may
   be an absolute path.
-* **name** A name for the code package. By default, the package name will be the name of the directory in which the code
-  is located. In the example above, "controllers" or "models".
-* **excludes** A list of files and directories which will be ignored. By default, all modules, classes and public
+* **exclude** A list of files and directories which will be ignored. By default, all modules, classes and public
   functions are inspected.
 
 # Running
@@ -129,6 +127,8 @@ If you include the `feature` and `feature_group` metadata, these attributes will
 }
 ```
 
+If you don't explicitly declare `feature` and `feature_group`, then they will be inferred from the spec name and example descriptions.
+
 ## Remote recording
 
 To manually record ad-hoc AppMaps of your Ruby app, use AppMap remote recording.
@@ -159,12 +159,18 @@ $ bundle exec rails server
 
 6. Open the AppApp browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
 
+## Ruby on Rails
+
+If your app uses Ruby on Rails, the AppMap Railtie will be automatically enabled. Set the Rails config flag `app.config.appmap.enabled = true` to record the entire execution of your Rails app.
+
+Note that using this method is kind of a blunt instrument. Recording RSpecs and using Remote Recording are usually better options.
+
 # Uploading AppMaps
 
-To upload an AppMap file to AppLand, run the `appmap upload` command. For example:
+To upload an AppMap file to AppLand, run the `appmap upload` command. For example (with binstubs installed):
 
 ```sh-session
-$ appmap upload tmp/appmap/rspec/Hello_app_says_hello_when_prompted.appmap.json
+$ ./bin/appmap upload tmp/appmap/rspec/*
 Uploading "tmp/appmap/rspec/Hello_app_says_hello_when_prompted.appmap.json"
 Scenario Id: 4da4f267-bdea-48e8-bf67-f39463844230
 Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
@@ -172,4 +178,3 @@ Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
 
 # Build status
 [![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
-
