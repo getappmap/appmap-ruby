@@ -108,6 +108,26 @@ describe 'AppMap class Hooking' do
     YAML
   end
 
+  it 'does not hook an attr_accessor' do
+    events_yaml = <<~YAML
+    --- []
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/attr_accessor.rb', events_yaml do
+      obj = AttrAccessor.new
+      obj.value = 'foo'
+      expect(obj.value).to eq('foo')
+    end
+  end
+
+  it 'does not hook a constructor' do
+    events_yaml = <<~YAML
+    --- []
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/constructor.rb', events_yaml do
+      Constructor.new('foo')
+    end
+  end
+
   it 'hooks an instance method that takes an argument' do
     events_yaml = <<~YAML
     ---
