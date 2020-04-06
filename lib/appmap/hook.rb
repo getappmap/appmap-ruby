@@ -100,6 +100,10 @@ module AppMap
               match &&= !package_exclude_paths.find { |p| location_file.index(p) }
               next unless match
 
+              disasm = RubyVM::InstructionSequence.disasm(method)
+              # Skip methods that have no instruction sequence, as they are obviously trivial.
+              next unless disasm
+
               defined_class, method_symbol = \
                 if method.owner.singleton_class?
                   # Singleton class name is like: #<Class:<(.*)>>
