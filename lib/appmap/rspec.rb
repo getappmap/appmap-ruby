@@ -6,6 +6,13 @@ module AppMap
   module RSpec
     APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
 
+    def self.metadata
+      require 'appmap/command/record'
+      @metadata ||= AppMap::Command::Record.detect_metadata
+      @metadata.freeze
+      @metadata.dup
+    end
+
     class Recorder
       attr_reader :config
 
@@ -20,8 +27,7 @@ module AppMap
       end
 
       def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
-        require 'appmap/command/record'
-        metadata = AppMap::Command::Record.detect_metadata.tap do |m|
+        metadata = RSpec.metadata.dup.tap do |m|
           m[:name] = example_name
           m[:app] = @config.name
           m[:feature] = feature_name if feature_name
@@ -44,14 +50,6 @@ module AppMap
           events: events
         }.compact
         fname = sanitize_filename(example_name)
-
-        if ENV['APPMAP_PROFILE'] == 'true'
-          result = RubyProf.stop
-          printer = RubyProf::CallStackPrinter.new(result)
-          File.open(File.join(APPMAP_OUTPUT_DIR, "#{fname}.html"), 'w') do |f|
-            printer.print(f, {})
-          end
-        end
 
         File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.appmap.json"), JSON.generate(appmap))
       end
@@ -264,12 +262,6 @@ module AppMap
             if  tp.event == :b_call && trace_block_start.member?(loc)
               puts "Starting trace on #{loc}" if LOG
 
-              if ENV['APPMAP_PROFILE'] == 'true'
-                require 'ruby-prof'
-                # profile the code
-                RubyProf.start
-              end
-
               current_tracer = AppMap.tracing.trace
             end
 
@@ -285,6 +277,8 @@ module AppMap
                 events << current_tracer.next_event.to_h
               end
               @event_methods += current_tracer.event_methods
+
+              class_map = AppMap.class_map(@config, current_tracer.event_methods)
 
               example = examples[loc]
               description = []
@@ -327,7 +321,7 @@ module AppMap
               feature_name = normalize.call(feature_name) if feature_name
 
               recorder.save full_description,
-                            AppMap.class_map(@config, current_tracer.event_methods),
+                            class_map,
                             events: events,
                             feature_name: feature_name,
                             feature_group_name: feature_group,
