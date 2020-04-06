@@ -73,6 +73,7 @@ module AppMap
           mc.tap do
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
+              param_name ||= 'arg'
               value = arguments[idx]
               {
                 name: param_name,
