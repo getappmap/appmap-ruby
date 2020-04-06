@@ -115,19 +115,19 @@ module AppMap
 
               warn "AppMap: Hooking #{defined_class}#{method_symbol}#{method.name}" if LOG
 
-              original_method = "#{method_id}_hooked_by_appmap".to_sym
-              cls.alias_method original_method, method_id
               cls.define_method method_id do |*args, &block|
+                base_method = method.bind(self).to_proc
+
                 hook_disabled = Thread.current[HOOK_DISABLE_KEY]
                 enabled = true if !hook_disabled && AppMap.tracing.enabled?
-                return send(original_method, *args, &block) unless enabled
+                return base_method.call(*args, &block) unless enabled
 
                 call_event, start_time = with_disabled_hook.call do
                   before_hook.call(defined_class, method, self, args)
                 end
                 return_value = nil
                 begin
-                  return_value = send(original_method, *args, &block)
+                  return_value = base_method.call(*args, &block)
                 ensure
                   with_disabled_hook.call do
                     after_hook.call(call_event, defined_class, method, start_time, return_value)
