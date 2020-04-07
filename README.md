@@ -1,4 +1,5 @@
 - [About](#about)
+- [Testing](#testing)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -27,6 +28,17 @@ There are several ways to record AppMaps of your Ruby program using the `appmap`
 When you record AppMaps on the command line (for example, by running RSpec tests), you use the `appmap upload` command to
 upload them to the AppLand website. On the AppLand website, you'll be able to
 visualize the design of your code and share links with collaborators.
+
+# Testing
+Before running tests, configure `local.appmap` to point to your local `appmap-ruby` directory.
+```
+$ bundle config local.appmap $(pwd)
+```
+
+Run the tests via `rake`:
+```
+$ bundle exec rake test
+```
 
 # Installation
 
