@@ -3,13 +3,12 @@ require 'rails_spec_helper'
 describe 'Record SQL queries in a Rails app' do
   before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
   include_context 'Rails app pg database'
-  
+
   around(:each) do |example|
     FileUtils.rm_rf tmpdir
     FileUtils.mkdir_p tmpdir
     cmd = "docker-compose run --rm -e ORM_MODULE=#{orm_module} -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_api_spec.rb:#{test_line_number}"
     run_cmd cmd, chdir: @fixture_dir
-    
 
     example.run
   end

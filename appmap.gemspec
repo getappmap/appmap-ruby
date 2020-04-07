@@ -30,11 +30,13 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 1.16'
   spec.add_development_dependency 'minitest', '~> 5.0'
   spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'
+  spec.add_development_dependency 'rubocop'
 
   # Testing
   spec.add_development_dependency 'climate_control'
+  spec.add_development_dependency 'diffy'
   spec.add_development_dependency 'launchy'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'selenium-webdriver'

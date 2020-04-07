@@ -1,5 +1,11 @@
 language: ruby
 
+addons:
+  apt:
+    packages:
+      # https://docs.travis-ci.com/user/docker/#installing-a-newer-docker-version
+      - docker-ce
+
 services:
 - docker
 

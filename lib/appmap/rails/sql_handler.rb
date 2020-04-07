@@ -1,13 +1,15 @@
-require 'appmap/trace/tracer'
+# frozen_string_literal: true
+
+require 'appmap/event'
 
 module AppMap
   module Rails
     class SQLHandler
-      class SQLCall < AppMap::Trace::MethodEvent
+      class SQLCall < AppMap::Event::MethodEvent
         attr_accessor :payload
 
         def initialize(path, lineno, payload)
-          super AppMap::Trace::MethodEvent.next_id, :call, SQLHandler, :call, path, lineno, false, Thread.current.object_id
+          super AppMap::Event.next_id_counter, :call, SQLHandler, :call, path, lineno, false, Thread.current.object_id
 
           self.payload = payload
         end
@@ -26,9 +28,9 @@ module AppMap
         end
       end
 
-      class SQLReturn < AppMap::Trace::MethodReturnIgnoreValue
+      class SQLReturn < AppMap::Event::MethodReturnIgnoreValue
         def initialize(path, lineno, parent_id, elapsed)
-          super AppMap::Trace::MethodEvent.next_id, :return, SQLHandler, :call, path, lineno, false, Thread.current.object_id
+          super AppMap::Event.next_id_counter, :return, SQLHandler, :call, path, lineno, false, Thread.current.object_id
 
           self.parent_id = parent_id
           self.elapsed = elapsed
@@ -92,7 +94,7 @@ module AppMap
       end
 
       def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
-        return if AppMap::Trace.tracers.empty?
+        return if AppMap.tracing.empty?
 
         reentry_key = "#{self.class.name}#call"
         return if Thread.current[reentry_key] == true
@@ -135,8 +137,8 @@ module AppMap
           SQLExaminer.examine payload, sql: sql
 
           call = SQLCall.new(__FILE__, __LINE__, payload)
-          AppMap::Trace.tracers.record_event(call)
-          AppMap::Trace.tracers.record_event(SQLReturn.new(__FILE__, __LINE__, call.id, finished - started))
+          AppMap.tracing.record_event(call)
+          AppMap.tracing.record_event(SQLReturn.new(__FILE__, __LINE__, call.id, finished - started))
         ensure
           Thread.current[reentry_key] = nil
         end

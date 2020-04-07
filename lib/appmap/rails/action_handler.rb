@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'appmap/event'
+
 module AppMap
   module Rails
     module ActionHandler
@@ -12,11 +16,11 @@ module AppMap
       class HTTPServerRequest
         include ContextKey
 
-        class Call < AppMap::Trace::MethodEvent
+        class Call < AppMap::Event::MethodEvent
           attr_accessor :payload
 
           def initialize(path, lineno, payload)
-            super AppMap::Trace::MethodEvent.next_id, :call, HTTPServerRequest, :call, path, lineno, false, Thread.current.object_id
+            super AppMap::Event.next_id_counter, :call, HTTPServerRequest, :call, path, lineno, false, Thread.current.object_id
 
             self.payload = payload
           end
@@ -45,18 +49,18 @@ module AppMap
         def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
           event = Call.new(__FILE__, __LINE__, payload)
           Thread.current[context_key] = Context.new(event.id, Time.now)
-          AppMap::Trace.tracers.record_event(event)
+          AppMap.tracing.record_event(event)
         end
       end
 
       class HTTPServerResponse
         include ContextKey
 
-        class Call < AppMap::Trace::MethodReturnIgnoreValue
+        class Call < AppMap::Event::MethodReturnIgnoreValue
           attr_accessor :payload
 
           def initialize(path, lineno, payload, parent_id, elapsed)
-            super AppMap::Trace::MethodEvent.next_id, :return, HTTPServerResponse, :call, path, lineno, false, Thread.current.object_id
+            super AppMap::Event.next_id_counter, :return, HTTPServerResponse, :call, path, lineno, false, Thread.current.object_id
 
             self.payload = payload
             self.parent_id = parent_id
@@ -79,7 +83,7 @@ module AppMap
           Thread.current[context_key] = nil
 
           event = Call.new(__FILE__, __LINE__, payload, context.id, Time.now - context.start_time)
-          AppMap::Trace.tracers.record_event(event)
+          AppMap.tracing.record_event(event)
         end
       end
     end

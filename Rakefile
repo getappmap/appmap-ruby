@@ -54,7 +54,7 @@ namespace :build do
       end
     end
   end
-  
+
   namespace :fixtures do
     RUBY_VERSIONS.each do |ruby_version|
       namespace ruby_version do
@@ -69,7 +69,7 @@ namespace :build do
           end
         end
       end
-      
+
       desc "Build all fixture images"
       task all: ["#{ruby_version}:all"]
     end
@@ -93,7 +93,7 @@ def run_specs(ruby_version, task_args)
       task.rspec_opts = args.to_a.join(' ')
     end
   end
-  
+
   # Set up the environment, then execute the rspec task we
   # created above.
   ClimateControl.modify(RUBY_VERSION: ruby_version) do

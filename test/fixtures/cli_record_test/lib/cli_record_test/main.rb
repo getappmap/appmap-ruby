@@ -1,6 +1,8 @@
 class Main
-  def Main.say_hello
-    puts 'Hello'
+  class << self
+    def say_hello
+      puts 'Hello'
+    end
   end
 end
 

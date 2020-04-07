@@ -1,0 +1,23 @@
+# frozen_string_literal: true
+
+class InstanceMethod
+  def to_s
+    'Instance Method fixture'
+  end
+
+  def say_default
+    'default'
+  end
+
+  def say_echo(arg)
+    arg.to_s
+  end
+
+  def say_kw(kw: 'kw')
+    kw.to_s
+  end
+
+  def say_block(&block)
+    yield
+  end
+end

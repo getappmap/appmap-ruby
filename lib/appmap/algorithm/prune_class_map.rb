@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module AppMap
   module Algorithm
     # Prune a class map so that only functions, classes and packages which are referenced

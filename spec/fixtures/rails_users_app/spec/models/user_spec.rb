@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe User, feature_group: 'User', appmap: true do
   # TODO: appmap/rspec doesn't handle shared_examples_for 100% correctly yet.
-  # In my tests, only one of these two tests will be emitted as an 
+  # In my tests, only one of these two tests will be emitted as an appmap.
   shared_examples_for 'creates the user' do |username|
     let(:login) { username }
     let(:user) { User.new(login: login) }

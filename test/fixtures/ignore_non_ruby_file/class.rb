@@ -1,3 +1,0 @@
-# @appmap
-class Cls
-end

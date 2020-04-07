@@ -4,17 +4,14 @@ module AppMap
   module Middleware
     # RemoteRecording adds `/_appmap/record` routes to control recordings via HTTP requests
     class RemoteRecording
-
       def initialize(app)
         require 'appmap/command/record'
         require 'appmap/command/upload'
-        require 'appmap/trace/tracer'
-        require 'appmap/config'
         require 'json'
 
         @app = app
-        @features = AppMap.inspect(config)
-        @functions = @features.map(&:collect_functions).flatten
+        @config = AppMap.configure
+        AppMap::Hook.hook(@config)
       end
 
       def event_loop
@@ -32,7 +29,7 @@ module AppMap
         return [ false, 'Recording is already in progress' ] if @tracer
 
         @events = []
-        @tracer = AppMap::Trace.tracers.trace(@functions)
+        @tracer = AppMap.tracing.trace
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
 
@@ -45,7 +42,7 @@ module AppMap
         tracer = @tracer
         @tracer = nil
 
-        AppMap::Trace.tracers.delete(tracer)
+        AppMap.tracing.delete(tracer)
 
         @event_thread.exit
         @event_thread.join
@@ -73,7 +70,11 @@ module AppMap
           name: 'remote_recording'
         }
 
-        response = JSON.generate(version: AppMap::APPMAP_FORMAT_VERSION, classMap: @features, metadata: metadata, events: @events)
+        response = JSON.generate \
+          version: AppMap::APPMAP_FORMAT_VERSION,
+          classMap: AppMap.class_map(@events),
+          metadata: metadata,
+          events: @events
 
         [ true, response ]
       end
@@ -111,10 +112,6 @@ module AppMap
 
       def html_response?(headers)
         headers['Content-Type'] && headers['Content-Type'] =~ /html/
-      end
-
-      def config
-        @config ||= AppMap::Config.load_from_file 'appmap.yml'
       end
 
       def recording?

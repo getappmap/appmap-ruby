@@ -13,40 +13,6 @@ class CLITest < Minitest::Test
     FileUtils.rm_f STATS_OUTPUT_FILENAME
   end
 
-  def test_config_file_must_exist
-    output = `./exe/appmap -c foobar inspect 2>&1`
-
-    assert_equal 1, $CHILD_STATUS.exitstatus
-    assert_includes output, 'No such file or directory'
-    assert_includes output, 'foobar'
-  end
-
-  def test_inspect_to_file
-    `./exe/appmap inspect -o #{OUTPUT_FILENAME}`
-
-    assert_equal 0, $CHILD_STATUS.exitstatus
-    assert File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} does not exist"
-  end
-
-  def test_inspect_to_stdout
-    output = `./exe/appmap inspect -o -`
-
-    assert !File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} should not exist"
-
-    assert_equal 0, $CHILD_STATUS.exitstatus
-    assert !output.blank?, 'Output should exist in stdout'
-  end
-
-  def test_inspect_fields
-    output = `./exe/appmap inspect -o -`
-
-    output = JSON.parse(output)
-    assert_includes output.keys, 'version'
-    assert_includes output.keys, 'classMap'
-    assert_includes output.keys, 'metadata'
-    assert !output.keys.include?('events')
-  end
-
   def test_record
     output = Dir.chdir 'test/fixtures/cli_record_test' do
       `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
@@ -141,12 +107,17 @@ class CLITest < Minitest::Test
     end
 
     assert_equal 0, $CHILD_STATUS.exitstatus
-    assert_includes output, %("location":"lib/cli_record_test")
+    # Event path
+    assert_includes output, %("path":"lib/cli_record_test/main.rb")
+    # Function location
+    assert_includes output, %("location":"lib/cli_record_test/main.rb:3")
     assert !File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} should not exist"
   end
 
   def test_upload
-    `./exe/appmap inspect -o #{OUTPUT_FILENAME}`
+    Dir.chdir 'test/fixtures/cli_record_test' do
+      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`
+    end
 
     upload_output = `./exe/appmap upload --no-open #{OUTPUT_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus

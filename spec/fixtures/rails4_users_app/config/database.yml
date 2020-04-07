@@ -1,5 +1,6 @@
 default: &default
-  host: pg
+  host: <%= ENV['PGHOST'] || 'pg' %>
+  port: <%= ENV['PGPORT'] || 5432 %>
   user: postgres
   adapter: postgresql
   encoding: unicode
