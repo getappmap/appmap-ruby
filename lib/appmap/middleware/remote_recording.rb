@@ -26,18 +26,18 @@ module AppMap
       end
 
       def start_recording
-        return [ false, 'Recording is already in progress' ] if @tracer
+        return [ 409, 'Recording is already in progress' ] if @tracer
 
         @events = []
         @tracer = AppMap.tracing.trace
         @event_thread = Thread.new { event_loop }
         @event_thread.abort_on_exception = true
 
-        [ true ]
+        [ 200 ]
       end
 
       def stop_recording(req)
-        return [ false, 'No recording is in progress' ] unless @tracer
+        return [ 404, 'No recording is in progress' ] unless @tracer
 
         tracer = @tracer
         @tracer = nil
@@ -72,11 +72,11 @@ module AppMap
 
         response = JSON.generate \
           version: AppMap::APPMAP_FORMAT_VERSION,
-          classMap: AppMap.class_map(@events),
+          classMap: AppMap.class_map(@config, tracer.event_methods),
           metadata: metadata,
           events: @events
 
-        [ true, response ]
+        [ 200, response ]
       end
 
       def call(env)
@@ -104,10 +104,7 @@ module AppMap
             [ 404, '' ]
           end
 
-        status = 200 if status == true
-        status = 500 if status == false
-
-        [status, { 'Content-Type' => 'application/text' }, [body || '']]
+        [status, { 'Content-Type' => 'application/json' }, [body || '']]
       end
 
       def html_response?(headers)
