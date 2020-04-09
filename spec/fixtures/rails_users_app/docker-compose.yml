@@ -18,6 +18,8 @@ services:
       [ "./bin/rails", "server", "-b", "0.0.0.0", "webrick" ]
     environment:
       RAILS_ENV:
+      ORM_MODULE:
+      APPMAP:
     volumes:
     - .:/src/app
     ports:

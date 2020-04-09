@@ -5,38 +5,37 @@ require 'socket'
 describe 'remote recording', :order => :defined do
   before(:all) { @fixture_dir = 'spec/fixtures/rails_users_app' }
   include_context 'Rails app pg database'
-  
+
   before(:all) do
-    # We should really leave it to Docker to pick a random port for us, but right now we have no
-    # ability to parse the output of `docker port`. This should be sufficient for now.
-    @service_port = rand(30000..60000)
+    start_cmd = 'docker-compose up -d app'
+    run_cmd({ 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true' }, start_cmd, chdir: @fixture_dir)
+    Dir.chdir @fixture_dir do
+      wait_for_container 'app'
+    end
 
-    cmd = 'docker-compose run' \
-      ' -d' \
-      " -p #{@service_port}:3000" \
-      ' -e ORM_MODULE=sequel' \
-      ' -e APPMAP=true' \
-      ' app'
-
-    run_cmd cmd, chdir: @fixture_dir
+    port_cmd = 'docker-compose port app 3000'
+    port_out, = run_cmd port_cmd, chdir: @fixture_dir
+    @service_port = port_out.strip.split(':')[1]
 
     service_running = false
     retry_count = 0
     uri = URI("http://localhost:#{@service_port}/health")
 
     until service_running
+      sleep(0.25)
       begin
         res = Net::HTTP.start(uri.hostname, uri.port) do |http|
           http.request(Net::HTTP::Get.new(uri))
         end
 
-        service_running = true if res.instance_of?(Net::HTTPNoContent);
+        status = res.response.code.to_i
+        service_running = true if status >= 200 && status < 300
 
         # give up after a certain error threshold is met
         # we don't want to wait forever if there's an unrecoverable issue
-        raise "gave up waiting on fixture service" if (retry_count += 1) == 10
-      rescue Errno::ETIMEDOUT, Errno::ECONNRESET, EOFError => e
-        sleep(1.0)
+        raise 'gave up waiting on fixture service' if (retry_count += 1) == 10
+      rescue Errno::ETIMEDOUT, Errno::ECONNRESET, EOFError
+        $stderr.print('.')
       end
     end
   end
@@ -50,12 +49,12 @@ describe 'remote recording', :order => :defined do
   end
 
   let(:service_address) { URI("http://localhost:#{@service_port}") }
-  let(:users_path) { "/users" }
-  let(:record_path) { "/_appmap/record" }
+  let(:users_path) { '/users' }
+  let(:record_path) { '/_appmap/record' }
 
   it 'returns the recording status' do
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Get.new(record_path) )
+      http.request(Net::HTTP::Get.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPOK)
@@ -65,7 +64,7 @@ describe 'remote recording', :order => :defined do
 
   it 'starts a new recording session' do
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Post.new(record_path) )
+      http.request(Net::HTTP::Post.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPOK)
@@ -73,7 +72,7 @@ describe 'remote recording', :order => :defined do
 
   it 'reflects the recording status' do
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Get.new(record_path) )
+      http.request(Net::HTTP::Get.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPOK)
@@ -83,7 +82,7 @@ describe 'remote recording', :order => :defined do
 
   it 'fails to start a new recording session while recording is already active' do
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Post.new(record_path) )
+      http.request(Net::HTTP::Post.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPConflict)
@@ -92,11 +91,11 @@ describe 'remote recording', :order => :defined do
   it 'stops recording' do
     # Generate some events
     Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Get.new(users_path) )
+      http.request(Net::HTTP::Get.new(users_path) )
     }
 
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Delete.new(record_path) )
+      http.request(Net::HTTP::Delete.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPOK)
@@ -110,7 +109,7 @@ describe 'remote recording', :order => :defined do
 
   it 'fails to stop recording if there is no active recording session' do
     res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
-      http.request( Net::HTTP::Delete.new(record_path) )
+      http.request(Net::HTTP::Delete.new(record_path))
     }
 
     expect(res).to be_a(Net::HTTPNotFound)
