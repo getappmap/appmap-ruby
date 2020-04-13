@@ -18,6 +18,7 @@ describe 'AppMap class Hooking' do
       delete_object_id.call(event[:receiver])
       delete_object_id.call(event[:return_value])
       (event[:parameters] || []).each(&delete_object_id)
+      (event[:exceptions] || []).each(&delete_object_id)
 
       if event[:event] == :return
         # These should be removed from the appmap spec
@@ -323,6 +324,34 @@ describe 'AppMap class Hooking' do
     YAML
     test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
       expect(ClassMethod.say_self_defined).to eq('defined with self class scope')
+    end
+  end
+
+  it 'Reports exceptions' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: ExceptionMethod
+      :method_id: raise_exception
+      :path: spec/fixtures/hook/exception_method.rb
+      :lineno: 8
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: ExceptionMethod
+        :value: Exception Method fixture
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :exceptions:
+      - :class: RuntimeError
+        :message: Exception occurred in raise_exception
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 9
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
+      ExceptionMethod.new.raise_exception
     end
   end
 end

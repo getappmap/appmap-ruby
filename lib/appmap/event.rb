@@ -123,16 +123,35 @@ module AppMap
     end
 
     class MethodReturn < MethodReturnIgnoreValue
-      attr_accessor :return_value
+      attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(mr = MethodReturn.new, defined_class, method, parent_id, elapsed, return_value)
+        def build_from_invocation(mr = MethodReturn.new, defined_class, method, parent_id, elapsed, return_value, exception)
           mr.tap do |_|
-            mr.return_value = {
-              class: return_value.class.name,
-              value: display_string(return_value),
-              object_id: return_value.__id__
-            }
+            if return_value
+              mr.return_value = {
+                class: return_value.class.name,
+                value: display_string(return_value),
+                object_id: return_value.__id__
+              }
+            end
+            if exception
+              next_exception = exception
+              exceptions = []
+              while next_exception
+                exception_backtrace = next_exception.backtrace_locations[0]
+                exceptions << {
+                  class: next_exception.class.name,
+                  message: next_exception.message,
+                  object_id: next_exception.__id__,
+                  path: exception_backtrace&.path,
+                  lineno: exception_backtrace&.lineno
+                }.compact
+                next_exception = next_exception.cause
+              end
+
+              mr.exceptions = exceptions
+            end
             MethodReturnIgnoreValue.build_from_invocation(mr, defined_class, method, parent_id, elapsed)
           end
         end
@@ -140,7 +159,8 @@ module AppMap
 
       def to_h
         super.tap do |h|
-          h[:return_value] = return_value
+          h[:return_value] = return_value if return_value
+          h[:exceptions] = exceptions if exceptions
         end
       end
     end
