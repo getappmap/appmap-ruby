@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'English'
+
 module AppMap
   class Hook
     LOG = false
@@ -61,11 +63,11 @@ module AppMap
           [ call_event, Time.now ]
         end
 
-        after_hook = lambda do |call_event, defined_class, method, start_time, return_value|
+        after_hook = lambda do |call_event, defined_class, method, start_time, return_value, exception|
           require 'appmap/event'
           elapsed = Time.now - start_time
           return_event = AppMap::Event::MethodReturn.build_from_invocation \
-            defined_class, method, call_event.id, elapsed, return_value
+            defined_class, method, call_event.id, elapsed, return_value, exception
           AppMap.tracing.record_event return_event
         end
 
@@ -126,11 +128,14 @@ module AppMap
                   before_hook.call(defined_class, method, self, args)
                 end
                 return_value = nil
+                exception = nil
                 begin
                   return_value = base_method.call(*args, &block)
+                rescue
+                  exception = $ERROR_INFO
                 ensure
                   with_disabled_hook.call do
-                    after_hook.call(call_event, defined_class, method, start_time, return_value)
+                    after_hook.call(call_event, defined_class, method, start_time, return_value, exception)
                   end
                 end
               end
