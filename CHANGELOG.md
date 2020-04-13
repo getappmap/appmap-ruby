@@ -1,3 +1,7 @@
+# v0.25.0
+
+* Reports `exceptions` in [function return attributes](https://github.com/applandinc/appmap#function-return-attributes).
+
 # v0.24.1
 * Fixes an issue which prevented a remote recording from returning scenario data successfully.
 * Remote recording routes now return descriptive status codes as intended.
