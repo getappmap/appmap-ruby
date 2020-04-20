@@ -1,3 +1,8 @@
+# v0.25.1
+
+* Ensure that caught exceptions are re-raised.
+* Add safety around indexing potentially nil backtrace locations. 
+
 # v0.25.0
 
 * Reports `exceptions` in [function return attributes](https://github.com/applandinc/appmap#function-return-attributes).
