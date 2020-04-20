@@ -137,6 +137,7 @@ module AppMap
                   with_disabled_hook.call do
                     after_hook.call(call_event, defined_class, method, start_time, return_value, exception)
                   end
+                  raise exception if exception
                 end
               end
             end
