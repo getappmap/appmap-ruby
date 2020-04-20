@@ -139,7 +139,7 @@ module AppMap
               next_exception = exception
               exceptions = []
               while next_exception
-                exception_backtrace = next_exception.backtrace_locations[0]
+                exception_backtrace = next_exception.backtrace_locations.try(:[], 0)
                 exceptions << {
                   class: next_exception.class.name,
                   message: next_exception.message,
