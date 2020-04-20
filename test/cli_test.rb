@@ -119,7 +119,7 @@ class CLITest < Minitest::Test
       `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`
     end
 
-    upload_output = `./exe/appmap upload --no-open #{OUTPUT_FILENAME}`
+    upload_output = `./exe/appmap upload --org default --user admin --no-open #{OUTPUT_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     # Example: 93e1e07d-4b39-49ac-82bf-27d63e296cae
     assert_match(/Scenario Id/, upload_output)

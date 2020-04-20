@@ -351,7 +351,19 @@ describe 'AppMap class Hooking' do
         :lineno: 9
     YAML
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
-      ExceptionMethod.new.raise_exception
+      begin
+        ExceptionMethod.new.raise_exception
+      rescue
+        # don't let the exception fail the test
+      end
+    end
+  end
+
+  it 're-raises exceptions' do
+    RSpec::Expectations.configuration.on_potential_false_positives = :nothing
+
+    invoke_test_file 'spec/fixtures/hook/exception_method.rb' do
+      expect { ExceptionMethod.new.raise_exception }.to raise_exception
     end
   end
 end
