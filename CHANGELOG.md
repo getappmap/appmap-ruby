@@ -1,3 +1,8 @@
+# v0.25.2
+
+* Stop checking a whitelist to see if each SQL query should be recorded. Record
+all queries.
+
 # v0.25.1
 
 * Ensure that caught exceptions are re-raised.
