@@ -156,28 +156,22 @@ module AppMap
         url = options[:url]
         user = options[:user]
         org = options[:org]
+        app = @config[:name]
 
-        batch_id = nil
-        uuids = filenames.map do |filename|
+        scenario_uuids = filenames.map do |filename|
           appmap = JSON.parse(File.read(filename))
 
           warn "Uploading #{filename.inspect}"
           upload = AppMap::Command::Upload.new(appmap, url, user, org)
-          upload.batch_id = batch_id if batch_id
           upload.perform.tap do |response|
-            batch_id ||= response.batch_id
             @output_file.puts "Scenario Id: #{response.scenario_uuid}"
           end.scenario_uuid
         end
-        @output_file.puts "Batch Id: #{batch_id}"
+        mapset = AppMap::Command::Mapset.new(url, user, org, app, scenario_uuids).perform
+        @output_file.puts "Saved #{scenario_uuids.size} scenarios to mapset #{mapset.id} in app #{app}"
 
-        if options[:open] && STDIN.tty?
-          if uuids.length == 1
-            system "open #{url}/scenarios/#{uuids.first}"
-          else
-            system "open #{url}/scenario_batches/#{batch_id}"
-          end
-        end
+        system "open #{url}/applications/#{mapset.app_id}?mapset=#{mapset.id}" \
+          if options[:open] && STDIN.tty?
       end
     end
 

@@ -10,8 +10,6 @@ end
 require 'appmap/version'
 
 module AppMap
-  BATCH_HEADER_NAME = 'AppLand-Scenario-Batch'
-
   class << self
     @config = nil
     @config_file_path = nil

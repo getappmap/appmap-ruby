@@ -5,13 +5,44 @@ require 'faraday'
 
 module AppMap
   module Command
-    UploadResponse = Struct.new(:batch_id, :scenario_uuid)
+    MapsetResponse = Struct.new(:id, :app_id)
+
+    MapsetStruct = Struct.new(:url, :user, :org, :app, :scenario_uuids)
+    class Mapset < MapsetStruct
+      def perform
+        upload_params = { user: user, org: org, app: app, scenarios: scenario_uuids }.compact
+
+        conn = Faraday.new(url: url)
+        response = conn.post do |req|
+          req.url '/api/mapsets'
+          req.headers['Content-Type'] = 'application/json'
+          req.body = JSON.generate(upload_params)
+        end
+
+        unless response.body.blank?
+          message = begin
+                      JSON.parse(response.body)
+                    rescue JSON::ParserError => e
+                      warn "Response is not valid JSON (#{e.message})"
+                      nil
+                    end
+        end
+
+        unless response.success?
+          error = [ 'Mapset creation failed' ]
+          error << ": #{message}" if message
+          raise error.join
+        end
+
+        MapsetResponse.new(message['id'], message['app_id'])
+      end
+    end
+
+    UploadResponse = Struct.new(:scenario_uuid)
 
     UploadStruct = Struct.new(:data, :url, :user, :org)
     class Upload < UploadStruct
       MAX_DEPTH = 12
-
-      attr_accessor :batch_id
 
       def initialize(data, url, user, org)
         super
@@ -58,7 +89,6 @@ module AppMap
         response = conn.post do |req|
           req.url '/api/scenarios'
           req.headers['Content-Type'] = 'application/json'
-          req.headers[AppMap::BATCH_HEADER_NAME] = @batch_id if @batch_id
           req.body = JSON.generate(upload_file)
         end
 
@@ -77,10 +107,8 @@ module AppMap
           raise error.join
         end
 
-        batch_id = @batch_id || response.headers[AppMap::BATCH_HEADER_NAME]
-
         uuid = message['uuid']
-        UploadResponse.new(batch_id, uuid)
+        UploadResponse.new(uuid)
       end
 
       protected
