@@ -144,7 +144,7 @@ module AppMap
         end
       end
 
-      WHITELIST = %w[SELECT INSERT UPDATE DELETE].freeze
+      WHITELIST = %w[WITH SELECT INSERT UPDATE DELETE].freeze
     end
   end
 end
