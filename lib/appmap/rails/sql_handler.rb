@@ -102,9 +102,6 @@ module AppMap
         Thread.current[reentry_key] = true
         begin
           sql = payload[:sql].strip
-          sql_upper = sql.upcase
-
-          return unless WHITELIST.find { |keyword| sql_upper.index(keyword) == 0 }
 
           # Detect whether a function call within a specified filename is present in the call stack.
           find_in_backtrace = lambda do |file_name, function_name = nil|
@@ -143,8 +140,6 @@ module AppMap
           Thread.current[reentry_key] = nil
         end
       end
-
-      WHITELIST = %w[SELECT INSERT UPDATE DELETE].freeze
     end
   end
 end
