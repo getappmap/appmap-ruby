@@ -11,7 +11,7 @@
 
 # About
 
-`appmap-ruby` is a Ruby Gem for recording and uploading
+`appmap-ruby` is a Ruby Gem for recording
 [AppMaps](https://github.com/applandinc/appmap) of your code. 
 "AppMap" is a data format which records code structure (modules, classes, and methods), code execution events
 (function calls and returns), and code metadata (repo name, repo URL, commit
@@ -25,8 +25,10 @@ There are several ways to record AppMaps of your Ruby program using the `appmap`
   browser extension to start, stop, and upload recordings. 
 * Run the command `appmap record <program>` to record the entire execution of a program.
 
-When you record AppMaps on the command line (for example, by running RSpec tests), you use the `appmap upload` command to
-upload them to the AppLand website. On the AppLand website, you'll be able to
+Once you have recorded some AppMaps (for example, by running RSpec tests), you use the `appland upload` command
+to upload them to the AppLand server. This command, and some others, is provided
+by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases), to
+Then, on the [AppLand website](https://app.land), you can
 visualize the design of your code and share links with collaborators.
 
 # Testing
@@ -179,14 +181,7 @@ Note that using this method is kind of a blunt instrument. Recording RSpecs and 
 
 # Uploading AppMaps
 
-To upload an AppMap file to AppLand, run the `appmap upload` command. For example (with binstubs installed):
-
-```sh-session
-$ ./bin/appmap upload tmp/appmap/rspec/*
-Uploading "tmp/appmap/rspec/Hello_app_says_hello_when_prompted.appmap.json"
-Scenario Id: 4da4f267-bdea-48e8-bf67-f39463844230
-Batch Id: a116f1df-ee57-4bde-8eef-851af0f3d7bc
-```
+For instructions on uploading, see the documentation of the [AppLand CLI](https://github.com/applandinc/appland-cli).
 
 # Build status
 [![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)

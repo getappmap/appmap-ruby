@@ -6,7 +6,6 @@ module AppMap
     class RemoteRecording
       def initialize(app)
         require 'appmap/command/record'
-        require 'appmap/command/upload'
         require 'json'
 
         @app = app

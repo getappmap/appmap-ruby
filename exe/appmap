@@ -125,62 +125,6 @@ module AppMap
       end
     end
 
-    desc 'Upload a scenario file to AppLand.'
-    arg_name 'filename'
-    command :upload do |c|
-      output_file_flag(c, default_value: '-')
-
-      c.desc 'Whether to open the new scenario in the browser'
-      c.default_value true
-      c.switch [:open]
-
-      c.desc 'AppLand website URL'
-      c.default_value ENV['APPLAND_URL'] || 'https://appland-staging.herokuapp.com'
-      c.flag :url
-
-      # TODO: This will be replaced with proper login
-      c.desc 'User id to own the scenario'
-      c.default_value(ENV['APPLAND_USER'])
-      c.flag :user
-
-      c.desc 'Organization id to own the scenario'
-      c.default_value(ENV['APPLAND_ORG'])
-      c.flag :org
-
-      c.action do |_, options, args|
-        require 'appmap/command/upload'
-
-        filenames = args
-        help_now!("'filename' argument is required") if filenames.empty?
-
-        url = options[:url]
-        user = options[:user]
-        org = options[:org]
-
-        batch_id = nil
-        uuids = filenames.map do |filename|
-          appmap = JSON.parse(File.read(filename))
-
-          warn "Uploading #{filename.inspect}"
-          upload = AppMap::Command::Upload.new(appmap, url, user, org)
-          upload.batch_id = batch_id if batch_id
-          upload.perform.tap do |response|
-            batch_id ||= response.batch_id
-            @output_file.puts "Scenario Id: #{response.scenario_uuid}"
-          end.scenario_uuid
-        end
-        @output_file.puts "Batch Id: #{batch_id}"
-
-        if options[:open] && STDIN.tty?
-          if uuids.length == 1
-            system "open #{url}/scenarios/#{uuids.first}"
-          else
-            system "open #{url}/scenario_batches/#{batch_id}"
-          end
-        end
-      end
-    end
-
     pre do |global, _, options, _|
       @config = interpret_config_option(global[:config])
       @output_file = interpret_output_file_option(options[:output])

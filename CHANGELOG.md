@@ -1,3 +1,8 @@
+# v0.26.0
+
+* **appmap upload** is removed. Upload functionality has been moved to
+  the [AppLand CLI](https://github.com/applandinc/appland-cli).
+
 # v0.25.2
 
 * Stop checking a whitelist to see if each SQL query should be recorded. Record
