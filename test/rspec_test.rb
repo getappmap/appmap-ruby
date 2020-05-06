@@ -9,6 +9,7 @@ class RSpecTest < Minitest::Test
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/rspec_recorder' do
         FileUtils.rm_rf 'tmp'
+        system 'bundle config --local local.appmap ../../..'
         system 'bundle'
         system({ 'APPMAP' => 'true' }, %(bundle exec rspec spec/#{test_name}.rb))
 
