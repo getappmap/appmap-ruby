@@ -1,3 +1,8 @@
+# v0.26.1
+
+* Fix a bug that caused duplicate entries in the list of frameworks that appear
+  in the `metadata` section of an appmap.
+  
 # v0.26.0
 
 * **appmap upload** is removed. Upload functionality has been moved to
