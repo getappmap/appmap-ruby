@@ -16,3 +16,4 @@ appmap.json
 .vscode
 .byebug_history
 
+/test/fixtures/rspec_recorder/.bundle/

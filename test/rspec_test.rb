@@ -9,6 +9,7 @@ class RSpecTest < Minitest::Test
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/rspec_recorder' do
         FileUtils.rm_rf 'tmp'
+        system 'bundle config --local local.appmap ../../..'
         system 'bundle'
         system({ 'APPMAP' => 'true' }, %(bundle exec rspec spec/#{test_name}.rb))
 
@@ -48,6 +49,10 @@ class RSpecTest < Minitest::Test
       assert_equal({ name: 'appmap', url: AppMap::URL, version: AppMap::VERSION }.stringify_keys, metadata['client'])
       assert_includes metadata.keys, 'recorder'
       assert_equal({ name: 'rspec' }.stringify_keys, metadata['recorder'])
+
+      assert_includes metadata.keys, 'frameworks'
+      rspec = metadata['frameworks'].select {|f| f['name'] == 'rspec'}
+      assert_equal 1, rspec.count
     end
   end
 

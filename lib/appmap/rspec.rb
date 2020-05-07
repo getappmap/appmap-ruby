@@ -11,7 +11,7 @@ module AppMap
       require 'appmap/command/record'
       @metadata ||= AppMap::Command::Record.detect_metadata
       @metadata.freeze
-      @metadata.dup
+      @metadata.deep_dup
     end
 
     module FeatureAnnotations
@@ -214,7 +214,7 @@ module AppMap
       end
 
       def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
-        metadata = RSpec.metadata.dup.tap do |m|
+        metadata = RSpec.metadata.tap do |m|
           m[:name] = example_name
           m[:app] = @config.name
           m[:feature] = feature_name if feature_name
