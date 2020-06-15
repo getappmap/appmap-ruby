@@ -107,7 +107,17 @@ module AppMap
 
       def parent
         # An example group always has a parent; but it might be 'self'...
-        example_group.parent != example_group ? ScopeExampleGroup.new(example_group.parent) : nil
+
+        # DEPRECATION WARNING: `Module#parent` has been renamed to `module_parent`. `parent` is deprecated and will be
+        # removed in Rails 6.1. (called from parent at /Users/kgilpin/source/appland/appmap-ruby/lib/appmap/rspec.rb:110)
+        example_group_parent = \
+          if example_group.respond_to?(:module_parent)
+            example_group.module_parent
+          else
+            example_group.parent
+          end
+
+        example_group_parent != example_group ? ScopeExampleGroup.new(example_group_parent) : nil
       end
     end
 
