@@ -1,6 +1,6 @@
 # v0.27.0
 
-* Add **AppMap.trace** to programatically record and capture an AppMap of a Ruby block.
+* Add **AppMap.record** to programatically record and capture an AppMap of a Ruby block.
 
 # v0.26.1
 
