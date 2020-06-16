@@ -66,7 +66,7 @@ module AppMap
       end
 
       [].tap do |events|
-        events << tracer.next_event while tracer.event?
+        events << tracer.next_event.to_h while tracer.event?
       end
     end
 
