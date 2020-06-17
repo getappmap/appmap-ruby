@@ -56,6 +56,20 @@ module AppMap
       @tracing ||= Trace::Tracers.new
     end
 
+    # Record a block and return the array of events.
+    def record
+      tracer = tracing.trace
+      begin
+        yield
+      ensure
+        tracing.delete(tracer)
+      end
+
+      [].tap do |events|
+        events << tracer.next_event.to_h while tracer.event?
+      end
+    end
+
     # Build a class map from a config and a list of Ruby methods.
     def class_map(config, methods)
       require 'appmap/class_map'

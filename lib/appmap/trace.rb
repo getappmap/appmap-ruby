@@ -18,7 +18,7 @@ module AppMap
           @tracers << tracer
           tracer.enable if enable
         end
-      end 
+      end
 
       def enabled?
         @tracers.any?(&:enabled?)
