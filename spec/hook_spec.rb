@@ -31,8 +31,10 @@ describe 'AppMap class Hooking' do
   end
 
   def invoke_test_file(file, &block)
+    AppMap.configuration = nil
     package = AppMap::Hook::Package.new(file, [])
     config = AppMap::Hook::Config.new('hook_spec', [ package ])
+    AppMap.configuration = config
     AppMap::Hook.hook(config)
 
     tracer = AppMap.tracing.trace
@@ -53,6 +55,10 @@ describe 'AppMap class Hooking' do
     expect(Diffy::Diff.new(events, events_yaml).to_s).to eq('')
 
     [ config, tracer ]
+  end
+
+  after do
+    AppMap.configuration = nil
   end
 
   it 'hooks an instance method that takes no arguments' do
@@ -90,10 +96,10 @@ describe 'AppMap class Hooking' do
   end
 
   it 'builds a class map of invoked methods' do
-    config, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
+    _, tracer = invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
       InstanceMethod.new.say_default
     end
-    class_map = AppMap.class_map(config, tracer.event_methods).to_yaml
+    class_map = AppMap.class_map(tracer.event_methods).to_yaml
     expect(Diffy::Diff.new(class_map, <<~YAML).to_s).to eq('')
     ---
     - :name: spec/fixtures/hook/instance_method.rb

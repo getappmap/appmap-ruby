@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_spec_helper'
 
 describe 'RSpec feature and feature group metadata' do

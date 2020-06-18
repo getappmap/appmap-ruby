@@ -3,6 +3,8 @@
 
 require 'gli'
 
+ENV['APPMAP_INITIALIZE'] = 'false'
+
 require 'appmap'
 require 'appmap/version'
 
@@ -136,7 +138,7 @@ module AppMap
       protected
 
       def interpret_config_option(fname)
-        AppMap.configure fname
+        AppMap.initialize fname
       end
 
       def interpret_output_file_option(file_name)

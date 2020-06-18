@@ -4,6 +4,10 @@ require 'json'
 require 'yaml'
 require 'English'
 require 'webdrivers/chromedriver'
+
+# Disable default initialization of AppMap
+ENV['APPMAP_INITIALIZE'] = 'false'
+
 require 'appmap'
 
 RSpec.configure do |config|

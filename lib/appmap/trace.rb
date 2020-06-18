@@ -4,36 +4,36 @@ module AppMap
   module Trace
     ScopedMethod = Struct.new(:defined_class, :method)
 
-    class Tracers
+    class Tracing
       def initialize
-        @tracers = []
+        @Tracing = []
       end
 
       def empty?
-        @tracers.empty?
+        @Tracing.empty?
       end
 
       def trace(enable: true)
         Tracer.new.tap do |tracer|
-          @tracers << tracer
+          @Tracing << tracer
           tracer.enable if enable
         end
       end
 
       def enabled?
-        @tracers.any?(&:enabled?)
+        @Tracing.any?(&:enabled?)
       end
 
       def record_event(event, defined_class: nil, method: nil)
-        @tracers.each do |tracer|
+        @Tracing.each do |tracer|
           tracer.record_event(event, defined_class: defined_class, method: method)
         end
       end
 
       def delete(tracer)
-        return unless @tracers.member?(tracer)
+        return unless @Tracing.member?(tracer)
 
-        @tracers.delete(tracer)
+        @Tracing.delete(tracer)
         tracer.disable
       end
     end

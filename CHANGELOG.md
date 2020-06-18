@@ -1,3 +1,12 @@
+# v0.28.0
+
+* Change behavior of **AppMap.record** to return a complete AppMap as a Hash.
+* Update README with information about recording Cucumber tests.
+* **AppMap.initialize** automatically runs when `AppMap` is required, unless disabled
+  by environment variable `APPMAP_INITIALIZE=false`.
+* **AppMap.hook** no longer takes a `configuration` argument.
+* Add **AppMap::Util.scenario_filename**.
+
 # v0.27.0
 
 * Add **AppMap.record** to programatically record and capture an AppMap of a Ruby block.

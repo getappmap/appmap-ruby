@@ -5,8 +5,8 @@ module AppMap
   class Railtie < ::Rails::Railtie
     config.appmap = ActiveSupport::OrderedOptions.new
 
-    initializer 'appmap.init' do |_| #  params: app
-      AppMap.configure
+    initializer 'appmap.init' do |_| # params: app
+      require 'appmap'
     end
 
     # appmap.subscribe subscribes to ActiveSupport Notifications so that they can be recorded as
