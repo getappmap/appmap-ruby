@@ -1,5 +1,4 @@
 - [About](#about)
-- [Testing](#testing)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -7,6 +6,7 @@
   - [Remote recording](#remote-recording)
   - [Ruby on Rails](#ruby-on-rails)
 - [Uploading AppMaps](#uploading-appmaps)
+- [Development](#development)
 - [Build status](#build-status)
 
 # About
