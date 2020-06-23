@@ -1,5 +1,4 @@
 - [About](#about)
-- [Testing](#testing)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -7,12 +6,13 @@
   - [Remote recording](#remote-recording)
   - [Ruby on Rails](#ruby-on-rails)
 - [Uploading AppMaps](#uploading-appmaps)
+- [Development](#development)
 - [Build status](#build-status)
 
 # About
 
 `appmap-ruby` is a Ruby Gem for recording
-[AppMaps](https://github.com/applandinc/appmap) of your code. 
+[AppMaps](https://github.com/applandinc/appmap) of your code.
 "AppMap" is a data format which records code structure (modules, classes, and methods), code execution events
 (function calls and returns), and code metadata (repo name, repo URL, commit
 SHA, labels, etc). It's more granular than a performance profile, but it's less
@@ -22,7 +22,7 @@ There are several ways to record AppMaps of your Ruby program using the `appmap`
 
 * Run your RSpec tests with the environment variable `APPMAP=true`. An AppMap will be generated for each spec.
 * Run your application server with AppMap remote recording enabled, and use the AppMap.
-  browser extension to start, stop, and upload recordings. 
+  browser extension to start, stop, and upload recordings.
 * Run the command `appmap record <program>` to record the entire execution of a program.
 
 Once you have recorded some AppMaps (for example, by running RSpec tests), you use the `appland upload` command
@@ -30,17 +30,6 @@ to upload them to the AppLand server. This command, and some others, is provided
 by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases), to
 Then, on the [AppLand website](https://app.land), you can
 visualize the design of your code and share links with collaborators.
-
-# Testing
-Before running tests, configure `local.appmap` to point to your local `appmap-ruby` directory.
-```
-$ bundle config local.appmap $(pwd)
-```
-
-Run the tests via `rake`:
-```
-$ bundle exec rake test
-```
 
 # Installation
 
@@ -60,7 +49,7 @@ group :development, :test do
 end
 ```
 
-Then install with `bundle`. 
+Then install with `bundle`.
 
 # Configuration
 
@@ -110,8 +99,8 @@ describe Hello, appmap: true do
 end
 ```
 
-3) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
-   examples. 
+3) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your
+   examples.
 
 4) Run the tests with the environment variable `APPMAP=true`:
 
@@ -182,6 +171,20 @@ Note that using this method is kind of a blunt instrument. Recording RSpecs and 
 # Uploading AppMaps
 
 For instructions on uploading, see the documentation of the [AppLand CLI](https://github.com/applandinc/appland-cli).
+
+# Development
+
+## Testing
+
+Before running tests, configure `local.appmap` to point to your local `appmap-ruby` directory.
+```
+$ bundle config local.appmap $(pwd)
+```
+
+Run the tests via `rake`:
+```
+$ bundle exec rake test
+```  
 
 # Build status
 [![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
