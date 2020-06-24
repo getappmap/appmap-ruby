@@ -252,7 +252,7 @@ $ docker-compose run --rm app ./create_app
 Now you can start a development container.
 
 ```sh-session
-$ dc run --rm -v $PWD/../../..:/src/appmap-ruby app bash
+$ docker-compose run --rm -v $PWD/../../..:/src/appmap-ruby app bash
 Starting rails_users_app_pg_1 ... done
 root@6fab5f89125f:/app# cd /src/app
 root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
