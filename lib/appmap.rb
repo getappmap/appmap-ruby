@@ -20,8 +20,8 @@ module AppMap
       @configuration ||= configure
     end
 
-    # configuration= sets the configuration. It's an error to set the configuration
-    # to a non-nil value if it's already set.
+    # configuration= sets the configuration. This is only expected to happen once per
+    # Ruby process.
     def configuration=(config)
       warn 'AppMap is already configured' if @configuration && config
 
