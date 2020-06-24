@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'appmap/util'
+
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each scenario which has the metadata key `:appmap`.
@@ -8,10 +10,7 @@ module AppMap
     LOG = false
 
     def self.metadata
-      require 'appmap/command/record'
-      @metadata ||= AppMap::Command::Record.detect_metadata
-      @metadata.freeze
-      @metadata.deep_dup
+      AppMap.detect_metadata
     end
 
     module FeatureAnnotations
@@ -139,7 +138,7 @@ module AppMap
 
         AppMap::RSpec.add_event_methods @trace.event_methods
 
-        class_map = AppMap.class_map(AppMap::RSpec.config, @trace.event_methods)
+        class_map = AppMap.class_map(@trace.event_methods)
 
         description = []
         scope = ScopeExample.new(example)
@@ -190,7 +189,6 @@ module AppMap
     end
 
     @recordings_by_example = {}
-    @config = nil
     @event_methods = Set.new
 
     class << self
@@ -198,10 +196,6 @@ module AppMap
         warn 'Configuring AppMap recorder for RSpec'
 
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
-
-        require 'appmap/hook'
-        @config = AppMap.configure
-        AppMap::Hook.hook(@config)
       end
 
       def begin_spec(example)
@@ -226,7 +220,7 @@ module AppMap
       def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
         metadata = RSpec.metadata.tap do |m|
           m[:name] = example_name
-          m[:app] = @config.name
+          m[:app] = AppMap.configuration.name
           m[:feature] = feature_name if feature_name
           m[:feature_group] = feature_group_name if feature_group_name
           m[:labels] = labels if labels
@@ -246,13 +240,13 @@ module AppMap
           classMap: class_map,
           events: events
         }.compact
-        fname = sanitize_filename(example_name)
+        fname = AppMap::Util.scenario_filename(example_name)
 
-        File.write(File.join(APPMAP_OUTPUT_DIR, "#{fname}.appmap.json"), JSON.generate(appmap))
+        File.write(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
       end
 
       def print_inventory
-        class_map = AppMap.class_map(@config, @event_methods)
+        class_map = AppMap.class_map(@event_methods)
         save 'Inventory', class_map, labels: %w[inventory]
       end
 
@@ -265,28 +259,6 @@ module AppMap
         at_exit do
           print_inventory
         end
-      end
-
-      private
-
-      # Cribbed from v5 version of ActiveSupport:Inflector#parameterize:
-      # https://github.com/rails/rails/blob/v5.2.4/activesupport/lib/active_support/inflector/transliterate.rb#L92
-      def sanitize_filename(fname, separator: '_')
-        # Replace accented chars with their ASCII equivalents.
-        fname = fname.encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
-
-        # Turn unwanted chars into the separator.
-        fname.gsub!(/[^a-z0-9\-_]+/i, separator)
-
-        re_sep = Regexp.escape(separator)
-        re_duplicate_separator        = /#{re_sep}{2,}/
-        re_leading_trailing_separator = /^#{re_sep}|#{re_sep}$/i
-
-        # No more than one of the separator in a row.
-        fname.gsub!(re_duplicate_separator, separator)
-
-        # Finally, Remove leading/trailing separator.
-        fname.gsub(re_leading_trailing_separator, '')
       end
     end
   end

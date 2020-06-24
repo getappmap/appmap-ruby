@@ -10,53 +10,43 @@ end
 require 'appmap/version'
 
 module AppMap
-  BATCH_HEADER_NAME = 'AppLand-Scenario-Batch'
-
   class << self
-    @config = nil
-    @config_file_path = nil
+    @configuration = nil
+    @configuration_file_path = nil
 
-    # configuration gets the AppMap configuration.
+    # configuration gets the configuration. If there is no configuration, the default
+    # configuration is initialized.
     def configuration
-      raise "AppMap is not configured" unless @config
-
-      @config
+      @configuration ||= configure
     end
 
-    # configure applies the configuration from a file. This method can only be performed once.
-    # Be sure and call it before +hook+ if you want non-default configuration.
-    #
-    # Default behavior is to configure from "appmap.yml".
-    def configure(config_file_path = 'appmap.yml')
-      if @config
-        return @config if @config_file_path == config_file_path
+    # configuration= sets the configuration. This is only expected to happen once per
+    # Ruby process.
+    def configuration=(config)
+      warn 'AppMap is already configured' if @configuration && config
 
-        raise "AppMap is already configured from #{@config_file_path}, can't reconfigure from #{config_file_path}"
-      end
-
-      warn "Configuring AppMap from path #{config_file_path}"
-      require 'appmap/hook'
-      AppMap::Hook::Config.load_from_file(config_file_path).tap do |config|
-        @config = config
-        @config_file_path = config_file_path
-      end
+      @configuration = config
     end
 
-    # Activate the code hooks which record function calls as trace events.
+    # initialize configures AppMap for recording. Default behavior is to configure from "appmap.yml".
+    # This method also activates the code hooks which record function calls as trace events.
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
-    def hook(config = configure)
+    def initialize(config_file_path = 'appmap.yml')
+      warn "Configuring AppMap from path #{config_file_path}"
       require 'appmap/hook'
-      AppMap::Hook.hook(config)
+      self.configuration = Hook::Config.load_from_file(config_file_path)
+      Hook.hook(configuration)
     end
 
-    # Access the AppMap::Tracers, which can be used to start tracing, stop tracing, and record events.
+    # tracing can be used to start tracing, stop tracing, and record events.
     def tracing
       require 'appmap/trace'
-      @tracing ||= Trace::Tracers.new
+      @tracing ||= Trace::Tracing.new
     end
 
-    # Record a block and return the array of events.
+    # record records the events which occur while processing a block,
+    # and returns an AppMap as a Hash.
     def record
       tracer = tracing.trace
       begin
@@ -65,17 +55,32 @@ module AppMap
         tracing.delete(tracer)
       end
 
-      [].tap do |events|
-        events << tracer.next_event.to_h while tracer.event?
+      events = [].tap do |event_list|
+        event_list << tracer.next_event.to_h while tracer.event?
       end
+      {
+        'version' => AppMap::APPMAP_FORMAT_VERSION,
+        'metadata' => detect_metadata,
+        'classMap' => class_map(tracer.event_methods),
+        'events' => events
+      }
     end
 
-    # Build a class map from a config and a list of Ruby methods.
-    def class_map(config, methods)
+    # class_map builds a class map from a config and a list of Ruby methods.
+    def class_map(methods)
       require 'appmap/class_map'
-      AppMap::ClassMap.build_from_methods(config, methods)
+      ClassMap.build_from_methods(configuration, methods)
+    end
+
+    # detect_metadata returns default metadata detected from the Ruby system and from the
+    # filesystem.
+    def detect_metadata
+      require 'appmap/metadata'
+      @metadata ||= Metadata.detect.freeze
+      @metadata.deep_dup
     end
   end
 end
 
 require 'appmap/railtie' if defined?(::Rails::Railtie)
+AppMap.initialize unless ENV['APPMAP_INITIALIZE'] == 'false'

@@ -5,12 +5,9 @@ module AppMap
     # RemoteRecording adds `/_appmap/record` routes to control recordings via HTTP requests
     class RemoteRecording
       def initialize(app)
-        require 'appmap/command/record'
         require 'json'
 
         @app = app
-        @config = AppMap.configure
-        AppMap::Hook.hook(@config)
       end
 
       def event_loop
@@ -63,15 +60,14 @@ module AppMap
         @events.delete_if(&is_control_command_event)
         @events.delete_if(&is_return_from_control_command_event)
 
-        require 'appmap/command/record'
-        metadata = AppMap::Command::Record.detect_metadata
+        metadata = AppMap.detect_metadata
         metadata[:recorder] = {
           name: 'remote_recording'
         }
 
         response = JSON.generate \
           version: AppMap::APPMAP_FORMAT_VERSION,
-          classMap: AppMap.class_map(@config, tracer.event_methods),
+          classMap: AppMap.class_map(tracer.event_methods),
           metadata: metadata,
           events: @events
 

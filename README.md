@@ -3,10 +3,15 @@
 - [Configuration](#configuration)
 - [Running](#running)
   - [RSpec](#rspec)
+  - [Cucumber](#cucumber)
   - [Remote recording](#remote-recording)
   - [Ruby on Rails](#ruby-on-rails)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Development](#development)
+  - [Running tests](#running-tests)
+  - [Using fixture apps](#using-fixture-apps)
+    - [`test/fixtures`](#testfixtures)
+    - [`spec/fixtures`](#specfixtures)
 - [Build status](#build-status)
 
 # About
@@ -79,7 +84,7 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 ## RSpec
 
-To instrument RSpec tests, follow these additional steps:
+To record RSpec tests, follow these additional steps:
 
 1) Require `appmap/rspec` in your `spec_helper.rb`.
 
@@ -87,28 +92,16 @@ To instrument RSpec tests, follow these additional steps:
 require 'appmap/rspec'
 ```
 
-2) Add `appmap: true` to the tests you want to instrument.
+2) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
+   examples. 
 
-```ruby
-describe Hello, appmap: true do
-  describe 'says hello' do
-    it 'when prompted' do
-      expect(Hello.new.say_hello).to eq('Hello!')
-    end
-  end
-end
-```
-
-3) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your
-   examples.
-
-4) Run the tests with the environment variable `APPMAP=true`:
+3) Run the tests with the environment variable `APPMAP=true`:
 
 ```sh-session
 $ APPMAP=true bundle exec rspec -t appmap
 ```
 
-Each RSpec test will output a data file into the directory `tmp/appmap/rspec`. For example:
+Each RSpec test will output an AppMap file into the directory `tmp/appmap/rspec`. For example:
 
 ```
 $ find tmp/appmap/rspec
@@ -131,6 +124,44 @@ If you include the `feature` and `feature_group` metadata, these attributes will
 ```
 
 If you don't explicitly declare `feature` and `feature_group`, then they will be inferred from the spec name and example descriptions.
+
+## Cucumber
+
+To record Cucumber tests, follow these additional steps:
+
+1) Require `appmap/cucumber` in `support/env.rb`:
+
+```ruby
+require 'appmap/cucumber'
+```
+
+2) Create an `Around` hook in `support/hooks.rb` to record the scenario:
+
+
+```ruby
+if AppMap::Cucumber.enabled?
+  Around('not @appmap-disable') do |scenario, block|
+    appmap = AppMap.record do
+      block.call
+    end
+
+    AppMap::Cucumber.write_scenario(scenario, appmap)
+  end
+end
+```
+
+3) Run the tests with the environment variable `APPMAP=true`:
+
+```sh-session
+$ APPMAP=true bundle exec cucumber
+```
+
+Each Cucumber test will output an AppMap file into the directory `tmp/appmap/cucumber`. For example:
+
+```
+$ find tmp/appmap/cucumber
+Hello_Says_hello_when_prompted.appmap.json
+```
 
 ## Remote recording
 
@@ -174,7 +205,7 @@ For instructions on uploading, see the documentation of the [AppLand CLI](https:
 
 # Development
 
-## Testing
+## Running tests
 
 Before running tests, configure `local.appmap` to point to your local `appmap-ruby` directory.
 ```
@@ -185,6 +216,61 @@ Run the tests via `rake`:
 ```
 $ bundle exec rake test
 ```  
+
+## Using fixture apps
+
+### `test/fixtures`
+
+The fixture apps in `test/fixtures` are plain Ruby projects that exercise the basic functionality of the
+`appmap` gem. To develop in a fixture, simple enter the fixture directory and `bundle`.
+
+### `spec/fixtures`
+
+The fixture apps in `spec/fixtures` are simple Rack, Rails4, and Rails5 apps.
+You can use them to interactively develop and test the recording features of the `appmap` gem.
+These fixture apps are more sophisticated than `test/fixtures`, because they include additional 
+resources such as a PostgreSQL database.
+
+To build the fixture container images, first run:
+
+```sh-session
+$ bundle exec rake fixtures:all
+```
+
+This will build the `appmap.gem`, along with a Docker image for each fixture app.
+
+Then move to the directory of the fixture you want to use, and provision the environment.
+In this example, we use Ruby 2.6.
+
+```sh-session
+$ export RUBY_VERSION=2.6
+$ docker-compose up -d pg
+$ sleep 10s # Or some reasonable amount of time
+$ docker-compose run --rm app ./create_app
+```
+
+Now you can start a development container.
+
+```sh-session
+$ docker-compose run --rm -v $PWD/../../..:/src/appmap-ruby app bash
+Starting rails_users_app_pg_1 ... done
+root@6fab5f89125f:/app# cd /src/app
+root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
+root@6fab5f89125f:/src/app# bundle update appmap
+```
+
+At this point, the bundle is built with the `appmap` gem located  in `/src/appmap`, which is volume-mounted from the host.
+So you can edit the fixture code and the appmap code and run test commands such as `rspec` and `cucumber` in the container.
+For example:
+
+```sh-session
+root@6fab5f89125f:/src/app# bundle exec rspec
+Configuring AppMap from path appmap.yml
+....
+
+Finished in 0.07357 seconds (files took 2.1 seconds to load)
+4 examples, 0 failures
+```
 
 # Build status
 [![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)

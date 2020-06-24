@@ -1,7 +1,6 @@
 .DS_Store
 /html/
-/.appmap/
-/.bundle/
+.bundle
 /.yardoc
 /_yardoc/
 /coverage/
@@ -16,4 +15,3 @@ appmap.json
 .vscode
 .byebug_history
 
-/test/fixtures/rspec_recorder/.bundle/

@@ -115,7 +115,12 @@ module AppMap
                   [ method.owner.name, '#' ]
                 end
 
-              warn "AppMap: Hooking #{defined_class}#{method_symbol}#{method.name}" if LOG
+              method_display_name = "#{defined_class}#{method_symbol}#{method.name}"
+              # Don't try and trace the tracing method or there will be a stack overflow
+              # in the defined hook method.
+              next if method_display_name == "AppMap.tracing"
+
+              warn "AppMap: Hooking #{method_display_name}" if LOG
 
               cls.define_method method_id do |*args, &block|
                 base_method = method.bind(self).to_proc

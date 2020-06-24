@@ -39,6 +39,7 @@ appmap_options = \
 gem 'appmap', appmap_options
 
 group :development, :test do
+  gem 'cucumber-rails', require: false
   gem 'rspec-rails'
   # Required for Sequel, since without ActiveRecord, the Rails transactional fixture support
   # isn't activated.
