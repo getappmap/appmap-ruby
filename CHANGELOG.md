@@ -1,3 +1,7 @@
+# v0.28.1
+* Fix the `defined_class` recorded in an appmap for an instance method included in a class
+  at runtime.
+
 # v0.28.0
 
 * Change behavior of **AppMap.record** to return a complete AppMap as a Hash.

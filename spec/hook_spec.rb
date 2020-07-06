@@ -5,6 +5,16 @@ require 'appmap/hook'
 require 'appmap/event'
 require 'diffy'
 
+# Show nulls as the literal +null+, rather than just leaving the field
+# empty. This make some of the expected YAML below easier to
+# understand.
+module ShowYamlNulls
+  def visit_NilClass(o)
+    @emitter.scalar('null', nil, 'tag:yaml.org,2002:null', true, false, Psych::Nodes::Scalar::ANY)
+  end
+end
+Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
+
 describe 'AppMap class Hooking' do
   def collect_events(tracer)
     [].tap do |events|
@@ -30,26 +40,28 @@ describe 'AppMap class Hooking' do
     end.to_yaml
   end
 
-  def invoke_test_file(file, &block)
+  def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
     package = AppMap::Hook::Package.new(file, [])
     config = AppMap::Hook::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
     AppMap::Hook.hook(config)
+    
+    setup_result = setup.call if setup
 
     tracer = AppMap.tracing.trace
     AppMap::Event.reset_id_counter
     begin
       load file
-      yield
+      yield setup_result
     ensure
       AppMap.tracing.delete(tracer)
     end
     [ config, tracer ]
   end
 
-  def test_hook_behavior(file, events_yaml, &block)
-    config, tracer = invoke_test_file(file, &block)
+  def test_hook_behavior(file, events_yaml, setup: nil, &block)
+    config, tracer = invoke_test_file(file, setup: setup, &block)
 
     events = collect_events(tracer)
     expect(Diffy::Diff.new(events, events_yaml).to_s).to eq('')
@@ -208,7 +220,7 @@ describe 'AppMap class Hooking' do
       :parameters:
       - :name: :kw
         :class: NilClass
-        :value: 
+        :value: null
         :kind: :key
       :receiver:
         :class: InstanceMethod
@@ -238,7 +250,7 @@ describe 'AppMap class Hooking' do
       :parameters:
       - :name: :block
         :class: NilClass
-        :value: 
+        :value: null
         :kind: :block
       :receiver:
         :class: InstanceMethod
@@ -260,15 +272,15 @@ describe 'AppMap class Hooking' do
     ---
     - :id: 1
       :event: :call
-      :defined_class: ClassMethod
+      :defined_class: SingletonMethod
       :method_id: say_default
-      :path: spec/fixtures/hook/class_method.rb
+      :path: spec/fixtures/hook/singleton_method.rb
       :lineno: 5
       :static: true
       :parameters: []
       :receiver:
         :class: Class
-        :value: ClassMethod
+        :value: SingletonMethod
     - :id: 2
       :event: :return
       :parent_id: 1
@@ -276,8 +288,8 @@ describe 'AppMap class Hooking' do
         :class: String
         :value: default
     YAML
-    test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
-      expect(ClassMethod.say_default).to eq('default')
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml do
+      expect(SingletonMethod.say_default).to eq('default')
     end
   end
 
@@ -286,15 +298,15 @@ describe 'AppMap class Hooking' do
     ---
     - :id: 1
       :event: :call
-      :defined_class: ClassMethod
+      :defined_class: SingletonMethod
       :method_id: say_class_defined
-      :path: spec/fixtures/hook/class_method.rb
+      :path: spec/fixtures/hook/singleton_method.rb
       :lineno: 10
       :static: true
       :parameters: []
       :receiver:
         :class: Class
-        :value: ClassMethod
+        :value: SingletonMethod
     - :id: 2
       :event: :return
       :parent_id: 1
@@ -302,8 +314,8 @@ describe 'AppMap class Hooking' do
         :class: String
         :value: defined with explicit class scope
     YAML
-    test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
-      expect(ClassMethod.say_class_defined).to eq('defined with explicit class scope')
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml do
+      expect(SingletonMethod.say_class_defined).to eq('defined with explicit class scope')
     end
   end
 
@@ -312,15 +324,15 @@ describe 'AppMap class Hooking' do
     ---
     - :id: 1
       :event: :call
-      :defined_class: ClassMethod
+      :defined_class: SingletonMethod
       :method_id: say_self_defined
-      :path: spec/fixtures/hook/class_method.rb
+      :path: spec/fixtures/hook/singleton_method.rb
       :lineno: 14
       :static: true
       :parameters: []
       :receiver:
         :class: Class
-        :value: ClassMethod
+        :value: SingletonMethod
     - :id: 2
       :event: :return
       :parent_id: 1
@@ -328,11 +340,77 @@ describe 'AppMap class Hooking' do
         :class: String
         :value: defined with self class scope
     YAML
-    test_hook_behavior 'spec/fixtures/hook/class_method.rb', events_yaml do
-      expect(ClassMethod.say_self_defined).to eq('defined with self class scope')
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml do
+      expect(SingletonMethod.say_self_defined).to eq('defined with self class scope')
     end
   end
 
+
+  it 'hooks an included method' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: SingletonMethod
+      :method_id: added_method
+      :path: spec/fixtures/hook/singleton_method.rb
+      :lineno: 44
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: SingletonMethod
+        :value: Singleton Method fixture
+    - :id: 2
+      :event: :call
+      :defined_class: AddMethod
+      :method_id: _added_method
+      :path: spec/fixtures/hook/singleton_method.rb
+      :lineno: 50
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: SingletonMethod
+        :value: Singleton Method fixture
+    - :id: 3
+      :event: :return
+      :parent_id: 2
+      :return_value:
+        :class: String
+        :value: defined by including a module
+    - :id: 4
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: defined by including a module
+    YAML
+
+    load 'spec/fixtures/hook/singleton_method.rb'
+    setup = -> { SingletonMethod.new.do_include }
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml, setup: setup do |s|
+      expect(s.added_method).to eq('defined by including a module')
+    end
+  end
+
+  it "doesn't hook a singleton method defined for an instance" do
+    # Ideally, Ruby would fire a TracePoint event when a singleton
+    # class gets created by defining a method on an instance. It
+    # currently doesn't, though, so there's no way for us to hook such
+    # a method.
+    #
+    # This example will fail if Ruby's behavior changes at some point
+    # in the future.
+    events_yaml = <<~YAML
+    --- []
+    YAML
+    
+    load 'spec/fixtures/hook/singleton_method.rb'
+    setup = -> { SingletonMethod.new_with_instance_method }
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml, setup: setup do |s|
+      expect(s.say_instance_defined).to eq('defined for an instance')
+    end
+  end
+  
   it 'Reports exceptions' do
     events_yaml = <<~YAML
     ---
