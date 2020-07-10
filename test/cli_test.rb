@@ -59,7 +59,7 @@ class CLITest < Minitest::Test
 
     Method frequency:
     ----------------
-    2	Main.say_hello
+    1	Main.say_hello
     OUTPUT
   end
 
@@ -85,7 +85,7 @@ class CLITest < Minitest::Test
       "method_frequency": [
         {
           "name": "Main.say_hello",
-          "count": 2
+          "count": 1
         }
       ]
     }

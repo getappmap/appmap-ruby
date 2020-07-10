@@ -2,6 +2,9 @@
 * Fix the `defined_class` recorded in an appmap for an instance method included in a class
   at runtime.
 
+* Only include the `static` attribute on `call` events in an appmap. Determine its value
+  based on the receiver of the method call.
+
 # v0.28.0
 
 * Change behavior of **AppMap.record** to return a complete AppMap as a Hash.

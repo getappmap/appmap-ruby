@@ -15,15 +15,13 @@ module AppMap
       end
     end
 
-    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :static, :thread_id)
+    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :thread_id)
 
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
       class << self
         def build_from_invocation(me, event_type, defined_class, method)
-          singleton = method.owner.singleton_class?
-
           me.id = AppMap::Event.next_id_counter
           me.event = event_type
           me.defined_class = defined_class
@@ -32,7 +30,6 @@ module AppMap
           path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
           me.path = path
           me.lineno = method.source_location[1]
-          me.static = singleton
           me.thread_id = Thread.current.object_id
         end
 
@@ -62,11 +59,10 @@ module AppMap
         end
       end
 
-      alias static? static
     end
 
     class MethodCall < MethodEvent
-      attr_accessor :parameters, :receiver
+      attr_accessor :parameters, :receiver, :static
 
       class << self
         def build_from_invocation(mc = MethodCall.new, defined_class, method, receiver, arguments)
@@ -88,6 +84,7 @@ module AppMap
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
+            mc.static = receiver.is_a?(Module)
             MethodEvent.build_from_invocation(mc, :call, defined_class, method)
           end
         end
@@ -95,10 +92,13 @@ module AppMap
 
       def to_h
         super.tap do |h|
+          h[:static] = static
           h[:parameters] = parameters
           h[:receiver] = receiver
         end
       end
+
+      alias static? static
     end
 
     class MethodReturnIgnoreValue < MethodEvent
