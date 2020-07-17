@@ -74,10 +74,11 @@ module AppMap
 
         class_name_func = ->(event) { event['defined_class'] }
         full_name_func = lambda do |event|
+          call = event['event'] == 'call'
           class_name = event['defined_class']
           static = event['static']
           function_name = event['method_id']
-          [ class_name, static ? '.' : '#', function_name ].join if class_name && !static.nil? && function_name
+          [ class_name, static ? '.' : '#', function_name ].join if call && class_name && !static.nil? && function_name
         end
 
         class_frequency = frequency_calc.call(class_name_func)

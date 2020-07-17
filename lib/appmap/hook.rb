@@ -106,15 +106,24 @@ module AppMap
               # Skip methods that have no instruction sequence, as they are obviously trivial.
               next unless disasm
 
-              defined_class, method_symbol = \
-                if method.owner.singleton_class?
-                  # Singleton class name is like: #<Class:<(.*)>>
-                  class_name = method.owner.to_s['#<Class:<'.length-1..-2]
-                  [ class_name, '.' ]
-                else
-                  [ method.owner.name, '#' ]
-                end
-
+              defined_class, method_symbol = if method.owner.singleton_class?
+                # Singleton class names can take two forms:
+                # #<Class:Foo> or
+                # #<Class:#<Bar:0x0123ABC>>. Retrieve the name of
+                # the class from the string.
+                # 
+                # (There really isn't a better way to do this. The
+                # singleton's reference to the class it was created
+                # from is stored in an instance variable named
+                # '__attached__'. It doesn't have the '@' prefix, so
+                # it's internal only, and not accessible from user
+                # code.)
+                class_name = /#<Class:((#<(?<cls>.*?):)|((?<cls>.*?)>))/.match(method.owner.to_s)['cls']
+                [ class_name, '.' ]
+              else
+                [ method.owner.name, '#' ]
+              end
+              
               method_display_name = "#{defined_class}#{method_symbol}#{method.name}"
               # Don't try and trace the tracing method or there will be a stack overflow
               # in the defined hook method.
@@ -146,11 +155,11 @@ module AppMap
                 end
               end
             end
-          end
-
-          instance_methods.each(&hook_method.call(cls))
-          class_methods.each(&hook_method.call(cls.singleton_class))
         end
+
+        instance_methods.each(&hook_method.call(cls))
+        class_methods.each(&hook_method.call(cls.singleton_class))
+      end
       end
     end
   end

@@ -52,8 +52,8 @@ describe 'AbstractControllerBase' do
   method_id: build_user
   path: app/controllers/api/users_controller.rb
   lineno: 23
-  static: false
   thread_id: .*
+  static: false
   parameters:
   - name: params
     class: Hash

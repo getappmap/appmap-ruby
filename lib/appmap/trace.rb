@@ -2,7 +2,7 @@
 
 module AppMap
   module Trace
-    ScopedMethod = Struct.new(:defined_class, :method)
+    ScopedMethod = Struct.new(:defined_class, :method, :static)
 
     class Tracing
       def initialize
@@ -67,7 +67,7 @@ module AppMap
       return unless @enabled
 
       @events << event
-      @methods << Trace::ScopedMethod.new(defined_class, method) if defined_class && method
+      @methods << Trace::ScopedMethod.new(defined_class, method, event.static) if (defined_class && method && event.event == :call)
     end
 
     # Gets a unique list of the methods that were invoked by the program.

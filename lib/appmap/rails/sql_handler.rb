@@ -9,7 +9,7 @@ module AppMap
         attr_accessor :payload
 
         def initialize(path, lineno, payload)
-          super AppMap::Event.next_id_counter, :call, SQLHandler, :call, path, lineno, false, Thread.current.object_id
+          super AppMap::Event.next_id_counter, :call, SQLHandler, :call, path, lineno, Thread.current.object_id
 
           self.payload = payload
         end
@@ -30,7 +30,7 @@ module AppMap
 
       class SQLReturn < AppMap::Event::MethodReturnIgnoreValue
         def initialize(path, lineno, parent_id, elapsed)
-          super AppMap::Event.next_id_counter, :return, SQLHandler, :call, path, lineno, false, Thread.current.object_id
+          super AppMap::Event.next_id_counter, :return, SQLHandler, :call, path, lineno, Thread.current.object_id
 
           self.parent_id = parent_id
           self.elapsed = elapsed

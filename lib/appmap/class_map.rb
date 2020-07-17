@@ -95,7 +95,7 @@ module AppMap
         location_file, lineno = location
         location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
 
-        static = method.method.owner.singleton_class?
+        static = method.static
 
         object_infos = [
           {
