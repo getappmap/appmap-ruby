@@ -17,7 +17,7 @@ module AppMap
             version: AppMap::VERSION
           }
         }.tap do |m|
-          if defined?(::Rails)
+          if defined?(::Rails) && defined?(::Rails.version)
             m[:frameworks] ||= []
             m[:frameworks] << {
               name: 'rails',

@@ -8,6 +8,10 @@ rescue NameError
 end
 
 require 'appmap/version'
+require 'appmap/hook'
+require 'appmap/trace'
+require 'appmap/class_map'
+require 'appmap/metadata'
 
 module AppMap
   class << self
@@ -34,14 +38,12 @@ module AppMap
     # the load events won't be seen and the hooks won't activate.
     def initialize(config_file_path = 'appmap.yml')
       warn "Configuring AppMap from path #{config_file_path}"
-      require 'appmap/hook'
       self.configuration = Hook::Config.load_from_file(config_file_path)
       Hook.hook(configuration)
     end
 
     # tracing can be used to start tracing, stop tracing, and record events.
     def tracing
-      require 'appmap/trace'
       @tracing ||= Trace::Tracing.new
     end
 
@@ -68,14 +70,12 @@ module AppMap
 
     # class_map builds a class map from a config and a list of Ruby methods.
     def class_map(methods)
-      require 'appmap/class_map'
       ClassMap.build_from_methods(configuration, methods)
     end
 
     # detect_metadata returns default metadata detected from the Ruby system and from the
     # filesystem.
     def detect_metadata
-      require 'appmap/metadata'
       @metadata ||= Metadata.detect.freeze
       @metadata.deep_dup
     end
