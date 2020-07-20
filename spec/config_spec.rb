@@ -2,9 +2,9 @@
 
 require 'rails_spec_helper'
 require 'active_support/core_ext'
-require 'appmap/hook'
+require 'appmap/config'
 
-describe AppMap::Hook::Config do
+describe AppMap::Config, docker: false do
   it 'loads from a Hash' do
     config_data = {
       name: 'test',
@@ -18,7 +18,7 @@ describe AppMap::Hook::Config do
         }
       ]
     }.deep_stringify_keys!
-    config = AppMap::Hook::Config.load(config_data)
+    config = AppMap::Config.load(config_data)
 
     expect(config.to_h.deep_stringify_keys!).to eq(config_data)
   end

@@ -2,7 +2,15 @@
 
 module AppMap
   module Trace
-    ScopedMethod = Struct.new(:defined_class, :method, :static)
+    class ScopedMethod < SimpleDelegator
+      attr_reader :defined_class, :static
+      
+      def initialize(defined_class, method, static)
+        @defined_class = defined_class
+        @static = static
+        super(method)
+      end
+    end
 
     class Tracing
       def initialize

@@ -1,3 +1,8 @@
+# v0.31.0
+
+* Add the ability to hook methods by default, and optionally add labels to them in the
+  classmap. Use it to hook `ActiveSupport::SecurityUtils.secure_compare`.
+  
 # v0.30.0
 
 * Add support for Minitest.

@@ -15,7 +15,7 @@ module ShowYamlNulls
 end
 Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
 
-describe 'AppMap class Hooking' do
+describe 'AppMap class Hooking', docker: false do
   def collect_events(tracer)
     [].tap do |events|
       while tracer.event?
@@ -30,7 +30,10 @@ describe 'AppMap class Hooking' do
       (event[:parameters] || []).each(&delete_object_id)
       (event[:exceptions] || []).each(&delete_object_id)
 
-      if event[:event] == :return
+      case event[:event]
+      when :call
+        event[:path] = event[:path].gsub(Gem.dir + '/', '')
+      when :return
         # These should be removed from the appmap spec
         %i[defined_class method_id path lineno static].each do |obsolete_field|
           event.delete(obsolete_field)
@@ -42,21 +45,23 @@ describe 'AppMap class Hooking' do
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
-    package = AppMap::Hook::Package.new(file, [])
-    config = AppMap::Hook::Config.new('hook_spec', [ package ])
+    package = AppMap::Package.new(file, [])
+    config = AppMap::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
-    AppMap::Hook.hook(config)
-    
-    setup_result = setup.call if setup
+    tracer = nil
+    AppMap::Hook.new(config).enable do
+      setup_result = setup.call if setup
 
-    tracer = AppMap.tracing.trace
-    AppMap::Event.reset_id_counter
-    begin
-      load file
-      yield setup_result
-    ensure
-      AppMap.tracing.delete(tracer)
+      tracer = AppMap.tracing.trace
+      AppMap::Event.reset_id_counter
+      begin
+        load file
+        yield setup_result
+      ensure
+        AppMap.tracing.delete(tracer)
+      end
     end
+    
     [ config, tracer ]
   end
 
@@ -104,7 +109,7 @@ describe 'AppMap class Hooking' do
       InstanceMethod.new.say_default
     end
     expect(tracer.event_methods.to_a.map(&:defined_class)).to eq([ 'InstanceMethod' ])
-    expect(tracer.event_methods.to_a.map(&:method).map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
+    expect(tracer.event_methods.to_a.map(&:to_s)).to eq([ InstanceMethod.public_instance_method(:say_default).to_s ])
   end
 
   it 'builds a class map of invoked methods' do
@@ -448,6 +453,110 @@ describe 'AppMap class Hooking' do
 
     invoke_test_file 'spec/fixtures/hook/exception_method.rb' do
       expect { ExceptionMethod.new.raise_exception }.to raise_exception
+    end
+  end
+
+  context 'ActiveSupport::SecurityUtils.secure_compare' do
+    it 'is hooked' do
+      events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: Compare
+        :method_id: compare
+        :path: spec/fixtures/hook/compare.rb
+        :lineno: 4
+        :static: true
+        :parameters:
+        - :name: :s1
+          :class: String
+          :value: string
+          :kind: :req
+        - :name: :s2
+          :class: String
+          :value: string
+          :kind: :req
+        :receiver:
+          :class: Class
+          :value: Compare
+      - :id: 2
+        :event: :call
+        :defined_class: ActiveSupport::SecurityUtils
+        :method_id: secure_compare
+        :path: gems/activesupport-6.0.3.2/lib/active_support/security_utils.rb
+        :lineno: 26
+        :static: true
+        :parameters:
+        - :name: :a
+          :class: String
+          :value: string
+          :kind: :req
+        - :name: :b
+          :class: String
+          :value: string
+          :kind: :req
+        :receiver:
+          :class: Module
+          :value: ActiveSupport::SecurityUtils
+      - :id: 3
+        :event: :return
+        :parent_id: 2
+        :return_value:
+          :class: TrueClass
+          :value: 'true'
+      - :id: 4
+        :event: :return
+        :parent_id: 1
+        :return_value:
+          :class: TrueClass
+          :value: 'true'
+      YAML
+    
+      test_hook_behavior 'spec/fixtures/hook/compare.rb', events_yaml do
+        expect(Compare.compare('string', 'string')).to be_truthy
+      end
+    end
+    
+    it 'gets labeled in the classmap' do
+      classmap_yaml = <<~YAML
+      ---
+      - :name: spec/fixtures/hook/compare.rb
+        :type: package
+        :children:
+        - :name: Compare
+          :type: class
+          :children:
+          - :name: compare
+            :type: function
+            :location: spec/fixtures/hook/compare.rb:4
+            :static: true
+      - :name: active_support
+        :type: package
+        :children:
+        - :name: ActiveSupport
+          :type: class
+          :children:
+          - :name: SecurityUtils
+            :type: class
+            :children:
+            - :name: secure_compare
+              :type: function
+              :location: gems/activesupport-6.0.3.2/lib/active_support/security_utils.rb:26
+              :static: true
+              :labels:
+              - security
+      YAML
+      
+      config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
+        expect(Compare.compare('string', 'string')).to be_truthy
+      end
+      cm = AppMap::ClassMap.build_from_methods(config, tracer.event_methods)
+      entry = cm[1][:children][0][:children][0][:children][0]
+      # Sanity check, make sure we got the right one
+      expect(entry[:name]).to eq('secure_compare')
+      spec = Gem::Specification.find_by_name('activesupport')
+      entry[:location].gsub!(spec.base_dir + '/', '')
+      expect(Diffy::Diff.new(cm.to_yaml, classmap_yaml).to_s).to eq('')
     end
   end
 end
