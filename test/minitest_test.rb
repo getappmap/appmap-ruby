@@ -4,14 +4,14 @@
 require 'test_helper'
 require 'English'
 
-class RecordProcessTest < Minitest::Test
-  def perform_test(program_name)
+class MinitestTest < Minitest::Test
+  def perform_test(test_name)
     Bundler.with_clean_env do
-      Dir.chdir 'test/fixtures/process_recorder' do
+      Dir.chdir 'test/fixtures/minitest_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system(%(bundle exec ruby #{program_name}))
+        system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield
       end
@@ -19,17 +19,20 @@ class RecordProcessTest < Minitest::Test
   end
 
   def test_hello
-    perform_test 'hello.rb' do
-      appmap_file = 'appmap.json'
+    perform_test 'hello' do
+      appmap_file = 'tmp/appmap/minitest/Hello_hello.appmap.json'
 
       assert File.file?(appmap_file), 'appmap output file does not exist'
       appmap = JSON.parse(File.read(appmap_file))
       assert_equal AppMap::APPMAP_FORMAT_VERSION, appmap['version']
       assert_includes appmap.keys, 'metadata'
       metadata = appmap['metadata']
-      assert_equal 'process_recorder', metadata['app']
-      assert_equal 'record_process', metadata['recorder']['name']
+      assert_equal 'minitest_recorder', metadata['app']
+      assert_equal 'minitest', metadata['recorder']['name']
       assert_equal 'ruby', metadata['language']['name']
+      assert_equal 'Hello', metadata['feature_group']
+      assert_equal 'hello', metadata['feature']
+      assert_equal 'Hello hello', metadata['name']
     end
   end
 end

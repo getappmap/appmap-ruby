@@ -218,7 +218,7 @@ module AppMap
       end
 
       def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
-        metadata = RSpec.metadata.tap do |m|
+        metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = example_name
           m[:app] = AppMap.configuration.name
           m[:feature] = feature_name if feature_name
