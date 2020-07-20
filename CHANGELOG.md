@@ -1,3 +1,7 @@
+# v0.30.0
+
+* Add support for Minitest.
+
 # v0.29.0
 
 * Add `lib/appmap/record.rb`, which can be `require`d to record the rest of the process.

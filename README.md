@@ -3,6 +3,7 @@
 - [Configuration](#configuration)
 - [Running](#running)
   - [RSpec](#rspec)
+  - [Minitest](#minitest)
   - [Cucumber](#cucumber)
   - [Remote recording](#remote-recording)
   - [Ruby on Rails](#ruby-on-rails)
@@ -124,6 +125,29 @@ If you include the `feature` and `feature_group` metadata, these attributes will
 ```
 
 If you don't explicitly declare `feature` and `feature_group`, then they will be inferred from the spec name and example descriptions.
+
+## Minitest
+
+To record Minitest tests, follow these additional steps:
+
+1) Require `appmap/minitest` in `test_helper.rb`
+
+```ruby
+require 'appmap/minitest'
+```
+
+2) Run the tests with the environment variable `APPMAP=true`:
+
+```sh-session
+$ APPMAP=true bundle exec -Ilib -Itest test/*
+```
+
+Each Minitest test will output an AppMap file into the directory `tmp/appmap/minitest`. For example:
+
+```
+$ find tmp/appmap/minitest
+Hello_says_hello_when_prompted.appmap.json
+```
 
 ## Cucumber
 
