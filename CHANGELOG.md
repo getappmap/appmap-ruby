@@ -1,7 +1,11 @@
+# v0.29.0
+
+* Add `lib/appmap/record.rb`, which can be `require`d to record the rest of the process.
+
 # v0.28.1
+
 * Fix the `defined_class` recorded in an appmap for an instance method included in a class
   at runtime.
-
 * Only include the `static` attribute on `call` events in an appmap. Determine its value
   based on the receiver of the method call.
 
