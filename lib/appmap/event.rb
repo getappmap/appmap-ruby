@@ -15,21 +15,15 @@ module AppMap
       end
     end
 
-    MethodEventStruct = Struct.new(:id, :event, :defined_class, :method_id, :path, :lineno, :thread_id)
+    MethodEventStruct = Struct.new(:id, :event, :thread_id)
 
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
       class << self
-        def build_from_invocation(me, event_type, defined_class, method)
+        def build_from_invocation(me, event_type)
           me.id = AppMap::Event.next_id_counter
           me.event = event_type
-          me.defined_class = defined_class
-          me.method_id = method.name.to_s
-          path = method.source_location[0]
-          path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
-          me.path = path
-          me.lineno = method.source_location[1]
           me.thread_id = Thread.current.object_id
         end
 
@@ -58,15 +52,25 @@ module AppMap
           (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
       end
-
     end
 
     class MethodCall < MethodEvent
-      attr_accessor :parameters, :receiver, :static
+      attr_accessor :defined_class, :method_id, :path, :lineno, :parameters, :receiver, :static
 
       class << self
         def build_from_invocation(mc = MethodCall.new, defined_class, method, receiver, arguments)
           mc.tap do
+            static = receiver.is_a?(Module)
+            mc.defined_class = defined_class
+            mc.method_id = method.name.to_s
+            if method.source_location
+              path = method.source_location[0]
+              path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
+              mc.path = path
+              mc.lineno = method.source_location[1]
+            else
+              mc.path = [ defined_class, static ? '.' : '#', method.name ].join
+            end
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
@@ -84,17 +88,22 @@ module AppMap
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
-            mc.static = receiver.is_a?(Module)
-            MethodEvent.build_from_invocation(mc, :call, defined_class, method)
+            mc.static = static
+            MethodEvent.build_from_invocation(mc, :call)
           end
         end
       end
 
       def to_h
         super.tap do |h|
+          h[:defined_class] = defined_class
+          h[:method_id] = method_id
+          h[:path] = path
+          h[:lineno] = lineno
           h[:static] = static
           h[:parameters] = parameters
           h[:receiver] = receiver
+          h.delete_if { |_, v| v.nil? }
         end
       end
 
@@ -105,11 +114,11 @@ module AppMap
       attr_accessor :parent_id, :elapsed
 
       class << self
-        def build_from_invocation(mr = MethodReturnIgnoreValue.new, defined_class, method, parent_id, elapsed)
+        def build_from_invocation(mr = MethodReturnIgnoreValue.new, parent_id, elapsed)
           mr.tap do |_|
             mr.parent_id = parent_id
             mr.elapsed = elapsed
-            MethodEvent.build_from_invocation(mr, :return, defined_class, method)
+            MethodEvent.build_from_invocation(mr, :return)
           end
         end
       end
@@ -126,7 +135,7 @@ module AppMap
       attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(mr = MethodReturn.new, defined_class, method, parent_id, elapsed, return_value, exception)
+        def build_from_invocation(mr = MethodReturn.new, parent_id, elapsed, return_value, exception)
           mr.tap do |_|
             if return_value
               mr.return_value = {
@@ -152,7 +161,7 @@ module AppMap
 
               mr.exceptions = exceptions
             end
-            MethodReturnIgnoreValue.build_from_invocation(mr, defined_class, method, parent_id, elapsed)
+            MethodReturnIgnoreValue.build_from_invocation(mr, parent_id, elapsed)
           end
         end
       end

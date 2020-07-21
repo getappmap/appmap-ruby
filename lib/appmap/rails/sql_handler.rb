@@ -5,11 +5,11 @@ require 'appmap/event'
 module AppMap
   module Rails
     class SQLHandler
-      class SQLCall < AppMap::Event::MethodEvent
+      class SQLCall < AppMap::Event::MethodCall
         attr_accessor :payload
 
-        def initialize(path, lineno, payload)
-          super AppMap::Event.next_id_counter, :call, SQLHandler, :call, path, lineno, Thread.current.object_id
+        def initialize(payload)
+          super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
           self.payload = payload
         end
@@ -20,7 +20,7 @@ module AppMap
               sql: payload[:sql],
               database_type: payload[:database_type]
             }.tap do |sql_query|
-              %i[server_version explain_sql].each do |attribute|
+              %i[server_version].each do |attribute|
                 sql_query[attribute] = payload[attribute] if payload[attribute]
               end
             end
@@ -29,8 +29,8 @@ module AppMap
       end
 
       class SQLReturn < AppMap::Event::MethodReturnIgnoreValue
-        def initialize(path, lineno, parent_id, elapsed)
-          super AppMap::Event.next_id_counter, :return, SQLHandler, :call, path, lineno, Thread.current.object_id
+        def initialize(parent_id, elapsed)
+          super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
           self.parent_id = parent_id
           self.elapsed = elapsed
@@ -76,6 +76,8 @@ module AppMap
             case database_type
             when :postgres
               ActiveRecord::Base.connection.postgresql_version
+            when :sqlite
+              ActiveRecord::Base.connection.database_version.to_s
             else
               warn "Unable to determine database version for #{database_type.inspect}"
             end
@@ -133,9 +135,9 @@ module AppMap
 
           SQLExaminer.examine payload, sql: sql
 
-          call = SQLCall.new(__FILE__, __LINE__, payload)
+          call = SQLCall.new(payload)
           AppMap.tracing.record_event(call)
-          AppMap.tracing.record_event(SQLReturn.new(__FILE__, __LINE__, call.id, finished - started))
+          AppMap.tracing.record_event(SQLReturn.new(call.id, finished - started))
         ensure
           Thread.current[reentry_key] = nil
         end

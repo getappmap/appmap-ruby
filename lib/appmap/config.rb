@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 module AppMap
-  Package = Struct.new(:path, :exclude, :labels) do
-    def initialize(path, exclude, labels = nil)
+  Package = Struct.new(:path, :package_name, :exclude, :labels) do
+    def initialize(path, package_name, exclude, labels = nil)
       super
     end
-    
+
     def to_h
       {
         path: path,
+        package_name: package_name,
         exclude: exclude.blank? ? nil : exclude,
         labels: labels.blank? ? nil : labels
       }.compact
@@ -20,10 +21,7 @@ module AppMap
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
       'ActiveSupport::SecurityUtils' => {
-        secure_compare: Package.new('active_support', nil, ['security'])
-      },
-      'OpenSSL::X509::Certificate' => {
-        sign: Package.new('openssl', nil, ['security'])
+        secure_compare: Package.new('active_support', nil, nil, ['security'])
       }
     }
 
@@ -43,7 +41,7 @@ module AppMap
       # Loads configuration from a Hash.
       def load(config_data)
         packages = (config_data['packages'] || []).map do |package|
-          Package.new(package['path'], package['exclude'] || [])
+          Package.new(package['path'], nil, package['exclude'] || [])
         end
         Config.new config_data['name'], packages
       end
@@ -57,14 +55,14 @@ module AppMap
     end
 
     def package_for_method(method)
+      defined_class, _, method_name = Hook.qualify_method_name(method)
+      hooked_method = find_hooked_method(defined_class, method_name)
+      return hooked_method if hooked_method
+
       location = method.source_location
       location_file, = location
       return unless location_file
 
-      defined_class,_,method_name = Hook.qualify_method_name(method)
-      hooked_method = find_hooked_method(defined_class, method_name)
-      return hooked_method if hooked_method
-      
       location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
       packages.find do |pkg|
         (location_file.index(pkg.path) == 0) &&
@@ -83,7 +81,7 @@ module AppMap
     def find_hooked_method(defined_class, method_name)
       find_hooked_class(defined_class)[method_name]
     end
-    
+
     def find_hooked_class(defined_class)
       HOOKED_METHODS[defined_class] || {}
     end

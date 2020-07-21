@@ -16,11 +16,11 @@ module AppMap
       class HTTPServerRequest
         include ContextKey
 
-        class Call < AppMap::Event::MethodEvent
+        class Call < AppMap::Event::MethodCall
           attr_accessor :payload
 
-          def initialize(path, lineno, payload)
-            super AppMap::Event.next_id_counter, :call, HTTPServerRequest, :call, path, lineno, Thread.current.object_id
+          def initialize(payload)
+            super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
             self.payload = payload
           end
@@ -47,7 +47,7 @@ module AppMap
         end
 
         def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
-          event = Call.new(__FILE__, __LINE__, payload)
+          event = Call.new(payload)
           Thread.current[context_key] = Context.new(event.id, Time.now)
           AppMap.tracing.record_event(event)
         end
@@ -59,8 +59,8 @@ module AppMap
         class Call < AppMap::Event::MethodReturnIgnoreValue
           attr_accessor :payload
 
-          def initialize(path, lineno, payload, parent_id, elapsed)
-            super AppMap::Event.next_id_counter, :return, HTTPServerResponse, :call, path, lineno, Thread.current.object_id
+          def initialize(payload, parent_id, elapsed)
+            super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
             self.payload = payload
             self.parent_id = parent_id
@@ -82,7 +82,7 @@ module AppMap
           context = Thread.current[context_key]
           Thread.current[context_key] = nil
 
-          event = Call.new(__FILE__, __LINE__, payload, context.id, Time.now - context.start_time)
+          event = Call.new(payload, context.id, Time.now - context.start_time)
           AppMap.tracing.record_event(event)
         end
       end
