@@ -61,7 +61,7 @@ describe 'AppMap class Hooking', docker: false do
         AppMap.tracing.delete(tracer)
       end
     end
-    
+
     [ config, tracer ]
   end
 
@@ -408,14 +408,14 @@ describe 'AppMap class Hooking', docker: false do
     events_yaml = <<~YAML
     --- []
     YAML
-    
+
     load 'spec/fixtures/hook/singleton_method.rb'
     setup = -> { SingletonMethod.new_with_instance_method }
     test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml, setup: setup do |s|
       expect(s.say_instance_defined).to eq('defined for an instance')
     end
   end
-  
+
   it 'Reports exceptions' do
     events_yaml = <<~YAML
     ---
@@ -453,6 +453,20 @@ describe 'AppMap class Hooking', docker: false do
 
     invoke_test_file 'spec/fixtures/hook/exception_method.rb' do
       expect { ExceptionMethod.new.raise_exception }.to raise_exception
+    end
+  end
+
+  context 'OpenSSL::X509::Certificate.sign' do
+    # OpenSSL::X509 is not being hooked.
+    # This might be because the class is being loaded before AppMap, and so the TracePoint
+    # set by AppMap doesn't see it.
+    xit 'is hooked' do
+      events_yaml = <<~YAML
+      ---
+      YAML
+      test_hook_behavior 'spec/fixtures/hook/openssl_sign.rb', events_yaml do
+        expect(OpenSSLExample.example).to be_truthy
+      end
     end
   end
 
@@ -511,12 +525,12 @@ describe 'AppMap class Hooking', docker: false do
           :class: TrueClass
           :value: 'true'
       YAML
-    
+
       test_hook_behavior 'spec/fixtures/hook/compare.rb', events_yaml do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
     end
-    
+
     it 'gets labeled in the classmap' do
       classmap_yaml = <<~YAML
       ---

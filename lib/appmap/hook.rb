@@ -31,12 +31,11 @@ module AppMap
         end
       end
     end
-    
+
     attr_reader :config
     def initialize(config)
       @config = config
     end
-    
 
     # Observe class loading and hook all methods which match the config.
     def enable &block
@@ -69,7 +68,7 @@ module AppMap
       tp = TracePoint.new(:end) do |tp|
         hook = self
         cls = tp.self
-        
+
         instance_methods = cls.public_instance_methods(false)
         class_methods = cls.singleton_class.public_instance_methods(false) - instance_methods
 
@@ -81,9 +80,9 @@ module AppMap
             disasm = RubyVM::InstructionSequence.disasm(method)
             # Skip methods that have no instruction sequence, as they are obviously trivial.
             next unless disasm
-            
+
             defined_class, method_symbol, method_name = Hook.qualify_method_name(method)
-            method_display_name = [defined_class,method_symbol,method_name].join
+            method_display_name = [defined_class, method_symbol, method_name].join
 
             # Don't try and trace the AppMap methods or there will be
             # a stack overflow in the defined hook method.
@@ -125,7 +124,7 @@ module AppMap
         class_methods.each(&hook_method.call(cls.singleton_class))
       end
 
-      tp.enable &block
+      tp.enable(&block)
     end
   end
 end

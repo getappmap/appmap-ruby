@@ -21,15 +21,18 @@ module AppMap
     HOOKED_METHODS = {
       'ActiveSupport::SecurityUtils' => {
         secure_compare: Package.new('active_support', nil, ['security'])
+      },
+      'OpenSSL::X509::Certificate' => {
+        sign: Package.new('openssl', nil, ['security'])
       }
     }
-      
+
     attr_reader :name, :packages
     def initialize(name, packages = [])
       @name = name
       @packages = packages
     end
-      
+
     class << self
       # Loads configuration data from a file, specified by the file name.
       def load_from_file(config_file_name)
