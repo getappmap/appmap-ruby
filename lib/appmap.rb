@@ -9,6 +9,7 @@ end
 
 require 'appmap/version'
 require 'appmap/hook'
+require 'appmap/config'
 require 'appmap/trace'
 require 'appmap/class_map'
 require 'appmap/metadata'
@@ -38,8 +39,8 @@ module AppMap
     # the load events won't be seen and the hooks won't activate.
     def initialize(config_file_path = 'appmap.yml')
       warn "Configuring AppMap from path #{config_file_path}"
-      self.configuration = Hook::Config.load_from_file(config_file_path)
-      Hook.hook(configuration)
+      self.configuration = Config.load_from_file(config_file_path)
+      Hook.new(configuration).enable
     end
 
     # tracing can be used to start tracing, stop tracing, and record events.

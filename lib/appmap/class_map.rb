@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_support/core_ext'
-
 module AppMap
   class ClassMap
     module HasChildren
@@ -50,7 +48,7 @@ module AppMap
         end
       end
       Function = Struct.new(:name) do
-        attr_accessor :static, :location
+        attr_accessor :static, :location, :labels
 
         def type
           'function'
@@ -61,8 +59,9 @@ module AppMap
             name: name,
             type: type,
             location: location,
-            static: static
-          }
+            static: static,
+            labels: labels
+          }.delete_if {|k,v| v.nil?}
         end
       end
     end
@@ -71,27 +70,17 @@ module AppMap
       def build_from_methods(config, methods)
         root = Types::Root.new
         methods.each do |method|
-          package = package_for_method(config.packages, method)
-          add_function root, package.path, method
+          package = config.package_for_method(method) \
+            or raise "No package found for method #{method}"
+          add_function root, package, method
         end
         root.children.map(&:to_h)
       end
 
       protected
 
-      def package_for_method(packages, method)
-        location = method.method.source_location
-        location_file, = location
-        location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-
-        packages.find do |pkg|
-          (location_file.index(pkg.path) == 0) &&
-            !pkg.exclude.find { |p| location_file.index(p) }
-        end or raise "No package found for method #{method}"
-      end
-
-      def add_function(root, package_name, method)
-        location = method.method.source_location
+      def add_function(root, package, method)
+        location = method.source_location
         location_file, lineno = location
         location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
 
@@ -99,7 +88,7 @@ module AppMap
 
         object_infos = [
           {
-            name: package_name,
+            name: package.path,
             type: 'package'
           }
         ]
@@ -109,12 +98,15 @@ module AppMap
             type: 'class'
           }
         end
-        object_infos << {
-          name: method.method.name,
+        function_info = {
+          name: method.name,
           type: 'function',
           location: [ location_file, lineno ].join(':'),
           static: static
         }
+        function_info[:labels] = package.labels if package.labels
+        object_infos << function_info
+        
         parent = root
         object_infos.each do |info|
           parent = find_or_create parent.children, info do
