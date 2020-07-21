@@ -17,11 +17,38 @@ module AppMap
   end
 
   class Config
+    OPENSSL_PACKAGE = Package.new('openssl', 'openssl', nil, ['security'])
+
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
       'ActiveSupport::SecurityUtils' => {
         secure_compare: Package.new('active_support', nil, nil, ['security'])
+      }
+    }
+
+    BUILTIN_METHODS = {
+      'OpenSSL::PKey::PKey' => {
+        sign: OPENSSL_PACKAGE
+      },
+      'OpenSSL::Digest' => {
+        digest: OPENSSL_PACKAGE
+      },
+      'OpenSSL::X509::Request' => {
+        sign: OPENSSL_PACKAGE,
+        verify: OPENSSL_PACKAGE
+      },
+      'OpenSSL::PKCS5' => {
+        pbkdf2_hmac_sha1: OPENSSL_PACKAGE,
+        pbkdf2_hmac: OPENSSL_PACKAGE
+      },
+      'OpenSSL::Cipher' => {
+        encrypt: OPENSSL_PACKAGE,
+        decrypt: OPENSSL_PACKAGE,
+        final: OPENSSL_PACKAGE
+      },
+      'Net::HTTP' => {
+        request: Package.new('net/http', 'net/http', nil, %w[http io])
       }
     }
 
@@ -83,7 +110,7 @@ module AppMap
     end
 
     def find_hooked_class(defined_class)
-      HOOKED_METHODS[defined_class] || {}
+      HOOKED_METHODS[defined_class] || BUILTIN_METHODS[defined_class] || {}
     end
   end
 end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+p defined?(OpenSSL)
+
 require 'appmap'
 require 'json'
 

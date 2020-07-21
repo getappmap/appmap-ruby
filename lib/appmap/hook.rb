@@ -76,5 +76,24 @@ module AppMap
 
       tp.enable(&block)
     end
+
+    def hook_builtins
+      class_from_string = lambda do |fq_class|
+        fq_class.split('::').inject(Object) do |mod, class_name|
+          mod.const_get(class_name)
+        end
+      end
+
+      Config::BUILTIN_METHODS.each do |class_name, methods|
+        methods.each do |method_name, package|
+          require package.package_name if package.package_name
+          cls = class_from_string.(class_name)
+          method = cls.instance_method(method_name.to_sym) || cls.class_method(method_name.to_sym)
+          raise "Method #{method.inspect} not found on #{cls.name}" unless method
+
+          Hook::Method.new(cls, method).activate
+        end
+      end
+    end
   end
 end

@@ -1,3 +1,7 @@
+# v0.34.0
+
+* Records select methods from `OpenSSL` and applies the `security` label to them.
+
 # v0.33.0
 
 * Added command `AppMap.open` to open an AppMap in the browser.

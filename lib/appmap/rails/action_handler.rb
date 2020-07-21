@@ -22,6 +22,10 @@ module AppMap
           def initialize(payload)
             super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
+            self.defined_class = HTTPServerRequest
+            self.method_id = :call
+            self.path = path
+            self.lineno = lineno
             self.payload = payload
           end
 
