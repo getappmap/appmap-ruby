@@ -4,7 +4,7 @@ require 'English'
 
 module AppMap
   class Hook
-    LOG = false
+    LOG = true
 
     HOOK_DISABLE_KEY = 'AppMap::Hook.disable'
 
