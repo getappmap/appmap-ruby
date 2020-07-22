@@ -33,7 +33,7 @@ There are several ways to record AppMaps of your Ruby program using the `appmap`
 
 Once you have recorded some AppMaps (for example, by running RSpec tests), you use the `appland upload` command
 to upload them to the AppLand server. This command, and some others, is provided
-by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases), to
+by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases).
 Then, on the [AppLand website](https://app.land), you can
 visualize the design of your code and share links with collaborators.
 
@@ -87,10 +87,23 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 To record RSpec tests, follow these additional steps:
 
-1) Require `appmap/rspec` in your `spec_helper.rb`.
+1) Require `appmap/rspec` in your `spec_helper.rb` before any other classes are loaded.
 
 ```ruby
 require 'appmap/rspec'
+```
+
+Note that `spec_helper.rb` in a Rails project typically loads the application's classes this way:
+
+```ruby
+require File.expand_path("../../config/environment", __FILE__)
+```
+
+and `appmap/rspec` must be required before this:
+
+```ruby
+require 'appmap/rspec'
+require File.expand_path("../../config/environment", __FILE__)
 ```
 
 2) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
@@ -134,6 +147,19 @@ To record Minitest tests, follow these additional steps:
 
 ```ruby
 require 'appmap/minitest'
+```
+
+Note that `test_helper.rb` in a Rails project typically loads the application's classes this way:
+
+```ruby
+require_relative '../config/environment'
+```
+
+and `appmap/rspec` must be required before this:
+
+```ruby
+require 'appmap/rspec'
+require_relative '../config/environment'
 ```
 
 2) Run the tests with the environment variable `APPMAP=true`:
