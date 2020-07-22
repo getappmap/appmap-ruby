@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'appmap'
 require 'appmap/util'
 
 module AppMap
