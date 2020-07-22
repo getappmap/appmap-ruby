@@ -185,6 +185,8 @@ To record Cucumber tests, follow these additional steps:
 require 'appmap/cucumber'
 ```
 
+Be sure to require it before `config/environment` is required.
+
 2) Create an `Around` hook in `support/hooks.rb` to record the scenario:
 
 
