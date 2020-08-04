@@ -25,8 +25,8 @@ class OpenSSLTest < Minitest::Test
       assert File.file?(appmap_file), 'appmap output file does not exist'
       appmap = JSON.parse(File.read(appmap_file))
       assert_equal AppMap::APPMAP_FORMAT_VERSION, appmap['version']
-      assert_equal appmap['metadata'], [{'recorder' => 'lib/openssl_key_sign.rb'}]
-      assert_equal appmap['classMap'], JSON.parse(<<~JSON)
+      assert_equal [{'recorder' => 'lib/openssl_key_sign.rb'}], appmap['metadata']
+      assert_equal JSON.parse(<<~JSON), appmap['classMap']
       [
         {
           "name": "lib",

@@ -31,7 +31,7 @@ module AppMap
       'OpenSSL::PKey::PKey' => {
         sign: OPENSSL_PACKAGE
       },
-      'OpenSSL::Digest' => {
+      'Digest::Instance' => {
         digest: OPENSSL_PACKAGE
       },
       'OpenSSL::X509::Request' => {
@@ -48,10 +48,25 @@ module AppMap
         final: OPENSSL_PACKAGE
       },
       'OpenSSL::X509::Certificate' => {
-        sign: Package.new('openssl', nil, ['security'])
+        sign: Package.new('openssl', nil, nil, ['security'])
       },
       'Net::HTTP' => {
         request: Package.new('net/http', 'net/http', nil, %w[http io])
+      },
+      'Net::SMTP' => {
+        send: Package.new('net/smtp', 'net/smtp', nil, %w[smtp email io])
+      },
+      'Net::POP3' => {
+        mails: Package.new('net/pop3', 'net/pop', nil, %w[pop pop3 email io])
+      },
+      'Net::IMAP' => {
+        send_command: Package.new('net/imap', 'net/imap', nil, %w[imap email io])
+      },
+      'IO' => {
+        read: Package.new('io', nil, nil, %w[io]),
+        write: Package.new('io', nil, nil, %w[io]),
+        open: Package.new('io', nil, nil, %w[io]),
+        close: Package.new('io', nil, nil, %w[io])
       }
     }
 

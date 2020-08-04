@@ -39,6 +39,8 @@ module AppMap
     def enable &block
       require 'appmap/hook/method'
 
+      hook_builtins
+
       tp = TracePoint.new(:end) do |trace_point|
         cls = trace_point.self
 
