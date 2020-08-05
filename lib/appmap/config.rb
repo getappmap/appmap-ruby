@@ -48,7 +48,7 @@ module AppMap
         final: OPENSSL_PACKAGE
       },
       'OpenSSL::X509::Certificate' => {
-        sign: Package.new('openssl', nil, nil, ['security'])
+        sign: OPENSSL_PACKAGE
       },
       'Net::HTTP' => {
         request: Package.new('net/http', 'net/http', nil, %w[http io])
