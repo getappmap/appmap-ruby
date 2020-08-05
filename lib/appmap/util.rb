@@ -50,11 +50,6 @@ module AppMap
         case event[:event]
         when :call
           event[:path] = event[:path].gsub(Gem.dir + '/', '')
-        when :return
-          # These should be removed from the appmap spec
-          %i[defined_class method_id path lineno static].each do |obsolete_field|
-            event.delete(obsolete_field)
-          end
         end
 
         event
