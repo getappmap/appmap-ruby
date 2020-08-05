@@ -16,36 +16,18 @@ end
 Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
 
 describe 'AppMap class Hooking', docker: false do
+  require 'appmap/util'
   def collect_events(tracer)
     [].tap do |events|
       while tracer.event?
         events << tracer.next_event.to_h
       end
-    end.map do |event|
-      event.delete(:thread_id)
-      event.delete(:elapsed)
-      delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
-      delete_object_id.call(event[:receiver])
-      delete_object_id.call(event[:return_value])
-      (event[:parameters] || []).each(&delete_object_id)
-      (event[:exceptions] || []).each(&delete_object_id)
-
-      case event[:event]
-      when :call
-        event[:path] = event[:path].gsub(Gem.dir + '/', '')
-      when :return
-        # These should be removed from the appmap spec
-        %i[defined_class method_id path lineno static].each do |obsolete_field|
-          event.delete(obsolete_field)
-        end
-      end
-      event
-    end.to_yaml
+    end.map(&AppMap::Util.method(:sanitize_event)).to_yaml
   end
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
-    package = AppMap::Package.new(file, [])
+    package = AppMap::Package.new(file, nil, [])
     config = AppMap::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
     tracer = nil
@@ -99,7 +81,7 @@ describe 'AppMap class Hooking', docker: false do
         :class: String
         :value: default
     YAML
-    config, tracer = test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+    test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
       expect(InstanceMethod.new.say_default).to eq('default')
     end
   end
@@ -456,20 +438,6 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
-  context 'OpenSSL::X509::Certificate.sign' do
-    # OpenSSL::X509 is not being hooked.
-    # This might be because the class is being loaded before AppMap, and so the TracePoint
-    # set by AppMap doesn't see it.
-    xit 'is hooked' do
-      events_yaml = <<~YAML
-      ---
-      YAML
-      test_hook_behavior 'spec/fixtures/hook/openssl_sign.rb', events_yaml do
-        expect(OpenSSLExample.example).to be_truthy
-      end
-    end
-  end
-
   context 'ActiveSupport::SecurityUtils.secure_compare' do
     it 'is hooked' do
       events_yaml = <<~YAML
@@ -560,7 +528,7 @@ describe 'AppMap class Hooking', docker: false do
               :labels:
               - security
       YAML
-      
+
       config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
         expect(Compare.compare('string', 'string')).to be_truthy
       end

@@ -1,3 +1,7 @@
+# v0.32.0
+
+* Removes un-necessary fields from `return` events.
+
 # v0.31.0
 
 * Add the ability to hook methods by default, and optionally add labels to them in the

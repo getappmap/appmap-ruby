@@ -13,6 +13,7 @@ require 'appmap/config'
 require 'appmap/trace'
 require 'appmap/class_map'
 require 'appmap/metadata'
+require 'appmap/util'
 
 module AppMap
   class << self

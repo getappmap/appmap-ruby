@@ -35,6 +35,25 @@ module AppMap
 
         [ fname, extension ].join
       end
+
+      # sanitize_event removes ephemeral values from an event, making
+      # events easier to compare across runs.
+      def sanitize_event(event, &block)
+        event.delete(:thread_id)
+        event.delete(:elapsed)
+        delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
+        delete_object_id.call(event[:receiver])
+        delete_object_id.call(event[:return_value])
+        (event[:parameters] || []).each(&delete_object_id)
+        (event[:exceptions] || []).each(&delete_object_id)
+
+        case event[:event]
+        when :call
+          event[:path] = event[:path].gsub(Gem.dir + '/', '')
+        end
+
+        event
+      end
     end
   end
 end

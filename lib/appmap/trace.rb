@@ -14,34 +14,34 @@ module AppMap
 
     class Tracing
       def initialize
-        @Tracing = []
+        @tracing = []
       end
 
       def empty?
-        @Tracing.empty?
+        @tracing.empty?
       end
 
       def trace(enable: true)
         Tracer.new.tap do |tracer|
-          @Tracing << tracer
+          @tracing << tracer
           tracer.enable if enable
         end
       end
 
       def enabled?
-        @Tracing.any?(&:enabled?)
+        @tracing.any?(&:enabled?)
       end
 
       def record_event(event, defined_class: nil, method: nil)
-        @Tracing.each do |tracer|
+        @tracing.each do |tracer|
           tracer.record_event(event, defined_class: defined_class, method: method)
         end
       end
 
       def delete(tracer)
-        return unless @Tracing.member?(tracer)
+        return unless @tracing.member?(tracer)
 
-        @Tracing.delete(tracer)
+        @tracing.delete(tracer)
         tracer.disable
       end
     end

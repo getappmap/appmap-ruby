@@ -80,10 +80,6 @@ module AppMap
       protected
 
       def add_function(root, package, method)
-        location = method.source_location
-        location_file, lineno = location
-        location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-
         static = method.static
 
         object_infos = [
@@ -101,12 +97,17 @@ module AppMap
         function_info = {
           name: method.name,
           type: 'function',
-          location: [ location_file, lineno ].join(':'),
           static: static
         }
+        location = method.source_location
+        if location
+          location_file, lineno = location
+          location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
+          function_info[:location] = [ location_file, lineno ].join(':')
+        end
         function_info[:labels] = package.labels if package.labels
         object_infos << function_info
-        
+
         parent = root
         object_infos.each do |info|
           parent = find_or_create parent.children, info do

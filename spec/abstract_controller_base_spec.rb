@@ -47,17 +47,17 @@ describe 'AbstractControllerBase' do
       SERVER_REQUEST
     end
 
-    it 'Properly captures method parameters in the appmap' do
+    it 'properly captures method parameters in the appmap' do
       expect(File).to exist(appmap_json)
       appmap = JSON.parse(File.read(appmap_json)).to_yaml
 
       expect(appmap).to match(<<-CREATE_CALL.strip)
   event: call
+  thread_id: .*
   defined_class: Api::UsersController
   method_id: build_user
   path: app/controllers/api/users_controller.rb
   lineno: 23
-  thread_id: .*
   static: false
   parameters:
   - name: params
@@ -67,6 +67,13 @@ describe 'AbstractControllerBase' do
     kind: req
   receiver:
       CREATE_CALL
+    end
+
+    it 'returns a minimal event' do
+      expect(File).to exist(appmap_json)
+      appmap = JSON.parse(File.read(appmap_json))
+      event = appmap['events'].find { |event| event['event'] == 'return' && event['return_value'] }
+      expect(event.keys).to eq(%w[id event thread_id parent_id elapsed return_value])
     end
   end
 end

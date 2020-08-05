@@ -55,7 +55,7 @@ class CLITest < Minitest::Test
     assert_equal <<~OUTPUT.strip, output.strip
     Class frequency:
     ----------------
-    2	Main
+    1	Main
 
     Method frequency:
     ----------------
@@ -79,7 +79,7 @@ class CLITest < Minitest::Test
       "class_frequency": [
         {
           "name": "Main",
-          "count": 2
+          "count": 1
         }
       ],
       "method_frequency": [
