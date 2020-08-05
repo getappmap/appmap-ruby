@@ -1,6 +1,6 @@
 # v0.34.0
 
-* Records select methods from `OpenSSL` and applies the `security` label to them.
+* Records builtin security and I/O methods from `OpenSSL`, `Net`, and `IO`.
 
 # v0.33.0
 

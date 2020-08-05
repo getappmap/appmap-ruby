@@ -7,6 +7,12 @@ module AppMap
     LOG = (ENV['DEBUG'] == 'true')
 
     class << self
+      def lock_builtins
+        return if @builtins_hooked
+
+        @builtins_hooked = true
+      end
+
       # Return the class, separator ('.' or '#'), and method name for
       # the given method.
       def qualify_method_name(method)
@@ -49,8 +55,6 @@ module AppMap
 
         hook = lambda do |hook_cls|
           lambda do |method_id|
-            next if method_id.to_s =~ /_hooked_by_appmap$/
-
             method = hook_cls.public_instance_method(method_id)
             hook_method = Hook::Method.new(hook_cls, method)
 
@@ -80,6 +84,8 @@ module AppMap
     end
 
     def hook_builtins
+      return unless self.class.lock_builtins
+
       class_from_string = lambda do |fq_class|
         fq_class.split('::').inject(Object) do |mod, class_name|
           mod.const_get(class_name)
