@@ -50,6 +50,9 @@ module AppMap
       'OpenSSL::X509::Certificate' => {
         sign: OPENSSL_PACKAGE
       },
+      'Logger' => {
+        add: Package.new('logger', 'logger', nil, %w[log io])
+      },
       'Net::HTTP' => {
         request: Package.new('net/http', 'net/http', nil, %w[http io])
       },
