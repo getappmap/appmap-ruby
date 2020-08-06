@@ -154,7 +154,7 @@ module AppMap
         end
 
         labels = labels.map(&:to_s).map(&:strip).reject(&:blank?).map(&:downcase).uniq
-        description.reject!(&:nil?).reject(&:blank?)
+        description.reject!(&:nil?).reject!(&:blank?)
         default_description = description.last
         description.reverse!
 
