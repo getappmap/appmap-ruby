@@ -13,16 +13,14 @@ module Example
     document = 'the document'
 
     digest = OpenSSL::Digest::SHA256.new
-    p key.class
     key.sign digest, document
   end
 end
 
 if __FILE__ == $0
   appmap = AppMap.record do
-    signature = Example.sign
-    require 'base64'
-    puts "Computed signature #{Base64.urlsafe_encode64(signature)}"
+    Example.sign
+    puts 'Computed signature'
   end
   appmap['metadata'] = [ 'recorder' => __FILE__ ]
 
