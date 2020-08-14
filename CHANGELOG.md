@@ -1,3 +1,7 @@
+# v0.33.0
+
+* Added command `AppMap.open` to open an AppMap in the browser.
+
 # v0.32.0
 
 * Removes un-necessary fields from `return` events.
