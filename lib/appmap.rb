@@ -24,7 +24,7 @@ module AppMap
     # Gets the configuration. If there is no configuration, the default
     # configuration is initialized.
     def configuration
-      @configuration ||= configure
+      @configuration ||= initialize
     end
 
     # Sets the configuration. This is only expected to happen once per
@@ -41,8 +41,10 @@ module AppMap
     # the load events won't be seen and the hooks won't activate.
     def initialize(config_file_path = 'appmap.yml')
       warn "Configuring AppMap from path #{config_file_path}"
-      self.configuration = Config.load_from_file(config_file_path)
-      Hook.new(configuration).enable
+      Config.load_from_file(config_file_path).tap do |configuration|
+        self.configuration = configuration
+        Hook.new(configuration).enable
+      end
     end
 
     # Used to start tracing, stop tracing, and record events.

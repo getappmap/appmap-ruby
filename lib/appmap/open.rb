@@ -4,9 +4,17 @@ module AppMap
   OpenStruct = Struct.new(:appmap)
 
   class Open < OpenStruct
+    attr_reader :port
+
     def perform
+      server = run_server
+      open_browser
+      server.kill
+    end
+
+    def page
       require 'rack/utils'
-      page = <<~PAGE
+      <<~PAGE
       <!DOCTYPE html>
       <html>
       <head>
@@ -23,26 +31,27 @@ module AppMap
       </body>
       </html>
       PAGE
+    end
 
-      port = nil
-      server_thread = Thread.new do
-        require 'rack'
+    def run_server
+      require 'rack'
+      Thread.new do
         Rack::Handler::WEBrick.run(
           lambda do |env|
             return [200, { 'Content-Type' => 'text/html' }, [page]]
           end,
           :Port => 0
         ) do |server|
-          port = server.config[:Port]
+          @port = server.config[:Port]
         end
+      end.tap do
+        sleep 1.0
       end
-      sleep 1.0
+    end
 
-      system 'open', "http://localhost:#{port}"
-
+    def open_browser
+      system 'open', "http://localhost:#{@port}"
       sleep 5.0
-
-      server_thread.kill
     end
   end
 end
