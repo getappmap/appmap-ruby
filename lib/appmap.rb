@@ -14,19 +14,20 @@ require 'appmap/trace'
 require 'appmap/class_map'
 require 'appmap/metadata'
 require 'appmap/util'
+require 'appmap/open'
 
 module AppMap
   class << self
     @configuration = nil
     @configuration_file_path = nil
 
-    # configuration gets the configuration. If there is no configuration, the default
+    # Gets the configuration. If there is no configuration, the default
     # configuration is initialized.
     def configuration
       @configuration ||= configure
     end
 
-    # configuration= sets the configuration. This is only expected to happen once per
+    # Sets the configuration. This is only expected to happen once per
     # Ruby process.
     def configuration=(config)
       warn 'AppMap is already configured' if @configuration && config
@@ -34,7 +35,7 @@ module AppMap
       @configuration = config
     end
 
-    # initialize configures AppMap for recording. Default behavior is to configure from "appmap.yml".
+    # Configures AppMap for recording. Default behavior is to configure from "appmap.yml".
     # This method also activates the code hooks which record function calls as trace events.
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
@@ -44,12 +45,12 @@ module AppMap
       Hook.new(configuration).enable
     end
 
-    # tracing can be used to start tracing, stop tracing, and record events.
+    # Used to start tracing, stop tracing, and record events.
     def tracing
       @tracing ||= Trace::Tracing.new
     end
 
-    # record records the events which occur while processing a block,
+    # Records the events which occur while processing a block,
     # and returns an AppMap as a Hash.
     def record
       tracer = tracing.trace
@@ -70,12 +71,17 @@ module AppMap
       }
     end
 
-    # class_map builds a class map from a config and a list of Ruby methods.
+    # Uploads an AppMap to the AppLand website and displays it.
+    def open(appmap)
+      AppMap::Open.new(appmap).perform
+    end
+
+    # Builds a class map from a config and a list of Ruby methods.
     def class_map(methods)
       ClassMap.build_from_methods(configuration, methods)
     end
 
-    # detect_metadata returns default metadata detected from the Ruby system and from the
+    # Returns default metadata detected from the Ruby system and from the
     # filesystem.
     def detect_metadata
       @metadata ||= Metadata.detect.freeze
