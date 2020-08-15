@@ -74,7 +74,8 @@ module AppMap
     end
 
     # Uploads an AppMap to the AppLand website and displays it.
-    def open(appmap)
+    def open(appmap = nil, &block)
+      appmap ||= AppMap.record(&block)
       AppMap::Open.new(appmap).perform
     end
 
