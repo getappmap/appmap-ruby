@@ -17,12 +17,12 @@ module AppMap
   end
 
   class Config
-    OPENSSL_PACKAGE = Package.new('openssl', 'openssl', nil, ['security'])
+    OPENSSL_PACKAGE = Package.new('openssl', 'openssl', nil, %w[security crypto])
 
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => [ :secure_compare, Package.new('active_support', nil, nil, ['security']) ]
+      'ActiveSupport::SecurityUtils' => [ :secure_compare, Package.new('active_support', nil, nil, %w[security crypto]) ]
     }
 
     BUILTIN_METHODS = {
