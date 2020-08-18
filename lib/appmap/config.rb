@@ -22,55 +22,26 @@ module AppMap
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => {
-        secure_compare: Package.new('active_support', nil, nil, ['security'])
-      }
+      'ActiveSupport::SecurityUtils' => [ :secure_compare, Package.new('active_support', nil, nil, ['security']) ]
     }
 
     BUILTIN_METHODS = {
-      'OpenSSL::PKey::PKey' => {
-        sign: OPENSSL_PACKAGE
-      },
-      'Digest::Instance' => {
-        digest: OPENSSL_PACKAGE
-      },
-      'OpenSSL::X509::Request' => {
-        sign: OPENSSL_PACKAGE,
-        verify: OPENSSL_PACKAGE
-      },
-      'OpenSSL::PKCS5' => {
-        pbkdf2_hmac_sha1: OPENSSL_PACKAGE,
-        pbkdf2_hmac: OPENSSL_PACKAGE
-      },
-      'OpenSSL::Cipher' => {
-        encrypt: OPENSSL_PACKAGE,
-        decrypt: OPENSSL_PACKAGE,
-        final: OPENSSL_PACKAGE
-      },
-      'OpenSSL::X509::Certificate' => {
-        sign: OPENSSL_PACKAGE
-      },
-      'Logger' => {
-        add: Package.new('logger', 'logger', nil, %w[log io])
-      },
-      'Net::HTTP' => {
-        request: Package.new('net/http', 'net/http', nil, %w[http io])
-      },
-      'Net::SMTP' => {
-        send: Package.new('net/smtp', 'net/smtp', nil, %w[smtp email io])
-      },
-      'Net::POP3' => {
-        mails: Package.new('net/pop3', 'net/pop', nil, %w[pop pop3 email io])
-      },
-      'Net::IMAP' => {
-        send_command: Package.new('net/imap', 'net/imap', nil, %w[imap email io])
-      },
-      'IO' => {
-        read: Package.new('io', nil, nil, %w[io]),
-        write: Package.new('io', nil, nil, %w[io]),
-        open: Package.new('io', nil, nil, %w[io]),
-        close: Package.new('io', nil, nil, %w[io])
-      }
+      'OpenSSL::PKey::PKey' => [ :sign, OPENSSL_PACKAGE ],
+      'Digest::Instance' => [ :digest, OPENSSL_PACKAGE ],
+      'OpenSSL::X509::Request' => [ %i[sign verify], OPENSSL_PACKAGE ],
+      'OpenSSL::PKCS5' => [ %i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGE ],
+      'OpenSSL::Cipher' => [ %i[encrypt decrypt final], OPENSSL_PACKAGE ],
+      'OpenSSL::X509::Certificate' => [ :sign, OPENSSL_PACKAGE ],
+      'Logger' => [ :add, Package.new('logger', 'logger', nil, %w[log io]) ],
+      'Net::HTTP' => [ :request, Package.new('net/http', 'net/http', nil, %w[http io]) ],
+      'Net::SMTP' => [ :send, Package.new('net/smtp', 'net/smtp', nil, %w[smtp email io]) ],
+      'Net::POP3' => [ :mails, Package.new('net/pop3', 'net/pop', nil, %w[pop pop3 email io]) ],
+      'Net::IMAP' => [ :send_command, Package.new('net/imap', 'net/imap', nil, %w[imap email io]) ],
+      'IO' => [ %i[read write open close], Package.new('io', nil, nil, %w[io]) ],
+      'Marshal' => [ %i[dump load], Package.new('marshal', nil, nil, %w[serialization marshal]) ],
+      'Psych' => [ %i[dump dump_stream load load_stream parse parse_stream], Package.new('yaml', 'psych', nil, %w[serialization yaml]) ],
+      'JSON::Ext::Parser' => [ :parse, Package.new('json', nil, nil, %w[serialization json]) ],
+      'JSON::Ext::Generator::State' => [ :generate, Package.new('json', nil, nil, %w[serialization json]) ]
     }
 
     attr_reader :name, :packages
@@ -127,7 +98,7 @@ module AppMap
     end
 
     def find_hooked_method(defined_class, method_name)
-      find_hooked_class(defined_class)[method_name]
+      find_hooked_class(defined_class)[1]
     end
 
     def find_hooked_class(defined_class)
