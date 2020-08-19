@@ -27,7 +27,7 @@ describe 'AppMap class Hooking', docker: false do
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
-    package = AppMap::Package.new(file, nil, [])
+    package = AppMap::Config::Package.new(file)
     config = AppMap::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
     tracer = nil
@@ -100,7 +100,7 @@ describe 'AppMap class Hooking', docker: false do
       InstanceMethod.new.say_default
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(class_map, <<~YAML).to_s).to eq('')
+    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
     ---
     - :name: spec/fixtures/hook/instance_method.rb
       :type: package
@@ -568,6 +568,7 @@ describe 'AppMap class Hooking', docker: false do
               :static: true
               :labels:
               - security
+              - crypto
       - :name: openssl
         :type: package
         :children:
@@ -583,6 +584,7 @@ describe 'AppMap class Hooking', docker: false do
               :static: false
               :labels:
               - security
+              - crypto
       YAML
 
       config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do

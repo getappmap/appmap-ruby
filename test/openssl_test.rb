@@ -68,7 +68,8 @@ class OpenSSLTest < Minitest::Test
                           "location": "OpenSSL::PKey::PKey#sign",
                           "static": false,
                           "labels": [
-                            "security"
+                            "security",
+                            "crypto"
                           ]
                         }
                       ]

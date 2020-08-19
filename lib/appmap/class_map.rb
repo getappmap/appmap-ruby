@@ -61,7 +61,7 @@ module AppMap
             location: location,
             static: static,
             labels: labels
-          }.delete_if {|k,v| v.nil?}
+          }.delete_if { |k,v| v.nil? || v == [] }
         end
       end
     end

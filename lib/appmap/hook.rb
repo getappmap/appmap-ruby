@@ -92,10 +92,9 @@ module AppMap
         end
       end
 
-      Config::BUILTIN_METHODS.each do |class_name, method_spec|
-        method_names, package = method_spec
-        require package.package_name if package.package_name
-        Array(method_names).each do |method_name, package|
+      Config::BUILTIN_METHODS.each do |class_name, hook|
+        require hook.package.package_name if hook.package.package_name
+        Array(hook.method_names).each do |method_name|
           method_name = method_name.to_sym
           cls = class_from_string.(class_name)
           method = \
