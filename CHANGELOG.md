@@ -1,3 +1,7 @@
+# v0.34.0
+
+* Records builtin security and I/O methods from `OpenSSL`, `Net`, and `IO`.
+
 # v0.33.0
 
 * Added command `AppMap.open` to open an AppMap in the browser.

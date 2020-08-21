@@ -7,6 +7,12 @@ module AppMap
     LOG = (ENV['DEBUG'] == 'true')
 
     class << self
+      def lock_builtins
+        return if @builtins_hooked
+
+        @builtins_hooked = true
+      end
+
       # Return the class, separator ('.' or '#'), and method name for
       # the given method.
       def qualify_method_name(method)
@@ -39,6 +45,8 @@ module AppMap
     def enable &block
       require 'appmap/hook/method'
 
+      hook_builtins
+
       tp = TracePoint.new(:end) do |trace_point|
         cls = trace_point.self
 
@@ -47,8 +55,6 @@ module AppMap
 
         hook = lambda do |hook_cls|
           lambda do |method_id|
-            next if method_id.to_s =~ /_hooked_by_appmap$/
-
             method = hook_cls.public_instance_method(method_id)
             hook_method = Hook::Method.new(hook_cls, method)
 
@@ -75,6 +81,36 @@ module AppMap
       end
 
       tp.enable(&block)
+    end
+
+    def hook_builtins
+      return unless self.class.lock_builtins
+
+      class_from_string = lambda do |fq_class|
+        fq_class.split('::').inject(Object) do |mod, class_name|
+          mod.const_get(class_name)
+        end
+      end
+
+      Config::BUILTIN_METHODS.each do |class_name, hook|
+        require hook.package.package_name if hook.package.package_name
+        Array(hook.method_names).each do |method_name|
+          method_name = method_name.to_sym
+          cls = class_from_string.(class_name)
+          method = \
+            begin
+              cls.instance_method(method_name)
+            rescue NameError
+              cls.method(method_name) rescue nil
+            end
+
+          if method
+            Hook::Method.new(cls, method).activate
+          else
+            warn "Method #{method_name} not found on #{cls.name}" 
+          end
+        end
+      end
     end
   end
 end

@@ -27,7 +27,7 @@ describe 'AppMap class Hooking', docker: false do
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
-    package = AppMap::Package.new(file, nil, [])
+    package = AppMap::Config::Package.new(file)
     config = AppMap::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
     tracer = nil
@@ -51,7 +51,8 @@ describe 'AppMap class Hooking', docker: false do
     config, tracer = invoke_test_file(file, setup: setup, &block)
 
     events = collect_events(tracer)
-    expect(Diffy::Diff.new(events, events_yaml).to_s).to eq('')
+
+    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
 
     [ config, tracer ]
   end
@@ -99,7 +100,7 @@ describe 'AppMap class Hooking', docker: false do
       InstanceMethod.new.say_default
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(class_map, <<~YAML).to_s).to eq('')
+    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
     ---
     - :name: spec/fixtures/hook/instance_method.rb
       :type: package
@@ -481,12 +482,52 @@ describe 'AppMap class Hooking', docker: false do
           :class: Module
           :value: ActiveSupport::SecurityUtils
       - :id: 3
+        :event: :call
+        :defined_class: Digest::Instance
+        :method_id: digest
+        :path: Digest::Instance#digest
+        :static: false
+        :parameters:
+        - :name: arg
+          :class: String
+          :value: string
+          :kind: :rest
+        :receiver:
+          :class: Digest::SHA256
+          :value: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      - :id: 4
+        :event: :return
+        :parent_id: 3
+        :return_value:
+          :class: String
+          :value: "G2__)__qc____X____3_].\\x02y__.___/_"
+      - :id: 5
+        :event: :call
+        :defined_class: Digest::Instance
+        :method_id: digest
+        :path: Digest::Instance#digest
+        :static: false
+        :parameters:
+        - :name: arg
+          :class: String
+          :value: string
+          :kind: :rest
+        :receiver:
+          :class: Digest::SHA256
+          :value: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      - :id: 6
+        :event: :return
+        :parent_id: 5
+        :return_value:
+          :class: String
+          :value: "G2__)__qc____X____3_].\\x02y__.___/_"
+      - :id: 7
         :event: :return
         :parent_id: 2
         :return_value:
           :class: TrueClass
           :value: 'true'
-      - :id: 4
+      - :id: 8
         :event: :return
         :parent_id: 1
         :return_value:
@@ -527,6 +568,23 @@ describe 'AppMap class Hooking', docker: false do
               :static: true
               :labels:
               - security
+              - crypto
+      - :name: openssl
+        :type: package
+        :children:
+        - :name: Digest
+          :type: class
+          :children:
+          - :name: Instance
+            :type: class
+            :children:
+            - :name: digest
+              :type: function
+              :location: Digest::Instance#digest
+              :static: false
+              :labels:
+              - security
+              - crypto
       YAML
 
       config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
@@ -538,7 +596,7 @@ describe 'AppMap class Hooking', docker: false do
       expect(entry[:name]).to eq('secure_compare')
       spec = Gem::Specification.find_by_name('activesupport')
       entry[:location].gsub!(spec.base_dir + '/', '')
-      expect(Diffy::Diff.new(cm.to_yaml, classmap_yaml).to_s).to eq('')
+      expect(Diffy::Diff.new(classmap_yaml, cm.to_yaml).to_s).to eq('')
     end
   end
 end

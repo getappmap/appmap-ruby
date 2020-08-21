@@ -61,7 +61,7 @@ module AppMap
             location: location,
             static: static,
             labels: labels
-          }.delete_if {|k,v| v.nil?}
+          }.delete_if { |k,v| v.nil? || v == [] }
         end
       end
     end
@@ -100,11 +100,16 @@ module AppMap
           static: static
         }
         location = method.source_location
-        if location
-          location_file, lineno = location
-          location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-          function_info[:location] = [ location_file, lineno ].join(':')
-        end
+
+        function_info[:location] = \
+          if location
+            location_file, lineno = location
+            location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
+            [ location_file, lineno ].join(':')
+          else
+            [ method.defined_class, static ? '.' : '#', method.name ].join
+          end
+
         function_info[:labels] = package.labels if package.labels
         object_infos << function_info
 
