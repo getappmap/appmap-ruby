@@ -20,4 +20,8 @@ class InstanceMethod
   def say_block(&block)
     yield
   end
+
+  def say_the_time
+    Time.now.to_s
+  end
 end

@@ -1,3 +1,8 @@
+# v0.34.1
+* Ensure that capturing events doesn't change the behavior of a hooked method that uses
+  `Time.now`. For example, if a test expects that `Time.now` will be called a certain
+  number of times by a hooked method, that expectation will now be met.
+
 # v0.34.0
 
 * Records builtin security and I/O methods from `OpenSSL`, `Net`, and `IO`.
