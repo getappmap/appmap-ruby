@@ -4,6 +4,8 @@ require 'appmap/util'
 
 module AppMap
   module Cucumber
+    APPMAP_OUTPUT_DIR = 'tmp/appmap/cucumber'
+    
     ScenarioAttributes = Struct.new(:name, :feature, :feature_group)
 
     ProviderStruct = Struct.new(:scenario) do
@@ -38,18 +40,27 @@ module AppMap
     end
 
     class << self
+      def init
+        warn 'Configuring AppMap recorder for Cucumber'
+
+        FileUtils.mkdir_p APPMAP_OUTPUT_DIR
+      end
+      
       def write_scenario(scenario, appmap)
         appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
         scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
 
-        FileUtils.mkdir_p 'tmp/appmap/cucumber'
-        File.write(File.join('tmp/appmap/cucumber', scenario_filename), JSON.generate(appmap))
+        File.write(File.join(APPMAP_OUTPUT_DIR, scenario_filename), JSON.generate(appmap))
       end
 
       def enabled?
         ENV['APPMAP'] == 'true'
       end
 
+      def run
+        init
+      end
+      
       protected
 
       def cucumber_version
@@ -86,4 +97,10 @@ module AppMap
       end
     end
   end
+end
+
+if AppMap::Cucumber.enabled?
+  require 'appmap'
+
+  AppMap::Cucumber.run
 end

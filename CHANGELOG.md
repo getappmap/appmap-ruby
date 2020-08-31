@@ -2,6 +2,7 @@
 * Ensure that capturing events doesn't change the behavior of a hooked method that uses
   `Time.now`. For example, if a test expects that `Time.now` will be called a certain
   number of times by a hooked method, that expectation will now be met.
+* Make sure `appmap/cucumber` requires `appmap`.
 
 # v0.34.0
 
