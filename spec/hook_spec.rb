@@ -599,4 +599,40 @@ describe 'AppMap class Hooking', docker: false do
       expect(Diffy::Diff.new(classmap_yaml, cm.to_yaml).to_s).to eq('')
     end
   end
+
+  it "doesn't cause expectations on Time.now to fail" do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: InstanceMethod
+      :method_id: say_the_time
+      :path: spec/fixtures/hook/instance_method.rb
+      :lineno: 24
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: InstanceMethod
+        :value: Instance Method fixture
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: '2020-01-01 00:00:00 +0000'
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+      require 'timecop'
+      begin
+        tz = ENV['TZ']
+        ENV['TZ'] = 'UTC'
+        Timecop.freeze(Time.utc('2020-01-01')) do
+          expect(Time).to receive(:now).exactly(3).times.and_call_original
+          expect(InstanceMethod.new.say_the_time).to be
+        end
+      ensure
+        ENV['TZ'] = tz
+      end
+    end
+  end
 end
