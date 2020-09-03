@@ -1,3 +1,7 @@
+# v0.34.2
+* Add an extension that gets the name of the owner of a singleton method without calling
+  any methods that may have been redefined (e.g. `#to_s` or `.name`).
+  
 # v0.34.1
 * Ensure that capturing events doesn't change the behavior of a hooked method that uses
   `Time.now`. For example, if a test expects that `Time.now` will be called a certain

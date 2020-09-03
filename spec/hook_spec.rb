@@ -395,6 +395,13 @@ describe 'AppMap class Hooking', docker: false do
     load 'spec/fixtures/hook/singleton_method.rb'
     setup = -> { SingletonMethod.new_with_instance_method }
     test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml, setup: setup do |s|
+      # Make sure we're testing the right thing
+      say_instance_defined = s.method(:say_instance_defined)
+      expect(say_instance_defined.owner.to_s).to start_with('#<Class:#<SingletonMethod:')
+
+      # Verify the native extension works as expected
+      expect(AppMap::Hook.singleton_method_owner_name(say_instance_defined)).to eq('SingletonMethod')
+      
       expect(s.say_instance_defined).to eq('defined for an instance')
     end
   end

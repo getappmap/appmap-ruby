@@ -14,4 +14,4 @@ Gemfile.lock
 appmap.json
 .vscode
 .byebug_history
-
+/lib/appmap/appmap.bundle

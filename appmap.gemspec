@@ -18,6 +18,8 @@ Gem::Specification.new do |spec|
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
   spec.files         = `git ls-files --no-deleted`.split("
 ")
+  spec.extensions << "ext/appmap/extconf.rb"
+
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
@@ -34,6 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'
   spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency "rake-compiler"
 
   # Testing
   spec.add_development_dependency 'climate_control'

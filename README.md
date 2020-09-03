@@ -267,7 +267,13 @@ $ bundle config local.appmap $(pwd)
 Run the tests via `rake`:
 ```
 $ bundle exec rake test
-```  
+```
+
+The `test` target will build the native extension first, then run the tests. If you need
+to build the extension separately, run
+```
+$ bundle exec rake compile
+```
 
 ## Using fixture apps
 
@@ -286,7 +292,7 @@ resources such as a PostgreSQL database.
 To build the fixture container images, first run:
 
 ```sh-session
-$ bundle exec rake fixtures:all
+$ bundle exec rake build:fixtures:all
 ```
 
 This will build the `appmap.gem`, along with a Docker image for each fixture app.
