@@ -6,6 +6,13 @@ require 'rdoc/task'
 
 require 'open3'
 
+require "rake/extensiontask"
+
+desc 'build the native extension'
+Rake::ExtensionTask.new("appmap") do |ext|
+  ext.lib_dir = "lib/appmap"
+end
+
 namespace 'gem' do
   require 'bundler/gem_tasks'
 end
@@ -104,7 +111,7 @@ end
 namespace :spec do
   RUBY_VERSIONS.each do |ruby_version|
     desc ruby_version
-    task ruby_version, [:specs] => ["build:fixtures:#{ruby_version}:all"] do |_, task_args|
+    task ruby_version, [:specs] => ["compile", "build:fixtures:#{ruby_version}:all"] do |_, task_args|
       run_specs(ruby_version, task_args)
     end.tap do|t|
       desc "Run all specs"
@@ -119,13 +126,13 @@ Rake::RDocTask.new do |rd|
   rd.title = 'AppMap'
 end
 
-Rake::TestTask.new(:minitest) do |t|
+Rake::TestTask.new(minitest: 'compile') do |t|
   t.libs << 'test'
   t.libs << 'lib'
   t.test_files = FileList['test/*_test.rb']
 end
 
-task spec: "spec:all"
+task spec: %i[spec:all]
 
 task test: %i[spec:all minitest]
 

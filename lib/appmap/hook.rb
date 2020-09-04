@@ -17,18 +17,7 @@ module AppMap
       # the given method.
       def qualify_method_name(method)
         if method.owner.singleton_class?
-          # Singleton class names can take two forms:
-          # #<Class:Foo> or
-          # #<Class:#<Bar:0x0123ABC>>. Retrieve the name of
-          # the class from the string.
-          #
-          # (There really isn't a better way to do this. The
-          # singleton's reference to the class it was created
-          # from is stored in an instance variable named
-          # '__attached__'. It doesn't have the '@' prefix, so
-          # it's internal only, and not accessible from user
-          # code.)
-          class_name = /#<Class:((#<(?<cls>.*?):)|((?<cls>.*?)>))/.match(method.owner.to_s)['cls']
+          class_name = singleton_method_owner_name(method)
           [ class_name, '.', method.name ]
         else
           [ method.owner.name, '#', method.name ]
@@ -58,7 +47,7 @@ module AppMap
             method = hook_cls.public_instance_method(method_id)
             hook_method = Hook::Method.new(hook_cls, method)
 
-            warn "AppMap: Examining #{hook_method.method_display_name}" if LOG
+            warn "AppMap: Examining #{hook_cls} #{method.name}" if LOG
 
             disasm = RubyVM::InstructionSequence.disasm(method)
             # Skip methods that have no instruction sequence, as they are obviously trivial.
@@ -69,7 +58,7 @@ module AppMap
             next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
 
             next unless \
-              config.always_hook?(hook_method.defined_class, method.name) ||
+              config.always_hook?(hook_cls, method.name) ||
               config.included_by_location?(method)
 
             hook_method.activate

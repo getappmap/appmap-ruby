@@ -16,6 +16,9 @@ require 'appmap/metadata'
 require 'appmap/util'
 require 'appmap/open'
 
+# load extension
+require 'appmap/appmap'
+
 module AppMap
   class << self
     @configuration = nil
