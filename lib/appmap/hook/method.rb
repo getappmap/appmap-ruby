@@ -1,7 +1,12 @@
 module AppMap
   class Hook
     class Method
-      attr_reader :hook_class, :hook_method, :defined_class, :method_display_name
+      attr_reader :hook_class, :hook_method
+
+      # +method_display_name+ may be nil if name resolution gets
+      # deferred until runtime (e.g. for a singleton method on an
+      # embedded Struct).
+      attr_reader :method_display_name
 
       HOOK_DISABLE_KEY = 'AppMap::Hook.disable'
       private_constant :HOOK_DISABLE_KEY
@@ -14,13 +19,23 @@ module AppMap
       def initialize(hook_class, hook_method)
         @hook_class = hook_class
         @hook_method = hook_method
+
+        # Get the class for the method, if it's known.
         @defined_class, method_symbol = Hook.qualify_method_name(@hook_method)
-        @method_display_name = [@defined_class, method_symbol, @hook_method.name].join
+        @method_display_name = [@defined_class, method_symbol, @hook_method.name].join if @defined_class
       end
 
       def activate
-        warn "AppMap: Hooking #{method_display_name}" if Hook::LOG
+        if Hook::LOG
+          msg = if method_display_name
+                  "#{method_display_name}"
+                else
+                  "#{hook_method.name} (class resolution deferrred)"
+                end
+          warn "AppMap: Hooking " + msg
+        end
 
+        defined_class = @defined_class
         hook_method = self.hook_method
         before_hook = self.method(:before_hook)
         after_hook = self.method(:after_hook)
@@ -29,12 +44,17 @@ module AppMap
         hook_class.define_method hook_method.name do |*args, &block|
           instance_method = hook_method.bind(self).to_proc
 
+          # We may not have gotten the class for the method during
+          # initialization (e.g. for a singleton method on an embedded
+          # struct), so make sure we have it now.
+          defined_class,_ = Hook.qualify_method_name(hook_method) unless defined_class
+
           hook_disabled = Thread.current[HOOK_DISABLE_KEY]
           enabled = true if !hook_disabled && AppMap.tracing.enabled?
           return instance_method.call(*args, &block) unless enabled
 
           call_event, start_time = with_disabled_hook.() do
-            before_hook.(self, args)
+            before_hook.(self, defined_class, args)
           end
           return_value = nil
           exception = nil
@@ -53,7 +73,7 @@ module AppMap
 
       protected
 
-      def before_hook(receiver, args)
+      def before_hook(receiver, defined_class, args)
         require 'appmap/event'
         call_event = AppMap::Event::MethodCall.build_from_invocation(defined_class, hook_method, receiver, args)
         AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method

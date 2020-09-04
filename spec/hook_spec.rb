@@ -342,7 +342,7 @@ describe 'AppMap class Hooking', docker: false do
       :defined_class: SingletonMethod
       :method_id: added_method
       :path: spec/fixtures/hook/singleton_method.rb
-      :lineno: 44
+      :lineno: 21
       :static: false
       :parameters: []
       :receiver:
@@ -350,10 +350,10 @@ describe 'AppMap class Hooking', docker: false do
         :value: Singleton Method fixture
     - :id: 2
       :event: :call
-      :defined_class: AddMethod
+      :defined_class: SingletonMethod::AddMethod
       :method_id: _added_method
       :path: spec/fixtures/hook/singleton_method.rb
-      :lineno: 50
+      :lineno: 27
       :static: false
       :parameters: []
       :receiver:
@@ -406,6 +406,33 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
+  it 'hooks a singleton method on an embedded struct' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: SingletonMethod::STRUCT_TEST
+      :method_id: say_struct_singleton
+      :path: spec/fixtures/hook/singleton_method.rb
+      :lineno: 52
+      :static: true
+      :parameters: []
+      :receiver:
+        :class: Class
+        :value: SingletonMethod::STRUCT_TEST
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: singleton for a struct
+    YAML
+
+    test_hook_behavior 'spec/fixtures/hook/singleton_method.rb', events_yaml do
+      expect(SingletonMethod::STRUCT_TEST.say_struct_singleton).to eq('singleton for a struct')
+    end
+  end
+  
   it 'Reports exceptions' do
     events_yaml = <<~YAML
     ---

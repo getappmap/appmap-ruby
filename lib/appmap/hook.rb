@@ -47,7 +47,7 @@ module AppMap
             method = hook_cls.public_instance_method(method_id)
             hook_method = Hook::Method.new(hook_cls, method)
 
-            warn "AppMap: Examining #{hook_method.method_display_name}" if LOG
+            warn "AppMap: Examining #{hook_cls} #{method.name}" if LOG
 
             disasm = RubyVM::InstructionSequence.disasm(method)
             # Skip methods that have no instruction sequence, as they are obviously trivial.
@@ -58,7 +58,7 @@ module AppMap
             next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
 
             next unless \
-              config.always_hook?(hook_method.defined_class, method.name) ||
+              config.always_hook?(hook_cls, method.name) ||
               config.included_by_location?(method)
 
             hook_method.activate
