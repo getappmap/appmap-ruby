@@ -1,3 +1,7 @@
+# v0.34.3
+* Fix a crash in `singleton_method_owner_name` that occurred if `__attached__.class` returned
+  something other than a `Module` or a `Class`.
+  
 # v0.34.2
 * Add an extension that gets the name of the owner of a singleton method without calling
   any methods that may have been redefined (e.g. `#to_s` or `.name`).
