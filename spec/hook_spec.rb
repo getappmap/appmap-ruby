@@ -22,7 +22,7 @@ describe 'AppMap class Hooking', docker: false do
       while tracer.event?
         events << tracer.next_event.to_h
       end
-    end.map(&AppMap::Util.method(:sanitize_event)).to_yaml
+    end.map(&AppMap::Util.method(:sanitize_event))
   end
 
   def invoke_test_file(file, setup: nil, &block)
@@ -50,7 +50,7 @@ describe 'AppMap class Hooking', docker: false do
   def test_hook_behavior(file, events_yaml, setup: nil, &block)
     config, tracer = invoke_test_file(file, setup: setup, &block)
 
-    events = collect_events(tracer)
+    events = collect_events(tracer).to_yaml
 
     expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
 
@@ -500,7 +500,7 @@ describe 'AppMap class Hooking', docker: false do
         :event: :call
         :defined_class: ActiveSupport::SecurityUtils
         :method_id: secure_compare
-        :path: gems/activesupport-6.0.3.2/lib/active_support/security_utils.rb
+        :path: lib/active_support/security_utils.rb
         :lineno: 26
         :static: true
         :parameters:
@@ -598,7 +598,7 @@ describe 'AppMap class Hooking', docker: false do
             :children:
             - :name: secure_compare
               :type: function
-              :location: gems/activesupport-6.0.3.2/lib/active_support/security_utils.rb:26
+              :location: lib/active_support/security_utils.rb:26
               :static: true
               :labels:
               - security
@@ -624,7 +624,7 @@ describe 'AppMap class Hooking', docker: false do
       config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
-      cm = AppMap::ClassMap.build_from_methods(config, tracer.event_methods)
+      cm = AppMap::Util.sanitize_paths(AppMap::ClassMap.build_from_methods(config, tracer.event_methods))
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')
