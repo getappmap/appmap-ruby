@@ -15,7 +15,17 @@ static VALUE singleton_method_owner_name(VALUE klass, VALUE method)
   if (!CLASS_OR_MODULE_P(attached)) {
     attached = rb_funcall(attached, rb_intern("class"), 0);
   }
-  return rb_mod_name(attached);
+
+  // Did __attached__.class return an object that's a Module or a
+  // Class?
+  if (CLASS_OR_MODULE_P(attached)) {
+    // Yup, get it's name
+    return rb_mod_name(attached);
+  }
+
+  // Nope (which seems weird, but whatever). Fall back to calling
+  // #to_s on the method's owner and hope for the best.
+  return rb_funcall(owner, rb_intern("to_s"), 0);
 }
     
 void Init_appmap() {

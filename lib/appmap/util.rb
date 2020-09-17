@@ -36,6 +36,23 @@ module AppMap
         [ fname, extension ].join
       end
 
+      # sanitize_paths removes ephemeral values from objects with
+      # embedded paths (e.g. an event or a classmap), making events
+      # easier to compare across runs.
+      def sanitize_paths(h)
+        require 'hashie'
+        h.extend(Hashie::Extensions::DeepLocate)
+        keys = %i(path location)
+        entries = h.deep_locate ->(k,v,o) {
+          next unless keys.include?(k)
+          
+          fix = ->(v) {v.gsub(%r{#{Gem.dir}/gems/.*(?=lib)}, '')}
+          keys.each {|k| o[k] = fix.(o[k]) if o[k] }
+        }
+
+        h
+      end
+      
       # sanitize_event removes ephemeral values from an event, making
       # events easier to compare across runs.
       def sanitize_event(event, &block)
@@ -49,7 +66,7 @@ module AppMap
 
         case event[:event]
         when :call
-          event[:path] = event[:path].gsub(Gem.dir + '/', '')
+          sanitize_paths(event)
         end
 
         event
