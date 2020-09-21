@@ -57,6 +57,15 @@ end
 
 Then install with `bundle`.
 
+**Railtie**
+
+If you are using Ruby on Rails, require the railtie after Rails is loaded. 
+
+```
+# application.rb is a good place to do this, along with all the other railties.
+require 'appmap/railtie'
+```
+
 # Configuration
 
 When you run your program, the `appmap` gem reads configuration settings from `appmap.yml`. Here's a sample configuration
