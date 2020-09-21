@@ -1,3 +1,9 @@
+# v0.34.4
+* Make sure `AppMap:Rails::SQLExaminer::ActiveRecordExaminer.server_version` only calls
+  `ActiveRecord::Base.connection.database_version` if it's available.
+* Fix `AppMap:Rails::SQLExaminer::ActiveRecordExaminer.database_type` returns `:postgres`
+  in all supported versions of Rails.
+
 # v0.34.3
 * Fix a crash in `singleton_method_owner_name` that occurred if `__attached__.class` returned
   something other than a `Module` or a `Class`.

@@ -73,20 +73,15 @@ module AppMap
 
         class ActiveRecordExaminer
           def server_version
-            case database_type
-            when :postgres
-              ActiveRecord::Base.connection.postgresql_version
-            when :sqlite
-              ActiveRecord::Base.connection.database_version.to_s
-            else
-              warn "Unable to determine database version for #{database_type.inspect}"
-            end
+            ActiveRecord::Base.connection.try(:database_version) ||\
+              warn("Unable to determine database version for #{database_type.inspect}")
           end
 
           def database_type
-            return :postgres if ActiveRecord::Base.connection.respond_to?(:postgresql_version)
+            type = ActiveRecord::Base.connection.adapter_name.downcase.to_sym
+            type = :postgres if type == :postgresql
 
-            ActiveRecord::Base.connection.adapter_name.downcase.to_sym
+            type
           end
 
           def execute_query(sql)
