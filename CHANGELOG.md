@@ -1,3 +1,6 @@
+# v0.34.5
+* Ensure that hooking a method doesn't change its arity.
+
 # v0.34.4
 * Make sure `AppMap:Rails::SQLExaminer::ActiveRecordExaminer.server_version` only calls
   `ActiveRecord::Base.connection.database_version` if it's available.
