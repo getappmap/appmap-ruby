@@ -6,6 +6,9 @@ module AppMap
   class Hook
     LOG = (ENV['DEBUG'] == 'true')
 
+    @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
+    @method_arity = ::Method.instance_method(:arity)
+
     class << self
       def lock_builtins
         return if @builtins_hooked

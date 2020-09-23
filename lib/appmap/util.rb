@@ -43,7 +43,7 @@ module AppMap
         require 'hashie'
         h.extend(Hashie::Extensions::DeepLocate)
         keys = %i(path location)
-        entries = h.deep_locate ->(k,v,o) {
+        h.deep_locate ->(k,v,o) {
           next unless keys.include?(k)
           
           fix = ->(v) {v.gsub(%r{#{Gem.dir}/gems/.*(?=lib)}, '')}

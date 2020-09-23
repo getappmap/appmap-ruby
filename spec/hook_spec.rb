@@ -669,4 +669,11 @@ describe 'AppMap class Hooking', docker: false do
       end
     end
   end
+
+  it "preserves the arity of hooked methods" do
+    invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
+      expect(InstanceMethod.instance_method(:say_echo).arity).to be(1)
+      expect(InstanceMethod.new.method(:say_echo).arity).to be(1)
+    end
+  end
 end

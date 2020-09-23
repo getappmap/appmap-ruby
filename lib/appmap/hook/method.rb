@@ -30,7 +30,7 @@ module AppMap
           msg = if method_display_name
                   "#{method_display_name}"
                 else
-                  "#{hook_method.name} (class resolution deferrred)"
+                  "#{hook_method.name} (class resolution deferred)"
                 end
           warn "AppMap: Hooking " + msg
         end
@@ -41,36 +41,39 @@ module AppMap
         after_hook = self.method(:after_hook)
         with_disabled_hook = self.method(:with_disabled_hook)
 
-        hook_class.define_method hook_method.name do |*args, &block|
-          instance_method = hook_method.bind(self).to_proc
+        hook_method_def = nil
+        hook_class.instance_eval do 
+          hook_method_def = Proc.new do |*args, &block|
+            instance_method = hook_method.bind(self).to_proc
 
-          # We may not have gotten the class for the method during
-          # initialization (e.g. for a singleton method on an embedded
-          # struct), so make sure we have it now.
-          defined_class,_ = Hook.qualify_method_name(hook_method) unless defined_class
+            # We may not have gotten the class for the method during
+            # initialization (e.g. for a singleton method on an embedded
+            # struct), so make sure we have it now.
+            defined_class,_ = Hook.qualify_method_name(hook_method) unless defined_class
 
-          hook_disabled = Thread.current[HOOK_DISABLE_KEY]
-          enabled = true if !hook_disabled && AppMap.tracing.enabled?
-          return instance_method.call(*args, &block) unless enabled
+            hook_disabled = Thread.current[HOOK_DISABLE_KEY]
+            enabled = true if !hook_disabled && AppMap.tracing.enabled?
+            return instance_method.call(*args, &block) unless enabled
 
-          call_event, start_time = with_disabled_hook.() do
-            before_hook.(self, defined_class, args)
-          end
-          return_value = nil
-          exception = nil
-          begin
-            return_value = instance_method.(*args, &block)
-          rescue
-            exception = $ERROR_INFO
-            raise
-          ensure
-            with_disabled_hook.() do
-              after_hook.(call_event, start_time, return_value, exception)
+            call_event, start_time = with_disabled_hook.() do
+              before_hook.(self, defined_class, args)
+            end
+            return_value = nil
+            exception = nil
+            begin
+              return_value = instance_method.(*args, &block)
+            rescue
+              exception = $ERROR_INFO
+              raise
+            ensure
+              with_disabled_hook.() do
+                after_hook.(call_event, start_time, return_value, exception)
+              end
             end
           end
         end
+        hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
       end
-
       protected
 
       def before_hook(receiver, defined_class, args)
