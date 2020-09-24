@@ -72,9 +72,17 @@ module AppMap
         end
 
         class ActiveRecordExaminer
+          @@db_version_warning_issued = {}
+          
+          def issue_warning
+            db_type = database_type
+            return if @@db_version_warning_issued[db_type]
+            warn("AppMap: Unable to determine database version for #{db_type.inspect}") 
+            @@db_version_warning_issued[db_type] = true
+          end
+          
           def server_version
-            ActiveRecord::Base.connection.try(:database_version) ||\
-              warn("Unable to determine database version for #{database_type.inspect}")
+            ActiveRecord::Base.connection.try(:database_version) || issue_warning
           end
 
           def database_type
