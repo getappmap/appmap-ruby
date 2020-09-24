@@ -1,3 +1,7 @@
+# v0.34.6
+* Only warn once about problems determining database version for an ActiveRecord
+  connection.
+
 # v0.34.5
 * Ensure that hooking a method doesn't change its arity.
 
