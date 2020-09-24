@@ -48,7 +48,6 @@ module AppMap
         hook = lambda do |hook_cls|
           lambda do |method_id|
             method = hook_cls.public_instance_method(method_id)
-            hook_method = Hook::Method.new(hook_cls, method)
 
             warn "AppMap: Examining #{hook_cls} #{method.name}" if LOG
 
@@ -56,13 +55,15 @@ module AppMap
             # Skip methods that have no instruction sequence, as they are obviously trivial.
             next unless disasm
 
-            # Don't try and trace the AppMap methods or there will be
-            # a stack overflow in the defined hook method.
-            next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
-
             next unless \
               config.always_hook?(hook_cls, method.name) ||
               config.included_by_location?(method)
+
+            hook_method = Hook::Method.new(config.package_for_method(method), hook_cls, method)
+
+            # Don't try and trace the AppMap methods or there will be
+            # a stack overflow in the defined hook method.
+            next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
 
             hook_method.activate
           end
@@ -97,9 +98,9 @@ module AppMap
             end
 
           if method
-            Hook::Method.new(cls, method).activate
+            Hook::Method.new(hook.package, cls, method).activate
           else
-            warn "Method #{method_name} not found on #{cls.name}" 
+            warn "Method #{method_name} not found on #{cls.name}"
           end
         end
       end

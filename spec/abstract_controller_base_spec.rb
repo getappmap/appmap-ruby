@@ -45,6 +45,12 @@ describe 'AbstractControllerBase' do
     request_method: POST
     path_info: "/api/users"
       SERVER_REQUEST
+
+      expect(appmap).to include(<<-SERVER_RESPONSE.strip)
+  http_server_response:
+    status: 201
+    mime_type: application/json; charset=utf-8
+      SERVER_RESPONSE
     end
 
     it 'properly captures method parameters in the appmap' do

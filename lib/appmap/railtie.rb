@@ -13,13 +13,11 @@ module AppMap
     # AppMap events.
     initializer 'appmap.subscribe', after: 'appmap.init' do |_| # params: app
       require 'appmap/rails/sql_handler'
-      require 'appmap/rails/action_handler'
+      require 'appmap/rails/request_handler'
       ActiveSupport::Notifications.subscribe 'sql.sequel', AppMap::Rails::SQLHandler.new
       ActiveSupport::Notifications.subscribe 'sql.active_record', AppMap::Rails::SQLHandler.new
-      ActiveSupport::Notifications.subscribe \
-        'start_processing.action_controller', AppMap::Rails::ActionHandler::HTTPServerRequest.new
-      ActiveSupport::Notifications.subscribe \
-        'process_action.action_controller', AppMap::Rails::ActionHandler::HTTPServerResponse.new
+
+      AppMap::Rails::RequestHandler::HookMethod.new.activate
     end
 
     # appmap.trace begins recording an AppMap trace and writes it to appmap.json.

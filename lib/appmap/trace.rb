@@ -3,9 +3,10 @@
 module AppMap
   module Trace
     class ScopedMethod < SimpleDelegator
-      attr_reader :defined_class, :static
-      
-      def initialize(defined_class, method, static)
+      attr_reader :package, :defined_class, :static
+
+      def initialize(package, defined_class, method, static)
+        @package = package
         @defined_class = defined_class
         @static = static
         super(method)
@@ -32,9 +33,9 @@ module AppMap
         @tracing.any?(&:enabled?)
       end
 
-      def record_event(event, defined_class: nil, method: nil)
+      def record_event(event, package: nil, defined_class: nil, method: nil)
         @tracing.each do |tracer|
-          tracer.record_event(event, defined_class: defined_class, method: method)
+          tracer.record_event(event, package: package, defined_class: defined_class, method: method)
         end
       end
 
@@ -71,11 +72,12 @@ module AppMap
     # Record a program execution event.
     #
     # The event should be one of the MethodEvent subclasses.
-    def record_event(event, defined_class: nil, method: nil)
+    def record_event(event, package: nil, defined_class: nil, method: nil)
       return unless @enabled
 
       @events << event
-      @methods << Trace::ScopedMethod.new(defined_class, method, event.static) if (defined_class && method && event.event == :call)
+      @methods << Trace::ScopedMethod.new(package, defined_class, method, event.static) \
+        if package && defined_class && method && (event.event == :call)
     end
 
     # Gets a unique list of the methods that were invoked by the program.

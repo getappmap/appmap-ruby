@@ -84,7 +84,7 @@ module AppMap
 
     # Builds a class map from a config and a list of Ruby methods.
     def class_map(methods)
-      ClassMap.build_from_methods(configuration, methods)
+      ClassMap.build_from_methods(methods)
     end
 
     # Returns default metadata detected from the Ruby system and from the

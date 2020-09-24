@@ -624,7 +624,7 @@ describe 'AppMap class Hooking', docker: false do
       config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
-      cm = AppMap::Util.sanitize_paths(AppMap::ClassMap.build_from_methods(config, tracer.event_methods))
+      cm = AppMap::Util.sanitize_paths(AppMap::ClassMap.build_from_methods(tracer.event_methods))
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')

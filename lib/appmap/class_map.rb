@@ -61,25 +61,24 @@ module AppMap
             location: location,
             static: static,
             labels: labels
-          }.delete_if { |k,v| v.nil? || v == [] }
+          }.delete_if { |_, v| v.nil? || v == [] }
         end
       end
     end
 
     class << self
-      def build_from_methods(config, methods)
+      def build_from_methods(methods)
         root = Types::Root.new
         methods.each do |method|
-          package = config.package_for_method(method) \
-            or raise "No package found for method #{method}"
-          add_function root, package, method
+          add_function root, method
         end
         root.children.map(&:to_h)
       end
 
       protected
 
-      def add_function(root, package, method)
+      def add_function(root, method)
+        package = method.package
         static = method.static
 
         object_infos = [

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module AppMap
   class Hook
     class Method
-      attr_reader :hook_class, :hook_method
+      attr_reader :hook_package, :hook_class, :hook_method
 
       # +method_display_name+ may be nil if name resolution gets
       # deferred until runtime (e.g. for a singleton method on an
@@ -15,8 +17,9 @@ module AppMap
       # with the method we're hooking.
       TIME_NOW = Time.method(:now)
       private_constant :TIME_NOW
-      
-      def initialize(hook_class, hook_method)
+
+      def initialize(hook_package, hook_class, hook_method)
+        @hook_package = hook_package
         @hook_class = hook_class
         @hook_method = hook_method
 
@@ -67,23 +70,24 @@ module AppMap
               raise
             ensure
               with_disabled_hook.() do
-                after_hook.(call_event, start_time, return_value, exception)
+                after_hook.(self, call_event, start_time, return_value, exception)
               end
             end
           end
         end
         hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
       end
+
       protected
 
       def before_hook(receiver, defined_class, args)
         require 'appmap/event'
         call_event = AppMap::Event::MethodCall.build_from_invocation(defined_class, hook_method, receiver, args)
-        AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
+        AppMap.tracing.record_event call_event, package: hook_package, defined_class: defined_class, method: hook_method
         [ call_event, TIME_NOW.call ]
       end
 
-      def after_hook(call_event, start_time, return_value, exception)
+      def after_hook(receiver, call_event, start_time, return_value, exception)
         require 'appmap/event'
         elapsed = TIME_NOW.call - start_time
         return_event = \

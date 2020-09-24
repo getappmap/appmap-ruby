@@ -124,8 +124,15 @@ module AppMap
       def initialize(example)
         super
 
+        selenium_port = lambda do
+          return unless defined?(page) && page&.driver
+
+          page.driver.options[:http_client].instance_variable_get('@server_url').port
+        end
+
         warn "Starting recording of example #{example}" if AppMap::RSpec::LOG
         @trace = AppMap.tracing.trace
+        @selenium_port = selenium_port.()
       end
 
       def finish
