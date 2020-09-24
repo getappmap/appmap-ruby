@@ -1,3 +1,7 @@
+# v0.35.0
+* Provide a custom display string for files and HTTP requests.
+* Report `mime_type` on HTTP response.
+
 # v0.34.6
 * Only warn once about problems determining database version for an ActiveRecord
   connection.

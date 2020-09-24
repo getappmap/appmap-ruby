@@ -6,7 +6,7 @@ module AppMap
       def initialize(path, package_name: nil, exclude: [], labels: [])
         super path, package_name, exclude, labels
       end
-  
+
       def to_h
         {
           path: path,
@@ -105,7 +105,7 @@ module AppMap
       hook = find_hook(defined_class)
       return nil unless hook
 
-      Array(hook.method_names).include?(method_name) ? hook.package : nil      
+      Array(hook.method_names).include?(method_name) ? hook.package : nil
     end
 
     def find_hook(defined_class)

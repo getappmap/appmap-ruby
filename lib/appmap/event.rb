@@ -36,20 +36,38 @@ module AppMap
             '*Error inspecting variable*'
           end
 
-          value_string = \
+          value_string = custom_display_string(value) || default_display_string(value)
+
+          (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+        end
+
+        protected
+
+        def custom_display_string(value)
+          case value
+          when File
+            "#{value.class}[path=#{value.path}]"
+          when Net::HTTP
+            "#{value.class}[#{value.address}:#{value.port}]"
+          when Net::HTTPGenericRequest
+            "#{value.class}[#{value.method} #{value.path}]"
+          end
+        rescue StandardError
+          nil
+        end
+
+        def default_display_string(value)
+          begin
+            value.to_s
+          rescue NoMethodError
             begin
-              value.to_s
-            rescue NoMethodError
-              begin
-                value.inspect
-              rescue StandardError
-                last_resort_string.call
-              end
+              value.inspect
             rescue StandardError
               last_resort_string.call
             end
-
-          (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          rescue StandardError
+            last_resort_string.call
+          end
         end
       end
     end
