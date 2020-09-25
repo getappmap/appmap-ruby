@@ -56,12 +56,10 @@ class CLITest < Minitest::Test
     Class frequency:
     ----------------
     1	Main
-    1	IO
 
     Method frequency:
     ----------------
     1	Main.say_hello
-    1	IO#write
     OUTPUT
   end
 
@@ -82,19 +80,11 @@ class CLITest < Minitest::Test
         {
           "name": "Main",
           "count": 1
-        },
-        {
-          "name": "IO",
-          "count": 1
         }
       ],
       "method_frequency": [
         {
           "name": "Main.say_hello",
-          "count": 1
-        },
-        {
-          "name": "IO#write",
           "count": 1
         }
       ]

@@ -79,27 +79,6 @@ class OpenSSLTest < Minitest::Test
               ]
             }
           ]
-        },
-        {
-          "name": "io",
-          "type": "package",
-          "children": [
-            {
-              "name": "IO",
-              "type": "class",
-              "children": [
-                {
-                  "name": "write",
-                  "type": "function",
-                  "location": "IO#write",
-                  "static": false,
-                  "labels": [
-                    "io"
-                  ]
-                }
-              ]
-            }
-          ]
         }
       ]
       JSON
@@ -166,33 +145,6 @@ class OpenSSLTest < Minitest::Test
           "parent_id": 1,
           "return_value": {
             "class": "String"
-          }
-        },
-        {
-          "id": 5,
-          "event": "call",
-          "defined_class": "IO",
-          "method_id": "write",
-          "path": "IO#write",
-          "static": false,
-          "parameters": [
-            {
-              "name": "arg",
-              "class": "String",
-              "value": "Computed signature",
-              "kind": "rest"
-            }
-          ],
-          "receiver": {
-            "class": "IO"
-          }
-        },
-        {
-          "id": 6,
-          "event": "return",
-          "parent_id": 5,
-          "return_value": {
-            "class": "Integer"
           }
         }
       ]

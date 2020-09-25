@@ -4,7 +4,7 @@ require 'English'
 
 module AppMap
   class Hook
-    LOG = (ENV['DEBUG'] == 'true')
+    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
 
     @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
     @method_arity = ::Method.instance_method(:arity)
