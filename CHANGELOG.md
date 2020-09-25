@@ -1,3 +1,7 @@
+# v0.35.1
+* Take out hooking of `IO` and `Logger` methods.
+* Enable logging if either `APPMAP_DEBUG` or `DEBUG` is `true`.
+
 # v0.35.0
 * Provide a custom display string for files and HTTP requests.
 * Report `mime_type` on HTTP response.
