@@ -2,15 +2,30 @@
 
 module AppMap
   class Config
-    Package = Struct.new(:path, :package_name, :exclude, :labels) do
-      def initialize(path, package_name: nil, exclude: [], labels: [])
-        super path, package_name, exclude, labels
+    Package = Struct.new(:path, :gem, :package_name, :exclude, :labels) do
+      class << self
+        def build(path: nil, gem: nil, package_name: nil, exclude: [], labels: [])
+          path = gem_path(gem) if gem
+          Package.new(path, gem, package_name, exclude, labels)
+        end
+
+        protected
+
+        def gem_path(gem)
+          gemspec = Gem.loaded_specs[gem] or raise "Gem #{gem.inspect} not found"
+          File.join(gemspec.gem_dir, gemspec.source_paths.first)
+        end
+      end
+
+      def name
+        gem || path
       end
 
       def to_h
         {
           path: path,
           package_name: package_name,
+          gem: gem,
           exclude: exclude.blank? ? nil : exclude,
           labels: labels.blank? ? nil : labels
         }.compact
@@ -20,12 +35,12 @@ module AppMap
     Hook = Struct.new(:method_names, :package) do
     end
 
-    OPENSSL_PACKAGE = Package.new('openssl', package_name: 'openssl', labels: %w[security crypto])
+    OPENSSL_PACKAGE = Package.build(path: 'openssl', package_name: 'openssl', labels: %w[security crypto])
 
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.new('active_support', package_name: 'active_support', labels: %w[security crypto]))
+      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build(path: 'active_support', package_name: 'active_support', labels: %w[security crypto]))
     }.freeze
 
     BUILTIN_METHODS = {
@@ -35,14 +50,14 @@ module AppMap
       'OpenSSL::PKCS5' => Hook.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGE),
       'OpenSSL::Cipher' => Hook.new(%i[encrypt decrypt final], OPENSSL_PACKAGE),
       'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGE),
-      'Net::HTTP' => Hook.new(:request, Package.new('net/http', package_name: 'net/http', labels: %w[http io])),
-      'Net::SMTP' => Hook.new(:send, Package.new('net/smtp', package_name: 'net/smtp', labels: %w[smtp email io])),
-      'Net::POP3' => Hook.new(:mails, Package.new('net/pop3', package_name: 'net/pop', labels: %w[pop pop3 email io])),
-      'Net::IMAP' => Hook.new(:send_command, Package.new('net/imap', package_name: 'net/imap', labels: %w[imap email io])),
-      'Marshal' => Hook.new(%i[dump load], Package.new('marshal', labels: %w[serialization marshal])),
-      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.new('yaml', package_name: 'psych', labels: %w[serialization yaml])),
-      'JSON::Ext::Parser' => Hook.new(:parse, Package.new('json', package_name: 'json', labels: %w[serialization json])),
-      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.new('json', package_name: 'json', labels: %w[serialization json]))
+      'Net::HTTP' => Hook.new(:request, Package.build(path: 'net/http', package_name: 'net/http', labels: %w[http io])),
+      'Net::SMTP' => Hook.new(:send, Package.build(path: 'net/smtp', package_name: 'net/smtp', labels: %w[smtp email io])),
+      'Net::POP3' => Hook.new(:mails, Package.build(path: 'net/pop3', package_name: 'net/pop', labels: %w[pop pop3 email io])),
+      'Net::IMAP' => Hook.new(:send_command, Package.build(path: 'net/imap', package_name: 'net/imap', labels: %w[imap email io])),
+      'Marshal' => Hook.new(%i[dump load], Package.build(path: 'marshal', labels: %w[serialization marshal])),
+      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build(path: 'yaml', package_name: 'psych', labels: %w[serialization yaml])),
+      'JSON::Ext::Parser' => Hook.new(:parse, Package.build(path: 'json', package_name: 'json', labels: %w[serialization json])),
+      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build(path: 'json', package_name: 'json', labels: %w[serialization json]))
     }.freeze
 
     attr_reader :name, :packages
@@ -62,7 +77,7 @@ module AppMap
       # Loads configuration from a Hash.
       def load(config_data)
         packages = (config_data['packages'] || []).map do |package|
-          Package.new(package['path'], exclude: package['exclude'] || [])
+          Package.build(gem: package['gem'], path: package['path'], exclude: package['exclude'] || [])
         end
         Config.new config_data['name'], packages
       end
