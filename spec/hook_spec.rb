@@ -27,7 +27,7 @@ describe 'AppMap class Hooking', docker: false do
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
-    package = AppMap::Config::Package.new(path: file)
+    package = AppMap::Config::Package.build(path: file)
     config = AppMap::Config.new('hook_spec', [ package ])
     AppMap.configuration = config
     tracer = nil
