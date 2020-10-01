@@ -465,6 +465,132 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
+  context 'string conversions works for the receiver when' do
+
+    it 'is missing #to_s' do
+      events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: NoToSMethod
+        :method_id: respond_to?
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 24
+        :static: false
+        :parameters:
+        - :name: :args
+          :class: Symbol
+          :value: to_s
+          :kind: :rest
+        :receiver:
+          :class: Class
+          :value: NoToSMethod
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+      - :id: 3
+        :event: :call
+        :defined_class: NoToSMethod
+        :method_id: say_hello
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 32
+        :static: false
+        :parameters: []
+        :receiver:
+          :class: Class
+          :value: NoToSMethod
+      - :id: 4
+        :event: :return
+        :parent_id: 3
+        :return_value:
+          :class: String
+          :value: hello
+      YAML
+
+      test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
+        inst = NoToSMethod.new
+        # sanity check
+        expect(inst).not_to respond_to(:to_s)
+        inst.say_hello
+      end
+    end
+
+    it 'it is missing #to_s and it raises an exception in #inspect' do
+      events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: NoToSMethod
+        :method_id: respond_to?
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 24
+        :static: false
+        :parameters:
+        - :name: :args
+          :class: Symbol
+          :value: to_s
+          :kind: :rest
+        :receiver:
+          :class: Class
+          :value: "*Error inspecting variable*"
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+      - :id: 3
+        :event: :call
+        :defined_class: InspectRaises
+        :method_id: say_hello
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 42
+        :static: false
+        :parameters: []
+        :receiver:
+          :class: Class
+          :value: "*Error inspecting variable*"
+      - :id: 4
+        :event: :return
+        :parent_id: 3
+        :return_value:
+          :class: String
+          :value: hello
+      YAML
+
+      test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
+        inst = InspectRaises.new
+        # sanity check
+        expect(inst).not_to respond_to(:to_s)
+        inst.say_hello
+      end
+    end
+
+    it 'it raises an exception in #to_s' do
+      events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: ToSRaises
+        :method_id: say_hello
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 52
+        :static: false
+        :parameters: []
+        :receiver:
+          :class: ToSRaises
+          :value: "*Error inspecting variable*"
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+        :return_value:
+          :class: String
+          :value: hello
+      YAML
+
+      test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
+        ToSRaises.new.say_hello
+      end
+    end
+  end
+
   it 're-raises exceptions' do
     RSpec::Expectations.configuration.on_potential_false_positives = :nothing
 

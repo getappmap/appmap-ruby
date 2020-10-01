@@ -31,11 +31,6 @@ module AppMap
         def display_string(value)
           return nil unless value
 
-          last_resort_string = lambda do
-            warn "AppMap encountered an error inspecting a #{value.class.name}: #{$!.message}"
-            '*Error inspecting variable*'
-          end
-
           value_string = custom_display_string(value) || default_display_string(value)
 
           (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
@@ -57,6 +52,11 @@ module AppMap
         end
 
         def default_display_string(value)
+          last_resort_string = lambda do
+            warn "AppMap encountered an error inspecting a #{value.class.name}: #{$!.message}"
+            '*Error inspecting variable*'
+          end
+
           begin
             value.to_s
           rescue NoMethodError
