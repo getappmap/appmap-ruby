@@ -1,3 +1,7 @@
+# v0.35.2
+* Make sure `MethodEvent#display_string` works when the value's `#to_s` and/or `#inspect`
+  methods have problems.
+  
 # v0.35.1
 * Take out hooking of `IO` and `Logger` methods.
 * Enable logging if either `APPMAP_DEBUG` or `DEBUG` is `true`.
