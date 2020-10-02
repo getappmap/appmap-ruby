@@ -92,7 +92,12 @@ module AppMap
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
-              value = arguments[idx]
+
+              if (arguments.length == 1) && (arguments[0].is_a? Hash) 
+                value = arguments[0][param_name]
+              else
+                value = arguments[idx]
+              end
               {
                 name: param_name,
                 class: value.class.name,
