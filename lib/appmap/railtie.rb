@@ -40,4 +40,4 @@ module AppMap
       end.call
     end
   end
-end
+end unless ENV['APPMAP_INITIALIZE'] == 'false'

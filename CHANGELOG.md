@@ -1,3 +1,6 @@
+* Skip loading the railtie if `APPMAP_INITIALIZE` environment variable
+  is set to `false`.
+
 # v0.35.2
 * Make sure `MethodEvent#display_string` works when the value's `#to_s` and/or `#inspect`
   methods have problems.
