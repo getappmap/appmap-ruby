@@ -5,7 +5,7 @@ require 'test_helper'
 require 'English'
 
 class MinitestTest < Minitest::Test
-  def perform_test(test_name)
+  def perform_minitest_test(test_name)
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/minitest_recorder' do
         FileUtils.rm_rf 'tmp'
@@ -19,7 +19,7 @@ class MinitestTest < Minitest::Test
   end
 
   def test_hello
-    perform_test 'hello' do
+    perform_minitest_test 'hello' do
       appmap_file = 'tmp/appmap/minitest/Hello_hello.appmap.json'
 
       assert File.file?(appmap_file), 'appmap output file does not exist'

@@ -113,7 +113,7 @@ namespace :spec do
     desc ruby_version
     task ruby_version, [:specs] => ["compile", "build:fixtures:#{ruby_version}:all"] do |_, task_args|
       run_specs(ruby_version, task_args)
-    end.tap do|t|
+    end.tap do |t|
       desc "Run all specs"
       task :all, [:specs] => t
     end

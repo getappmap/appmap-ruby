@@ -11,7 +11,7 @@ class OpenSSLTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system({ 'APPMAP' => 'true', 'DEBUG' => 'true' }, %(bundle exec ruby lib/openssl_#{test_name}.rb))
+        system({ 'APPMAP' => 'true' }, %(bundle exec ruby lib/openssl_#{test_name}.rb))
 
         yield
       end

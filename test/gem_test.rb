@@ -5,7 +5,7 @@ require 'test_helper'
 require 'English'
 
 class MinitestTest < Minitest::Test
-  def perform_test(test_name)
+  def perform_gem_test(test_name)
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/gem_test' do
         FileUtils.rm_rf 'tmp'
@@ -19,7 +19,7 @@ class MinitestTest < Minitest::Test
   end
 
   def test_record_gem
-    perform_test 'to_param' do
+    perform_gem_test 'to_param' do
       appmap_file = 'tmp/appmap/minitest/To_param_to_param.appmap.json'
       appmap = JSON.parse(File.read(appmap_file))
       events = appmap['events']
