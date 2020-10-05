@@ -1,3 +1,5 @@
+# v0.36.0
+* *appmap.yml* package definition may specify `gem`.
 * Skip loading the railtie if `APPMAP_INITIALIZE` environment variable
   is set to `false`.
 
