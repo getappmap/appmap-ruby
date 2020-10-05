@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+
+gem 'appmap', git: 'applandinc/appmap-ruby', branch: `git rev-parse --abbrev-ref HEAD`.strip
+gem 'activesupport'
+gem 'byebug'
+gem 'minitest'

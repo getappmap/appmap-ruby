@@ -83,7 +83,7 @@ module AppMap
 
         object_infos = [
           {
-            name: package.path,
+            name: package.name,
             type: 'package'
           }
         ]

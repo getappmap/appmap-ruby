@@ -76,6 +76,7 @@ name: MyProject
 packages:
 - path: app/controllers
 - path: app/models
+- gem: activerecord
 ```
 
 * **name** Provides the project name (required)
@@ -87,6 +88,7 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 * **path** The path to the source code directory. The path may be relative to the current working directory, or it may
   be an absolute path.
+* **gem** As an alternative to specifying the path, specify the name of a dependency gem. When using `gem`, don't specify `path`.
 * **exclude** A list of files and directories which will be ignored. By default, all modules, classes and public
   functions are inspected.
 
