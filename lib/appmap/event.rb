@@ -93,7 +93,7 @@ module AppMap
               param_type, param_name = method_param
               param_name ||= 'arg'
 
-              if (arguments.length == 1) && (arguments[0].is_a? Hash) 
+              if (arguments.length == 1) && (arguments[0].is_a? Hash) && (arguments[0][param_name])
                 value = arguments[0][param_name]
               else
                 value = arguments[idx]
