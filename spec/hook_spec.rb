@@ -177,8 +177,8 @@ describe 'AppMap class Hooking', docker: false do
       :static: false
       :parameters:
       - :name: :kw
-        :class: String
-        :value: kw
+        :class: Hash
+        :value: '{:kw=>"kw"}'
         :kind: :key
       :receiver:
         :class: InstanceMethod

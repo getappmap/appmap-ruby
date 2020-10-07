@@ -89,15 +89,17 @@ module AppMap
             else
               mc.path = [ defined_class, static ? '.' : '#', method.name ].join
             end
+            parameters_length = method.parameters.length
+            arguments_length = arguments.length
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
-
-              if (arguments.length == 1) && (arguments[0].is_a? Hash) && (arguments[0][param_name])
-                value = arguments[0][param_name]
-              else
-                value = arguments[idx]
-              end
+              value =
+                if (arguments[0].is_a? Hash) && (arguments[0][param_name]) && (parameters_length != 1) && (arguments_length == 1)
+                  value = arguments[0][param_name]
+                else
+                  value = arguments[idx]
+                end
               {
                 name: param_name,
                 class: value.class.name,
