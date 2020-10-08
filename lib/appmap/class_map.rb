@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'method_source'
+
 module AppMap
   class ClassMap
     module HasChildren
@@ -48,7 +50,7 @@ module AppMap
         end
       end
       Function = Struct.new(:name) do
-        attr_accessor :static, :location, :labels
+        attr_accessor :static, :location, :labels, :comment, :source
 
         def type
           'function'
@@ -60,24 +62,26 @@ module AppMap
             type: type,
             location: location,
             static: static,
-            labels: labels
+            labels: labels,
+            comment: comment,
+            source: source
           }.delete_if { |_, v| v.nil? || v == [] }
         end
       end
     end
 
     class << self
-      def build_from_methods(methods)
+      def build_from_methods(methods, options = {})
         root = Types::Root.new
         methods.each do |method|
-          add_function root, method
+          add_function root, method, options
         end
         root.children.map(&:to_h)
       end
 
       protected
 
-      def add_function(root, method)
+      def add_function(root, method, include_source: true)
         package = method.package
         static = method.static
 
@@ -108,6 +112,16 @@ module AppMap
           else
             [ method.defined_class, static ? '.' : '#', method.name ].join
           end
+
+        if include_source
+          begin
+            function_info[:source] = method.source
+            comment = method.comment || ''
+            function_info[:comment] = comment unless comment.empty?
+          rescue MethodSource::SourceNotFoundError
+            # pass
+          end
+        end
 
         function_info[:labels] = package.labels if package.labels
         object_infos << function_info
