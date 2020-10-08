@@ -1,3 +1,6 @@
+# v0.37.0
+* Capture method source and comment.
+
 # v0.36.0
 * *appmap.yml* package definition may specify `gem`.
 * Skip loading the railtie if `APPMAP_INITIALIZE` environment variable

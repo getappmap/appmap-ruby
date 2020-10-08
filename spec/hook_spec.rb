@@ -112,6 +112,10 @@ describe 'AppMap class Hooking', docker: false do
           :type: function
           :location: spec/fixtures/hook/instance_method.rb:8
           :static: false
+          :source: |2
+              def say_default
+                'default'
+              end
     YAML
   end
 
@@ -713,6 +717,10 @@ describe 'AppMap class Hooking', docker: false do
             :type: function
             :location: spec/fixtures/hook/compare.rb:4
             :static: true
+            :source: |2
+                def self.compare(s1, s2)
+                  ActiveSupport::SecurityUtils.secure_compare(s1, s2)
+                end
       - :name: active_support
         :type: package
         :children:
@@ -729,6 +737,15 @@ describe 'AppMap class Hooking', docker: false do
               :labels:
               - security
               - crypto
+              :comment: |
+                # Constant time string comparison, for variable length strings.
+                #
+                # The values are first processed by SHA256, so that we don't leak length info
+                # via timing attacks.
+              :source: |2
+                    def secure_compare(a, b)
+                      fixed_length_secure_compare(::Digest::SHA256.digest(a), ::Digest::SHA256.digest(b)) && a == b
+                    end
       - :name: openssl
         :type: package
         :children:

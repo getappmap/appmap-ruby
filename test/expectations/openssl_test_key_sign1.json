@@ -11,7 +11,8 @@
             "name": "sign",
             "type": "function",
             "location": "lib/openssl_key_sign.rb:10",
-            "static": true
+            "static": true,
+            "source": "  def Example.sign\n    key = OpenSSL::PKey::RSA.new 2048\n\n    document = 'the document'\n\n    digest = OpenSSL::Digest::SHA256.new\n    key.sign digest, document\n  end\n"
           }
         ]
       }

@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activesupport'
   spec.add_dependency 'faraday'
   spec.add_dependency 'gli'
+  spec.add_dependency 'method_source'
   spec.add_dependency 'parser'
   spec.add_dependency 'rack'
 
