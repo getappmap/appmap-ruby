@@ -1,3 +1,4 @@
+$: << File.join(__dir__, 'lib')
 require 'appmap/version'
 GEM_VERSION = AppMap::VERSION
 
