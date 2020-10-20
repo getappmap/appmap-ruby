@@ -1,3 +1,6 @@
+AllCops:
+  NewCops: enable
+
 Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: false
 
