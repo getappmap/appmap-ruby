@@ -1,0 +1,54 @@
+[
+  {
+    "name": "lib",
+    "type": "package",
+    "children": [
+      {
+        "name": "Example",
+        "type": "class",
+        "children": [
+          {
+            "name": "sign",
+            "type": "function",
+            "location": "lib/openssl_key_sign.rb:10",
+            "static": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "openssl",
+    "type": "package",
+    "children": [
+      {
+        "name": "OpenSSL",
+        "type": "class",
+        "children": [
+          {
+            "name": "PKey",
+            "type": "class",
+            "children": [
+              {
+                "name": "PKey",
+                "type": "class",
+                "children": [
+                  {
+                    "name": "sign",
+                    "type": "function",
+                    "location": "OpenSSL::PKey::PKey#sign",
+                    "static": false,
+                    "labels": [
+                      "security",
+                      "crypto"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
