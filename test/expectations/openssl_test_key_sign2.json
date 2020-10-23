@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "event": "call",
+    "defined_class": "Example",
+    "method_id": "sign",
+    "path": "lib/openssl_key_sign.rb",
+    "lineno": 10,
+    "static": true,
+    "parameters": [
+
+    ],
+    "receiver": {
+      "class": "Module"
+    }
+  },
+  {
+    "id": 2,
+    "event": "call",
+    "defined_class": "OpenSSL::PKey::PKey",
+    "method_id": "sign",
+    "path": "OpenSSL::PKey::PKey#sign",
+    "static": false,
+    "parameters": [
+      {
+        "name": "arg",
+        "class": "OpenSSL::Digest::SHA256",
+        "value": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "kind": "req"
+      },
+      {
+        "name": "arg",
+        "class": "String",
+        "value": "the document",
+        "kind": "req"
+      }
+    ],
+    "receiver": {
+      "class": "OpenSSL::PKey::RSA"
+    }
+  },
+  {
+    "id": 3,
+    "event": "return",
+    "parent_id": 2,
+    "return_value": {
+      "class": "String"
+    }
+  },
+  {
+    "id": 4,
+    "event": "return",
+    "parent_id": 1,
+    "return_value": {
+      "class": "String"
+    }
+  }
+]
