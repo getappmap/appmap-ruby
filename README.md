@@ -1,3 +1,4 @@
+
 - [About](#about)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -13,7 +14,7 @@
   - [Using fixture apps](#using-fixture-apps)
     - [`test/fixtures`](#testfixtures)
     - [`spec/fixtures`](#specfixtures)
-- [Build status](#build-status)
+
 
 # About
 
@@ -27,8 +28,9 @@ granular than a full debug trace. It's designed to be optimal for understanding 
 There are several ways to record AppMaps of your Ruby program using the `appmap` gem:
 
 * Run your RSpec tests with the environment variable `APPMAP=true`. An AppMap will be generated for each spec.
-* Run your application server with AppMap remote recording enabled, and use the AppMap.
-  browser extension to start, stop, and upload recordings.
+* Run your application server with AppMap remote recording enabled, and use the [AppLand
+  browser extension](https://github.com/applandinc/appland-browser-extension) to start,
+  stop, and upload recordings.
 * Run the command `appmap record <program>` to record the entire execution of a program.
 
 Once you have recorded some AppMaps (for example, by running RSpec tests), you use the `appland upload` command
@@ -250,11 +252,11 @@ end
 $ bundle exec rails server
 ```
 
-4. Open the AppApp browser extension and push `Start`.
+4. Open the AppLand browser extension and push `Start`.
 
 5. Use your app. For example, perform a login flow, or run through a manual UI test.
 
-6. Open the AppApp browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
+6. Open the AppLand browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
 
 ## Ruby on Rails
 
@@ -267,6 +269,7 @@ Note that using this method is kind of a blunt instrument. Recording RSpecs and 
 For instructions on uploading, see the documentation of the [AppLand CLI](https://github.com/applandinc/appland-cli).
 
 # Development
+[![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
 
 ## Running tests
 
@@ -291,7 +294,7 @@ $ bundle exec rake compile
 ### `test/fixtures`
 
 The fixture apps in `test/fixtures` are plain Ruby projects that exercise the basic functionality of the
-`appmap` gem. To develop in a fixture, simple enter the fixture directory and `bundle`.
+`appmap` gem. To develop in a fixture, simply enter the fixture directory and `bundle`.
 
 ### `spec/fixtures`
 
@@ -341,5 +344,3 @@ Finished in 0.07357 seconds (files took 2.1 seconds to load)
 4 examples, 0 failures
 ```
 
-# Build status
-[![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
