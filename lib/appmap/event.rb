@@ -89,10 +89,25 @@ module AppMap
             else
               mc.path = [ defined_class, static ? '.' : '#', method.name ].join
             end
+
+            # Check if the method has key parameters. If there are any they'll always be last.
+            # If yes, then extract it from arguments.
+            has_key = [[:dummy], *method.parameters].last.first.to_s.start_with?('key') && arguments[-1].is_a?(Hash)
+            kwargs = has_key && arguments[-1].dup || {}
+
             mc.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
-              value = arguments[idx]
+              value = case param_type
+                when :keyrest
+                  kwargs
+                when /^key/
+                  kwargs.delete param_name
+                when :rest
+                  arguments[idx..(has_key ? -2 : -1)]
+                else
+                  arguments[idx]
+                end
               {
                 name: param_name,
                 class: value.class.name,

@@ -17,6 +17,10 @@ class InstanceMethod
     kw.to_s
   end
 
+  def say_kws(*args, kw1:, kw2: 'kw2', **kws)
+    [kw1, kw2, kws, args].join
+  end
+
   def say_block(&block)
     yield
   end
