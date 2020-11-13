@@ -181,8 +181,8 @@ describe 'AppMap class Hooking', docker: false do
       :static: false
       :parameters:
       - :name: :kw
-        :class: Hash
-        :value: '{:kw=>"kw"}'
+        :class: String
+        :value: kw
         :kind: :key
       :receiver:
         :class: InstanceMethod
@@ -229,6 +229,48 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
+  it 'hooks an instance method that takes keyword arguments' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: InstanceMethod
+      :method_id: say_kws
+      :path: spec/fixtures/hook/instance_method.rb
+      :lineno: 20
+      :static: false
+      :parameters:
+      - :name: :args
+        :class: Array
+        :value: "[4, 5]"
+        :kind: :rest
+      - :name: :kw1
+        :class: String
+        :value: one
+        :kind: :keyreq
+      - :name: :kw2
+        :class: Integer
+        :value: '2'
+        :kind: :key
+      - :name: :kws
+        :class: Hash
+        :value: "{:kw3=>:three}"
+        :kind: :keyrest
+      :receiver:
+        :class: InstanceMethod
+        :value: Instance Method fixture
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: one2{:kw3=>:three}45
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+      expect(InstanceMethod.new.say_kws(4, 5, kw1: 'one', kw2: 2, kw3: :three)).to eq('one2{:kw3=>:three}45')
+    end
+  end
+
   it 'hooks an instance method that takes a block argument' do
     events_yaml = <<~YAML
     ---
@@ -237,7 +279,7 @@ describe 'AppMap class Hooking', docker: false do
       :defined_class: InstanceMethod
       :method_id: say_block
       :path: spec/fixtures/hook/instance_method.rb
-      :lineno: 20
+      :lineno: 24
       :static: false
       :parameters:
       - :name: :block
@@ -405,7 +447,7 @@ describe 'AppMap class Hooking', docker: false do
 
       # Verify the native extension works as expected
       expect(AppMap::Hook.singleton_method_owner_name(say_instance_defined)).to eq('SingletonMethod')
-      
+
       expect(s.say_instance_defined).to eq('defined for an instance')
     end
   end
@@ -436,7 +478,7 @@ describe 'AppMap class Hooking', docker: false do
       expect(SingletonMethod::STRUCT_TEST.say_struct_singleton).to eq('singleton for a struct')
     end
   end
-  
+
   it 'Reports exceptions' do
     events_yaml = <<~YAML
     ---
@@ -483,8 +525,8 @@ describe 'AppMap class Hooking', docker: false do
         :static: false
         :parameters:
         - :name: :args
-          :class: Symbol
-          :value: to_s
+          :class: Array
+          :value: "[:to_s]"
           :kind: :rest
         :receiver:
           :class: Class
@@ -531,8 +573,8 @@ describe 'AppMap class Hooking', docker: false do
         :static: false
         :parameters:
         - :name: :args
-          :class: Symbol
-          :value: to_s
+          :class: Array
+          :value: "[:to_s]"
           :kind: :rest
         :receiver:
           :class: Class
@@ -653,8 +695,8 @@ describe 'AppMap class Hooking', docker: false do
         :static: false
         :parameters:
         - :name: arg
-          :class: String
-          :value: string
+          :class: Array
+          :value: '["string"]'
           :kind: :rest
         :receiver:
           :class: Digest::SHA256
@@ -673,8 +715,8 @@ describe 'AppMap class Hooking', docker: false do
         :static: false
         :parameters:
         - :name: arg
-          :class: String
-          :value: string
+          :class: Array
+          :value: '["string"]'
           :kind: :rest
         :receiver:
           :class: Digest::SHA256
@@ -785,7 +827,7 @@ describe 'AppMap class Hooking', docker: false do
       :defined_class: InstanceMethod
       :method_id: say_the_time
       :path: spec/fixtures/hook/instance_method.rb
-      :lineno: 24
+      :lineno: 28
       :static: false
       :parameters: []
       :receiver:

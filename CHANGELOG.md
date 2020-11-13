@@ -1,3 +1,6 @@
+# v0.37.1
+* Fix parameter mapping with keyword and rest arguments.
+
 # v0.37.0
 * Capture method source and comment.
 
