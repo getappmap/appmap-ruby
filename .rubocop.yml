@@ -1,6 +1,9 @@
 AllCops:
   NewCops: enable
 
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
 Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: false
 
