@@ -14,6 +14,10 @@ Layout/HeredocIndentation:
 Layout/LineLength:
   Max: 120
 
+Metrics/BlockLength:
+  ExcludedMethods:
+  - it
+
 Style/MultilineBlockChain:
   Enabled: false
 
