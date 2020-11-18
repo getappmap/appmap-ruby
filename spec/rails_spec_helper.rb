@@ -29,10 +29,10 @@ def run_cmd(*cmd, &failed)
   raise 'Command failed'
 end
 
-shared_context 'Rails app pg database' do
-  before(:all) do
-    raise 'you must set @fixure_dir' unless @fixture_dir
+shared_context 'Rails app pg database' do |fixture_dir|
+  let(:fixture_dir) { fixture_dir }
 
+  before(:all) do
     print_pg_logs = lambda do
       logs, = run_cmd 'docker-compose logs pg'
       puts "docker-compose logs for pg:"
@@ -40,7 +40,7 @@ shared_context 'Rails app pg database' do
       puts logs
     end
 
-    Dir.chdir @fixture_dir do 
+    Dir.chdir fixture_dir do 
       run_cmd 'docker-compose down -v'
       cmd = 'docker-compose up -d pg'
       run_cmd cmd
@@ -54,7 +54,7 @@ shared_context 'Rails app pg database' do
   after(:all) do
     if ENV['NOKILL'] != 'true'
       cmd = 'docker-compose down -v'
-      run_cmd cmd, chdir: @fixture_dir
+      run_cmd cmd, chdir: fixture_dir
     end
   end
 end
