@@ -1,3 +1,6 @@
+# v0.37.2
+* Fix ParameterFilter deprecation warning.
+
 # v0.37.1
 * Fix parameter mapping with keyword and rest arguments.
 

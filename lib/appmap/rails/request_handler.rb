@@ -14,7 +14,14 @@ module AppMap
 
           @request_method = request.request_method
           @path_info = request.path_info.split('?')[0]
-          @params = ActionDispatch::Http::ParameterFilter.new(::Rails.application.config.filter_parameters).filter(request.params)
+          # ActionDispatch::Http::ParameterFilter is deprecated
+          parameter_filter_cls = \
+            if defined?(ActiveSupport::ParameterFilter)
+              ActiveSupport::ParameterFilter
+            else
+              ActionDispatch::Http::ParameterFilter
+            end
+          @params = parameter_filter_cls.new(::Rails.application.config.filter_parameters).filter(request.params)
         end
 
         def to_h
