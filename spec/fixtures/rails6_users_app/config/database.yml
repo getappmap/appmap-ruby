@@ -1,0 +1,18 @@
+default: &default
+  host: <%= ENV['PGHOST'] || 'pg' %>
+  port: <%= ENV['PGPORT'] || 5432 %>
+  user: postgres
+  adapter: postgresql
+  encoding: unicode
+  # For details on connection pooling, see Rails configuration guide
+  # http://guides.rubyonrails.org/configuring.html#database-pooling
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: app_development
+test:
+  <<: *default
+  database: app_test
+production:
+  <<: *default
