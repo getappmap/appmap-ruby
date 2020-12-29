@@ -93,6 +93,9 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 * **gem** As an alternative to specifying the path, specify the name of a dependency gem. When using `gem`, don't specify `path`.
 * **exclude** A list of files and directories which will be ignored. By default, all modules, classes and public
   functions are inspected.
+* **shallow** When set to `true`, only the first function call entry into a package will be recorded. Subsequent function calls within 
+  the same package are not recorded unless code execution leaves the package and re-enters it. Default: `true` when using `gem`,
+  `false` when using `path`.
 
 # Running
 
