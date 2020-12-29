@@ -1,7 +1,4 @@
 name: rails5_users_app
 packages:
   - path: app
-  - gem: activerecord
   - gem: sequel
-  - gem: pg
-  - gem: rack
