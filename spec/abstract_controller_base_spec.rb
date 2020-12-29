@@ -13,7 +13,8 @@ describe 'AbstractControllerBase' do
       end
 
       let(:tmpdir) { 'tmp/spec/AbstractControllerBase' }
-      let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json') }
+      let(:create_user_appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json') }
+      let(:list_users_appmap_json) { File.join(tmpdir, 'appmap/rspec/UsersController_GET_users_lists_the_users.appmap.json') }
 
       describe 'testing with rspec' do
         it 'inventory file is printed' do
@@ -21,8 +22,8 @@ describe 'AbstractControllerBase' do
         end
 
         it 'message fields are recorded in the appmap' do
-          expect(File).to exist(appmap_json)
-          appmap = JSON.parse(File.read(appmap_json)).to_yaml
+          expect(File).to exist(create_user_appmap_json)
+          appmap = JSON.parse(File.read(create_user_appmap_json)).to_yaml
 
           expect(appmap).to include(<<-MESSAGE.strip)
   message:
@@ -53,8 +54,8 @@ describe 'AbstractControllerBase' do
         end
 
         it 'properly captures method parameters in the appmap' do
-          expect(File).to exist(appmap_json)
-          appmap = JSON.parse(File.read(appmap_json)).to_yaml
+          expect(File).to exist(create_user_appmap_json)
+          appmap = JSON.parse(File.read(create_user_appmap_json)).to_yaml
 
           expect(appmap).to match(<<-CREATE_CALL.strip)
   event: call
@@ -74,9 +75,28 @@ describe 'AbstractControllerBase' do
           CREATE_CALL
         end
 
+        it 'records and labels view rendering' do
+          expect(File).to exist(list_users_appmap_json)
+          appmap = JSON.parse(File.read(list_users_appmap_json)).to_yaml
+
+          expect(appmap).to match(<<-VIEW_CALL.strip)
+  event: call
+  thread_id: .*
+  defined_class: ActionView::Renderer
+  method_id: render
+  path: .*
+  lineno: .*
+  static: false
+          VIEW_CALL
+
+          expect(appmap).to match(<<-VIEW_LABEL.strip)
+          "labels":["view"]
+          VIEW_LABEL
+        end
+
         it 'returns a minimal event' do
-          expect(File).to exist(appmap_json)
-          appmap = JSON.parse(File.read(appmap_json))
+          expect(File).to exist(create_user_appmap_json)
+          appmap = JSON.parse(File.read(create_user_appmap_json))
           event = appmap['events'].find { |event| event['event'] == 'return' && event['return_value'] }
           expect(event.keys).to eq(%w[id event thread_id parent_id elapsed return_value])
         end
