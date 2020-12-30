@@ -86,6 +86,7 @@ describe 'AbstractControllerBase' do
             expect(event.keys).to eq(%w[id event thread_id parent_id elapsed return_value])
           end
         end
+
         describe 'listing users' do
           let(:spec_name) { 'spec/controllers/users_controller_spec.rb:11' }
           let(:appmap_json_file) { File.join(tmpdir, 'appmap/rspec/UsersController_GET_users_lists_the_users.appmap.json') }
@@ -113,6 +114,7 @@ describe 'AbstractControllerBase' do
     end
   end
 
-  it_behaves_like 'rails version', '5'
-  it_behaves_like 'rails version', '6'
+  %w[5 6].each do |version|
+    it_behaves_like 'rails version', version
+  end
 end

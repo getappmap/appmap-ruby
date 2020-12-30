@@ -34,7 +34,7 @@ module AppMap
       end
 
       def last_package_for_current_thread
-        @tracers.map(&:last_package_for_current_thread).first
+        @tracers.first&.last_package_for_current_thread
       end
 
       def record_event(event, package: nil, defined_class: nil, method: nil)

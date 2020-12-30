@@ -56,12 +56,13 @@ module AppMap
             # struct), so make sure we have it now.
             defined_class, = Hook.qualify_method_name(hook_method) unless defined_class
 
-            return call_instance_method.call unless AppMap.tracing.enabled?
+            reentrant = Thread.current[HOOK_DISABLE_KEY]
+            disabled_by_shallow_flag = \
+              -> { hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package }
 
-            return call_instance_method.call if Thread.current[HOOK_DISABLE_KEY]
+            enabled = true if AppMap.tracing.enabled? && !reentrant && !disabled_by_shallow_flag.call
 
-            return call_instance_method.call \
-              if hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package
+            return call_instance_method.call unless enabled
 
             call_event, start_time = with_disabled_hook.call do
               before_hook.call(self, defined_class, args)
