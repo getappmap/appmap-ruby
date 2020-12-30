@@ -1,4 +1,4 @@
-# v0.38.0
+# v0.38.1
 
 * Package configuration can be `shallow`, in case which only the initial entry into the package is recorded.
 
