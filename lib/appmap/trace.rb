@@ -15,34 +15,38 @@ module AppMap
 
     class Tracing
       def initialize
-        @tracing = []
+        @tracers = []
       end
 
       def empty?
-        @tracing.empty?
+        @tracers.empty?
       end
 
       def trace(enable: true)
         Tracer.new.tap do |tracer|
-          @tracing << tracer
+          @tracers << tracer
           tracer.enable if enable
         end
       end
 
       def enabled?
-        @tracing.any?(&:enabled?)
+        @tracers.any?(&:enabled?)
+      end
+
+      def last_package_for_current_thread
+        @tracers.first&.last_package_for_current_thread
       end
 
       def record_event(event, package: nil, defined_class: nil, method: nil)
-        @tracing.each do |tracer|
+        @tracers.each do |tracer|
           tracer.record_event(event, package: package, defined_class: defined_class, method: method)
         end
       end
 
       def delete(tracer)
-        return unless @tracing.member?(tracer)
+        return unless @tracers.member?(tracer)
 
-        @tracing.delete(tracer)
+        @tracers.delete(tracer)
         tracer.disable
       end
     end
@@ -52,6 +56,7 @@ module AppMap
     # Records the events which happen in a program.
     def initialize
       @events = []
+      @last_package_for_thread = {}
       @methods = Set.new
       @enabled = false
     end
@@ -75,9 +80,15 @@ module AppMap
     def record_event(event, package: nil, defined_class: nil, method: nil)
       return unless @enabled
 
+      @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
       @methods << Trace::ScopedMethod.new(package, defined_class, method, event.static) \
         if package && defined_class && method && (event.event == :call)
+    end
+
+    # Gets the last package which was observed on the current thread.
+    def last_package_for_current_thread
+      @last_package_for_thread[Thread.current.object_id]
     end
 
     # Gets a unique list of the methods that were invoked by the program.

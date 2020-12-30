@@ -1,3 +1,7 @@
+# v0.38.0
+
+* Package configuration can be `shallow`, in case which only the initial entry into the package is recorded.
+
 # v0.37.2
 * Fix ParameterFilter deprecation warning.
 

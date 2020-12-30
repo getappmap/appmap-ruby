@@ -1,3 +1,5 @@
 name: rails6_users_app
 packages:
   - path: app
+  - gem: sequel
+

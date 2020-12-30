@@ -52,9 +52,9 @@ describe 'AppMap class Hooking', docker: false do
 
     events = collect_events(tracer).to_yaml
 
-    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
+    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('') if events_yaml
 
-    [ config, tracer ]
+    [ config, tracer, events ]
   end
 
   after do
@@ -741,9 +741,33 @@ describe 'AppMap class Hooking', docker: false do
           :value: 'true'
       YAML
 
-      test_hook_behavior 'spec/fixtures/hook/compare.rb', events_yaml do
+      _, _, events = test_hook_behavior 'spec/fixtures/hook/compare.rb', nil do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
+      secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == 'ActiveSupport::SecurityUtils' }
+      secure_compare_event.delete(:lineno)
+
+      expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq('')
+      ---
+      :id: 2
+      :event: :call
+      :defined_class: ActiveSupport::SecurityUtils
+      :method_id: secure_compare
+      :path: lib/active_support/security_utils.rb
+      :static: true
+      :parameters:
+      - :name: :a
+        :class: String
+        :value: string
+        :kind: :req
+      - :name: :b
+        :class: String
+        :value: string
+        :kind: :req
+      :receiver:
+        :class: Module
+        :value: ActiveSupport::SecurityUtils
+      YAML
     end
 
     it 'gets labeled in the classmap' do
@@ -806,16 +830,14 @@ describe 'AppMap class Hooking', docker: false do
               - crypto
       YAML
 
-      config, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
+      _, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
       cm = AppMap::Util.sanitize_paths(AppMap::ClassMap.build_from_methods(tracer.event_methods))
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')
-      spec = Gem::Specification.find_by_name('activesupport')
-      entry[:location].gsub!(spec.base_dir + '/', '')
-      expect(Diffy::Diff.new(classmap_yaml, cm.to_yaml).to_s).to eq('')
+      expect(entry[:labels]).to eq(%w[security crypto])
     end
   end
 

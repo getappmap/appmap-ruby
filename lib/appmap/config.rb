@@ -2,15 +2,22 @@
 
 module AppMap
   class Config
-    Package = Struct.new(:path, :gem, :package_name, :exclude, :labels) do
+    Package = Struct.new(:path, :gem, :package_name, :exclude, :labels, :shallow) do
+      # Indicates that only the entry points to a package will be recorded.
+      # Once the code has entered a package, subsequent calls within the package will not be
+      # recorded unless the code leaves the package and re-enters it.
+      def shallow?
+        shallow
+      end
+
       class << self
-        def build_from_path(path, package_name: nil, exclude: [], labels: [])
-          Package.new(path, nil, package_name, exclude, labels)
+        def build_from_path(path, shallow: false, package_name: nil, exclude: [], labels: [])
+          Package.new(path, nil, package_name, exclude, labels, shallow)
         end
 
-        def build_from_gem(gem, package_name: nil, exclude: [], labels: [])
+        def build_from_gem(gem, shallow: true, package_name: nil, exclude: [], labels: [])
           gem_paths(gem).map do |gem_path|
-            Package.new(gem_path, gem, package_name, exclude, labels)
+            Package.new(gem_path, gem, package_name, exclude, labels, shallow)
           end
         end
 
@@ -36,7 +43,8 @@ module AppMap
           package_name: package_name,
           gem: gem,
           exclude: exclude.blank? ? nil : exclude,
-          labels: labels.blank? ? nil : labels
+          labels: labels.blank? ? nil : labels,
+          shallow: shallow
         }.compact
       end
     end
@@ -49,7 +57,8 @@ module AppMap
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[security crypto]))
+      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[security crypto])),
+      'ActionView::Renderer' => Hook.new(:render, Package.build_from_path('action_view', package_name: 'action_view', labels: %w[view]))
     }.freeze
 
     BUILTIN_METHODS = {
@@ -66,7 +75,7 @@ module AppMap
       'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[serialization marshal])),
       'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[serialization yaml])),
       'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[serialization json])),
-      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[serialization json]))
+      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[serialization json])),
     }.freeze
 
     attr_reader :name, :packages
@@ -91,9 +100,12 @@ module AppMap
           raise 'AppMap package configuration should specify gem or path, not both' if gem && path
 
           if gem
-            Package.build_from_gem(gem, exclude: package['exclude'] || [])
+            shallow = package['shallow']
+            # shallow is true by default for gems
+            shallow = true if shallow.nil?
+            Package.build_from_gem(gem, exclude: package['exclude'] || [], shallow: shallow)
           else
-            [ Package.build_from_path(path, exclude: package['exclude'] || []) ]
+            [ Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow']) ]
           end
         end.flatten
         Config.new config_data['name'], packages
