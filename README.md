@@ -186,7 +186,7 @@ APPMAP=true bundle exec rake
 
 or
 
-```sh-session
+```
 $ APPMAP=true bundle exec -Ilib -Itest test/*
 ```
 
