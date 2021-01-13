@@ -171,14 +171,20 @@ Note that `test_helper.rb` in a Rails project typically loads the application's 
 require_relative '../config/environment'
 ```
 
-and `appmap/rspec` must be required before this:
+and `appmap/minitest` must be required before this:
 
 ```ruby
-require 'appmap/rspec'
+require 'appmap/minitest'
 require_relative '../config/environment'
 ```
 
-2) Run the tests with the environment variable `APPMAP=true`:
+2) Run your tests as you notmally would with the environment variable `APPMAP=true`. For example:
+
+```
+APPMAP=true bundle exec rake
+```
+
+or
 
 ```sh-session
 $ APPMAP=true bundle exec -Ilib -Itest test/*
