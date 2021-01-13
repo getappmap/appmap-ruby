@@ -4,20 +4,21 @@ describe 'AbstractControllerBase' do
   shared_examples 'rails version' do |rails_major_version|
     include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" do
       def run_spec(spec_name)
-        cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}"
+        FileUtils.rm_rf tmpdir
+        FileUtils.mkdir_p tmpdir
+        cmd = <<~CMD.gsub "\n", ' '
+          docker-compose run --rm -e APPMAP=true
+          -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}
+        CMD
         run_cmd cmd, chdir: fixture_dir
       end
 
-      before do
-        FileUtils.rm_rf tmpdir
-        FileUtils.mkdir_p tmpdir
-        run_spec spec_name
+      def tmpdir
+        'tmp/spec/AbstractControllerBase'
       end
 
-      let(:tmpdir) { 'tmp/spec/AbstractControllerBase' }
-
       describe 'testing with rspec' do
-        let(:spec_name) { 'spec/controllers/users_controller_api_spec.rb:8' }
+        before(:all) { run_spec 'spec/controllers/users_controller_api_spec.rb:8' }
         let(:appmap_json_file) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json') }
 
         describe 'creating a user' do
@@ -88,7 +89,7 @@ describe 'AbstractControllerBase' do
         end
 
         describe 'listing users' do
-          let(:spec_name) { 'spec/controllers/users_controller_spec.rb:11' }
+          before(:all) { run_spec 'spec/controllers/users_controller_spec.rb:11' }
           let(:appmap_json_file) { File.join(tmpdir, 'appmap/rspec/UsersController_GET_users_lists_the_users.appmap.json') }
           it 'records and labels view rendering' do
             expect(File).to exist(appmap_json_file)
