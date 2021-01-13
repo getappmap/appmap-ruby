@@ -178,7 +178,7 @@ require 'appmap/minitest'
 require_relative '../config/environment'
 ```
 
-2) Run your tests as you notmally would with the environment variable `APPMAP=true`. For example:
+2) Run your tests as you normally would with the environment variable `APPMAP=true`. For example:  
 
 ```
 APPMAP=true bundle exec rake
