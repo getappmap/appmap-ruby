@@ -35,10 +35,10 @@ describe 'AbstractControllerBase' do
           it 'message fields are recorded in the appmap' do
             expect(events).to include(
               hash_including(
-                'http_server_request' => {
+                'http_server_request' => hash_including(
                   'request_method' => 'POST',
                   'path_info' => '/api/users'
-                },
+                ),
                 'message' => include(
                   hash_including(
                     'name' => 'login',
@@ -91,6 +91,25 @@ describe 'AbstractControllerBase' do
               'thread_id' => Integer,
               'parent_id' => Integer,
               'elapsed' => Numeric
+            )
+          end
+        end
+
+        describe 'showing a user' do
+          before(:all) { run_spec 'spec/controllers/users_controller_spec.rb:22' }
+          let(:appmap_json_file) do
+            'UsersController_GET_users_login_shows_the_user.appmap.json'
+          end
+
+          it 'records the normalized path info' do
+            expect(events).to include(
+              hash_including(
+                'http_server_request' => {
+                  'request_method' => 'GET',
+                  'path_info' => '/users/alice',
+                  'normalized_path_info' => '/users/:id(.:format)'
+                }
+              )
             )
           end
         end
