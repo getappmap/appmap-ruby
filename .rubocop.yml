@@ -4,6 +4,9 @@ AllCops:
 Layout/CaseIndentation:
   EnforcedStyle: end
 
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
 Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: false
 
@@ -17,13 +20,14 @@ Layout/LineLength:
 Metrics/BlockLength:
   ExcludedMethods:
   - it
+  - context
 
 Style/MultilineBlockChain:
   Enabled: false
 
 Style/NumericPredicate:
   Enabled: false
-  
+
 Style/AndOr:
   Enabled: false
 
