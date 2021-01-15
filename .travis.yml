@@ -28,13 +28,6 @@ jobs:
     script:
     - bundle exec rake build:base:2.6
       
-  - stage: fixtures
-    script:
-    - bundle exec rake build:fixtures:2.5:all
-  - stage: fixtures
-    script:
-    - bundle exec rake build:fixtures:2.6:all
-
   - stage: spec
     script:
     - bundle exec rake spec:2.5

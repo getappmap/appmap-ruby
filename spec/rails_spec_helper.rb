@@ -30,7 +30,7 @@ def run_cmd(*cmd, &failed)
 end
 
 shared_context 'Rails app pg database' do |fixture_dir|
-  let(:fixture_dir) { fixture_dir }
+  define_method(:fixture_dir) { fixture_dir }
 
   before(:all) do
     print_pg_logs = lambda do
@@ -40,7 +40,7 @@ shared_context 'Rails app pg database' do |fixture_dir|
       puts logs
     end
 
-    Dir.chdir fixture_dir do 
+    Dir.chdir fixture_dir do
       run_cmd 'docker-compose down -v'
       cmd = 'docker-compose up -d pg'
       run_cmd cmd

@@ -3,7 +3,7 @@ Rails.application.routes.draw do
     resources :users, only: %i[index create]
   end
 
-  resources :users, only: %i[index]
+  resources :users, only: %i[index show]
 
   get 'health', to: 'health#show'
 

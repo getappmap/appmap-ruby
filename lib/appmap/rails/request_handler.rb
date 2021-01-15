@@ -7,12 +7,13 @@ module AppMap
   module Rails
     module RequestHandler
       class HTTPServerRequest < AppMap::Event::MethodEvent
-        attr_accessor :request_method, :path_info, :params
+        attr_accessor :normalized_path_info, :request_method, :path_info, :params
 
         def initialize(request)
           super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
           @request_method = request.request_method
+          @normalized_path_info = normalized_path request
           @path_info = request.path_info.split('?')[0]
           # ActionDispatch::Http::ParameterFilter is deprecated
           parameter_filter_cls = \
@@ -28,8 +29,9 @@ module AppMap
           super.tap do |h|
             h[:http_server_request] = {
               request_method: request_method,
-              path_info: path_info
-            }
+              path_info: path_info,
+              normalized_path_info: normalized_path_info
+            }.compact
 
             h[:message] = params.keys.map do |key|
               val = params[key]
@@ -41,6 +43,13 @@ module AppMap
               }
             end
           end
+        end
+
+        private
+
+        def normalized_path(request)
+          route = ::Rails.application.routes.router.enum_for(:recognize, request).first
+          route.first.path.spec.to_s if route
         end
       end
 
