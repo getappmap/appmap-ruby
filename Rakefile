@@ -18,7 +18,7 @@ namespace 'gem' do
   require 'bundler/gem_tasks'
 end
 
-RUBY_VERSIONS=%w[2.5 2.6]
+RUBY_VERSIONS=%w[2.5 2.6 2.7]
 FIXTURE_APPS=%w[rack_users_app rails6_users_app rails5_users_app rails4_users_app]
 
 def run_cmd(*cmd)
