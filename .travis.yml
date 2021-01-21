@@ -16,22 +16,8 @@ before_script:
   
 jobs:
   include:
-  - stage: minitest
+  - stage: test
     script:
     - mkdir tmp
-    - bundle exec rake minitest
-    
-  - stage: base
-    script:
-    - bundle exec rake build:base:2.5
-  - stage: base
-    script:
-    - bundle exec rake build:base:2.6
-      
-  - stage: spec
-    script:
-    - bundle exec rake spec:2.5
-  - stage: spec
-    script:
-    - bundle exec rake spec:2.6
+    - bundle exec rake test
     
