@@ -42,7 +42,7 @@ visualize the design of your code and share links with collaborators.
 ### Supported versions
 
 * Ruby 2.5, 2.6
-* Rails 4, 5, 6
+* Rails 5, 6
 
 Support for new versions is added frequently, please check back regularly for updates.
 
