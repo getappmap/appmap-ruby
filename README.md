@@ -128,7 +128,7 @@ require File.expand_path("../../config/environment", __FILE__)
 3) Run the tests with the environment variable `APPMAP=true`:
 
 ```sh-session
-$ APPMAP=true bundle exec rspec -t appmap
+$ APPMAP=true bundle exec rspec
 ```
 
 Each RSpec test will output an AppMap file into the directory `tmp/appmap/rspec`. For example:
