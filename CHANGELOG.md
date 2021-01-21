@@ -1,9 +1,12 @@
-# v0.39.0
+# v0.39.1
+* Support Ruby 2.7.
+* Remove support for Rails 4.
+* Stop recommending `-t appmap` argument for `rspec`.
 
+# v0.39.0
 * Recognize and record `normalized_path_info` in Rails applications, per 1.4 AppMap format version.
 
 # v0.38.1
-
 * Package configuration can be `shallow`, in case which only the initial entry into the package is recorded.
 
 # v0.37.2
