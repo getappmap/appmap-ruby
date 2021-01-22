@@ -39,6 +39,13 @@ by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases).
 Then, on the [AppLand website](https://app.land), you can
 visualize the design of your code and share links with collaborators.
 
+### Supported versions
+
+* Ruby 2.5, 2.6, 2.7
+* Rails 5, 6
+
+Support for new versions is added frequently, please check back regularly for updates.
+
 # Installation
 
 Add `gem 'appmap'` to your Gemfile just as you would any other dependency.
