@@ -519,24 +519,6 @@ describe 'AppMap class Hooking', docker: false do
       - :id: 1
         :event: :call
         :defined_class: NoToSMethod
-        :method_id: respond_to?
-        :path: spec/fixtures/hook/exception_method.rb
-        :lineno: 24
-        :static: false
-        :parameters:
-        - :name: :args
-          :class: Array
-          :value: "[:to_s]"
-          :kind: :rest
-        :receiver:
-          :class: Class
-          :value: NoToSMethod
-      - :id: 2
-        :event: :return
-        :parent_id: 1
-      - :id: 3
-        :event: :call
-        :defined_class: NoToSMethod
         :method_id: say_hello
         :path: spec/fixtures/hook/exception_method.rb
         :lineno: 32
@@ -545,9 +527,9 @@ describe 'AppMap class Hooking', docker: false do
         :receiver:
           :class: Class
           :value: NoToSMethod
-      - :id: 4
+      - :id: 2
         :event: :return
-        :parent_id: 3
+        :parent_id: 1
         :return_value:
           :class: String
           :value: hello
@@ -566,24 +548,6 @@ describe 'AppMap class Hooking', docker: false do
       ---
       - :id: 1
         :event: :call
-        :defined_class: NoToSMethod
-        :method_id: respond_to?
-        :path: spec/fixtures/hook/exception_method.rb
-        :lineno: 24
-        :static: false
-        :parameters:
-        - :name: :args
-          :class: Array
-          :value: "[:to_s]"
-          :kind: :rest
-        :receiver:
-          :class: Class
-          :value: "*Error inspecting variable*"
-      - :id: 2
-        :event: :return
-        :parent_id: 1
-      - :id: 3
-        :event: :call
         :defined_class: InspectRaises
         :method_id: say_hello
         :path: spec/fixtures/hook/exception_method.rb
@@ -593,9 +557,9 @@ describe 'AppMap class Hooking', docker: false do
         :receiver:
           :class: Class
           :value: "*Error inspecting variable*"
-      - :id: 4
+      - :id: 2
         :event: :return
-        :parent_id: 3
+        :parent_id: 1
         :return_value:
           :class: String
           :value: hello
