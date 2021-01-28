@@ -7,7 +7,7 @@ We require our external contributors to sign a Contributor License Agreement ("C
 our projects remain licensed under Free and Open Source licenses such as while allowing
 Appland to build a sustainable business.
 
-Appland is committed to having a true Free and Open Source Software license for our
+AppLand is committed to having a true Free and Open Source Software license for our
 non-commercial software. A CLA enables AppLand to safely commercialize our products while
 keeping a standard FOSS license with all the rights that license grants to users.
 
