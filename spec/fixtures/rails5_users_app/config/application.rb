@@ -19,6 +19,8 @@ when 'activerecord'
   require 'active_record/railtie'
 end
 
+require 'appmap/railtie' if defined?(AppMap)
+
 # require "active_storage/engine"
 # require "action_mailer/railtie"
 # require "action_cable/engine"

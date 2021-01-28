@@ -5,13 +5,9 @@ module AppMap
   class Railtie < ::Rails::Railtie
     config.appmap = ActiveSupport::OrderedOptions.new
 
-    initializer 'appmap.init' do |_| # params: app
-      require 'appmap'
-    end
-
     # appmap.subscribe subscribes to ActiveSupport Notifications so that they can be recorded as
     # AppMap events.
-    initializer 'appmap.subscribe', after: 'appmap.init' do |_| # params: app
+    initializer 'appmap.subscribe' do |_| # params: app
       require 'appmap/rails/sql_handler'
       require 'appmap/rails/request_handler'
       ActiveSupport::Notifications.subscribe 'sql.sequel', AppMap::Rails::SQLHandler.new
