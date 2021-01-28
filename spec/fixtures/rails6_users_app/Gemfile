@@ -34,11 +34,10 @@ appmap_options = \
     { path: appmap_path }
   else
     {}
-  end.merge(require: %w[appmap appmap/railtie])
-
-gem 'appmap', appmap_options
+  end.merge(require: %w[appmap])
 
 group :development, :test do
+  gem 'appmap', appmap_options
   gem 'cucumber-rails', require: false
   gem 'rspec-rails'
   # Required for Sequel, since without ActiveRecord, the Rails transactional fixture support
