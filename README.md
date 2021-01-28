@@ -1,5 +1,6 @@
 
 - [About](#about)
+    - [Supported versions](#supported-versions)
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Running](#running)
@@ -23,21 +24,21 @@
 "AppMap" is a data format which records code structure (modules, classes, and methods), code execution events
 (function calls and returns), and code metadata (repo name, repo URL, commit
 SHA, labels, etc). It's more granular than a performance profile, but it's less
-granular than a full debug trace. It's designed to be optimal for understanding the design intent and behavior of code.
+granular than a full debug trace. It's designed to be optimal for understanding the design intent and structure of code and key data flows.
 
 There are several ways to record AppMaps of your Ruby program using the `appmap` gem:
 
-* Run your RSpec tests with the environment variable `APPMAP=true`. An AppMap will be generated for each spec.
+* Run your tests (RSpec, Minitest, Cucumber) with the environment variable `APPMAP=true`. An AppMap will be generated for each spec.
 * Run your application server with AppMap remote recording enabled, and use the [AppLand
   browser extension](https://github.com/applandinc/appland-browser-extension) to start,
   stop, and upload recordings.
-* Run the command `appmap record <program>` to record the entire execution of a program.
+* Wrap some code in an `AppMap.record` block, which returns JSON containing the code execution trace.
 
-Once you have recorded some AppMaps (for example, by running RSpec tests), you use the `appland upload` command
-to upload them to the AppLand server. This command, and some others, is provided
-by the [AppLand CLI](https://github.com/applandinc/appland-cli/releases).
-Then, on the [AppLand website](https://app.land), you can
-visualize the design of your code and share links with collaborators.
+Once you have made a recording, there are two ways to view automatically generated diagrams of the AppMaps.
+
+The first option is to load the diagrams directly in your IDE, using the [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?itemName=appland.appmap).
+
+The second option is to upload them to the [AppLand server](https://app.land) using the [AppLand CLI](https://github.com/applandinc/appland-cli/releases).
 
 ### Supported versions
 
@@ -48,15 +49,7 @@ Support for new versions is added frequently, please check back regularly for up
 
 # Installation
 
-Add `gem 'appmap'` to your Gemfile just as you would any other dependency.
-
-**Global installation**
-
-```
-gem 'appmap'
-```
-
-**Install in test, development groups**
+Add `gem 'appmap'` to your Gemfile just as you would any other dependency. We recommend that the Gem be added to the `:development, :test` section.
 
 ```
 group :development, :test do
@@ -72,7 +65,8 @@ If you are using Ruby on Rails, require the railtie after Rails is loaded.
 
 ```
 # application.rb is a good place to do this, along with all the other railties.
-require 'appmap/railtie'
+# Don't require the railtie in environments that don't bundle the appmap gem.
+require 'appmap/railtie' if defined?(AppMap).
 ```
 
 # Configuration
@@ -85,7 +79,14 @@ name: MyProject
 packages:
 - path: app/controllers
 - path: app/models
+- path: app/jobs
+- path: app/helpers
+# Include the gems that you want to see in the dependency maps.
+# These are just examples.
 - gem: activerecord
+- gem: devise
+- gem: aws-sdk
+- gem: will_paginate
 ```
 
 * **name** Provides the project name (required)
