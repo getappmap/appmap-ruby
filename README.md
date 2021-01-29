@@ -3,6 +3,7 @@
     - [Supported versions](#supported-versions)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Labels](#labels)
 - [Running](#running)
   - [RSpec](#rspec)
   - [Minitest](#minitest)
@@ -104,6 +105,34 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 * **shallow** When set to `true`, only the first function call entry into a package will be recorded. Subsequent function calls within 
   the same package are not recorded unless code execution leaves the package and re-enters it. Default: `true` when using `gem`,
   `false` when using `path`.
+
+# Labels
+
+The [AppMap data format](https://github.com/applandinc/appmap) provides for class and function `labels`, which can be used to enhance the AppMap visualizations, and to programatically analyze the data.
+
+You can apply function labels using source code comments in your Ruby code. To apply a labels to a function, add a `@label` or `@labels` line to the comment which immediately precedes a function.
+
+For example, if you add this comment to your source code:
+
+```ruby
+class ApiKey
+  # @labels provider.authentication security
+  def authenticate(key)
+    # logic to verify the key here...
+  end
+end
+```
+
+Then the AppMap metadata section for this function will include:
+
+```json
+  {
+    "name": "authenticate",
+    "type": "function",
+    "labels": [ "provider.authentication", "security" ]
+  }
+```
+
 
 # Running
 
