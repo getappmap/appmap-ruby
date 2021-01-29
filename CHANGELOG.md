@@ -1,3 +1,6 @@
+# v0.39.2
+* Correctly recognize normalized path info for subengines.
+
 # v0.39.1
 * Support Ruby 2.7.
 * Remove support for Rails 4.

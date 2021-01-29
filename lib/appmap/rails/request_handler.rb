@@ -47,9 +47,14 @@ module AppMap
 
         private
 
-        def normalized_path(request)
-          route = ::Rails.application.routes.router.enum_for(:recognize, request).first
-          route.first.path.spec.to_s if route
+        def normalized_path(request, router = ::Rails.application.routes.router)
+          router.recognize request do |route, _|
+            app = route.app
+            next unless app.matches? request
+            return normalized_path request, app.rack_app.routes.router if app.engine?
+
+            return route.path.spec.to_s
+          end
         end
       end
 
