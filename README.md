@@ -3,12 +3,13 @@
     - [Supported versions](#supported-versions)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Labels](#labels)
 - [Running](#running)
   - [RSpec](#rspec)
   - [Minitest](#minitest)
   - [Cucumber](#cucumber)
   - [Remote recording](#remote-recording)
-  - [Ruby on Rails](#ruby-on-rails)
+- [AppMap for VSCode](#appmap-for-vscode)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Development](#development)
   - [Running tests](#running-tests)
@@ -48,6 +49,9 @@ The second option is to upload them to the [AppLand server](https://app.land) us
 Support for new versions is added frequently, please check back regularly for updates.
 
 # Installation
+
+<a href="https://www.loom.com/share/78ab32a312ff4b85aa8827a37f1cb655"> <p>Quick and easy setup of the AppMap gem for Rails - Watch Video</p> <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/78ab32a312ff4b85aa8827a37f1cb655-with-play.gif"> </a>
+
 
 Add `gem 'appmap'` to your Gemfile just as you would any other dependency. We recommend that the Gem be added to the `:development, :test` section.
 
@@ -105,6 +109,34 @@ Each entry in the `packages` list is a YAML object which has the following keys:
   the same package are not recorded unless code execution leaves the package and re-enters it. Default: `true` when using `gem`,
   `false` when using `path`.
 
+# Labels
+
+The [AppMap data format](https://github.com/applandinc/appmap) provides for class and function `labels`, which can be used to enhance the AppMap visualizations, and to programatically analyze the data.
+
+You can apply function labels using source code comments in your Ruby code. To apply a labels to a function, add a `@label` or `@labels` line to the comment which immediately precedes a function.
+
+For example, if you add this comment to your source code:
+
+```ruby
+class ApiKey
+  # @labels provider.authentication security
+  def authenticate(key)
+    # logic to verify the key here...
+  end
+end
+```
+
+Then the AppMap metadata section for this function will include:
+
+```json
+  {
+    "name": "authenticate",
+    "type": "function",
+    "labels": [ "provider.authentication", "security" ]
+  }
+```
+
+
 # Running
 
 ## RSpec
@@ -130,10 +162,7 @@ require 'appmap/rspec'
 require File.expand_path("../../config/environment", __FILE__)
 ```
 
-2) *Optional* Add `feature: '<feature name>'` and `feature_group: '<feature group name>'` annotations to your 
-   examples. 
-
-3) Run the tests with the environment variable `APPMAP=true`:
+2) Run the tests with the environment variable `APPMAP=true`:
 
 ```sh-session
 $ APPMAP=true bundle exec rspec
@@ -145,23 +174,6 @@ Each RSpec test will output an AppMap file into the directory `tmp/appmap/rspec`
 $ find tmp/appmap/rspec
 Hello_says_hello_when_prompted.appmap.json
 ```
-
-If you include the `feature` and `feature_group` metadata, these attributes will be exported to the AppMap file in the
-`metadata` section. It will look something like this:
-
-```json
-{
-  ...
-  "metadata": {
-    "name": "Hello app says hello when prompted",
-    "feature": "Hello app says hello",
-    "feature_group": "Hello"
-  },
-  ...
-}
-```
-
-If you don't explicitly declare `feature` and `feature_group`, then they will be inferred from the spec name and example descriptions.
 
 ## Minitest
 
@@ -189,13 +201,13 @@ require_relative '../config/environment'
 2) Run your tests as you normally would with the environment variable `APPMAP=true`. For example:  
 
 ```
-$ APPMAP=true bundle exec rake
+$ APPMAP=true bundle exec rake test
 ```
 
 or
 
 ```
-$ APPMAP=true bundle exec -Ilib -Itest test/*
+$ APPMAP=true bundle exec ruby -Ilib -Itest test/*_test.rb
 ```
 
 Each Minitest test will output an AppMap file into the directory `tmp/appmap/minitest`. For example:
@@ -252,9 +264,9 @@ To manually record ad-hoc AppMaps of your Ruby app, use AppMap remote recording.
 1. Add the AppMap remote recording middleware. For example, in `config/initializers/appmap_remote_recording.rb`:
 
 ```ruby
-require 'appmap/middleware/remote_recording'
+if defined?(AppMap)
+  require 'appmap/middleware/remote_recording'
 
-unless Rails.env.test?
   Rails.application.config.middleware.insert_after \
     Rails::Rack::Logger,
     AppMap::Middleware::RemoteRecording
@@ -275,13 +287,13 @@ $ bundle exec rails server
 
 6. Open the AppLand browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
 
-## Ruby on Rails
+# AppMap for VSCode
 
-If your app uses Ruby on Rails, the AppMap Railtie will be automatically enabled. Set the Rails config flag `app.config.appmap.enabled = true` to record the entire execution of your Rails app.
-
-Note that using this method is kind of a blunt instrument. Recording RSpecs and using Remote Recording are usually better options.
+The [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?itemName=appland.appmap) is a great way to onboard developers to new code, and troubleshoot hard-to-understand bugs with visuals.
 
 # Uploading AppMaps
+
+[https://app.land](https://app.land) can be used to store, analyze, and share AppMaps.
 
 For instructions on uploading, see the documentation of the [AppLand CLI](https://github.com/applandinc/appland-cli).
 

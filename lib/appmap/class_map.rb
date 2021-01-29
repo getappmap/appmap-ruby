@@ -113,17 +113,18 @@ module AppMap
             [ method.defined_class, static ? '.' : '#', method.name ].join
           end
 
-        if include_source
-          begin
-            function_info[:source] = method.source
-            comment = method.comment || ''
-            function_info[:comment] = comment unless comment.empty?
-          rescue MethodSource::SourceNotFoundError
-            # pass
-          end
+        source, comment = begin
+          [ method.source, method.comment ]
+        rescue MethodSource::SourceNotFoundError
+          [ nil, nil, ]
         end
 
-        function_info[:labels] = package.labels if package.labels
+        if include_source
+          function_info[:source] = source unless source.blank?
+          function_info[:comment] = comment unless comment.blank?
+        end
+
+        function_info[:labels] = parse_labels(comment) + (package.labels || [])
         object_infos << function_info
 
         parent = root
@@ -139,6 +140,22 @@ module AppMap
             end
           end
         end
+      end
+
+      # Labels can be embedded in the function comment. Label format is similar to YARD and JavaDoc.
+      # The keyword is @labels or @label. The keyword is followed by space-separated labels.
+      # For example:
+      # @label provider.authentication security
+      def parse_labels(comment)
+        return [] unless comment
+
+        comment
+          .split("\n")
+          .map { |line| line.match(/^\s*#\s*@labels?\s+(.*)/) }
+          .compact
+          .map { |match| match[1] }
+          .inject([]) { |accum, labels| accum += labels.split(/\s+/); accum }
+          .sort
       end
 
       def find_or_create(list, info)

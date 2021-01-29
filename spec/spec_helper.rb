@@ -3,6 +3,7 @@ require 'net/http'
 require 'json'
 require 'yaml'
 require 'English'
+require 'byebug'
 require 'webdrivers/chromedriver'
 
 # Disable default initialization of AppMap

@@ -61,6 +61,32 @@ describe 'AppMap class Hooking', docker: false do
     AppMap.configuration = nil
   end
 
+  it 'parses labels from comments' do
+    _, tracer = invoke_test_file 'spec/fixtures/hook/labels.rb' do
+      ClassWithLabel.new.fn_with_label
+    end
+    class_map = AppMap.class_map(tracer.event_methods).to_yaml
+    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
+    ---
+    - :name: spec/fixtures/hook/labels.rb
+      :type: package
+      :children:
+      - :name: ClassWithLabel
+        :type: class
+        :children:
+        - :name: fn_with_label
+          :type: function
+          :location: spec/fixtures/hook/labels.rb:4
+          :static: false
+          :labels:
+          - has-fn-label
+          :comment: "# @label has-fn-label\\n"
+          :source: |2
+              def fn_with_label
+              end
+      YAML
+  end
+
   it 'hooks an instance method that takes no arguments' do
     events_yaml = <<~YAML
     ---

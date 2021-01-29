@@ -1,3 +1,7 @@
+# v0.40.0
+
+* Parse source code comments into function labels.
+
 # v0.39.2
 * Correctly recognize normalized path info for subengines.
 
