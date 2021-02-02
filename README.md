@@ -53,15 +53,23 @@ Support for new versions is added frequently, please check back regularly for up
 <a href="https://www.loom.com/share/78ab32a312ff4b85aa8827a37f1cb655"> <p>Quick and easy setup of the AppMap gem for Rails - Watch Video</p> <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/78ab32a312ff4b85aa8827a37f1cb655-with-play.gif"> </a>
 
 
-Add `gem 'appmap'` to your Gemfile just as you would any other dependency. We recommend that the Gem be added to the `:development, :test` section.
+Add `gem 'appmap'` to **beginning** of your Gemfile. We recommend that you add the `appmap` gem to the `:development, :test` group. Your Gemfile should look something like this:
 
 ```
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+# Optional rubRuby version
+# ruby '2.7.2'
+
 group :development, :test do
   gem 'appmap'
 end
 ```
 
-Then install with `bundle`.
+Install with `bundle install`, as usual.
+
+It's important to add the `appmap` gem before any other gems that you may want to instrument. There is more about this in the section on adding gems to the *appmap.yml*.
 
 **Railtie**
 
@@ -102,7 +110,7 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 * **path** The path to the source code directory. The path may be relative to the current working directory, or it may
   be an absolute path.
-* **gem** As an alternative to specifying the path, specify the name of a dependency gem. When using `gem`, don't specify `path`.
+* **gem** As an alternative to specifying the path, specify the name of a dependency gem. When using `gem`, don't specify `path`. In your `Gemfile`, the `appmap` gem **must** be listed **before** any gem that you specify in your *appmap.yml*.
 * **exclude** A list of files and directories which will be ignored. By default, all modules, classes and public
   functions are inspected.
 * **shallow** When set to `true`, only the first function call entry into a package will be recorded. Subsequent function calls within 
