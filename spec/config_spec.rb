@@ -7,6 +7,7 @@ require 'appmap/config'
 describe AppMap::Config, docker: false do
   it 'loads from a Hash' do
     config_data = {
+      exclude: [],
       name: 'test',
       packages: [
         {

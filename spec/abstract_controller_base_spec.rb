@@ -137,7 +137,7 @@ describe 'AbstractControllerBase' do
                   'name' => 'Renderer',
                   'children' => include(hash_including(
                     'name' => 'render',
-                    'labels' => ['view']
+                    'labels' => ['mvc.view']
                   ))
                 ))
               ))

@@ -63,6 +63,8 @@ module AppMap
             # Skip methods that have no instruction sequence, as they are obviously trivial.
             next unless disasm
 
+            next if config.never_hook?(method)
+
             next unless \
               config.always_hook?(hook_cls, method.name) ||
               config.included_by_location?(method)
@@ -84,6 +86,8 @@ module AppMap
       tp.enable(&block)
     end
 
+    # hook_builtins builds hooks for code that is built in to the Ruby standard library.
+    # No TracePoint events are emitted for builtins, so a separate hooking mechanism is needed. 
     def hook_builtins
       return unless self.class.lock_builtins
 
@@ -97,6 +101,7 @@ module AppMap
         require hook.package.package_name if hook.package.package_name
         Array(hook.method_names).each do |method_name|
           method_name = method_name.to_sym
+
           cls = class_from_string.(class_name)
           method = \
             begin
@@ -104,6 +109,8 @@ module AppMap
             rescue NameError
               cls.method(method_name) rescue nil
             end
+
+          next if config.never_hook?(method)
 
           if method
             Hook::Method.new(hook.package, cls, method).activate
