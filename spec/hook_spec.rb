@@ -61,6 +61,16 @@ describe 'AppMap class Hooking', docker: false do
     AppMap.configuration = nil
   end
 
+  it 'excludes named classes and methods' do
+    load 'spec/fixtures/hook/exclude.rb'
+    package = AppMap::Config::Package.build_from_path('spec/fixtures/hook/exclude.rb')
+    config = AppMap::Config.new('hook_spec', [ package ], %w[ExcludeTest])
+    AppMap.configuration = config
+
+    expect(config.never_hook?(ExcludeTest.new.method(:instance_method))).to be_truthy
+    expect(config.never_hook?(ExcludeTest.method(:cls_method))).to be_truthy
+  end
+
   it 'parses labels from comments' do
     _, tracer = invoke_test_file 'spec/fixtures/hook/labels.rb' do
       ClassWithLabel.new.fn_with_label
@@ -827,7 +837,7 @@ describe 'AppMap class Hooking', docker: false do
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')
-      expect(entry[:labels]).to eq(%w[security crypto])
+      expect(entry[:labels]).to eq(%w[provider.secure_compare])
     end
   end
 

@@ -1,3 +1,8 @@
+# v0.41.0
+
+* Adjust some label names to match `provider.*`, `format.*`.
+* Add global `exclude` list to *appmap.yml* which can be used to definitively exclude specific classes and methods.
+
 # v0.40.0
 
 * Parse source code comments into function labels.

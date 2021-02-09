@@ -87,7 +87,8 @@ When you run your program, the `appmap` gem reads configuration settings from `a
 file for a typical Rails project:
 
 ```yaml
-name: MyProject
+# 'name' should generally be the same as the code repo name.
+name: my_project
 packages:
 - path: app/controllers
 - path: app/models
@@ -99,10 +100,15 @@ packages:
 - gem: devise
 - gem: aws-sdk
 - gem: will_paginate
+exclude:
+- MyClass
+- MyClass#my_instance_method
+- MyClass.my_class_method
 ```
 
 * **name** Provides the project name (required)
-* **packages** A list of source code directories which should be instrumented.
+* **packages** A list of source code directories which should be recorded.
+* **exclude** A list of classes and/or methods to definitively exclude from recording.
 
 **packages**
 
@@ -112,10 +118,15 @@ Each entry in the `packages` list is a YAML object which has the following keys:
   be an absolute path.
 * **gem** As an alternative to specifying the path, specify the name of a dependency gem. When using `gem`, don't specify `path`. In your `Gemfile`, the `appmap` gem **must** be listed **before** any gem that you specify in your *appmap.yml*.
 * **exclude** A list of files and directories which will be ignored. By default, all modules, classes and public
-  functions are inspected.
+  functions are inspected. See also: global `exclude` list.
 * **shallow** When set to `true`, only the first function call entry into a package will be recorded. Subsequent function calls within 
   the same package are not recorded unless code execution leaves the package and re-enters it. Default: `true` when using `gem`,
   `false` when using `path`.
+
+**exclude**
+
+Optional list of fully qualified class and method names. Separate class and method names with period (`.`) for class methods and hash (`#`) for instance methods.
+
 
 # Labels
 
