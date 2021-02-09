@@ -7,7 +7,7 @@ describe 'RSpec feature and feature group metadata' do
     around(:each) do |example|
       FileUtils.rm_rf tmpdir
       FileUtils.mkdir_p tmpdir
-      cmd = "docker-compose run --rm -e APPMAP=true -v #{File.absolute_path(tmpdir).shellescape}:/app/tmp app ./bin/rspec spec/models/user_spec.rb"
+      cmd = "docker-compose run --rm -e RAILS_ENV=test -e APPMAP=true -v #{File.absolute_path(tmpdir).shellescape}:/app/tmp app ./bin/rspec spec/models/user_spec.rb"
       run_cmd cmd, chdir: fixture_dir
 
       example.run

@@ -8,7 +8,7 @@ describe 'AbstractControllerBase' do
         FileUtils.rm_rf tmpdir
         FileUtils.mkdir_p tmpdir
         cmd = <<~CMD.gsub "\n", ' '
-          docker-compose run --rm -e APPMAP=true
+          docker-compose run --rm -e RAILS_ENV=test -e APPMAP=true
           -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}
         CMD
         run_cmd cmd, chdir: fixture_dir
