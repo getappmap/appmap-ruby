@@ -86,6 +86,7 @@ module AppMap
 
       class << self
         def build_from_invocation(mc = MethodCall.new, defined_class, method, receiver, arguments)
+          defined_class ||= 'Class'
           mc.tap do
             static = receiver.is_a?(Module)
             mc.defined_class = defined_class
