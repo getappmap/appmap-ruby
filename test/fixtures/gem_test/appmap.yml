@@ -1,3 +1,3 @@
 name: gem_test
 packages:
-  - gem: activesupport
+  - gem: parser

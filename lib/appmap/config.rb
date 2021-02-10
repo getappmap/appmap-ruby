@@ -16,6 +16,10 @@ module AppMap
         end
 
         def build_from_gem(gem, shallow: true, package_name: nil, exclude: [], labels: [])
+          if %w[method_source activesupport].member?(gem)
+            warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
+            return
+          end
           gem_paths(gem).map do |gem_path|
             Package.new(gem_path, gem, package_name, exclude, labels, shallow)
           end
@@ -107,7 +111,7 @@ module AppMap
           else
             [ Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow']) ]
           end
-        end.flatten
+        end.flatten.compact
         Config.new config_data['name'], packages, config_data['exclude'] || []
       end
     end
@@ -137,7 +141,7 @@ module AppMap
       return unless location_file
 
       location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-      packages.find do |pkg|
+      packages.select { |pkg| pkg.path }.find do |pkg|
         (location_file.index(pkg.path) == 0) &&
           !pkg.exclude.find { |p| location_file.index(p) }
       end

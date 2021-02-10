@@ -120,14 +120,14 @@ module AppMap
                 end
               {
                 name: param_name,
-                class: best_class_name(value.class),
+                class: best_class_name(value),
                 object_id: value.__id__,
                 value: display_string(value),
                 kind: param_type
               }
             end
             mc.receiver = {
-              class: best_class_name(receiver.class),
+              class: best_class_name(receiver),
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
