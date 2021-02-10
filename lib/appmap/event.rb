@@ -38,6 +38,15 @@ module AppMap
 
         protected
 
+        # Heuristic for dynamically defined class whose name can be nil
+        def best_class_name(value)
+          value_cls = value.class
+          while value_cls.name.nil?
+            value_cls = value_cls.superclass
+          end
+          value_cls.name
+        end
+
         def custom_display_string(value)
           case value
           when File
@@ -110,14 +119,14 @@ module AppMap
                 end
               {
                 name: param_name,
-                class: value.class.name,
+                class: best_class_name(value.class),
                 object_id: value.__id__,
                 value: display_string(value),
                 kind: param_type
               }
             end
             mc.receiver = {
-              class: receiver.class.name,
+              class: best_class_name(receiver.class),
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
@@ -172,7 +181,7 @@ module AppMap
           mr.tap do |_|
             if return_value
               mr.return_value = {
-                class: return_value.class.name,
+                class: best_class_name(return_value),
                 value: display_string(return_value),
                 object_id: return_value.__id__
               }
@@ -183,7 +192,7 @@ module AppMap
               while next_exception
                 exception_backtrace = next_exception.backtrace_locations.try(:[], 0)
                 exceptions << {
-                  class: next_exception.class.name,
+                  class: best_class_name(next_exception),
                   message: next_exception.message,
                   object_id: next_exception.__id__,
                   path: exception_backtrace&.path,
