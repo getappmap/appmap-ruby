@@ -1,3 +1,9 @@
+# v0.41.1
+
+* Make best effort to ensure that class name is not `null` in the appmap.json.
+* Don't try and instrument gems which are a dependency of the this gem.
+* Fix a nil exception when applying the exclude list to builtins.
+
 # v0.41.0
 
 * Adjust some label names to match `provider.*`, `format.*`.
