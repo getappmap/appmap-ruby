@@ -82,6 +82,22 @@ If you are using Ruby on Rails, require the railtie after Rails is loaded.
 require 'appmap/railtie' if defined?(AppMap).
 ```
 
+**application.rb**
+
+Add this line to *application.rb*, to enable server recording with `APPMAP_RECORD=true`:
+
+```ruby
+module MyApp
+  class Application < Rails::Application
+    ...
+  
+    config.appmap.enabled = true if ENV['APPMAP_RECORD']
+    
+    ...
+  end
+end
+```
+
 # Configuration
 
 When you run your program, the `appmap` gem reads configuration settings from `appmap.yml`. Here's a sample configuration
@@ -309,21 +325,7 @@ $ bundle exec rails server
 
 ## Server process recording
 
-Add this line to *configuration.rb*:
-
-```ruby
-module MyApp
-  class Application < Rails::Application
-    ...
-  
-    config.appmap.enabled = true if ENV['APPMAP_RECORD']
-    
-    ...
-  end
-end
-```
-
-With this setting, you can run your Rails server with `APPMAP_RECORD=true`. When the server exits, an *appmap.json* file will be written to the project directory. This is a great way to start the server, interact with your app as a user (or through it's API), and then view an AppMap of everything that happened.
+Run your Rails server with `APPMAP_RECORD=true`. When the server exits, an *appmap.json* file will be written to the project directory. This is a great way to start the server, interact with your app as a user (or through it's API), and then view an AppMap of everything that happened.
 
 Be sure and set `WEB_CONCURRENCY=1`, if you are using a webserver that can run multiple processes. You only want there to be one process while you are recording, otherwise they will both try and write *appmap.json* and one of them will clobber the other.
 
