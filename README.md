@@ -340,7 +340,7 @@ The [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?ite
 For instructions on uploading, see the documentation of the [AppLand CLI](https://github.com/applandinc/appland-cli).
 
 # Development
-[![Build Status](https://travis-ci.org/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.org/applandinc/appmap-ruby)
+[![Build Status](https://travis-ci.com/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.com/applandinc/appmap-ruby)
 
 ## Running tests
 
