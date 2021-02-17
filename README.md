@@ -179,23 +179,13 @@ Then the AppMap metadata section for this function will include:
 
 To record RSpec tests, follow these additional steps:
 
-1) Require `appmap/rspec` in your `spec_helper.rb` before any other classes are loaded.
+### ***Rails 6***
+Note that `rails_helper.rb` in a Rails project typically loads the application's classes this way:
+1) Require `appmap/rspec` in your `rails_helper.rb` before any other classes are loaded.
 
 ```ruby
 require 'appmap/rspec'
-```
-
-Note that `spec_helper.rb` in a Rails project typically loads the application's classes this way:
-
-```ruby
-require File.expand_path("../../config/environment", __FILE__)
-```
-
-and `appmap/rspec` must be required before this:
-
-```ruby
-require 'appmap/rspec'
-require File.expand_path("../../config/environment", __FILE__)
+require File.expand_path('../config/environment', __dir__)
 ```
 
 2) Run the tests with the environment variable `APPMAP=true`:
