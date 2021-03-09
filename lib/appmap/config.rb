@@ -20,20 +20,16 @@ module AppMap
             warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
             return
           end
-          gem_paths(gem).map do |gem_path|
-            Package.new(gem_path, gem, package_name, exclude, labels, shallow)
-          end
+          Package.new(gem_path(gem), gem, package_name, exclude, labels, shallow)
         end
 
         private_class_method :new
 
         protected
 
-        def gem_paths(gem)
+        def gem_path(gem)
           gemspec = Gem.loaded_specs[gem] or raise "Gem #{gem.inspect} not found"
-          gemspec.source_paths.map do |path|
-            File.join(gemspec.gem_dir, path)
-          end
+          gemspec.gem_dir
         end
       end
 
@@ -75,7 +71,7 @@ module AppMap
       'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.smtp protocol.email io])),
       'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.pop protocol.email io])),
       'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.imap protocol.email io])),
-      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal provider.serialization marshal])),
+      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal provider.serialization])),
       'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml provider.serialization])),
       'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
       'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
@@ -109,9 +105,9 @@ module AppMap
             shallow = true if shallow.nil?
             Package.build_from_gem(gem, exclude: package['exclude'] || [], shallow: shallow)
           else
-            [ Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow']) ]
+            Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
           end
-        end.flatten.compact
+        end.compact
         Config.new config_data['name'], packages, config_data['exclude'] || []
       end
     end
