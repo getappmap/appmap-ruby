@@ -57,8 +57,12 @@ module AppMap
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[provider.secure_compare])),
-      'ActionView::Renderer' => Hook.new(:render, Package.build_from_path('action_view', package_name: 'action_view', labels: %w[mvc.view]))
+      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', labels: %w[provider.secure_compare])),
+      'ActionView::Renderer' => Hook.new(:render, Package.build_from_path('action_view', labels: %w[mvc.view])),
+      'ActionDispatch::Cookies::CookieJar' => Hook.new(%i[[]= clear update delete recycle], Package.build_from_path('action_pack', labels: %w[provider.http.cookie])),
+      'ActionDispatch::Cookies::EncryptedCookieJar' => Hook.new(%i[[]=], Package.build_from_path('action_pack', labels: %w[provider.http.cookie crypto])),
+      'CanCan::ControllerAdditions' => Hook.new(%i[authorize! can? cannot?], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
+      'CanCan::Ability' => Hook.new(%i[authorize!], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
     }.freeze
 
     BUILTIN_METHODS = {
