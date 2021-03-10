@@ -1,3 +1,8 @@
+# v0.41.2
+
+* Don't rely on `gemspec.source_paths` to list all the source locations in a gem. Hook any code that's loaded
+  from inside the `gem_dir`.
+
 # v0.41.1
 
 * Make best effort to ensure that class name is not `null` in the appmap.json.

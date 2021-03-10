@@ -19,6 +19,9 @@ services:
     environment:
       RAILS_ENV:
       ORM_MODULE:
+      PGHOST: pg
+      PGPORT: '5432'
+      DATABASE_URL: postgres://postgres@pg
       APPMAP:
     volumes:
     - .:/src/app
