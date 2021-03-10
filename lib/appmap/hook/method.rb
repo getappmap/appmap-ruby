@@ -35,7 +35,7 @@ module AppMap
                 else
                   "#{hook_method.name} (class resolution deferred)"
                 end
-          warn "AppMap: Hooking " + msg
+          warn "AppMap: Hooking #{msg} at line #{(hook_method.source_location || []).join(':')}"
         end
 
         defined_class = @defined_class
