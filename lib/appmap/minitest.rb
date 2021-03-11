@@ -7,19 +7,24 @@ module AppMap
   # be activated around each test.
   module Minitest
     APPMAP_OUTPUT_DIR = 'tmp/appmap/minitest'
-    LOG = false
+    LOG = true if ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true'
 
     def self.metadata
       AppMap.detect_metadata
     end
 
-    Recording = Struct.new(:test) do
-      def initialize(test)
+    Recording = Struct.new(:test, :test_name) do
+      def initialize(test, test_name)
         super
 
-        warn "Starting recording of test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
+        warn "Starting recording of test #{test.class}.#{test.name}@#{source_location}" if AppMap::Minitest::LOG
         @trace = AppMap.tracing.trace
       end
+
+      def source_location
+        test.method(test_name).source_location.join(':')
+      end
+
 
       def finish
         warn "Finishing recording of test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
@@ -39,6 +44,7 @@ module AppMap
 
         AppMap::Minitest.save scenario_name,
                               class_map,
+                              source_location,
                               events: events
       end
     end
@@ -53,8 +59,8 @@ module AppMap
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
-      def begin_test(test)
-        @recordings_by_test[test.object_id] = Recording.new(test)
+      def begin_test(test, name)
+        @recordings_by_test[test.object_id] = Recording.new(test, name)
       end
 
       def end_test(test)
@@ -72,9 +78,10 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, events: nil, labels: nil)
+      def save(example_name, class_map, source_location, events: nil, labels: nil)
         metadata = AppMap::Minitest.metadata.tap do |m|
           m[:name] = example_name
+          m[:source_location] = source_location
           m[:app] = AppMap.configuration.name
           m[:frameworks] ||= []
           m[:frameworks] << {
@@ -124,7 +131,7 @@ if AppMap::Minitest.enabled?
     alias run_without_hook run
 
     def run
-      AppMap::Minitest.begin_test self
+      AppMap::Minitest.begin_test self, name
       begin
         run_without_hook
       ensure

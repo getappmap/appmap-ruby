@@ -31,6 +31,7 @@ class MinitestTest < Minitest::Test
       assert_equal 'minitest', metadata['recorder']['name']
       assert_equal 'ruby', metadata['language']['name']
       assert_equal 'Hello hello', metadata['name']
+      assert_equal 'test/hello_test.rb:9', metadata['source_location']
     end
   end
 end

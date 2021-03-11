@@ -13,46 +13,9 @@ module AppMap
       AppMap.detect_metadata
     end
 
-    module FeatureAnnotations
-      def labels
-        labels = metadata[:appmap]
-        if labels.is_a?(Array)
-          labels
-        elsif labels.is_a?(String) || labels.is_a?(Symbol)
-          [ labels ]
-        else
-          []
-        end
-      end
-
-      def annotations
-        metadata.tap do |md|
-          description_args_hashes.each do |h|
-            md.merge! h
-          end
-        end
-      end
-
-      protected
-
-      def metadata
-        return {} unless example_obj.respond_to?(:metadata)
-
-        example_obj.metadata
-      end
-
-      def description_args_hashes
-        return [] unless example_obj.respond_to?(:metadata)
-
-        (example_obj.metadata[:description_args] || []).select { |arg| arg.is_a?(Hash) }
-      end
-    end
-
     # ScopeExample and ScopeExampleGroup is a way to handle the weird way that RSpec
     # stores the nested example names.
     ScopeExample = Struct.new(:example) do
-      include FeatureAnnotations
-
       alias_method :example_obj, :example
 
       def description?
@@ -71,8 +34,6 @@ module AppMap
     # As you can see here, the way that RSpec stores the example description and
     # represents the example group hierarchy is pretty weird.
     ScopeExampleGroup = Struct.new(:example_group) do
-      include FeatureAnnotations
-
       alias_method :example_obj, :example_group
 
       def description_args
@@ -121,9 +82,15 @@ module AppMap
           page.driver.options[:http_client].instance_variable_get('@server_url').port
         end
 
-        warn "Starting recording of example #{example}" if AppMap::RSpec::LOG
+        warn "Starting recording of example #{example}@#{source_location}" if AppMap::RSpec::LOG
         @trace = AppMap.tracing.trace
         @webdriver_port = webdriver_port.()
+      end
+
+      def source_location
+        result = example.location_rerun_argument.split(':')[0]
+        result = result[2..-1] if result.index('./') == 0
+        result
       end
 
       def finish
@@ -141,14 +108,11 @@ module AppMap
         description = []
         scope = ScopeExample.new(example)
 
-        labels = []
         while scope
-          labels += scope.labels
           description << scope.description
           scope = scope.parent
         end
 
-        labels = labels.map(&:to_s).map(&:strip).reject(&:blank?).map(&:downcase).uniq
         description.reject!(&:nil?).reject!(&:blank?)
         default_description = description.last
         description.reverse!
@@ -164,8 +128,8 @@ module AppMap
 
         AppMap::RSpec.save full_description,
                            class_map,
-                           events: events,
-                           labels: labels.blank? ? nil : labels
+                           source_location,
+                           events: events
       end
     end
 
@@ -198,9 +162,10 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, events: nil, labels: nil)
+      def save(example_name, class_map, source_location, events: nil, labels: nil)
         metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = example_name
+          m[:source_location] = source_location
           m[:app] = AppMap.configuration.name
           m[:labels] = labels if labels
           m[:frameworks] ||= []
