@@ -39,9 +39,7 @@ module AppMap
 
         AppMap::Minitest.save scenario_name,
                               class_map,
-                              events: events,
-                              feature_name: feature_name,
-                              feature_group_name: feature_group
+                              events: events
       end
     end
 
@@ -74,12 +72,10 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
+      def save(example_name, class_map, events: nil, labels: nil)
         metadata = AppMap::Minitest.metadata.tap do |m|
           m[:name] = example_name
           m[:app] = AppMap.configuration.name
-          m[:feature] = feature_name if feature_name
-          m[:feature_group] = feature_group_name if feature_group_name
           m[:frameworks] ||= []
           m[:frameworks] << {
             name: 'minitest',

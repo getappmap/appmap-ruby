@@ -14,12 +14,6 @@ module AppMap
     end
 
     module FeatureAnnotations
-      def feature
-        return nil unless annotations
-
-        annotations[:feature]
-      end
-
       def labels
         labels = metadata[:appmap]
         if labels.is_a?(Array)
@@ -29,12 +23,6 @@ module AppMap
         else
           []
         end
-      end
-
-      def feature_group
-        return nil unless annotations
-
-        annotations[:feature_group]
       end
 
       def annotations
@@ -152,14 +140,11 @@ module AppMap
 
         description = []
         scope = ScopeExample.new(example)
-        feature_group = feature = nil
 
         labels = []
         while scope
           labels += scope.labels
           description << scope.description
-          feature ||= scope.feature
-          feature_group ||= scope.feature_group
           scope = scope.parent
         end
 
@@ -177,23 +162,9 @@ module AppMap
 
         full_description = normalize.call(description.join(' '))
 
-        compute_feature_name = lambda do
-          return 'unknown' if description.empty?
-
-          feature_description = description.dup
-          num_tokens = [2, feature_description.length - 1].min
-          feature_description[0...num_tokens].map(&:strip).join(' ')
-        end
-
-        feature_group ||= normalize.call(default_description).underscore.gsub('/', '_').humanize
-        feature_name = feature || compute_feature_name.call if feature_group
-        feature_name = normalize.call(feature_name) if feature_name
-
         AppMap::RSpec.save full_description,
                            class_map,
                            events: events,
-                           feature_name: feature_name,
-                           feature_group_name: feature_group,
                            labels: labels.blank? ? nil : labels
       end
     end
@@ -227,12 +198,10 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, events: nil, feature_name: nil, feature_group_name: nil, labels: nil)
+      def save(example_name, class_map, events: nil, labels: nil)
         metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = example_name
           m[:app] = AppMap.configuration.name
-          m[:feature] = feature_name if feature_name
-          m[:feature_group] = feature_group_name if feature_group_name
           m[:labels] = labels if labels
           m[:frameworks] ||= []
           m[:frameworks] << {
