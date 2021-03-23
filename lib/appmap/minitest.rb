@@ -7,7 +7,7 @@ module AppMap
   # be activated around each test.
   module Minitest
     APPMAP_OUTPUT_DIR = 'tmp/appmap/minitest'
-    LOG = true if ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true'
+    LOG = ( ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true' )
 
     def self.metadata
       AppMap.detect_metadata
@@ -36,7 +36,7 @@ module AppMap
 
         AppMap::Minitest.add_event_methods @trace.event_methods
 
-        class_map = AppMap.class_map(@trace.event_methods)
+        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
 
         feature_group = test.class.name.underscore.split('_')[0...-1].join('_').capitalize
         feature_name = test.name.split('_')[1..-1].join(' ')

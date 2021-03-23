@@ -103,7 +103,7 @@ module AppMap
 
         AppMap::RSpec.add_event_methods @trace.event_methods
 
-        class_map = AppMap.class_map(@trace.event_methods, include_source: false)
+        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
 
         description = []
         scope = ScopeExample.new(example)

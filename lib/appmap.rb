@@ -50,6 +50,11 @@ module AppMap
       end
     end
 
+    # Whether to include source and comments in all class maps.
+    def include_source?
+      ENV['APPMAP_SOURCE'] == 'true'
+    end
+
     # Used to start tracing, stop tracing, and record events.
     def tracing
       @tracing ||= Trace::Tracing.new
