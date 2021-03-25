@@ -30,9 +30,8 @@ class MinitestTest < Minitest::Test
       assert_equal 'minitest_recorder', metadata['app']
       assert_equal 'minitest', metadata['recorder']['name']
       assert_equal 'ruby', metadata['language']['name']
-      assert_equal 'Hello', metadata['feature_group']
-      assert_equal 'hello', metadata['feature']
       assert_equal 'Hello hello', metadata['name']
+      assert_equal 'test/hello_test.rb:9', metadata['source_location']
     end
   end
 end

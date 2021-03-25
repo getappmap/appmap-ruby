@@ -1,3 +1,8 @@
+# v0.42.0
+
+* Remove `feature_group` and `feature` metadata from minitest and RSpec AppMaps.
+* Add `metadata.source_location`.
+
 # v0.41.2
 
 * Don't rely on `gemspec.source_paths` to list all the source locations in a gem. Hook any code that's loaded

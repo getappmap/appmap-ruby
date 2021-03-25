@@ -1,8 +1,8 @@
 require 'rails_helper'
 require 'rack/test'
 
-RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, appmap: true do
-  describe 'POST /api/users', feature: 'Create a user' do
+RSpec.describe Api::UsersController, type: :controller do
+  describe 'POST /api/users' do
     describe 'with required parameters' do
       it 'creates a user' do
         post :create, params: { login: 'alice', password: 'foobar' }
@@ -16,7 +16,7 @@ RSpec.describe Api::UsersController, feature_group: 'Users', type: :controller, 
       end
     end
   end
-  describe 'GET /api/users', feature: 'List users' do
+  describe 'GET /api/users' do
     before do
       post :create, params: { login: 'alice' }
     end

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe User, feature_group: 'User', appmap: true do
+describe User  do
   # TODO: appmap/rspec doesn't handle shared_examples_for 100% correctly yet.
   # In my tests, only one of these two tests will be emitted as an appmap.
   shared_examples_for 'creates the user' do |username|
@@ -11,17 +11,7 @@ describe User, feature_group: 'User', appmap: true do
     end
   end
 
-  describe 'creation', feature: 'Create a user' do
-    context 'using shared_examples_for' do
-      # AppMap.
-#      context "with username 'alice'" do
-#        it_should_behave_like 'creates the user', 'alice'
-#      end
-#      context "with username 'bob'" do
-#        it_should_behave_like 'creates the user', 'bob'
-#      end
-    end
-
+  describe 'creation' do
     # So, instead of shared_examples_for, let's go with a simple method
     # containing the assertions. The method can be called from within an example.
     def save_and_verify
