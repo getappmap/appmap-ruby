@@ -76,6 +76,11 @@ describe 'Rails' do
             )
           end
 
+          context 'with an object-style message' do
+            # TODO
+            it 'message properties are recorded in the appmap'
+          end
+
           it 'properly captures method parameters in the appmap' do
             expect(events).to include hash_including(
               'event' => 'call',
