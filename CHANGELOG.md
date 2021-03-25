@@ -1,3 +1,8 @@
+# v0.43.0
+
+* **Experimental** Record `name` and `class` of each entry in Hash-like parameters, messages, and return values.
+* **Experimental** Record most headers in HTTP server request and response.
+
 # v0.42.1
 
 * Add missing require `set`.

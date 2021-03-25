@@ -36,6 +36,18 @@ module AppMap
           (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
 
+        def object_properties(hash_like)
+          hash = hash_like.to_h
+          hash.keys.map do |key|
+            {
+              name: key,
+              class: hash[key].class.name,
+            }
+          end
+        rescue
+          nil
+        end
+
         protected
 
         # Heuristic for dynamically defined class whose name can be nil
@@ -78,6 +90,12 @@ module AppMap
             last_resort_string.call
           end
         end
+      end
+
+      protected
+
+      def object_properties(hash_like)
+        self.class.object_properties(hash_like)
       end
     end
 

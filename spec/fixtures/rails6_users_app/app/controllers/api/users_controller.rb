@@ -6,6 +6,7 @@ module Api
     end
 
     def create
+      params = self.params.key?(:user) ? self.params[:user] : self.params
       @user = build_user(params.slice(:login).to_unsafe_h)
       unless @user.valid?
         error = {
