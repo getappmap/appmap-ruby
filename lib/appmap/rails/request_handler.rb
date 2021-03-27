@@ -6,33 +6,41 @@ require 'appmap/hook'
 module AppMap
   module Rails
     module RequestHandler
-      IGNORE_HEADERS = Set.new(%w[CONTENT_LENGTH HTTPS HTTP_COOKIE HTTP_HOST HTTP_USER_AGENT PATH_INFO QUERY_STRING REMOTE_ADDR REQUEST_METHOD SCRIPT_NAME SERVER_NAME SERVER_PORT]).freeze
+      MATCH_HEADERS = [
+        %r{^access_control_},
+        %r{^cookie$},
+        %r{^set_cookie$},
+        %r{^origin$},
+        %r{^referer$},
+        %r{^referrer_$},
+        %r{^x_},
+      ]
 
       class << self
         def selected_headers(headers)
-          matching_headers = headers
-            .to_h
-            .keys
-            .select{ |h| !IGNORE_HEADERS.member?(h) }
-            .select{ |h| !h.index('.') } # Toss out the Rack headers
-          if matching_headers.empty?
-            nil
-          else
-            matching_headers.inject({}) { |memo,key| memo[key] = AppMap::Event::MethodEvent.display_string(headers[key]); memo }
+          keep = lambda do |header|
+            header = header.downcase.gsub('-', '_')
+            MATCH_HEADERS.find { |pattern| pattern.match(header) }
           end
+          matching_headers = headers.each_with_object({}) do |kv, memo|
+            header, value = kv
+            memo[header] = AppMap::Event::MethodEvent.display_string(value) if keep.(header)
+          end
+          matching_headers.blank? ? nil : matching_headers
         end
       end
 
       class HTTPServerRequest < AppMap::Event::MethodEvent
-        attr_accessor :normalized_path_info, :request_method, :path_info, :params, :mime_type, :headers
+        attr_accessor :normalized_path_info, :request_method, :path_info, :params, :mime_type, :headers, :authorization
 
         def initialize(request)
           super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
           self.request_method = request.request_method
-          self.normalized_path_info = normalized_path request
+          self.normalized_path_info = normalized_path(request)
           self.mime_type = request.headers['Content-Type']
           self.headers = RequestHandler.selected_headers(request.headers)
+          self.authorization = request.headers['Authorization']
           self.path_info = request.path_info.split('?')[0]
           # ActionDispatch::Http::ParameterFilter is deprecated
           parameter_filter_cls = \
@@ -51,7 +59,8 @@ module AppMap
               path_info: path_info,
               mime_type: mime_type,
               normalized_path_info: normalized_path_info,
-              headers: headers
+              authorization: authorization,
+              headers: headers,
             }.compact
 
             h[:message] = params.keys.map do |key|
