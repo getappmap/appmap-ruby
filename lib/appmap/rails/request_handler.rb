@@ -26,11 +26,26 @@ module AppMap
 =======
       MATCH_HEADERS = [
         %r{^access_control_},
+        %r{^cache_control_},
+        %r{^cross_origin_},
         %r{^cookie$},
+        %r{^digest$},
+        %r{^etag$},
+        %r{^expect$},
+        %r{^expires$},
+        %r{^if_},
+        %r{^last_modified$},
+        %r{^location$},
         %r{^set_cookie$},
         %r{^origin$},
         %r{^referer$},
         %r{^referrer_$},
+        %r{^sec_$},
+        %r{^upgrade$},
+        %r{^vary$},
+        %r{^via$},
+        %r{^want_digest$},
+        %r{^www_authenticate$},
         %r{^x_},
       ]
 
