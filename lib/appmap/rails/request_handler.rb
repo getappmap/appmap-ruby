@@ -6,6 +6,7 @@ require 'appmap/hook'
 module AppMap
   module Rails
     module RequestHandler
+<<<<<<< HEAD
       # Host and User-Agent will just introduce needless variation.
       # Content-Type and Authorization get their own fields in the request.
       IGNORE_HEADERS = %w[host user_agent content_type authorization].map(&:upcase).map {|h| "HTTP_#{h}"}.freeze
@@ -22,6 +23,28 @@ module AppMap
               value = kv[1]
               memo[key] = value
             end
+=======
+      MATCH_HEADERS = [
+        %r{^access_control_},
+        %r{^cookie$},
+        %r{^set_cookie$},
+        %r{^origin$},
+        %r{^referer$},
+        %r{^referrer_$},
+        %r{^x_},
+      ]
+
+      class << self
+        def selected_headers(headers)
+          keep = lambda do |header|
+            header = header.downcase.gsub('-', '_')
+            MATCH_HEADERS.find { |pattern| pattern.match(header) }
+          end
+          matching_headers = headers.each_with_object({}) do |kv, memo|
+            header, value = kv
+            memo[header] = AppMap::Event::MethodEvent.display_string(value) if keep.(header)
+          end
+>>>>>>> 34bc65d... Include authorization and selected headers
           matching_headers.blank? ? nil : matching_headers
         end
       end
