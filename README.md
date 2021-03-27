@@ -369,7 +369,7 @@ The fixture apps in `test/fixtures` are plain Ruby projects that exercise the ba
 
 ### `spec/fixtures`
 
-The fixture apps in `spec/fixtures` are simple Rack, Rails4, and Rails5 apps.
+The fixture apps in `spec/fixtures` are simple Rack, Rails5, and Rails6 apps.
 You can use them to interactively develop and test the recording features of the `appmap` gem.
 These fixture apps are more sophisticated than `test/fixtures`, because they include additional 
 resources such as a PostgreSQL database.
