@@ -1,3 +1,8 @@
+# v0.42.1
+
+* Add missing require `set`.
+* Check `cls.respond_to?(:singleton_class)`, since it oddly, may not.
+
 # v0.42.0
 
 * Remove `feature_group` and `feature` metadata from minitest and RSpec AppMaps.

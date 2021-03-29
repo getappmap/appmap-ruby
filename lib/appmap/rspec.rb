@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/util'
+require 'set'
 
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
