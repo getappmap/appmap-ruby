@@ -46,7 +46,16 @@ module AppMap
         cls = trace_point.self
 
         instance_methods = cls.public_instance_methods(false) - OBJECT_INSTANCE_METHODS
-        class_methods = cls.singleton_class.public_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
+        # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
+        class_methods = begin
+          if cls.respond_to?(:singleton_class)
+            cls.singleton_class.public_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
+          else
+            []
+          end
+        rescue NameError
+          []
+        end
 
         hook = lambda do |hook_cls|
           lambda do |method_id|
@@ -80,7 +89,13 @@ module AppMap
         end
 
         instance_methods.each(&hook.(cls))
-        class_methods.each(&hook.(cls.singleton_class))
+        # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
+        begin
+          class_methods.each(&hook.(cls.singleton_class)) if cls.respond_to?(:singleton_class)
+        rescue NameError
+          # NameError:
+          #   uninitialized constant Faraday::Connection
+        end
       end
 
       tp.enable(&block)
