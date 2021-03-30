@@ -15,8 +15,10 @@ case orm_module
 when 'sequel'
   require 'sequel-rails'
   require 'sequel_secure_password'
+  require 'database_cleaner-sequel' if Rails.env.test?
 when 'activerecord'
   require 'active_record/railtie'
+  require 'database_cleaner-active_record' if Rails.env.test?
 end
 
 require 'appmap/railtie' if defined?(AppMap)

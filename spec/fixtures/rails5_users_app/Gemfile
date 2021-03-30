@@ -39,11 +39,13 @@ group :development, :test do
   gem 'appmap', appmap_options
   gem 'cucumber-rails', require: false
   gem 'rspec-rails'
-  # Required for Sequel, since without ActiveRecord, the Rails transactional fixture support
-  # isn't activated.
-  gem 'database_cleaner'
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
+end
+
+group :test do
+  gem 'database_cleaner-active_record', require: false
+  gem 'database_cleaner-sequel', require: false
 end
 
 group :development do

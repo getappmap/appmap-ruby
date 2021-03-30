@@ -33,7 +33,7 @@ RSpec.describe Api::UsersController, type: :controller do
     end
     describe 'with a custom header' do
       it 'lists the users' do
-        set_header 'X-Sandwich', 'turkey'
+        request.headers['X-Sandwich'] = 'turkey'
         get :index, params: {}
         expect(response.status).to eq(200)
       end

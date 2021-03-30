@@ -16,10 +16,16 @@ if [[ $? != 0 ]]; then
    exit 1
 fi
 
+# Required for migrations
+export ORM_MODULE=sequel
+
+set +e
+psql -h pg -U postgres -c "drop database if exists app_development"
+psql -h pg -U postgres -c "drop database if exists app_test"
+set -e
+
 psql -h pg -U postgres -c "create database app_development"
 psql -h pg -U postgres -c "create database app_test"
-
-set -e
 
 RAILS_ENV=development ./bin/rake db:migrate
 RAILS_ENV=test ./bin/rake db:migrate
