@@ -399,6 +399,7 @@ $ docker-compose run --rm -v $PWD:/app -v $PWD/../../..:/src/appmap-ruby app bas
 Starting rails_users_app_pg_1 ... done
 root@6fab5f89125f:/app# cd /src/appmap-ruby
 root@6fab5f89125f:/src/appmap-ruby# rm ext/appmap/*.so ext/appmap/*.o
+root@6fab5f89125f:/src/appmap-ruby# bundle
 root@6fab5f89125f:/src/appmap-ruby# bundle exec rake compile
 root@6fab5f89125f:/src/appmap-ruby# cd /src/app
 root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
@@ -417,4 +418,3 @@ Configuring AppMap from path appmap.yml
 Finished in 0.07357 seconds (files took 2.1 seconds to load)
 4 examples, 0 failures
 ```
-
