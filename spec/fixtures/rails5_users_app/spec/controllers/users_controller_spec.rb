@@ -4,7 +4,7 @@ require 'rack/test'
 RSpec.describe UsersController, type: :controller do
   render_views
 
-  describe 'GET /users', feature: 'Show all users' do
+  describe 'GET /users' do
     before do
       User.create login: 'alice'
     end
@@ -14,7 +14,7 @@ RSpec.describe UsersController, type: :controller do
     end
   end
 
-  describe 'GET /users/:login', feature: 'Show a user' do
+  describe 'GET /users/:login' do
     before do
       User.create login: 'alice'
     end
