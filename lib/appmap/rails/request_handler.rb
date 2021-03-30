@@ -6,41 +6,19 @@ require 'appmap/hook'
 module AppMap
   module Rails
     module RequestHandler
-      MATCH_HEADERS = [
-        %r{^access_control_},
-        %r{^cache_control_},
-        %r{^cross_origin_},
-        %r{^cookie$},
-        %r{^digest$},
-        %r{^etag$},
-        %r{^expect$},
-        %r{^expires$},
-        %r{^if_},
-        %r{^last_modified$},
-        %r{^location$},
-        %r{^set_cookie$},
-        %r{^origin$},
-        %r{^referer$},
-        %r{^referrer_$},
-        %r{^sec_$},
-        %r{^upgrade$},
-        %r{^vary$},
-        %r{^via$},
-        %r{^want_digest$},
-        %r{^www_authenticate$},
-        %r{^x_},
-      ]
+      IGNORE_HEADERS = %w[host user_agent content_type authorization].map(&:upcase).map {|h| "HTTP_#{h}"}.freeze
 
       class << self
-        def selected_headers(headers)
-          keep = lambda do |header|
-            header = header.downcase.gsub('-', '_')
-            MATCH_HEADERS.find { |pattern| pattern.match(header) }
-          end
-          matching_headers = headers.each_with_object({}) do |kv, memo|
-            header, value = kv
-            memo[header] = AppMap::Event::MethodEvent.display_string(value) if keep.(header)
-          end
+        def selected_headers(env)
+          matching_headers = env
+            .select { |k,v| k.start_with? 'HTTP_'}
+            .reject { |k,v| IGNORE_HEADERS.member?(k) }
+            .reject { |k,v| v.blank? }
+            .each_with_object({}) do |kv, memo|
+              key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
+              value = kv[1]
+              memo[key] = value
+            end
           matching_headers.blank? ? nil : matching_headers
         end
       end
@@ -54,7 +32,7 @@ module AppMap
           self.request_method = request.request_method
           self.normalized_path_info = normalized_path(request)
           self.mime_type = request.headers['Content-Type']
-          self.headers = RequestHandler.selected_headers(request.headers)
+          self.headers = RequestHandler.selected_headers(request.env)
           self.authorization = request.headers['Authorization']
           self.path_info = request.path_info.split('?')[0]
           # ActionDispatch::Http::ParameterFilter is deprecated
