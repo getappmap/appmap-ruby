@@ -395,11 +395,14 @@ $ docker-compose run --rm app ./create_app
 Now you can start a development container.
 
 ```sh-session
-$ docker-compose run --rm -v $PWD/../../..:/src/appmap-ruby app bash
+$ docker-compose run --rm -v $PWD:/app -v $PWD/../../..:/src/appmap-ruby app bash
 Starting rails_users_app_pg_1 ... done
-root@6fab5f89125f:/app# cd /src/app
+root@6fab5f89125f:/app# cd /src/appmap-ruby
+root@6fab5f89125f:/src/appmap-ruby# rm ext/appmap/*.so ext/appmap/*.o
+root@6fab5f89125f:/src/appmap-ruby# bundle exec rake compile
+root@6fab5f89125f:/src/appmap-ruby# cd /src/app
 root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
-root@6fab5f89125f:/src/app# bundle update appmap
+root@6fab5f89125f:/src/app# bundle
 ```
 
 At this point, the bundle is built with the `appmap` gem located  in `/src/appmap`, which is volume-mounted from the host.
