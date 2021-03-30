@@ -37,6 +37,7 @@ describe 'AbstractControllerBase' do
               hash_including(
                 'http_server_request' => hash_including(
                   'request_method' => 'POST',
+                  'normalized_path_info' => '/api/users(.:format)',
                   'path_info' => '/api/users'
                 ),
                 'message' => include(
@@ -75,7 +76,7 @@ describe 'AbstractControllerBase' do
               'defined_class' => 'Api::UsersController',
               'method_id' => 'build_user',
               'path' => 'app/controllers/api/users_controller.rb',
-              'lineno' => 23,
+              'lineno' => Integer,
               'static' => false,
               'parameters' => include(
                 'name' => 'params',
