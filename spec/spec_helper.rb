@@ -14,3 +14,7 @@ require 'appmap'
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "tmp/rspec_failed_examples.txt"
 end
+
+def use_existing_data?
+  ENV['USE_EXISTING_DATA'] == 'true'
+end
