@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/swagger/stable'
+require 'appmap/swagger/markdown_descriptions'
 
 module AppMap
   module Rake
@@ -37,7 +38,7 @@ module AppMap
           exit $?.exitstatus || 1
         end
 
-        return do_fail.(%Q('node' not found; please install NodeJS)) unless system('node --version')
+        return do_fail.(%Q('node' not found; please install NodeJS)) unless system('node --version 2>&1 > /dev/null')
         return do_fail.(%Q('#{swaggergen}' not found; please install appmap-swagger from NPM)) unless File.exists?(swaggergen)
 
         warn swagger_command.join(' ') if verbose
@@ -46,9 +47,10 @@ module AppMap
         return do_fail.(%Q(Swagger generation failed: #{swagger_raw})) if $?.exitstatus != 0
 
         gen_swagger = YAML.load(swagger_raw)
+        gen_swagger_full = AppMap::Swagger::MarkdownDescriptions.new(gen_swagger).perform
         gen_swagger_stable = AppMap::Swagger::Stable.new(gen_swagger).perform
 
-        swagger = swagger_template.merge(gen_swagger)
+        swagger = swagger_template.merge(gen_swagger_full)
         File.write File.join(output_dir, 'openapi.yaml'), YAML.dump(swagger)
 
         swagger = swagger_template.merge(gen_swagger_stable)

@@ -18,7 +18,7 @@ module AppMap
           obj.delete 'description'
           obj.delete 'example'
 
-          obj.each_value(&clean)
+          obj.reject { |k,v| k == 'properties' }.each_value(&clean)
 
           obj
         end
