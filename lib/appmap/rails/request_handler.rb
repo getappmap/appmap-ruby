@@ -6,10 +6,13 @@ require 'appmap/hook'
 module AppMap
   module Rails
     module RequestHandler
+      # Host and User-Agent will just introduce needless variation.
+      # Content-Type and Authorization get their own fields in the request.
       IGNORE_HEADERS = %w[host user_agent content_type authorization].map(&:upcase).map {|h| "HTTP_#{h}"}.freeze
 
       class << self
         def selected_headers(env)
+          # Rack prepends HTTP_ to all client-sent headers.
           matching_headers = env
             .select { |k,v| k.start_with? 'HTTP_'}
             .reject { |k,v| IGNORE_HEADERS.member?(k) }

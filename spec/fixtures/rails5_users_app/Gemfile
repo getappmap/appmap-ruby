@@ -44,6 +44,8 @@ group :development, :test do
 end
 
 group :test do
+  # Require only one of these.
+  # 'database_cleaner' requries 'database_cleaner-active_record', so don't require it.
   gem 'database_cleaner-active_record', require: false
   gem 'database_cleaner-sequel', require: false
 end

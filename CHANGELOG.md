@@ -1,7 +1,9 @@
 # v0.43.0
 
-* **Experimental** Record `name` and `class` of each entry in Hash-like parameters, messages, and return values.
-* **Experimental** Record most headers in HTTP server request and response.
+* Record `name` and `class` of each entry in Hash-like parameters, messages, and return values.
+* Record client-sent headers in HTTP server request and response.
+* Record HTTP server request `mime_type`.
+* Record HTTP server request `authorization`.
 
 # v0.42.1
 
