@@ -11,16 +11,26 @@ module AppMap
       end
 
       def perform
-        clean = lambda do |obj|
-          return obj.each(&clean) if obj.is_a?(Array)
+        clean_only = nil
+        clean = lambda do |obj, properties = %w[description example]|
+          return obj.each(&clean_only.(properties)) if obj.is_a?(Array)
           return unless obj.is_a?(Hash)
 
-          obj.delete 'description'
-          obj.delete 'example'
+          properties.each { |property| obj.delete property }
 
-          obj.reject { |k,v| k == 'properties' }.each_value(&clean)
+          obj.each do |key, value|
+            # Don't clean 'description' from within 'properties'
+            props = key == 'properties' ? %w[example] : properties
+            clean_only.(props).(value)
+          end
 
           obj
+        end
+
+        clean_only = lambda do |properties|
+          lambda do |example|
+            clean.(example, properties)
+          end
         end
 
         clean.(@swagger_yaml.deep_dup)
