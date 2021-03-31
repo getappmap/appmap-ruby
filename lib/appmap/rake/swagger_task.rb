@@ -18,9 +18,13 @@ module AppMap
         @swaggergen      = DEFAULT_SWAGGERGEN
         @appmap_dir      = DEFAULT_APPMAP_DIR
         @output_dir      = DEFAULT_OUTPUT_DIR
+
+        # https://www.rubydoc.info/docs/rails/Module#module_parent_name-instance_method
+        module_parent_name = ->(cls) { cls.name =~ /::[^:]+\Z/ ? $`.freeze : nil }
+        
         @project_name    = \
           if defined?(Rails)
-            [ Rails.application.class.parent_name.humanize.titleize, 'API' ].join(' ')
+            [ module_parent_name.(Rails.application.class).humanize.titleize, 'API' ].join(' ')
           else
             'MyProject API'
           end
