@@ -11,6 +11,9 @@
   - [Remote recording](#remote-recording)
   - [Server process recording](#server-process-recording)
 - [AppMap for VSCode](#appmap-for-vscode)
+- [`appmap:swagger` Rake task](#appmapswagger-rake-task)
+  - [Defining the `appmap:swagger` Rake task](#defining-the-appmapswagger-rake-task)
+  - [Incorporating the Swagger API and UI](#incorporating-the-swagger-api-and-ui)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Development](#development)
   - [Running tests](#running-tests)
@@ -332,6 +335,69 @@ Be sure and set `WEB_CONCURRENCY=1`, if you are using a webserver that can run m
 # AppMap for VSCode
 
 The [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?itemName=appland.appmap) is a great way to onboard developers to new code, and troubleshoot hard-to-understand bugs with visuals.
+
+# `appmap:swagger` Rake task
+
+[appmap-swagger] is a Node.js program which generates [Swagger 3](https://swagger.io/specification/) (aka OpenAPI) YAML from [AppMap](https://appland.org/) data.
+
+This `appmap` Ruby gem provides a Rake task called `appmap:swagger`. The Rake task:
+
+1. Requires Node.js and `appmap-swagger` to be installed.
+2. Runs `appmap-swagger` to generate Swagger YAML.
+3. Merges the generated Swagger with a template file.
+4. Outputs two files to the specified directory (default: `swagger`):
+   1. `openapi.yaml` Full Swagger, including documentation and examples.
+   2. `openapi_stable.yaml` Swagger without documentation and examples, so that it's more stable across versions.
+
+`openapi_stable.yaml` is ideal for use in code reviews, to see if and how the web services API has been changed.
+
+## Defining the `appmap:swagger` Rake task
+
+You need to define the `appmap:swagger` Rake task. In Rails, this is done by creating a file like `lib/tasks/appmap.rake`.
+
+In the file, check if `AppMap` is loaded, and then configure the Rake task. You'll probably want to provide
+a project name and version. (The default project name is determined from your Rails Application class name and might be fine, actually).
+
+```ruby
+  if defined?(AppMap)
+    require 'appmap/rake/swagger_task'
+    AppMap::Rake::SwaggerTask.new.tap do |task|
+      task.project_name = 'My Server API'
+      # You may not have a VERSION file. Do what works best for you.
+      task.project_version = "v#{File.read(File.join(Rails.root, 'VERSION')).strip}"
+    end
+  end
+```
+
+## Incorporating the Swagger API and UI
+
+Two other gems work great with `appmap:swagger`: `rswag-api` and `rswag-ui` from [rswag](https://github.com/rswag/rswag).
+
+Install in your Gemfile:
+
+```ruby
+# By default, let's not run this in production until we've thought about the implications.
+group :test, :development do
+  gem 'rswag-api'
+  gem 'rswag-ui'
+end
+```
+
+Then run the install commands:
+
+```sh-session
+$ rails g rswag:api:install
+$ rails g rswag:ui:install
+```
+
+Update `routes.rb`:
+
+```ruby
+  if defined?(Rswag)
+    mount Rswag::Ui::Engine => '/api-docs'
+    mount Rswag::Api::Engine => '/api-docs'
+  end
+```
 
 # Uploading AppMaps
 

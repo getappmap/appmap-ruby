@@ -72,7 +72,7 @@ module AppMap
       end    
 
       def swagger_command
-        [ 'node', swaggergen, 'generate', '--directory', appmap_dir, '--output', output_dir ]
+        [ 'node', swaggergen, 'generate', '--directory', appmap_dir ]
       end
 
       private
