@@ -35,7 +35,7 @@ module AppMap
         load_gem = lambda do |gem_name|
           require gem_name
           true
-        rescue NameError
+        rescue LoadError
           warn "'#{gem_name}' gem is not available. Descriptions cannot be converted from RDoc to Markdown."
           warn "To fix this, add the '#{gem_name}' gem to your Gemfile"
           false
