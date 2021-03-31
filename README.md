@@ -369,7 +369,7 @@ The fixture apps in `test/fixtures` are plain Ruby projects that exercise the ba
 
 ### `spec/fixtures`
 
-The fixture apps in `spec/fixtures` are simple Rack, Rails4, and Rails5 apps.
+The fixture apps in `spec/fixtures` are simple Rack, Rails5, and Rails6 apps.
 You can use them to interactively develop and test the recording features of the `appmap` gem.
 These fixture apps are more sophisticated than `test/fixtures`, because they include additional 
 resources such as a PostgreSQL database.
@@ -395,11 +395,15 @@ $ docker-compose run --rm app ./create_app
 Now you can start a development container.
 
 ```sh-session
-$ docker-compose run --rm -v $PWD/../../..:/src/appmap-ruby app bash
+$ docker-compose run --rm -v $PWD:/app -v $PWD/../../..:/src/appmap-ruby app bash
 Starting rails_users_app_pg_1 ... done
-root@6fab5f89125f:/app# cd /src/app
+root@6fab5f89125f:/app# cd /src/appmap-ruby
+root@6fab5f89125f:/src/appmap-ruby# rm ext/appmap/*.so ext/appmap/*.o
+root@6fab5f89125f:/src/appmap-ruby# bundle
+root@6fab5f89125f:/src/appmap-ruby# bundle exec rake compile
+root@6fab5f89125f:/src/appmap-ruby# cd /src/app
 root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
-root@6fab5f89125f:/src/app# bundle update appmap
+root@6fab5f89125f:/src/app# bundle
 ```
 
 At this point, the bundle is built with the `appmap` gem located  in `/src/appmap`, which is volume-mounted from the host.
@@ -414,4 +418,3 @@ Configuring AppMap from path appmap.yml
 Finished in 0.07357 seconds (files took 2.1 seconds to load)
 4 examples, 0 failures
 ```
-

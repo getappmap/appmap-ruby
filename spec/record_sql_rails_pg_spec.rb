@@ -61,7 +61,7 @@ describe 'SQL events' do
       end
 
       context 'while listing records' do
-        let(:test_line_number) { 23 }
+        let(:test_line_number) { 29 }
         let(:appmap_json) { File.join(tmpdir, 'appmap/rspec/Api_UsersController_GET_api_users_lists_the_users.appmap.json') }
 
         context 'using Sequel ORM' do
