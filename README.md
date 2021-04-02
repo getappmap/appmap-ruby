@@ -11,6 +11,7 @@
   - [Remote recording](#remote-recording)
   - [Server process recording](#server-process-recording)
 - [AppMap for VSCode](#appmap-for-vscode)
+- [AppMap Swagger](#appmap-swagger)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Development](#development)
   - [Running tests](#running-tests)
@@ -329,9 +330,20 @@ Run your Rails server with `APPMAP_RECORD=true`. When the server exits, an *appm
 
 Be sure and set `WEB_CONCURRENCY=1`, if you are using a webserver that can run multiple processes. You only want there to be one process while you are recording, otherwise they will both try and write *appmap.json* and one of them will clobber the other.
 
+
 # AppMap for VSCode
 
-The [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?itemName=appland.appmap) is a great way to onboard developers to new code, and troubleshoot hard-to-understand bugs with visuals.
+The [AppMap extension for VSCode](https://marketplace.visualstudio.com/items?itemName=appland.appmap) helps you navigate your code more efficiently with interactive, accurate software architecture diagrams right in your IDE. In less than two minutes you can go from installing the AppMap extension to exploring maps of your code's architecture. AppMap helps you:
+
+* Onboard to code architecture, with no extra work for the team
+* Conduct code and design reviews using live and accurate data
+* Troubleshoot hard-to-understand bugs using a "top-down" approach.
+
+Each interactive diagram links directly to the source code, and the information is easy to share.
+
+# AppMap Swagger
+
+[appmap_swagger](https://github.com/applandinc/appmap_swagger-ruby) is a tool to generate Swagger files from AppMap data. With `appmap_swagger`, you can add Swagger to your Ruby or Ruby on Rails project, with no need to write or modify code. Use the Swagger UI to interact with your web services API as you build it, and use diffs of Swagger to perform code review of web service changes.
 
 # Uploading AppMaps
 
