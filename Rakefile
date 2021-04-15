@@ -37,7 +37,8 @@ end
   
 def build_base_image(ruby_version)
   run_cmd "docker build" \
-         " --build-arg RUBY_VERSION=#{ruby_version} --build-arg GEM_VERSION=#{GEM_VERSION}" \
+         " --build-arg RUBY_VERSION=#{ruby_version}"    \
+         " --build-arg GEM_VERSION=#{GEM_VERSION}"      \
          " -t appmap:#{GEM_VERSION} -f Dockerfile.appmap ."
 end
   
@@ -46,7 +47,7 @@ def build_app_image(app, ruby_version)
     run_cmd( {"RUBY_VERSION" => ruby_version, "GEM_VERSION" => GEM_VERSION},
       " docker-compose build" \
       " --build-arg RUBY_VERSION=#{ruby_version}" \
-      " --build-arg GEM_VERSION=#{GEM_VERSION}")
+      " --build-arg GEM_VERSION=#{GEM_VERSION}"  ) 
   end
 end
 
@@ -138,3 +139,4 @@ task spec: %i[spec:all]
 task test: %i[spec:all minitest]
 
 task default: :test
+

@@ -30,9 +30,28 @@ before_install:
   # Load cached docker images
   - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
 
+ 
+# GEM_ALTERNATIVE_NAME only needed for deployment 
 jobs:
   include:
   - stage: test
     script:
     - mkdir tmp
-    - bundle exec rake test
+    - GEM_ALTERNATIVE_NAME='' bundle exec rake test
+
+    
+before_deploy:
+  - |
+    nvm install --lts \
+      && nvm use --lts \
+      && npm i -g \
+        semantic-release \
+        @semantic-release/git \
+        @semantic-release/changelog \
+        semantic-release-rubygem
+
+deploy:
+  - provider: script
+    script: ./release.sh
+    on:
+      branch: master
