@@ -38,6 +38,14 @@ module AppMap
           warn "AppMap: Hooking #{msg} at line #{(hook_method.source_location || []).join(':')}"
         end
 
+        call_method_name = :call
+        if hook_method.name == :call
+          warn "Can't hook methods named 'call'"
+          hook_method.owner.alias_method :__call, :call
+          call_method_name = :__call
+          return
+        end
+
         defined_class = @defined_class
         hook_package = self.hook_package
         hook_method = self.hook_method
@@ -49,7 +57,7 @@ module AppMap
         hook_class.instance_eval do 
           hook_method_def = Proc.new do |*args, &block|
             instance_method = hook_method.bind(self).to_proc
-            call_instance_method = -> { instance_method.call(*args, &block) }
+            call_instance_method = -> { instance_method.send(call_method_name, *args, &block) }
 
             # We may not have gotten the class for the method during
             # initialization (e.g. for a singleton method on an embedded
