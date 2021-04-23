@@ -40,8 +40,7 @@
                     "location": "OpenSSL::PKey::PKey#sign",
                     "static": false,
                     "labels": [
-                      "security",
-                      "crypto"
+                      "crypto.pkey"
                     ]
                   }
                 ]

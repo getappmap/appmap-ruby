@@ -112,25 +112,27 @@ module AppMap
         end
       end
 
-      Config::BUILTIN_METHODS.each do |class_name, hook|
-        require hook.package.package_name if hook.package.package_name
-        Array(hook.method_names).each do |method_name|
-          method_name = method_name.to_sym
+      Config::BUILTIN_METHODS.each do |class_name, hooks|
+        Array(hooks).each do |hook|
+          require hook.package.package_name if hook.package.package_name
+          Array(hook.method_names).each do |method_name|
+            method_name = method_name.to_sym
 
-          cls = class_from_string.(class_name)
-          method = \
-            begin
-              cls.instance_method(method_name)
-            rescue NameError
-              cls.method(method_name) rescue nil
+            cls = class_from_string.(class_name)
+            method = \
+              begin
+                cls.instance_method(method_name)
+              rescue NameError
+                cls.method(method_name) rescue nil
+              end
+
+            next if config.never_hook?(method)
+
+            if method
+              Hook::Method.new(hook.package, cls, method).activate
+            else
+              warn "Method #{method_name} not found on #{cls.name}"
             end
-
-          next if config.never_hook?(method)
-
-          if method
-            Hook::Method.new(hook.package, cls, method).activate
-          else
-            warn "Method #{method_name} not found on #{cls.name}"
           end
         end
       end
