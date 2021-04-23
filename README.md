@@ -110,6 +110,9 @@ name: my_project
 packages:
 - path: app/controllers
 - path: app/models
+  # Exclude sub-paths within the package path
+  exclude:
+  - concerns/accessor
 - path: app/jobs
 - path: app/helpers
 # Include the gems that you want to see in the dependency maps.
@@ -118,15 +121,22 @@ packages:
 - gem: devise
 - gem: aws-sdk
 - gem: will_paginate
+# Global exclusion of a class name
 exclude:
 - MyClass
 - MyClass#my_instance_method
 - MyClass.my_class_method
+functions:
+- packages: myapp
+  class: ControllerHelper
+  function: logged_in_user
+  labels: [ authentication ]
 ```
 
 * **name** Provides the project name (required)
 * **packages** A list of source code directories which should be recorded.
 * **exclude** A list of classes and/or methods to definitively exclude from recording.
+* **functions** A list of specific functions, scoped by package and class, to record.
 
 **packages**
 
@@ -145,6 +155,11 @@ Each entry in the `packages` list is a YAML object which has the following keys:
 
 Optional list of fully qualified class and method names. Separate class and method names with period (`.`) for class methods and hash (`#`) for instance methods.
 
+**functions**
+
+Optional list of `class, function` pairs. The `package` name is used to place the function within the class map, and does not have to match
+the folder or gem name. The primary use of `functions` is to apply specific labels to functions whose source code is not accessible (e.g., it's in a Gem).
+For functions which are part of the application code, using `@label` or `@labels` in code comments to apply labels.
 
 # Labels
 

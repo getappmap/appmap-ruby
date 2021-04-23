@@ -1,0 +1,1447 @@
+diff --git a/.travis.yml b/.travis.yml
+index ab6ccca..f165339 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -13,11 +13,26 @@ services:
+ # necessary.
+ before_script:
+   - unset RAILS_ENV
+-  
++
++cache:
++  bundler: true
++  directories:
++    - $HOME/docker
++
++# https://stackoverflow.com/a/41975912
++before_cache:
++  # Save tagged docker images
++  - >
++    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
++    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
++
++before_install:
++  # Load cached docker images
++  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
++
+ jobs:
+   include:
+   - stage: test
+     script:
+     - mkdir tmp
+     - bundle exec rake test
+-    
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index e3ea210..4a25fba 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,3 +1,12 @@
++# v0.44.0
++
++* Support recording and labeling of indivudal functions via `functions:` section in *appmap.yml*.
++* Remove deprecated `exe/appmap`.
++* Add `test_status` and `exception` fields to AppMap metadata.
++* Write AppMap file atomically, by writing to a temp file first and then moving it into place.
++* Remove printing of `Inventory.json` file.
++* Remove source code from `classMap`.
++
+ # v0.43.0
+ 
+ * Record `name` and `class` of each entry in Hash-like parameters, messages, and return values.
+diff --git a/README.md b/README.md
+index b9e6eca..e5674d9 100644
+--- a/README.md
++++ b/README.md
+@@ -110,6 +110,9 @@ name: my_project
+ packages:
+ - path: app/controllers
+ - path: app/models
++  # Exclude sub-paths within the package path
++  exclude:
++  - concerns/accessor
+ - path: app/jobs
+ - path: app/helpers
+ # Include the gems that you want to see in the dependency maps.
+@@ -118,15 +121,22 @@ packages:
+ - gem: devise
+ - gem: aws-sdk
+ - gem: will_paginate
++# Global exclusion of a class name
+ exclude:
+ - MyClass
+ - MyClass#my_instance_method
+ - MyClass.my_class_method
++functions:
++- packages: myapp
++  class: ControllerHelper
++  function: logged_in_user
++  labels: [ authentication ]
+ ```
+ 
+ * **name** Provides the project name (required)
+ * **packages** A list of source code directories which should be recorded.
+ * **exclude** A list of classes and/or methods to definitively exclude from recording.
++* **functions** A list of specific functions, scoped by package and class, to record.
+ 
+ **packages**
+ 
+@@ -145,6 +155,11 @@ Each entry in the `packages` list is a YAML object which has the following keys:
+ 
+ Optional list of fully qualified class and method names. Separate class and method names with period (`.`) for class methods and hash (`#`) for instance methods.
+ 
++**functions**
++
++Optional list of `class, function` pairs. The `package` name is used to place the function within the class map, and does not have to match
++the folder or gem name. The primary use of `functions` is to apply specific labels to functions whose source code is not accessible (e.g., it's in a Gem).
++For functions which are part of the application code, use `@label` or `@labels` in code comments to apply labels.
+ 
+ # Labels
+ 
+@@ -344,7 +359,7 @@ Each interactive diagram links directly to the source code, and the information
+ # AppMap Swagger
+ 
+ [appmap_swagger](https://github.com/applandinc/appmap_swagger-ruby) is a tool to generate Swagger files from AppMap data. With `appmap_swagger`, you can add Swagger to your Ruby or Ruby on Rails project, with no need to write or modify code. Use the Swagger UI to interact with your web services API as you build it, and use diffs of Swagger to perform code review of web service changes.
+-
++n
+ # Uploading AppMaps
+ 
+ [https://app.land](https://app.land) can be used to store, analyze, and share AppMaps.
+diff --git a/appmap.gemspec b/appmap.gemspec
+index 7a01cb9..8b2af31 100644
+--- a/appmap.gemspec
++++ b/appmap.gemspec
+@@ -20,8 +20,6 @@ Gem::Specification.new do |spec|
+ ")
+   spec.extensions << "ext/appmap/extconf.rb"
+ 
+-  spec.bindir        = 'exe'
+-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+   spec.require_paths = ['lib']
+ 
+   spec.add_dependency 'activesupport'
+diff --git a/exe/appmap b/exe/appmap
+deleted file mode 100755
+index c6bd228..0000000
+--- a/exe/appmap
++++ /dev/null
+@@ -1,154 +0,0 @@
+-#!/usr/bin/env ruby
+-# frozen_string_literal: true
+-
+-require 'gli'
+-
+-ENV['APPMAP_INITIALIZE'] = 'false'
+-
+-require 'appmap'
+-require 'appmap/version'
+-
+-# AppMap CLI.
+-module AppMap
+-  class App
+-    extend GLI::App
+-
+-    program_desc 'AppMap client'
+-
+-    version AppMap::VERSION
+-
+-    subcommand_option_handling :normal
+-    arguments :strict
+-    preserve_argv true
+-
+-    class << self
+-      protected
+-
+-      def default_appmap_file
+-        ENV['APPMAP_FILE'] || 'appmap.json'
+-      end
+-
+-      def output_file_flag(c, default_value: nil)
+-        c.desc 'Name of the output file'
+-        c.long_desc <<~DESC
+-        Use a single dash '-' for stdout.
+-        DESC
+-        c.default_value default_value if default_value
+-        c.arg_name 'filename'
+-        c.flag %i[o output]
+-      end
+-    end
+-
+-    desc 'AppMap configuration file name'
+-    default_value ENV['APPMAP_CONFIG'] || 'appmap.yml'
+-    arg_name 'filename'
+-    flag %i[c config]
+-
+-    desc 'Record the execution of a program and generate an AppMap.'
+-    arg_name 'program'
+-    command :record do |c|
+-      output_file_flag(c, default_value: default_appmap_file)
+-
+-      c.action do |_, _, args|
+-        # My subcommand name
+-        ARGV.shift
+-
+-        # Consume the :output option, if provided
+-        if %w[-o --output].find { |arg_name| ARGV[0] == arg_name.to_s }
+-          ARGV.shift
+-          ARGV.shift
+-        end
+-
+-        # Name of the program to execute. GLI will ensure that it's present.
+-        program = args.shift or help_now!("'program' argument is required")
+-
+-        # Also pop the program name from ARGV, because the command will use raw ARGV
+-        # to load the extra arguments into this Ruby process.
+-        ARGV.shift
+-
+-        require 'appmap/command/record'
+-        AppMap::Command::Record.new(@config, program).perform do |version, metadata, class_map, events|
+-          @output_file.write JSON.generate(version: version,
+-                                           metadata: metadata,
+-                                           classMap: class_map,
+-                                           events: events)
+-        end
+-      end
+-    end
+-
+-    desc 'Calculate and print statistics of scenario files.'
+-    arg_name 'filename'
+-    command :stats do |c|
+-      output_file_flag(c, default_value: '-')
+-
+-      c.desc 'Display format for the result (text | json)'
+-      c.default_value 'text'
+-      c.flag %i[f format]
+-
+-      c.desc 'Maximum number of lines to display for each stat'
+-      c.flag %i[l limit]
+-
+-      c.action do |_, options, args|
+-        require 'appmap/command/stats'
+-
+-        limit = options[:limit].to_i if options[:limit]
+-
+-        # Name of the file to analyze. GLI will ensure that it's present.
+-        filenames = args
+-        help_now!("'filename' argument is required") if filenames.empty?
+-
+-        require 'appmap/algorithm/stats'
+-        result = filenames.inject(::AppMap::Algorithm::Stats::Result.new([], [])) do |stats_result, filename|
+-          appmap = begin
+-            JSON.parse(File.read(filename))
+-          rescue JSON::ParserError
+-            STDERR.puts "#{filename} is not valid JSON : #{$!}"
+-            nil
+-          end
+-          stats_result.tap do
+-            if appmap
+-              limit = options[:limit].to_i if options[:limit]
+-              stats_for_file = AppMap::Command::Stats.new(appmap).perform(limit: limit)
+-              stats_result.merge!(stats_for_file)
+-            end
+-          end
+-        end
+-
+-        result.sort!
+-        result.limit!(limit) if limit
+-
+-        display = case options[:format]
+-        when 'json'
+-          JSON.pretty_generate(result.as_json)
+-        else
+-          result.as_text
+-        end
+-        @output_file.write display
+-      end
+-    end
+-
+-    pre do |global, _, options, _|
+-      @config = interpret_config_option(global[:config])
+-      @output_file = interpret_output_file_option(options[:output])
+-
+-      true
+-    end
+-
+-    class << self
+-      protected
+-
+-      def interpret_config_option(fname)
+-        AppMap.initialize fname
+-      end
+-
+-      def interpret_output_file_option(file_name)
+-        Hash.new { |_, fname| -> { File.new(fname, 'w') } }.tap do |open_output_file|
+-          open_output_file[nil] = -> { nil }
+-          open_output_file['-'] = -> { $stdout }
+-        end[file_name].call
+-      end
+-    end
+-  end
+-end
+-
+-exit AppMap::App.run(ARGV)
+diff --git a/lib/appmap.rb b/lib/appmap.rb
+index ccf7bb5..998513c 100644
+--- a/lib/appmap.rb
++++ b/lib/appmap.rb
+@@ -43,6 +43,7 @@ module AppMap
+     # Call this function before the program code is loaded by the Ruby VM, otherwise
+     # the load events won't be seen and the hooks won't activate.
+     def initialize(config_file_path = 'appmap.yml')
++      raise "AppMap configuration file #{config_file_path} does not exist" unless ::File.exists?(config_file_path)
+       warn "Configuring AppMap from path #{config_file_path}"
+       Config.load_from_file(config_file_path).tap do |configuration|
+         self.configuration = configuration
+@@ -50,11 +51,6 @@ module AppMap
+       end
+     end
+ 
+-    # Whether to include source and comments in all class maps.
+-    def include_source?
+-      ENV['APPMAP_SOURCE'] == 'true'
+-    end
+-
+     # Used to start tracing, stop tracing, and record events.
+     def tracing
+       @tracing ||= Trace::Tracing.new
+@@ -88,8 +84,8 @@ module AppMap
+     end
+ 
+     # Builds a class map from a config and a list of Ruby methods.
+-    def class_map(methods, options = {})
+-      ClassMap.build_from_methods(methods, options)
++    def class_map(methods)
++      ClassMap.build_from_methods(methods)
+     end
+ 
+     # Returns default metadata detected from the Ruby system and from the
+diff --git a/lib/appmap/class_map.rb b/lib/appmap/class_map.rb
+index 4d19a27..0023c1c 100644
+--- a/lib/appmap/class_map.rb
++++ b/lib/appmap/class_map.rb
+@@ -71,17 +71,17 @@ module AppMap
+     end
+ 
+     class << self
+-      def build_from_methods(methods, options = {})
++      def build_from_methods(methods)
+         root = Types::Root.new
+         methods.each do |method|
+-          add_function root, method, options
++          add_function root, method
+         end
+         root.children.map(&:to_h)
+       end
+ 
+       protected
+ 
+-      def add_function(root, method, include_source: true)
++      def add_function(root, method)
+         package = method.package
+         static = method.static
+ 
+@@ -113,16 +113,13 @@ module AppMap
+             [ method.defined_class, static ? '.' : '#', method.name ].join
+           end
+ 
+-        source, comment = begin
+-          [ method.source, method.comment ]
++        comment = begin
++          method.comment
+         rescue MethodSource::SourceNotFoundError
+-          [ nil, nil, ]
++          nil
+         end
+ 
+-        if include_source
+-          function_info[:source] = source unless source.blank?
+-          function_info[:comment] = comment unless comment.blank?
+-        end
++        function_info[:comment] = comment unless comment.blank?
+ 
+         function_info[:labels] = parse_labels(comment) + (package.labels || [])
+         object_infos << function_info
+diff --git a/lib/appmap/command/record.rb b/lib/appmap/command/record.rb
+index 5f22903..d683f63 100644
+--- a/lib/appmap/command/record.rb
++++ b/lib/appmap/command/record.rb
+@@ -27,7 +27,7 @@ module AppMap
+           event_thread.join
+           yield AppMap::APPMAP_FORMAT_VERSION,
+                 AppMap.detect_metadata,
+-                AppMap.class_map(tracer.event_methods, include_source: AppMap.include_source?),
++                AppMap.class_map(tracer.event_methods),
+                 events
+         end
+ 
+diff --git a/lib/appmap/config.rb b/lib/appmap/config.rb
+index aa208d6..b4c8841 100644
+--- a/lib/appmap/config.rb
++++ b/lib/appmap/config.rb
+@@ -49,44 +49,89 @@ module AppMap
+       end
+     end
+ 
+-    Hook = Struct.new(:method_names, :package) do
++    Function = Struct.new(:package, :cls, :labels, :function_names) do
++      def to_h
++        {
++          package: package,
++          class: cls,
++          labels: labels,
++          functions: function_names.map(&:to_sym)
++        }.compact
++      end
+     end
+ 
+-    OPENSSL_PACKAGES = Package.build_from_path('openssl', package_name: 'openssl', labels: %w[security crypto])
++    class Hook
++      attr_reader :method_names, :package
++
++      def initialize(method_names, package)
++        @method_names = method_names
++        @package = package
++      end
++
++      def to_h
++        {
++          package: package.name,
++          method_names: method_names
++        }
++      end
++    end
++
++    OPENSSL_PACKAGES = ->(labels) { Package.build_from_path('openssl', package_name: 'openssl', labels: labels) }
+ 
+     # Methods that should always be hooked, with their containing
+     # package and labels that should be applied to them.
+     HOOKED_METHODS = {
+-      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', labels: %w[provider.secure_compare])),
++      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', labels: %w[crypto.secure_compare])),
+       'ActionView::Renderer' => Hook.new(:render, Package.build_from_path('action_view', labels: %w[mvc.view])),
+-      'ActionDispatch::Cookies::CookieJar' => Hook.new(%i[[]= clear update delete recycle], Package.build_from_path('action_pack', labels: %w[provider.http.cookie])),
+-      'ActionDispatch::Cookies::EncryptedCookieJar' => Hook.new(%i[[]=], Package.build_from_path('action_pack', labels: %w[provider.http.cookie crypto])),
+-      'CanCan::ControllerAdditions' => Hook.new(%i[authorize! can? cannot?], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
+-      'CanCan::Ability' => Hook.new(%i[authorize!], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
++      'ActionDispatch::Request::Session' => Hook.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_path('action_pack', labels: %w[http.session])),
++      'ActionDispatch::Cookies::CookieJar' => Hook.new(%i[[]= clear update delete recycle], Package.build_from_path('action_pack', labels: %w[http.cookie])),
++      'ActionDispatch::Cookies::EncryptedCookieJar' => Hook.new(%i[[]=], Package.build_from_path('action_pack', labels: %w[http.cookie crypto.encrypt])),
++      'CanCan::ControllerAdditions' => Hook.new(%i[authorize! can? cannot?], Package.build_from_path('cancancan', labels: %w[security.authorization])),
++      'CanCan::Ability' => Hook.new(%i[authorize!], Package.build_from_path('cancancan', labels: %w[security.authorization])),
++      'ActionController::Instrumentation' => [
++        Hook.new(%i[process_action send_file send_data redirect_to], Package.build_from_path('action_view', labels: %w[mvc.controller])),
++        Hook.new(%i[render], Package.build_from_path('action_view', labels: %w[mvc.view])),
++      ]
+     }.freeze
+ 
+     BUILTIN_METHODS = {
+-      'OpenSSL::PKey::PKey' => Hook.new(:sign, OPENSSL_PACKAGES),
+-      'OpenSSL::X509::Request' => Hook.new(%i[sign verify], OPENSSL_PACKAGES),
+-      'OpenSSL::PKCS5' => Hook.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGES),
+-      'OpenSSL::Cipher' => Hook.new(%i[encrypt decrypt final], OPENSSL_PACKAGES),
+-      'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES),
+-      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http io])),
+-      'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.smtp protocol.email io])),
+-      'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.pop protocol.email io])),
+-      'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.imap protocol.email io])),
+-      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal provider.serialization])),
+-      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml provider.serialization])),
+-      'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
+-      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
++      'OpenSSL::PKey::PKey' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.pkey])),
++      'OpenSSL::X509::Request' => Hook.new(%i[sign verify], OPENSSL_PACKAGES.(%w[crypto.x509])),
++      'OpenSSL::PKCS5' => Hook.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGES.(%w[crypto.pkcs5])),
++      'OpenSSL::Cipher' => [
++        Hook.new(%i[encrypt], OPENSSL_PACKAGES.(%w[crypto.encrypt])),
++        Hook.new(%i[decrypt], OPENSSL_PACKAGES.(%w[crypto.decrypt]))
++      ],
++      'ActiveSupport::Callbacks::CallbackSequence' => [
++        Hook.new(:invoke_before, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.before_action])),
++        Hook.new(:invoke_after, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.after_action])),
++      ],
++      'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
++      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http])),
++      'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
++      'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.email.pop])),
++      'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
++      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal])),
++      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml])),
++      'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
++      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
+     }.freeze
+ 
+-    attr_reader :name, :packages, :exclude
++    attr_reader :name, :packages, :exclude, :builtin_methods
+ 
+-    def initialize(name, packages = [], exclude = [])
++    def initialize(name, packages, exclude: [], functions: [])
+       @name = name
+       @packages = packages
+       @exclude = exclude
++      @builtin_methods = BUILTIN_METHODS
++      @functions = functions
++      @hooked_methods = HOOKED_METHODS.dup
++      functions.each do |func|
++        package_options = {}
++        package_options[:labels] = func.labels if func.labels
++        @hooked_methods[func.cls] ||= []
++        @hooked_methods[func.cls] << Hook.new(func.function_names, Package.build_from_path(func.package, package_options))
++      end
+     end
+ 
+     class << self
+@@ -98,6 +143,16 @@ module AppMap
+ 
+       # Loads configuration from a Hash.
+       def load(config_data)
++        functions = (config_data['functions'] || []).map do |function_data|
++          package = function_data['package']
++          cls = function_data['class']
++          functions = function_data['function'] || function_data['functions']
++          raise 'AppMap class configuration should specify package, class and function(s)' unless package && cls && functions
++          functions = Array(functions).map(&:to_sym)
++          labels = function_data['label'] || function_data['labels']
++          labels = Array(labels).map(&:to_s) if labels
++          Function.new(package, cls, labels, functions)
++        end
+         packages = (config_data['packages'] || []).map do |package|
+           gem = package['gem']
+           path = package['path']
+@@ -112,7 +167,8 @@ module AppMap
+             Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
+           end
+         end.compact
+-        Config.new config_data['name'], packages, config_data['exclude'] || []
++        exclude = config_data['exclude'] || []
++        Config.new config_data['name'], packages, exclude: exclude, functions: functions
+       end
+     end
+ 
+@@ -120,6 +176,7 @@ module AppMap
+       {
+         name: name,
+         packages: packages.map(&:to_h),
++        functions: @functions.map(&:to_h),
+         exclude: exclude
+       }
+     end
+@@ -164,14 +221,17 @@ module AppMap
+     end
+ 
+     def find_package(defined_class, method_name)
+-      hook = find_hook(defined_class)
+-      return nil unless hook
++      hooks = find_hooks(defined_class)
++      return nil unless hooks
+ 
+-      Array(hook.method_names).include?(method_name) ? hook.package : nil
++      hook = Array(hooks).find do |hook|
++        Array(hook.method_names).include?(method_name)
++      end
++      hook ? hook.package : nil
+     end
+ 
+-    def find_hook(defined_class)
+-      HOOKED_METHODS[defined_class] || BUILTIN_METHODS[defined_class]
++    def find_hooks(defined_class)
++      Array(@hooked_methods[defined_class] || @builtin_methods[defined_class])
+     end
+   end
+ end
+diff --git a/lib/appmap/cucumber.rb b/lib/appmap/cucumber.rb
+index 7b59c0a..eaf4ac3 100644
+--- a/lib/appmap/cucumber.rb
++++ b/lib/appmap/cucumber.rb
+@@ -50,7 +50,7 @@ module AppMap
+         appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
+         scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
+ 
+-        File.write(File.join(APPMAP_OUTPUT_DIR, scenario_filename), JSON.generate(appmap))
++        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, scenario_filename), JSON.generate(appmap))
+       end
+ 
+       def enabled?
+diff --git a/lib/appmap/hook.rb b/lib/appmap/hook.rb
+index dd919d9..f141ac7 100644
+--- a/lib/appmap/hook.rb
++++ b/lib/appmap/hook.rb
+@@ -32,6 +32,7 @@ module AppMap
+     end
+ 
+     attr_reader :config
++
+     def initialize(config)
+       @config = config
+     end
+@@ -59,6 +60,10 @@ module AppMap
+ 
+         hook = lambda do |hook_cls|
+           lambda do |method_id|
++            # Don't try and trace the AppMap methods or there will be
++            # a stack overflow in the defined hook method.
++            return if (hook_cls&.name || '').split('::')[0] == AppMap.name
++
+             method = begin
+               hook_cls.public_instance_method(method_id)
+             rescue NameError
+@@ -78,11 +83,9 @@ module AppMap
+               config.always_hook?(hook_cls, method.name) ||
+               config.included_by_location?(method)
+ 
+-            hook_method = Hook::Method.new(config.package_for_method(method), hook_cls, method)
++            package = config.package_for_method(method)
+ 
+-            # Don't try and trace the AppMap methods or there will be
+-            # a stack overflow in the defined hook method.
+-            next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
++            hook_method = Hook::Method.new(package, hook_cls, method)
+ 
+             hook_method.activate
+           end
+@@ -112,25 +115,27 @@ module AppMap
+         end
+       end
+ 
+-      Config::BUILTIN_METHODS.each do |class_name, hook|
+-        require hook.package.package_name if hook.package.package_name
+-        Array(hook.method_names).each do |method_name|
+-          method_name = method_name.to_sym
++      config.builtin_methods.each do |class_name, hooks|
++        Array(hooks).each do |hook|
++          require hook.package.package_name if hook.package.package_name
++          Array(hook.method_names).each do |method_name|
++            method_name = method_name.to_sym
+ 
+-          cls = class_from_string.(class_name)
+-          method = \
+-            begin
+-              cls.instance_method(method_name)
+-            rescue NameError
+-              cls.method(method_name) rescue nil
+-            end
++            cls = class_from_string.(class_name)
++            method = \
++              begin
++                cls.instance_method(method_name)
++              rescue NameError
++                cls.method(method_name) rescue nil
++              end
+ 
+-          next if config.never_hook?(method)
++            next if config.never_hook?(method)
+ 
+-          if method
+-            Hook::Method.new(hook.package, cls, method).activate
+-          else
+-            warn "Method #{method_name} not found on #{cls.name}"
++            if method
++              Hook::Method.new(hook.package, cls, method).activate
++            else
++              warn "Method #{method_name} not found on #{cls.name}"
++            end
+           end
+         end
+       end
+diff --git a/lib/appmap/middleware/remote_recording.rb b/lib/appmap/middleware/remote_recording.rb
+index 83affc0..f695d25 100644
+--- a/lib/appmap/middleware/remote_recording.rb
++++ b/lib/appmap/middleware/remote_recording.rb
+@@ -67,7 +67,7 @@ module AppMap
+ 
+         response = JSON.generate \
+           version: AppMap::APPMAP_FORMAT_VERSION,
+-          classMap: AppMap.class_map(tracer.event_methods, include_source: AppMap.include_source?),
++          classMap: AppMap.class_map(tracer.event_methods),
+           metadata: metadata,
+           events: @events
+ 
+diff --git a/lib/appmap/minitest.rb b/lib/appmap/minitest.rb
+index dc88bac..cf4a4d2 100644
+--- a/lib/appmap/minitest.rb
++++ b/lib/appmap/minitest.rb
+@@ -26,8 +26,9 @@ module AppMap
+       end
+ 
+ 
+-      def finish
++      def finish(exception)
+         warn "Finishing recording of test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
++        warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
+ 
+         events = []
+         AppMap.tracing.delete @trace
+@@ -36,15 +37,17 @@ module AppMap
+ 
+         AppMap::Minitest.add_event_methods @trace.event_methods
+ 
+-        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
++        class_map = AppMap.class_map(@trace.event_methods)
+ 
+         feature_group = test.class.name.underscore.split('_')[0...-1].join('_').capitalize
+         feature_name = test.name.split('_')[1..-1].join(' ')
+         scenario_name = [ feature_group, feature_name ].join(' ')
+ 
+-        AppMap::Minitest.save scenario_name,
+-                              class_map,
+-                              source_location,
++        AppMap::Minitest.save name: scenario_name,
++                              class_map: class_map,
++                              source_location: source_location,
++                              test_status: exception ? 'failed' : 'succeeded',
++                              exception: exception,
+                               events: events
+       end
+     end
+@@ -63,11 +66,11 @@ module AppMap
+         @recordings_by_test[test.object_id] = Recording.new(test, name)
+       end
+ 
+-      def end_test(test)
++      def end_test(test, exception:)
+         recording = @recordings_by_test.delete(test.object_id)
+         return warn "No recording found for #{test}" unless recording
+ 
+-        recording.finish
++        recording.finish exception
+       end
+ 
+       def config
+@@ -78,9 +81,9 @@ module AppMap
+         @event_methods += event_methods
+       end
+ 
+-      def save(example_name, class_map, source_location, events: nil, labels: nil)
++      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
+         metadata = AppMap::Minitest.metadata.tap do |m|
+-          m[:name] = example_name
++          m[:name] = name
+           m[:source_location] = source_location
+           m[:app] = AppMap.configuration.name
+           m[:frameworks] ||= []
+@@ -91,6 +94,13 @@ module AppMap
+           m[:recorder] = {
+             name: 'minitest'
+           }
++          m[:test_status] = test_status
++          if exception
++            m[:exception] = {
++              class: exception.class.name,
++              message: exception.to_s
++            }
++          end
+         end
+ 
+         appmap = {
+@@ -99,14 +109,9 @@ module AppMap
+           classMap: class_map,
+           events: events
+         }.compact
+-        fname = AppMap::Util.scenario_filename(example_name)
++        fname = AppMap::Util.scenario_filename(name)
+ 
+-        File.write(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
+-      end
+-
+-      def print_inventory
+-        class_map = AppMap.class_map(@event_methods)
+-        save 'Inventory', class_map, labels: %w[inventory]
++        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
+       end
+ 
+       def enabled?
+@@ -115,9 +120,6 @@ module AppMap
+ 
+       def run
+         init
+-        at_exit do
+-          print_inventory
+-        end
+       end
+     end
+   end
+@@ -135,7 +137,7 @@ if AppMap::Minitest.enabled?
+       begin
+         run_without_hook
+       ensure
+-        AppMap::Minitest.end_test self
++        AppMap::Minitest.end_test self, exception: $!
+       end
+     end
+   end
+diff --git a/lib/appmap/record.rb b/lib/appmap/record.rb
+index f42da60..bb3ea94 100644
+--- a/lib/appmap/record.rb
++++ b/lib/appmap/record.rb
+@@ -23,5 +23,5 @@ at_exit do
+     'classMap' => AppMap.class_map(tracer.event_methods),
+     'events' => events
+   }
+-  File.write 'appmap.json', JSON.generate(appmap)
++  AppMap::Util.write_appmap('appmap.json', JSON.generate(appmap))
+ end
+diff --git a/lib/appmap/rspec.rb b/lib/appmap/rspec.rb
+index bbc3781..79c0c66 100644
+--- a/lib/appmap/rspec.rb
++++ b/lib/appmap/rspec.rb
+@@ -94,8 +94,9 @@ module AppMap
+         result
+       end
+ 
+-      def finish
++      def finish(exception)
+         warn "Finishing recording of example #{example}" if AppMap::RSpec::LOG
++        warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
+ 
+         events = []
+         AppMap.tracing.delete @trace
+@@ -104,7 +105,7 @@ module AppMap
+ 
+         AppMap::RSpec.add_event_methods @trace.event_methods
+ 
+-        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
++        class_map = AppMap.class_map(@trace.event_methods)
+ 
+         description = []
+         scope = ScopeExample.new(example)
+@@ -127,9 +128,11 @@ module AppMap
+ 
+         full_description = normalize.call(description.join(' '))
+ 
+-        AppMap::RSpec.save full_description,
+-                           class_map,
+-                           source_location,
++        AppMap::RSpec.save name: full_description,
++                           class_map: class_map,
++                           source_location: source_location,
++                           test_status: exception ? 'failed' : 'succeeded',
++                           exception: exception,
+                            events: events
+       end
+     end
+@@ -148,11 +151,11 @@ module AppMap
+         @recordings_by_example[example.object_id] = Recording.new(example)
+       end
+ 
+-      def end_spec(example)
++      def end_spec(example, exception:)
+         recording = @recordings_by_example.delete(example.object_id)
+         return warn "No recording found for #{example}" unless recording
+ 
+-        recording.finish
++        recording.finish exception
+       end
+ 
+       def config
+@@ -163,12 +166,11 @@ module AppMap
+         @event_methods += event_methods
+       end
+ 
+-      def save(example_name, class_map, source_location, events: nil, labels: nil)
++      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
+         metadata = AppMap::RSpec.metadata.tap do |m|
+-          m[:name] = example_name
++          m[:name] = name
+           m[:source_location] = source_location
+           m[:app] = AppMap.configuration.name
+-          m[:labels] = labels if labels
+           m[:frameworks] ||= []
+           m[:frameworks] << {
+             name: 'rspec',
+@@ -177,6 +179,13 @@ module AppMap
+           m[:recorder] = {
+             name: 'rspec'
+           }
++          m[:test_status] = test_status
++          if exception
++            m[:exception] = {
++              class: exception.class.name,
++              message: exception.to_s
++            }
++          end
+         end
+ 
+         appmap = {
+@@ -185,14 +194,9 @@ module AppMap
+           classMap: class_map,
+           events: events
+         }.compact
+-        fname = AppMap::Util.scenario_filename(example_name)
+-
+-        File.write(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
+-      end
++        fname = AppMap::Util.scenario_filename(name)
+ 
+-      def print_inventory
+-        class_map = AppMap.class_map(@event_methods)
+-        save 'Inventory', class_map, labels: %w[inventory]
++        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
+       end
+ 
+       def enabled?
+@@ -201,9 +205,6 @@ module AppMap
+ 
+       def run
+         init
+-        at_exit do
+-          print_inventory
+-        end
+       end
+     end
+   end
+@@ -225,7 +226,7 @@ if AppMap::RSpec.enabled?
+               begin
+                 instance_exec(&fn)
+               ensure
+-                AppMap::RSpec.end_spec example
++                AppMap::RSpec.end_spec example, exception: $!
+               end
+             end
+           end
+diff --git a/lib/appmap/util.rb b/lib/appmap/util.rb
+index 133d54a..cd08ded 100644
+--- a/lib/appmap/util.rb
++++ b/lib/appmap/util.rb
+@@ -71,6 +71,22 @@ module AppMap
+ 
+         event
+       end
++
++      # Atomically writes AppMap data to +filename+.
++      def write_appmap(filename, appmap)
++        require 'fileutils'
++        require 'tmpdir'
++
++        # This is what Ruby Tempfile does; but we don't want the file to be unlinked.
++        mode = File::RDWR | File::CREAT | File::EXCL
++        ::Dir::Tmpname.create([ 'appmap_', '.json' ]) do |tmpname|
++          tempfile = File.open(tmpname, mode)
++          tempfile.write(appmap)
++          tempfile.close
++          # Atomically move the tempfile into place.
++          FileUtils.mv tempfile.path, filename
++        end
++      end
+     end
+   end
+ end
+diff --git a/lib/appmap/version.rb b/lib/appmap/version.rb
+index ff7d53b..8471d09 100644
+--- a/lib/appmap/version.rb
++++ b/lib/appmap/version.rb
+@@ -3,7 +3,7 @@
+ module AppMap
+   URL = 'https://github.com/applandinc/appmap-ruby'
+ 
+-  VERSION = '0.43.0'
++  VERSION = '0.44.0'
+ 
+   APPMAP_FORMAT_VERSION = '1.4'
+ end
+diff --git a/spec/abstract_controller_base_spec.rb b/spec/abstract_controller_base_spec.rb
+index 26e58b1..2aed976 100644
+--- a/spec/abstract_controller_base_spec.rb
++++ b/spec/abstract_controller_base_spec.rb
+@@ -27,6 +27,8 @@ describe 'Rails' do
+       end
+ 
+       let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
++      let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
++      let(:appmap) { JSON.parse File.read(appmap_json_path) }
+       let(:events) { appmap['events'] }
+ 
+       describe 'an API route' do
+@@ -35,10 +37,6 @@ describe 'Rails' do
+             'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
+           end
+ 
+-          it 'inventory file is printed' do
+-            expect(File).to exist(File.join(tmpdir, 'appmap/rspec/Inventory.appmap.json'))
+-          end
+-
+           it 'http_server_request is recorded in the appmap' do
+             expect(events).to include(
+               hash_including(
+diff --git a/spec/class_map_spec.rb b/spec/class_map_spec.rb
+index 343c8b9..4f60708 100644
+--- a/spec/class_map_spec.rb
++++ b/spec/class_map_spec.rb
+@@ -4,18 +4,10 @@ require 'spec_helper'
+ 
+ describe 'AppMap::ClassMap' do
+   describe '.build_from_methods' do
+-    it 'includes source code if available' do
+-      map = AppMap.class_map([scoped_method(method(:test_method))])
++    it 'includes method comment' do
++      map = AppMap.class_map([scoped_method((method :test_method))])
+       function = dig_map(map, 5)[0]
+-      expect(function[:source]).to include 'test method body'
+-      expect(function[:comment]).to include 'test method comment'
+-    end
+-
+-    it 'can omit source code even if available' do
+-      map = AppMap.class_map([scoped_method((method :test_method))], include_source: false)
+-      function = dig_map(map, 5)[0]
+-      expect(function).to_not include(:source)
+-      expect(function).to_not include(:comment)
++      expect(function).to include(:comment)
+     end
+ 
+     # test method comment
+diff --git a/spec/config_spec.rb b/spec/config_spec.rb
+index 5eeaac6..6657f1a 100644
+--- a/spec/config_spec.rb
++++ b/spec/config_spec.rb
+@@ -17,10 +17,40 @@ describe AppMap::Config, docker: false do
+           path: 'path-2',
+           exclude: [ 'exclude-1' ]
+         }
++      ],
++      functions: [
++        {
++          package: 'pkg',
++          class: 'cls',
++          function: 'fn',
++          label: 'lbl'
++        }
+       ]
+     }.deep_stringify_keys!
+     config = AppMap::Config.load(config_data)
+ 
+-    expect(config.to_h.deep_stringify_keys!).to eq(config_data)
++    config_expectation = {
++      exclude: [],
++      name: 'test',
++      packages: [
++        {
++          path: 'path-1'
++        },
++        {
++          path: 'path-2',
++          exclude: [ 'exclude-1' ]
++        }
++      ],
++      functions: [
++        {
++          package: 'pkg',
++          class: 'cls',
++          functions: [ :fn ],
++          labels: ['lbl']
++        }
++      ]
++    }.deep_stringify_keys!
++
++    expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
+   end
+ end
+diff --git a/spec/fixtures/hook/custom_instance_method.rb b/spec/fixtures/hook/custom_instance_method.rb
+new file mode 100644
+index 0000000..285db81
+--- /dev/null
++++ b/spec/fixtures/hook/custom_instance_method.rb
+@@ -0,0 +1,11 @@
++# frozen_string_literal: true
++
++class CustomInstanceMethod
++  def to_s
++    'CustomInstance Method fixture'
++  end
++
++  def say_default
++    'default'
++  end
++end
+diff --git a/spec/fixtures/hook/method_named_call.rb b/spec/fixtures/hook/method_named_call.rb
+new file mode 100644
+index 0000000..69a2cc5
+--- /dev/null
++++ b/spec/fixtures/hook/method_named_call.rb
+@@ -0,0 +1,11 @@
++# frozen_string_literal: true
++
++class MethodNamedCall
++  def to_s
++    'MethodNamedCall'
++  end
++
++  def call(a, b, c, d, e)
++    [ a, b, c, d, e ].join(' ')
++  end
++end
+diff --git a/spec/hook_spec.rb b/spec/hook_spec.rb
+index e4cbc99..8afb9f1 100644
+--- a/spec/hook_spec.rb
++++ b/spec/hook_spec.rb
+@@ -64,13 +64,144 @@ describe 'AppMap class Hooking', docker: false do
+   it 'excludes named classes and methods' do
+     load 'spec/fixtures/hook/exclude.rb'
+     package = AppMap::Config::Package.build_from_path('spec/fixtures/hook/exclude.rb')
+-    config = AppMap::Config.new('hook_spec', [ package ], %w[ExcludeTest])
++    config = AppMap::Config.new('hook_spec', [ package ], exclude: %w[ExcludeTest])
+     AppMap.configuration = config
+ 
+     expect(config.never_hook?(ExcludeTest.new.method(:instance_method))).to be_truthy
+     expect(config.never_hook?(ExcludeTest.method(:cls_method))).to be_truthy
+   end
+ 
++  it "handles an instance method named 'call' without issues" do
++    events_yaml = <<~YAML
++    ---
++    - :id: 1
++      :event: :call
++      :defined_class: MethodNamedCall
++      :method_id: call
++      :path: spec/fixtures/hook/method_named_call.rb
++      :lineno: 8
++      :static: false
++      :parameters:
++      - :name: :a
++        :class: Integer
++        :value: '1'
++        :kind: :req
++      - :name: :b
++        :class: Integer
++        :value: '2'
++        :kind: :req
++      - :name: :c
++        :class: Integer
++        :value: '3'
++        :kind: :req
++      - :name: :d
++        :class: Integer
++        :value: '4'
++        :kind: :req
++      - :name: :e
++        :class: Integer
++        :value: '5'
++        :kind: :req
++      :receiver:
++        :class: MethodNamedCall
++        :value: MethodNamedCall
++    - :id: 2
++      :event: :return
++      :parent_id: 1
++      :return_value:
++        :class: String
++        :value: 1 2 3 4 5
++    YAML
++
++    _, tracer = test_hook_behavior 'spec/fixtures/hook/method_named_call.rb', events_yaml do
++      expect(MethodNamedCall.new.call(1, 2, 3, 4, 5)).to eq('1 2 3 4 5')
++    end
++    class_map = AppMap.class_map(tracer.event_methods)
++    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
++    ---
++    - :name: spec/fixtures/hook/method_named_call.rb
++      :type: package
++      :children:
++      - :name: MethodNamedCall
++        :type: class
++        :children:
++        - :name: call
++          :type: function
++          :location: spec/fixtures/hook/method_named_call.rb:8
++          :static: false
++    CLASSMAP
++  end
++
++  it 'can custom hook and label a function' do
++    events_yaml = <<~YAML
++    ---
++    - :id: 1
++      :event: :call
++      :defined_class: CustomInstanceMethod
++      :method_id: say_default
++      :path: spec/fixtures/hook/custom_instance_method.rb
++      :lineno: 8
++      :static: false
++      :parameters: []
++      :receiver:
++        :class: CustomInstanceMethod
++        :value: CustomInstance Method fixture
++    - :id: 2
++      :event: :return
++      :parent_id: 1
++      :return_value:
++        :class: String
++        :value: default
++    YAML
++
++    config = AppMap::Config.load({
++      functions: [
++        {
++          package: 'hook_spec',
++          class: 'CustomInstanceMethod',
++          functions: [ :say_default ],
++          labels: ['cowsay']
++        }
++      ]
++    }.deep_stringify_keys)
++
++    load 'spec/fixtures/hook/custom_instance_method.rb'
++    hook_cls = CustomInstanceMethod
++    method = hook_cls.instance_method(:say_default)
++
++    require 'appmap/hook/method'
++    hook_method = AppMap::Hook::Method.new(config.package_for_method(method), hook_cls, method)
++    hook_method.activate
++
++    tracer = AppMap.tracing.trace
++    AppMap::Event.reset_id_counter
++    begin
++      expect(CustomInstanceMethod.new.say_default).to eq('default')
++    ensure
++      AppMap.tracing.delete(tracer)
++    end
++
++    events = collect_events(tracer).to_yaml
++
++    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
++    class_map = AppMap.class_map(tracer.event_methods)
++    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
++    ---
++    - :name: hook_spec
++      :type: package
++      :children:
++      - :name: CustomInstanceMethod
++        :type: class
++        :children:
++        - :name: say_default
++          :type: function
++          :location: spec/fixtures/hook/custom_instance_method.rb:8
++          :static: false
++          :labels:
++          - cowsay
++    CLASSMAP
++  end
++
+   it 'parses labels from comments' do
+     _, tracer = invoke_test_file 'spec/fixtures/hook/labels.rb' do
+       ClassWithLabel.new.fn_with_label
+@@ -91,9 +222,6 @@ describe 'AppMap class Hooking', docker: false do
+           :labels:
+           - has-fn-label
+           :comment: "# @label has-fn-label\\n"
+-          :source: |2
+-              def fn_with_label
+-              end
+       YAML
+   end
+ 
+@@ -148,10 +276,6 @@ describe 'AppMap class Hooking', docker: false do
+           :type: function
+           :location: spec/fixtures/hook/instance_method.rb:8
+           :static: false
+-          :source: |2
+-              def say_default
+-                'default'
+-              end
+     YAML
+   end
+ 
+@@ -746,6 +870,7 @@ describe 'AppMap class Hooking', docker: false do
+       end
+       secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == 'ActiveSupport::SecurityUtils' }
+       secure_compare_event.delete(:lineno)
++      secure_compare_event.delete(:path)
+ 
+       expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq('')
+       ---
+@@ -753,7 +878,6 @@ describe 'AppMap class Hooking', docker: false do
+       :event: :call
+       :defined_class: ActiveSupport::SecurityUtils
+       :method_id: secure_compare
+-      :path: lib/active_support/security_utils.rb
+       :static: true
+       :parameters:
+       - :name: :a
+@@ -837,7 +961,7 @@ describe 'AppMap class Hooking', docker: false do
+       entry = cm[1][:children][0][:children][0][:children][0]
+       # Sanity check, make sure we got the right one
+       expect(entry[:name]).to eq('secure_compare')
+-      expect(entry[:labels]).to eq(%w[provider.secure_compare])
++      expect(entry[:labels]).to eq(%w[crypto.secure_compare])
+     end
+   end
+ 
+diff --git a/test/cli_test.rb b/test/cli_test.rb
+deleted file mode 100755
+index 2ea654c..0000000
+--- a/test/cli_test.rb
++++ /dev/null
+@@ -1,116 +0,0 @@
+-#!/usr/bin/env ruby
+-# frozen_string_literal: true
+-
+-require 'test_helper'
+-require 'English'
+-
+-class CLITest < Minitest::Test
+-  OUTPUT_FILENAME = File.expand_path('../tmp/appmap.json', __dir__)
+-  STATS_OUTPUT_FILENAME = File.expand_path('../tmp/stats.txt', __dir__)
+-
+-  def setup
+-    FileUtils.rm_f OUTPUT_FILENAME
+-    FileUtils.rm_f STATS_OUTPUT_FILENAME
+-  end
+-
+-  def test_record
+-    output = Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
+-    end
+-
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    assert File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} does not exist"
+-    assert_equal 'Hello', output
+-    output = JSON.parse(File.read(OUTPUT_FILENAME))
+-    assert output['classMap'], 'Output should contain classMap'
+-    assert output['events'], 'Output should contain events'
+-  end
+-
+-  def test_stats_to_file
+-    Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
+-    end
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-
+-    output = Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} stats -o #{STATS_OUTPUT_FILENAME} #{OUTPUT_FILENAME}`.strip
+-    end
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    assert_equal '', output
+-    assert File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} does not exist"
+-  end
+-
+-
+-  def test_stats_text
+-    Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
+-    end
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-
+-    output = Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} stats -o - #{OUTPUT_FILENAME}`.strip
+-    end
+-
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    assert_equal <<~OUTPUT.strip, output.strip
+-    Class frequency:
+-    ----------------
+-    1	Main
+-
+-    Method frequency:
+-    ----------------
+-    1	Main.say_hello
+-    OUTPUT
+-  end
+-
+-  def test_stats_json
+-    Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} record -o #{OUTPUT_FILENAME} ./lib/cli_record_test/main.rb`.strip
+-    end
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-
+-    output = Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} stats -f json -o - #{OUTPUT_FILENAME}`.strip
+-    end
+-
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    assert_equal <<~OUTPUT.strip, output.strip
+-    {
+-      "class_frequency": [
+-        {
+-          "name": "Main",
+-          "count": 1
+-        }
+-      ],
+-      "method_frequency": [
+-        {
+-          "name": "Main.say_hello",
+-          "count": 1
+-        }
+-      ]
+-    }
+-    OUTPUT
+-  end
+-
+-  def test_record_to_default_location
+-    Dir.chdir 'test/fixtures/cli_record_test' do
+-      system({ 'APPMAP_FILE' => OUTPUT_FILENAME }, "#{File.expand_path '../exe/appmap', __dir__} record ./lib/cli_record_test/main.rb")
+-    end
+-
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    assert File.file?(OUTPUT_FILENAME), 'appmap.json does not exist'
+-  end
+-
+-  def test_record_to_stdout
+-    output = Dir.chdir 'test/fixtures/cli_record_test' do
+-      `#{File.expand_path '../exe/appmap', __dir__} record -o - ./lib/cli_record_test/main.rb`
+-    end
+-
+-    assert_equal 0, $CHILD_STATUS.exitstatus
+-    # Event path
+-    assert_includes output, %("path":"lib/cli_record_test/main.rb")
+-    # Function location
+-    assert_includes output, %("location":"lib/cli_record_test/main.rb:3")
+-    assert !File.file?(OUTPUT_FILENAME), "#{OUTPUT_FILENAME} should not exist"
+-  end
+-end
+diff --git a/test/expectations/openssl_test_key_sign1.json b/test/expectations/openssl_test_key_sign1.json
+index 6489b47..0613a69 100644
+--- a/test/expectations/openssl_test_key_sign1.json
++++ b/test/expectations/openssl_test_key_sign1.json
+@@ -11,8 +11,7 @@
+             "name": "sign",
+             "type": "function",
+             "location": "lib/openssl_key_sign.rb:10",
+-            "static": true,
+-            "source": "  def Example.sign\n    key = OpenSSL::PKey::RSA.new 2048\n\n    document = 'the document'\n\n    digest = OpenSSL::Digest::SHA256.new\n    key.sign digest, document\n  end\n"
++            "static": true
+           }
+         ]
+       }
+@@ -40,8 +39,7 @@
+                     "location": "OpenSSL::PKey::PKey#sign",
+                     "static": false,
+                     "labels": [
+-                      "security",
+-                      "crypto"
++                      "crypto.pkey"
+                     ]
+                   }
+                 ]
+diff --git a/test/gem_test.rb b/test/gem_test.rb
+index 6cae910..1342c2a 100644
+--- a/test/gem_test.rb
++++ b/test/gem_test.rb
+@@ -26,7 +26,7 @@ class MinitestTest < Minitest::Test
+       assert_equal 2, events.size
+       assert_equal 'call', events.first['event']
+       assert_equal 'default_parser', events.first['method_id']
+-      assert_equal "#{Gem.loaded_specs['parser'].gem_dir}/lib/parser/base.rb", events.first['path']
++      assert_match /\lib\/parser\/base\.rb$/, events.first['path']
+       assert_equal 'return', events.second['event']
+       assert_equal 1, events.second['parent_id']
+     end
+diff --git a/test/rspec_test.rb b/test/rspec_test.rb
+index 72ed029..b30618b 100644
+--- a/test/rspec_test.rb
++++ b/test/rspec_test.rb
+@@ -18,19 +18,6 @@ class RSpecTest < Minitest::Test
+     end
+   end
+ 
+-  def test_inventory
+-    perform_test 'plain_hello_spec' do
+-      appmap_file = 'tmp/appmap/rspec/Inventory.appmap.json'
+-
+-      assert File.file?(appmap_file), 'appmap output file does not exist'
+-      appmap = JSON.parse(File.read(appmap_file))
+-      assert_equal AppMap::APPMAP_FORMAT_VERSION, appmap['version']
+-      assert_includes appmap.keys, 'metadata'
+-      metadata = appmap['metadata']
+-      assert_equal 'Inventory', metadata['name']
+-    end
+-  end
+-
+   def test_record_decorated_rspec
+     perform_test 'decorated_hello_spec' do
+       appmap_file = 'tmp/appmap/rspec/Hello_says_hello.appmap.json'
