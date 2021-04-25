@@ -968,7 +968,7 @@ describe 'AppMap class Hooking', docker: false do
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')
-      expect(entry[:labels]).to eq(%w[provider.secure_compare])
+      expect(entry[:labels]).to eq(%w[crypto.secure_compare])
     end
   end
 

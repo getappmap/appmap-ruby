@@ -112,7 +112,7 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        (config_data['classes'] || []).map do |cls|
+        (config_data['functions'] || []).map do |cls|
           package = cls['package']
           name = cls['name']
           functions = cls['function'] || cls['functions']
