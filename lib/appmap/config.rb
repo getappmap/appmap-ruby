@@ -84,6 +84,10 @@ module AppMap
         Hook.new(%i[encrypt], OPENSSL_PACKAGES.(%w[crypto.encrypt])),
         Hook.new(%i[decrypt], OPENSSL_PACKAGES.(%w[crypto.decrypt]))
       ],
+      'ActiveSupport::Callbacks::CallbackSequence' => [
+        Hook.new(:invoke_before, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.before_action])),
+        Hook.new(:invoke_after, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.after_action])),
+      ],
       'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
       'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http])),
       'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
@@ -112,16 +116,16 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        (config_data['functions'] || []).map do |cls|
-          package = cls['package']
-          name = cls['name']
-          functions = cls['function'] || cls['functions']
-          raise 'AppMap class configuration should specify package, name and function(s)' unless package && name && functions
+        (config_data['functions'] || []).map do |function_data|
+          package = function_data['package']
+          cls = function_data['class']
+          functions = function_data['function'] || function_data['functions']
+          raise 'AppMap class configuration should specify package, class and function(s)' unless package && cls && functions
           functions = Array(functions).map(&:to_sym)
           labels = cls['label'] || cls['labels']
           labels = Array(labels).map(&:to_s) if labels
-          HOOKED_METHODS[name] ||= []
-          class_hooks = HOOKED_METHODS[name]
+          HOOKED_METHODS[cls] ||= []
+          class_hooks = HOOKED_METHODS[cls]
           package_options = {}
           package_options[:labels] = labels if labels
           class_hooks << Hook.new(functions, Package.build_from_path(package, package_options))
