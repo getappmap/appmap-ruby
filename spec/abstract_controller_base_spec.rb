@@ -37,10 +37,6 @@ describe 'Rails' do
             'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
           end
 
-          it 'inventory file is printed' do
-            expect(File).to exist(File.join(tmpdir, 'appmap/rspec/Inventory.appmap.json'))
-          end
-
           it 'http_server_request is recorded in the appmap' do
             expect(events).to include(
               hash_including(

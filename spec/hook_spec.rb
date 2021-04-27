@@ -222,9 +222,6 @@ describe 'AppMap class Hooking', docker: false do
           :labels:
           - has-fn-label
           :comment: "# @label has-fn-label\\n"
-          :source: |2
-              def fn_with_label
-              end
       YAML
   end
 
@@ -279,10 +276,6 @@ describe 'AppMap class Hooking', docker: false do
           :type: function
           :location: spec/fixtures/hook/instance_method.rb:8
           :static: false
-          :source: |2
-              def say_default
-                'default'
-              end
     YAML
   end
 
@@ -877,6 +870,7 @@ describe 'AppMap class Hooking', docker: false do
       end
       secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == 'ActiveSupport::SecurityUtils' }
       secure_compare_event.delete(:lineno)
+      secure_compare_event.delete(:path)
 
       expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq('')
       ---
@@ -884,7 +878,6 @@ describe 'AppMap class Hooking', docker: false do
       :event: :call
       :defined_class: ActiveSupport::SecurityUtils
       :method_id: secure_compare
-      :path: lib/active_support/security_utils.rb
       :static: true
       :parameters:
       - :name: :a

@@ -27,7 +27,7 @@ module AppMap
           event_thread.join
           yield AppMap::APPMAP_FORMAT_VERSION,
                 AppMap.detect_metadata,
-                AppMap.class_map(tracer.event_methods, include_source: AppMap.include_source?),
+                AppMap.class_map(tracer.event_methods),
                 events
         end
 

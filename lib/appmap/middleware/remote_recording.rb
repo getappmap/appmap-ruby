@@ -67,7 +67,7 @@ module AppMap
 
         response = JSON.generate \
           version: AppMap::APPMAP_FORMAT_VERSION,
-          classMap: AppMap.class_map(tracer.event_methods, include_source: AppMap.include_source?),
+          classMap: AppMap.class_map(tracer.event_methods),
           metadata: metadata,
           events: @events
 
