@@ -39,8 +39,8 @@ module AppMap
         end
 
         call_method_name = :call
+        # In this case, the method name will shadow Proc.call, so it must be renamed.
         if hook_method.name == :call
-          warn "Can't hook methods named 'call'"
           hook_method.owner.alias_method :__call, :call
           call_method_name = :__call
           return
