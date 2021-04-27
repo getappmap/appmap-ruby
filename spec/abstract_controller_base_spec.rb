@@ -27,6 +27,8 @@ describe 'Rails' do
       end
 
       let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
+      let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
+      let(:appmap) { JSON.parse File.read(appmap_json_path) }
       let(:events) { appmap['events'] }
 
       describe 'an API route' do

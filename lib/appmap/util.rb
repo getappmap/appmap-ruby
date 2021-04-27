@@ -71,6 +71,22 @@ module AppMap
 
         event
       end
+
+      # Atomically writes AppMap data to +filename+.
+      def write_appmap(filename, appmap)
+        require 'fileutils'
+        require 'tmpdir'
+
+        # This is what Ruby Tempfile does; but we don't want the file to be unlinked.
+        mode = File::RDWR | File::CREAT | File::EXCL
+        ::Dir::Tmpname.create([ 'appmap_', '.json' ]) do |tmpname|
+          tempfile = File.open(tmpname, mode)
+          tempfile.write(appmap)
+          tempfile.close
+          # Atomically move the tempfile into place.
+          FileUtils.mv tempfile.path, filename
+        end
+      end
     end
   end
 end

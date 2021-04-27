@@ -23,5 +23,5 @@ at_exit do
     'classMap' => AppMap.class_map(tracer.event_methods),
     'events' => events
   }
-  File.write 'appmap.json', JSON.generate(appmap)
+  AppMap::Util.write_appmap('appmap.json', JSON.generate(appmap))
 end
