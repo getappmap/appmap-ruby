@@ -26,8 +26,9 @@ module AppMap
       end
 
 
-      def finish
+      def finish(exception)
         warn "Finishing recording of test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
+        warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
 
         events = []
         AppMap.tracing.delete @trace
@@ -36,15 +37,17 @@ module AppMap
 
         AppMap::Minitest.add_event_methods @trace.event_methods
 
-        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
+        class_map = AppMap.class_map(@trace.event_methods)
 
         feature_group = test.class.name.underscore.split('_')[0...-1].join('_').capitalize
         feature_name = test.name.split('_')[1..-1].join(' ')
         scenario_name = [ feature_group, feature_name ].join(' ')
 
-        AppMap::Minitest.save scenario_name,
-                              class_map,
-                              source_location,
+        AppMap::Minitest.save name: scenario_name,
+                              class_map: class_map,
+                              source_location: source_location,
+                              test_status: exception ? 'failed' : 'succeeded',
+                              exception: exception,
                               events: events
       end
     end
@@ -63,11 +66,11 @@ module AppMap
         @recordings_by_test[test.object_id] = Recording.new(test, name)
       end
 
-      def end_test(test)
+      def end_test(test, exception:)
         recording = @recordings_by_test.delete(test.object_id)
         return warn "No recording found for #{test}" unless recording
 
-        recording.finish
+        recording.finish exception
       end
 
       def config
@@ -78,9 +81,9 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, source_location, events: nil, labels: nil)
+      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
         metadata = AppMap::Minitest.metadata.tap do |m|
-          m[:name] = example_name
+          m[:name] = name
           m[:source_location] = source_location
           m[:app] = AppMap.configuration.name
           m[:frameworks] ||= []
@@ -91,6 +94,13 @@ module AppMap
           m[:recorder] = {
             name: 'minitest'
           }
+          m[:test_status] = test_status
+          if exception
+            m[:exception] = {
+              class: exception.class.name,
+              message: exception.to_s
+            }
+          end
         end
 
         appmap = {
@@ -99,14 +109,9 @@ module AppMap
           classMap: class_map,
           events: events
         }.compact
-        fname = AppMap::Util.scenario_filename(example_name)
+        fname = AppMap::Util.scenario_filename(name)
 
-        File.write(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
-      end
-
-      def print_inventory
-        class_map = AppMap.class_map(@event_methods)
-        save 'Inventory', class_map, labels: %w[inventory]
+        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
       end
 
       def enabled?
@@ -115,9 +120,6 @@ module AppMap
 
       def run
         init
-        at_exit do
-          print_inventory
-        end
       end
     end
   end
@@ -135,7 +137,7 @@ if AppMap::Minitest.enabled?
       begin
         run_without_hook
       ensure
-        AppMap::Minitest.end_test self
+        AppMap::Minitest.end_test self, exception: $!
       end
     end
   end
