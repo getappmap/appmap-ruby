@@ -176,7 +176,11 @@ describe 'AppMap class Hooking', docker: false do
     tracer = AppMap.tracing.trace
     AppMap::Event.reset_id_counter
     begin
+<<<<<<< HEAD
       expect(CustomInstanceMethod.new.say_default).to eq('default')
+=======
+      expect(InstanceMethod.new.say_default).to eq('default')
+>>>>>>> cb10175... Support hooking a specific function, with labels
     ensure
       AppMap.tracing.delete(tracer)
     end
@@ -190,12 +194,20 @@ describe 'AppMap class Hooking', docker: false do
     - :name: hook_spec
       :type: package
       :children:
+<<<<<<< HEAD
       - :name: CustomInstanceMethod
+=======
+      - :name: InstanceMethod
+>>>>>>> cb10175... Support hooking a specific function, with labels
         :type: class
         :children:
         - :name: say_default
           :type: function
+<<<<<<< HEAD
           :location: spec/fixtures/hook/custom_instance_method.rb:8
+=======
+          :location: spec/fixtures/hook/instance_method.rb:8
+>>>>>>> cb10175... Support hooking a specific function, with labels
           :static: false
           :labels:
           - cowsay
