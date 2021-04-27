@@ -103,7 +103,7 @@ module AppMap
         def to_h
           super.tap do |h|
             h[:http_server_response] = {
-              status: status,
+              status_code: status,
               mime_type: mime_type,
               headers: headers
             }.compact
