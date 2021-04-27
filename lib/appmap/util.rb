@@ -61,8 +61,16 @@ module AppMap
         delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
         delete_object_id.call(event[:receiver])
         delete_object_id.call(event[:return_value])
-        (event[:parameters] || []).each(&delete_object_id)
-        (event[:exceptions] || []).each(&delete_object_id)
+        %i[parameters exceptions message].each do |field|
+          (event[field] || []).each(&delete_object_id)
+        end
+        %i[http_client_request http_client_response http_server_request http_server_response].each do |field|
+          headers = event.dig(field, :headers)
+          next unless headers
+
+          headers['Date'] = '<instanceof date>' if headers['Date']
+          headers['Server'] = headers['Server'].match(/^(\w+)/)[0] if headers['Server']
+        end
 
         case event[:event]
         when :call
@@ -70,6 +78,19 @@ module AppMap
         end
 
         event
+      end
+
+      def select_headers(env)
+        # Rack prepends HTTP_ to all client-sent headers.
+        matching_headers = env
+          .select { |k,v| k.start_with? 'HTTP_'}
+          .reject { |k,v| v.blank? }
+          .each_with_object({}) do |kv, memo|
+            key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
+            value = kv[1]
+            memo[key] = value
+          end
+        matching_headers.blank? ? nil : matching_headers
       end
 
       # Atomically writes AppMap data to +filename+.

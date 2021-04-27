@@ -16,14 +16,7 @@ end
 Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
 
 describe 'AppMap class Hooking', docker: false do
-  require 'appmap/util'
-  def collect_events(tracer)
-    [].tap do |events|
-      while tracer.event?
-        events << tracer.next_event.to_h
-      end
-    end.map(&AppMap::Util.method(:sanitize_event))
-  end
+  include_context 'collect events'
 
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil

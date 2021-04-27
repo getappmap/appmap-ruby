@@ -67,8 +67,8 @@ describe 'Rails' do
             expect(events).to include(
               hash_including(
                 'http_server_response' => hash_including(
-                  'status' => 201,
-                  'mime_type' => 'application/json; charset=utf-8'
+                  'status_code' => 201,
+                  'mime_type' => 'application/json; charset=utf-8',
                 )
               )
             )
@@ -155,7 +155,11 @@ describe 'Rails' do
                 'http_server_request' => {
                   'request_method' => 'GET',
                   'path_info' => '/users/alice',
-                  'normalized_path_info' => '/users/:id(.:format)'
+                  'normalized_path_info' => '/users/:id(.:format)',
+                  'headers' => {
+                    'Host' => 'test.host', 
+                    'User-Agent' => 'Rails Testing'
+                  }
                 }
               )
             )

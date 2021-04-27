@@ -34,10 +34,12 @@ describe AppMap::Config, docker: false do
       name: 'test',
       packages: [
         {
-          path: 'path-1'
+          path: 'path-1',
+          handler_class: 'AppMap::Handler::Function'
         },
         {
           path: 'path-2',
+          handler_class: 'AppMap::Handler::Function',
           exclude: [ 'exclude-1' ]
         }
       ],
