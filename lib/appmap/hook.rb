@@ -32,6 +32,7 @@ module AppMap
     end
 
     attr_reader :config
+
     def initialize(config)
       @config = config
     end
@@ -114,7 +115,7 @@ module AppMap
         end
       end
 
-      Config::BUILTIN_METHODS.each do |class_name, hooks|
+      config.builtin_methods.each do |class_name, hooks|
         Array(hooks).each do |hook|
           require hook.package.package_name if hook.package.package_name
           Array(hook.method_names).each do |method_name|

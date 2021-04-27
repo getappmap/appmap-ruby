@@ -359,7 +359,7 @@ Each interactive diagram links directly to the source code, and the information 
 # AppMap Swagger
 
 [appmap_swagger](https://github.com/applandinc/appmap_swagger-ruby) is a tool to generate Swagger files from AppMap data. With `appmap_swagger`, you can add Swagger to your Ruby or Ruby on Rails project, with no need to write or modify code. Use the Swagger UI to interact with your web services API as you build it, and use diffs of Swagger to perform code review of web service changes.
-n
+
 # Uploading AppMaps
 
 [https://app.land](https://app.land) can be used to store, analyze, and share AppMaps.

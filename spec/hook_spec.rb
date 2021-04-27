@@ -64,7 +64,7 @@ describe 'AppMap class Hooking', docker: false do
   it 'excludes named classes and methods' do
     load 'spec/fixtures/hook/exclude.rb'
     package = AppMap::Config::Package.build_from_path('spec/fixtures/hook/exclude.rb')
-    config = AppMap::Config.new('hook_spec', [ package ], %w[ExcludeTest])
+    config = AppMap::Config.new('hook_spec', [ package ], exclude: %w[ExcludeTest])
     AppMap.configuration = config
 
     expect(config.never_hook?(ExcludeTest.new.method(:instance_method))).to be_truthy

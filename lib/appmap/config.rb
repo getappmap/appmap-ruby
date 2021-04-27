@@ -49,12 +49,30 @@ module AppMap
       end
     end
 
+    Function = Struct.new(:package, :cls, :labels, :function_names) do
+      def to_h
+        {
+          package: package,
+          class: cls,
+          labels: labels,
+          functions: function_names.map(&:to_sym)
+        }.compact
+      end
+    end
+
     class Hook
       attr_reader :method_names, :package
 
       def initialize(method_names, package)
         @method_names = method_names
         @package = package
+      end
+
+      def to_h
+        {
+          package: package.name,
+          method_names: method_names
+        }
       end
     end
 
@@ -74,7 +92,7 @@ module AppMap
         Hook.new(%i[process_action send_file send_data redirect_to], Package.build_from_path('action_view', labels: %w[mvc.controller])),
         Hook.new(%i[render], Package.build_from_path('action_view', labels: %w[mvc.view])),
       ]
-    }
+    }.freeze
 
     BUILTIN_METHODS = {
       'OpenSSL::PKey::PKey' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.pkey])),
@@ -99,12 +117,21 @@ module AppMap
       'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
     }.freeze
 
-    attr_reader :name, :packages, :exclude
+    attr_reader :name, :packages, :exclude, :builtin_methods
 
-    def initialize(name, packages = [], exclude = [])
+    def initialize(name, packages, exclude: [], functions: [])
       @name = name
       @packages = packages
       @exclude = exclude
+      @builtin_methods = BUILTIN_METHODS
+      @functions = functions
+      @hooked_methods = HOOKED_METHODS.dup
+      functions.each do |func|
+        package_options = {}
+        package_options[:labels] = func.labels if func.labels
+        @hooked_methods[func.cls] ||= []
+        @hooked_methods[func.cls] << Hook.new(func.function_names, Package.build_from_path(func.package, package_options))
+      end
     end
 
     class << self
@@ -116,19 +143,15 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        (config_data['functions'] || []).map do |function_data|
+        functions = (config_data['functions'] || []).map do |function_data|
           package = function_data['package']
           cls = function_data['class']
           functions = function_data['function'] || function_data['functions']
           raise 'AppMap class configuration should specify package, class and function(s)' unless package && cls && functions
           functions = Array(functions).map(&:to_sym)
-          labels = cls['label'] || cls['labels']
+          labels = function_data['label'] || function_data['labels']
           labels = Array(labels).map(&:to_s) if labels
-          HOOKED_METHODS[cls] ||= []
-          class_hooks = HOOKED_METHODS[cls]
-          package_options = {}
-          package_options[:labels] = labels if labels
-          class_hooks << Hook.new(functions, Package.build_from_path(package, package_options))
+          Function.new(package, cls, labels, functions)
         end
         packages = (config_data['packages'] || []).map do |package|
           gem = package['gem']
@@ -144,7 +167,8 @@ module AppMap
             Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
           end
         end.compact
-        Config.new config_data['name'], packages, config_data['exclude'] || []
+        exclude = config_data['exclude'] || []
+        Config.new config_data['name'], packages, exclude: exclude, functions: functions
       end
     end
 
@@ -152,6 +176,7 @@ module AppMap
       {
         name: name,
         packages: packages.map(&:to_h),
+        functions: @functions.map(&:to_h),
         exclude: exclude
       }
     end
@@ -206,7 +231,7 @@ module AppMap
     end
 
     def find_hooks(defined_class)
-      Array(HOOKED_METHODS[defined_class] || BUILTIN_METHODS[defined_class])
+      Array(@hooked_methods[defined_class] || @builtin_methods[defined_class])
     end
   end
 end
