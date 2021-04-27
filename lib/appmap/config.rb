@@ -3,6 +3,8 @@
 module AppMap
   class Config
     Package = Struct.new(:path, :gem, :package_name, :exclude, :labels, :shallow) do
+      attr_accessor :handler_class
+
       # Indicates that only the entry points to a package will be recorded.
       # Once the code has entered a package, subsequent calls within the package will not be
       # recorded unless the code leaves the package and re-enters it.
@@ -45,7 +47,11 @@ module AppMap
           exclude: exclude.blank? ? nil : exclude,
           labels: labels.blank? ? nil : labels,
           shallow: shallow
-        }.compact
+        }
+        .tap do |hash|
+          hash[:handler_class] = handler_class if handler_class
+        end
+        .compact
       end
     end
 
@@ -107,7 +113,7 @@ module AppMap
         Hook.new(:invoke_after, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.after_action])),
       ],
       'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
-      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http])),
+      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http]), AppMap::Handler::NetHTTP,
       'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
       'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.email.pop])),
       'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
