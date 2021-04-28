@@ -49,44 +49,89 @@ module AppMap
       end
     end
 
-    Hook = Struct.new(:method_names, :package) do
+    Function = Struct.new(:package, :cls, :labels, :function_names) do
+      def to_h
+        {
+          package: package,
+          class: cls,
+          labels: labels,
+          functions: function_names.map(&:to_sym)
+        }.compact
+      end
     end
 
-    OPENSSL_PACKAGES = Package.build_from_path('openssl', package_name: 'openssl', labels: %w[security crypto])
+    class Hook
+      attr_reader :method_names, :package
+
+      def initialize(method_names, package)
+        @method_names = method_names
+        @package = package
+      end
+
+      def to_h
+        {
+          package: package.name,
+          method_names: method_names
+        }
+      end
+    end
+
+    OPENSSL_PACKAGES = ->(labels) { Package.build_from_path('openssl', package_name: 'openssl', labels: labels) }
 
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', labels: %w[provider.secure_compare])),
+      'ActiveSupport::SecurityUtils' => Hook.new(:secure_compare, Package.build_from_path('active_support', labels: %w[crypto.secure_compare])),
       'ActionView::Renderer' => Hook.new(:render, Package.build_from_path('action_view', labels: %w[mvc.view])),
-      'ActionDispatch::Cookies::CookieJar' => Hook.new(%i[[]= clear update delete recycle], Package.build_from_path('action_pack', labels: %w[provider.http.cookie])),
-      'ActionDispatch::Cookies::EncryptedCookieJar' => Hook.new(%i[[]=], Package.build_from_path('action_pack', labels: %w[provider.http.cookie crypto])),
-      'CanCan::ControllerAdditions' => Hook.new(%i[authorize! can? cannot?], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
-      'CanCan::Ability' => Hook.new(%i[authorize!], Package.build_from_path('cancancan', labels: %w[provider.authorization])),
+      'ActionDispatch::Request::Session' => Hook.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_path('action_pack', labels: %w[http.session])),
+      'ActionDispatch::Cookies::CookieJar' => Hook.new(%i[[]= clear update delete recycle], Package.build_from_path('action_pack', labels: %w[http.cookie])),
+      'ActionDispatch::Cookies::EncryptedCookieJar' => Hook.new(%i[[]=], Package.build_from_path('action_pack', labels: %w[http.cookie crypto.encrypt])),
+      'CanCan::ControllerAdditions' => Hook.new(%i[authorize! can? cannot?], Package.build_from_path('cancancan', labels: %w[security.authorization])),
+      'CanCan::Ability' => Hook.new(%i[authorize!], Package.build_from_path('cancancan', labels: %w[security.authorization])),
+      'ActionController::Instrumentation' => [
+        Hook.new(%i[process_action send_file send_data redirect_to], Package.build_from_path('action_view', labels: %w[mvc.controller])),
+        Hook.new(%i[render], Package.build_from_path('action_view', labels: %w[mvc.view])),
+      ]
     }.freeze
 
     BUILTIN_METHODS = {
-      'OpenSSL::PKey::PKey' => Hook.new(:sign, OPENSSL_PACKAGES),
-      'OpenSSL::X509::Request' => Hook.new(%i[sign verify], OPENSSL_PACKAGES),
-      'OpenSSL::PKCS5' => Hook.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGES),
-      'OpenSSL::Cipher' => Hook.new(%i[encrypt decrypt final], OPENSSL_PACKAGES),
-      'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES),
-      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http io])),
-      'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.smtp protocol.email io])),
-      'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.pop protocol.email io])),
-      'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.imap protocol.email io])),
-      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal provider.serialization])),
-      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml provider.serialization])),
-      'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
-      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json provider.serialization])),
+      'OpenSSL::PKey::PKey' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.pkey])),
+      'OpenSSL::X509::Request' => Hook.new(%i[sign verify], OPENSSL_PACKAGES.(%w[crypto.x509])),
+      'OpenSSL::PKCS5' => Hook.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGES.(%w[crypto.pkcs5])),
+      'OpenSSL::Cipher' => [
+        Hook.new(%i[encrypt], OPENSSL_PACKAGES.(%w[crypto.encrypt])),
+        Hook.new(%i[decrypt], OPENSSL_PACKAGES.(%w[crypto.decrypt]))
+      ],
+      'ActiveSupport::Callbacks::CallbackSequence' => [
+        Hook.new(:invoke_before, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.before_action])),
+        Hook.new(:invoke_after, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.after_action])),
+      ],
+      'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
+      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http])),
+      'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
+      'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.email.pop])),
+      'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
+      'Marshal' => Hook.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal])),
+      'Psych' => Hook.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml])),
+      'JSON::Ext::Parser' => Hook.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
+      'JSON::Ext::Generator::State' => Hook.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
     }.freeze
 
-    attr_reader :name, :packages, :exclude
+    attr_reader :name, :packages, :exclude, :builtin_methods
 
-    def initialize(name, packages = [], exclude = [])
+    def initialize(name, packages, exclude: [], functions: [])
       @name = name
       @packages = packages
       @exclude = exclude
+      @builtin_methods = BUILTIN_METHODS
+      @functions = functions
+      @hooked_methods = HOOKED_METHODS.dup
+      functions.each do |func|
+        package_options = {}
+        package_options[:labels] = func.labels if func.labels
+        @hooked_methods[func.cls] ||= []
+        @hooked_methods[func.cls] << Hook.new(func.function_names, Package.build_from_path(func.package, package_options))
+      end
     end
 
     class << self
@@ -98,6 +143,16 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
+        functions = (config_data['functions'] || []).map do |function_data|
+          package = function_data['package']
+          cls = function_data['class']
+          functions = function_data['function'] || function_data['functions']
+          raise 'AppMap class configuration should specify package, class and function(s)' unless package && cls && functions
+          functions = Array(functions).map(&:to_sym)
+          labels = function_data['label'] || function_data['labels']
+          labels = Array(labels).map(&:to_s) if labels
+          Function.new(package, cls, labels, functions)
+        end
         packages = (config_data['packages'] || []).map do |package|
           gem = package['gem']
           path = package['path']
@@ -112,7 +167,8 @@ module AppMap
             Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
           end
         end.compact
-        Config.new config_data['name'], packages, config_data['exclude'] || []
+        exclude = config_data['exclude'] || []
+        Config.new config_data['name'], packages, exclude: exclude, functions: functions
       end
     end
 
@@ -120,6 +176,7 @@ module AppMap
       {
         name: name,
         packages: packages.map(&:to_h),
+        functions: @functions.map(&:to_h),
         exclude: exclude
       }
     end
@@ -164,14 +221,17 @@ module AppMap
     end
 
     def find_package(defined_class, method_name)
-      hook = find_hook(defined_class)
-      return nil unless hook
+      hooks = find_hooks(defined_class)
+      return nil unless hooks
 
-      Array(hook.method_names).include?(method_name) ? hook.package : nil
+      hook = Array(hooks).find do |hook|
+        Array(hook.method_names).include?(method_name)
+      end
+      hook ? hook.package : nil
     end
 
-    def find_hook(defined_class)
-      HOOKED_METHODS[defined_class] || BUILTIN_METHODS[defined_class]
+    def find_hooks(defined_class)
+      Array(@hooked_methods[defined_class] || @builtin_methods[defined_class])
     end
   end
 end

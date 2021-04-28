@@ -4,18 +4,10 @@ require 'spec_helper'
 
 describe 'AppMap::ClassMap' do
   describe '.build_from_methods' do
-    it 'includes source code if available' do
-      map = AppMap.class_map([scoped_method(method(:test_method))])
+    it 'includes method comment' do
+      map = AppMap.class_map([scoped_method((method :test_method))])
       function = dig_map(map, 5)[0]
-      expect(function[:source]).to include 'test method body'
-      expect(function[:comment]).to include 'test method comment'
-    end
-
-    it 'can omit source code even if available' do
-      map = AppMap.class_map([scoped_method((method :test_method))], include_source: false)
-      function = dig_map(map, 5)[0]
-      expect(function).to_not include(:source)
-      expect(function).to_not include(:comment)
+      expect(function).to include(:comment)
     end
 
     # test method comment

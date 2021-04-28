@@ -1,3 +1,12 @@
+# v0.44.0
+
+* Support recording and labeling of indivudal functions via `functions:` section in *appmap.yml*.
+* Remove deprecated `exe/appmap`.
+* Add `test_status` and `exception` fields to AppMap metadata.
+* Write AppMap file atomically, by writing to a temp file first and then moving it into place.
+* Remove printing of `Inventory.json` file.
+* Remove source code from `classMap`.
+
 # v0.43.0
 
 * Record `name` and `class` of each entry in Hash-like parameters, messages, and return values.

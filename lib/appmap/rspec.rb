@@ -94,8 +94,9 @@ module AppMap
         result
       end
 
-      def finish
+      def finish(exception)
         warn "Finishing recording of example #{example}" if AppMap::RSpec::LOG
+        warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
 
         events = []
         AppMap.tracing.delete @trace
@@ -104,7 +105,7 @@ module AppMap
 
         AppMap::RSpec.add_event_methods @trace.event_methods
 
-        class_map = AppMap.class_map(@trace.event_methods, include_source: AppMap.include_source?)
+        class_map = AppMap.class_map(@trace.event_methods)
 
         description = []
         scope = ScopeExample.new(example)
@@ -127,9 +128,11 @@ module AppMap
 
         full_description = normalize.call(description.join(' '))
 
-        AppMap::RSpec.save full_description,
-                           class_map,
-                           source_location,
+        AppMap::RSpec.save name: full_description,
+                           class_map: class_map,
+                           source_location: source_location,
+                           test_status: exception ? 'failed' : 'succeeded',
+                           exception: exception,
                            events: events
       end
     end
@@ -148,11 +151,11 @@ module AppMap
         @recordings_by_example[example.object_id] = Recording.new(example)
       end
 
-      def end_spec(example)
+      def end_spec(example, exception:)
         recording = @recordings_by_example.delete(example.object_id)
         return warn "No recording found for #{example}" unless recording
 
-        recording.finish
+        recording.finish exception
       end
 
       def config
@@ -163,12 +166,11 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(example_name, class_map, source_location, events: nil, labels: nil)
+      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
         metadata = AppMap::RSpec.metadata.tap do |m|
-          m[:name] = example_name
+          m[:name] = name
           m[:source_location] = source_location
           m[:app] = AppMap.configuration.name
-          m[:labels] = labels if labels
           m[:frameworks] ||= []
           m[:frameworks] << {
             name: 'rspec',
@@ -177,6 +179,13 @@ module AppMap
           m[:recorder] = {
             name: 'rspec'
           }
+          m[:test_status] = test_status
+          if exception
+            m[:exception] = {
+              class: exception.class.name,
+              message: exception.to_s
+            }
+          end
         end
 
         appmap = {
@@ -185,14 +194,9 @@ module AppMap
           classMap: class_map,
           events: events
         }.compact
-        fname = AppMap::Util.scenario_filename(example_name)
+        fname = AppMap::Util.scenario_filename(name)
 
-        File.write(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
-      end
-
-      def print_inventory
-        class_map = AppMap.class_map(@event_methods)
-        save 'Inventory', class_map, labels: %w[inventory]
+        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, fname), JSON.generate(appmap))
       end
 
       def enabled?
@@ -201,9 +205,6 @@ module AppMap
 
       def run
         init
-        at_exit do
-          print_inventory
-        end
       end
     end
   end
@@ -225,7 +226,7 @@ if AppMap::RSpec.enabled?
               begin
                 instance_exec(&fn)
               ensure
-                AppMap::RSpec.end_spec example
+                AppMap::RSpec.end_spec example, exception: $!
               end
             end
           end

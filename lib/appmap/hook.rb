@@ -32,6 +32,7 @@ module AppMap
     end
 
     attr_reader :config
+
     def initialize(config)
       @config = config
     end
@@ -59,6 +60,10 @@ module AppMap
 
         hook = lambda do |hook_cls|
           lambda do |method_id|
+            # Don't try and trace the AppMap methods or there will be
+            # a stack overflow in the defined hook method.
+            return if (hook_cls&.name || '').split('::')[0] == AppMap.name
+
             method = begin
               hook_cls.public_instance_method(method_id)
             rescue NameError
@@ -78,11 +83,9 @@ module AppMap
               config.always_hook?(hook_cls, method.name) ||
               config.included_by_location?(method)
 
-            hook_method = Hook::Method.new(config.package_for_method(method), hook_cls, method)
+            package = config.package_for_method(method)
 
-            # Don't try and trace the AppMap methods or there will be
-            # a stack overflow in the defined hook method.
-            next if /\AAppMap[:\.]/.match?(hook_method.method_display_name)
+            hook_method = Hook::Method.new(package, hook_cls, method)
 
             hook_method.activate
           end
@@ -112,25 +115,27 @@ module AppMap
         end
       end
 
-      Config::BUILTIN_METHODS.each do |class_name, hook|
-        require hook.package.package_name if hook.package.package_name
-        Array(hook.method_names).each do |method_name|
-          method_name = method_name.to_sym
+      config.builtin_methods.each do |class_name, hooks|
+        Array(hooks).each do |hook|
+          require hook.package.package_name if hook.package.package_name
+          Array(hook.method_names).each do |method_name|
+            method_name = method_name.to_sym
 
-          cls = class_from_string.(class_name)
-          method = \
-            begin
-              cls.instance_method(method_name)
-            rescue NameError
-              cls.method(method_name) rescue nil
+            cls = class_from_string.(class_name)
+            method = \
+              begin
+                cls.instance_method(method_name)
+              rescue NameError
+                cls.method(method_name) rescue nil
+              end
+
+            next if config.never_hook?(method)
+
+            if method
+              Hook::Method.new(hook.package, cls, method).activate
+            else
+              warn "Method #{method_name} not found on #{cls.name}"
             end
-
-          next if config.never_hook?(method)
-
-          if method
-            Hook::Method.new(hook.package, cls, method).activate
-          else
-            warn "Method #{method_name} not found on #{cls.name}"
           end
         end
       end

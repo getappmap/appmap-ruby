@@ -27,16 +27,14 @@ describe 'Rails' do
       end
 
       let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
+      let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
+      let(:appmap) { JSON.parse File.read(appmap_json_path) }
       let(:events) { appmap['events'] }
 
       describe 'an API route' do
         describe 'creating an object' do
           let(:appmap_json_file) do
             'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
-          end
-
-          it 'inventory file is printed' do
-            expect(File).to exist(File.join(tmpdir, 'appmap/rspec/Inventory.appmap.json'))
           end
 
           it 'http_server_request is recorded in the appmap' do

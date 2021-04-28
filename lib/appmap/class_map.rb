@@ -71,17 +71,17 @@ module AppMap
     end
 
     class << self
-      def build_from_methods(methods, options = {})
+      def build_from_methods(methods)
         root = Types::Root.new
         methods.each do |method|
-          add_function root, method, options
+          add_function root, method
         end
         root.children.map(&:to_h)
       end
 
       protected
 
-      def add_function(root, method, include_source: true)
+      def add_function(root, method)
         package = method.package
         static = method.static
 
@@ -113,16 +113,13 @@ module AppMap
             [ method.defined_class, static ? '.' : '#', method.name ].join
           end
 
-        source, comment = begin
-          [ method.source, method.comment ]
+        comment = begin
+          method.comment
         rescue MethodSource::SourceNotFoundError
-          [ nil, nil, ]
+          nil
         end
 
-        if include_source
-          function_info[:source] = source unless source.blank?
-          function_info[:comment] = comment unless comment.blank?
-        end
+        function_info[:comment] = comment unless comment.blank?
 
         function_info[:labels] = parse_labels(comment) + (package.labels || [])
         object_infos << function_info

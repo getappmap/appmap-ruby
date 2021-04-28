@@ -43,16 +43,12 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize(config_file_path = 'appmap.yml')
+      raise "AppMap configuration file #{config_file_path} does not exist" unless ::File.exists?(config_file_path)
       warn "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
         Hook.new(configuration).enable
       end
-    end
-
-    # Whether to include source and comments in all class maps.
-    def include_source?
-      ENV['APPMAP_SOURCE'] == 'true'
     end
 
     # Used to start tracing, stop tracing, and record events.
@@ -88,8 +84,8 @@ module AppMap
     end
 
     # Builds a class map from a config and a list of Ruby methods.
-    def class_map(methods, options = {})
-      ClassMap.build_from_methods(methods, options)
+    def class_map(methods)
+      ClassMap.build_from_methods(methods)
     end
 
     # Returns default metadata detected from the Ruby system and from the

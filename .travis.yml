@@ -13,11 +13,26 @@ services:
 # necessary.
 before_script:
   - unset RAILS_ENV
-  
+
+cache:
+  bundler: true
+  directories:
+    - $HOME/docker
+
+# https://stackoverflow.com/a/41975912
+before_cache:
+  # Save tagged docker images
+  - >
+    mkdir -p $HOME/docker && docker images -a --filter='dangling=false' --format '{{.Repository}}:{{.Tag}} {{.ID}}'
+    | xargs -n 2 -t sh -c 'test -e $HOME/docker/$1.tar.gz || docker save $0 | gzip -2 > $HOME/docker/$1.tar.gz'
+
+before_install:
+  # Load cached docker images
+  - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
+
 jobs:
   include:
   - stage: test
     script:
     - mkdir tmp
     - bundle exec rake test
-    

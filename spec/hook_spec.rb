@@ -64,11 +64,142 @@ describe 'AppMap class Hooking', docker: false do
   it 'excludes named classes and methods' do
     load 'spec/fixtures/hook/exclude.rb'
     package = AppMap::Config::Package.build_from_path('spec/fixtures/hook/exclude.rb')
-    config = AppMap::Config.new('hook_spec', [ package ], %w[ExcludeTest])
+    config = AppMap::Config.new('hook_spec', [ package ], exclude: %w[ExcludeTest])
     AppMap.configuration = config
 
     expect(config.never_hook?(ExcludeTest.new.method(:instance_method))).to be_truthy
     expect(config.never_hook?(ExcludeTest.method(:cls_method))).to be_truthy
+  end
+
+  it "handles an instance method named 'call' without issues" do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: MethodNamedCall
+      :method_id: call
+      :path: spec/fixtures/hook/method_named_call.rb
+      :lineno: 8
+      :static: false
+      :parameters:
+      - :name: :a
+        :class: Integer
+        :value: '1'
+        :kind: :req
+      - :name: :b
+        :class: Integer
+        :value: '2'
+        :kind: :req
+      - :name: :c
+        :class: Integer
+        :value: '3'
+        :kind: :req
+      - :name: :d
+        :class: Integer
+        :value: '4'
+        :kind: :req
+      - :name: :e
+        :class: Integer
+        :value: '5'
+        :kind: :req
+      :receiver:
+        :class: MethodNamedCall
+        :value: MethodNamedCall
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: 1 2 3 4 5
+    YAML
+
+    _, tracer = test_hook_behavior 'spec/fixtures/hook/method_named_call.rb', events_yaml do
+      expect(MethodNamedCall.new.call(1, 2, 3, 4, 5)).to eq('1 2 3 4 5')
+    end
+    class_map = AppMap.class_map(tracer.event_methods)
+    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
+    ---
+    - :name: spec/fixtures/hook/method_named_call.rb
+      :type: package
+      :children:
+      - :name: MethodNamedCall
+        :type: class
+        :children:
+        - :name: call
+          :type: function
+          :location: spec/fixtures/hook/method_named_call.rb:8
+          :static: false
+    CLASSMAP
+  end
+
+  it 'can custom hook and label a function' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: CustomInstanceMethod
+      :method_id: say_default
+      :path: spec/fixtures/hook/custom_instance_method.rb
+      :lineno: 8
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: CustomInstanceMethod
+        :value: CustomInstance Method fixture
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: default
+    YAML
+
+    config = AppMap::Config.load({
+      functions: [
+        {
+          package: 'hook_spec',
+          class: 'CustomInstanceMethod',
+          functions: [ :say_default ],
+          labels: ['cowsay']
+        }
+      ]
+    }.deep_stringify_keys)
+
+    load 'spec/fixtures/hook/custom_instance_method.rb'
+    hook_cls = CustomInstanceMethod
+    method = hook_cls.instance_method(:say_default)
+
+    require 'appmap/hook/method'
+    hook_method = AppMap::Hook::Method.new(config.package_for_method(method), hook_cls, method)
+    hook_method.activate
+
+    tracer = AppMap.tracing.trace
+    AppMap::Event.reset_id_counter
+    begin
+      expect(CustomInstanceMethod.new.say_default).to eq('default')
+    ensure
+      AppMap.tracing.delete(tracer)
+    end
+
+    events = collect_events(tracer).to_yaml
+
+    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
+    class_map = AppMap.class_map(tracer.event_methods)
+    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
+    ---
+    - :name: hook_spec
+      :type: package
+      :children:
+      - :name: CustomInstanceMethod
+        :type: class
+        :children:
+        - :name: say_default
+          :type: function
+          :location: spec/fixtures/hook/custom_instance_method.rb:8
+          :static: false
+          :labels:
+          - cowsay
+    CLASSMAP
   end
 
   it 'parses labels from comments' do
@@ -91,9 +222,6 @@ describe 'AppMap class Hooking', docker: false do
           :labels:
           - has-fn-label
           :comment: "# @label has-fn-label\\n"
-          :source: |2
-              def fn_with_label
-              end
       YAML
   end
 
@@ -148,10 +276,6 @@ describe 'AppMap class Hooking', docker: false do
           :type: function
           :location: spec/fixtures/hook/instance_method.rb:8
           :static: false
-          :source: |2
-              def say_default
-                'default'
-              end
     YAML
   end
 
@@ -746,6 +870,7 @@ describe 'AppMap class Hooking', docker: false do
       end
       secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == 'ActiveSupport::SecurityUtils' }
       secure_compare_event.delete(:lineno)
+      secure_compare_event.delete(:path)
 
       expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq('')
       ---
@@ -753,7 +878,6 @@ describe 'AppMap class Hooking', docker: false do
       :event: :call
       :defined_class: ActiveSupport::SecurityUtils
       :method_id: secure_compare
-      :path: lib/active_support/security_utils.rb
       :static: true
       :parameters:
       - :name: :a
@@ -837,7 +961,7 @@ describe 'AppMap class Hooking', docker: false do
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
       expect(entry[:name]).to eq('secure_compare')
-      expect(entry[:labels]).to eq(%w[provider.secure_compare])
+      expect(entry[:labels]).to eq(%w[crypto.secure_compare])
     end
   end
 

@@ -17,10 +17,40 @@ describe AppMap::Config, docker: false do
           path: 'path-2',
           exclude: [ 'exclude-1' ]
         }
+      ],
+      functions: [
+        {
+          package: 'pkg',
+          class: 'cls',
+          function: 'fn',
+          label: 'lbl'
+        }
       ]
     }.deep_stringify_keys!
     config = AppMap::Config.load(config_data)
 
-    expect(config.to_h.deep_stringify_keys!).to eq(config_data)
+    config_expectation = {
+      exclude: [],
+      name: 'test',
+      packages: [
+        {
+          path: 'path-1'
+        },
+        {
+          path: 'path-2',
+          exclude: [ 'exclude-1' ]
+        }
+      ],
+      functions: [
+        {
+          package: 'pkg',
+          class: 'cls',
+          functions: [ :fn ],
+          labels: ['lbl']
+        }
+      ]
+    }.deep_stringify_keys!
+
+    expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
   end
 end

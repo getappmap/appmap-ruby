@@ -26,7 +26,7 @@ class MinitestTest < Minitest::Test
       assert_equal 2, events.size
       assert_equal 'call', events.first['event']
       assert_equal 'default_parser', events.first['method_id']
-      assert_equal "#{Gem.loaded_specs['parser'].gem_dir}/lib/parser/base.rb", events.first['path']
+      assert_match /\lib\/parser\/base\.rb$/, events.first['path']
       assert_equal 'return', events.second['event']
       assert_equal 1, events.second['parent_id']
     end
