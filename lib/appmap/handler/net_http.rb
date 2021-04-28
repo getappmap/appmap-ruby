@@ -5,37 +5,46 @@ require 'appmap/event'
 module AppMap
   module Handler
     class HTTPClientRequest < AppMap::Event::MethodEvent
-      attr_accessor :normalized_path_info, :request_method, :path_info, :params, :mime_type, :headers, :authorization
+      attr_accessor :request_method, :protocol, :address, :path, :params, :mime_type, :headers, :authorization
 
-      def initialize(request)
+      def initialize(receiver, request)
         super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
+        path, query = request.path.split('?')
+        query ||= ''
+
         self.request_method = request.method
-        self.path_info = request.path.split('?')[0]
+        self.protocol = receiver.use_ssl? ? 'https' : 'http'
+        self.address = receiver.address
+        self.path = path
         self.mime_type = request['Content-Type']
-        self.headers = RequestHandler.selected_headers(request)
+        self.headers = AppMap::Util.select_headers(NetHTTP.request_headers(request))
         self.authorization = request['Authorization']
-        self.params = request.uri.params
+        self.params = Rack::Utils.parse_nested_query(query)
       end
 
       def to_h
         super.tap do |h|
           h[:http_client_request] = {
             request_method: request_method,
-            path_info: path_info,
+            protocol: protocol,
+            address: address,
+            path: path,
             mime_type: mime_type,
             headers: headers,
             authorization: authorization,
           }.compact
 
-          h[:message] = params.keys.map do |key|
-            val = params[key]
-            {
-              name: key,
-              class: val.class.name,
-              value: self.class.display_string(val),
-              object_id: val.__id__,
-            }
+          unless params.blank?
+            h[:message] = params.keys.map do |key|
+              val = params[key]
+              {
+                name: key,
+                class: val.class.name,
+                value: self.class.display_string(val),
+                object_id: val.__id__,
+              }
+            end
           end
         end
       end
@@ -47,11 +56,11 @@ module AppMap
       def initialize(response, parent_id, elapsed)
         super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
-        self.status = response.code
+        self.status = response.code.to_i
         self.mime_type = response['Content-Type']
         self.parent_id = parent_id
         self.elapsed = elapsed
-        self.headers = RequestHandler.selected_headers(response)
+        self.headers = AppMap::Util.select_headers(NetHTTP.response_headers(response))
       end
 
       def to_h
@@ -66,16 +75,25 @@ module AppMap
     end
 
     class NetHTTP
-      def handle_call(defined_class, hook_method, receiver, args)
-        request = args.first
-        HTTPClientRequest.new(request).tap do |call_event|
-          AppMap.tracing.record_event call_event, package: hook_package, defined_class: defined_class, method: hook_method
+      class << self
+        def request_headers(request)
+          {}.tap do |headers|
+            request.each_header do |k,v|
+              key = [ 'HTTP', k.underscore.upcase ].join('_')
+              headers[key] = v
+            end
+          end
         end
-      end
+    
+        alias response_headers request_headers
+    
+        def handle_call(defined_class, hook_method, receiver, args)
+          request = args.first
+          HTTPClientRequest.new(receiver, request)
+        end
 
-      def handle_return(call_event_id, elapsed, return_value, exception)
-        HTTPClientResponse.new(return_value, call_event.id, elapsed).tap do |return_event|
-          AppMap.tracing.record_event return_event
+        def handle_return(call_event_id, elapsed, return_value, exception)
+          HTTPClientResponse.new(return_value, call_event_id, elapsed)
         end
       end
     end

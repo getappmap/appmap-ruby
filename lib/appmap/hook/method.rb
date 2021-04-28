@@ -87,18 +87,16 @@ module AppMap
       protected
 
       def before_hook(receiver, defined_class, args)
-        require 'appmap/event'
-        call_event = AppMap::Event::MethodCall.build_from_invocation(defined_class, hook_method, receiver, args)
+        call_event = hook_package.handler_class.handle_call(defined_class, hook_method, receiver, args)
         AppMap.tracing.record_event call_event, package: hook_package, defined_class: defined_class, method: hook_method
         [ call_event, TIME_NOW.call ]
       end
 
       def after_hook(_receiver, call_event, start_time, return_value, exception)
-        require 'appmap/event'
         elapsed = TIME_NOW.call - start_time
-        return_event = \
-          AppMap::Event::MethodReturn.build_from_invocation call_event.id, elapsed, return_value, exception
+        return_event = hook_package.handler_class.handle_return(call_event.id, elapsed, return_value, exception)
         AppMap.tracing.record_event return_event
+        nil
       end
 
       def with_disabled_hook(&function)

@@ -37,6 +37,27 @@ describe 'Net::HTTP handler' do
     @rack_thread.kill
   end
 
+  def start_recording
+    AppMap.configuration = configuration
+    AppMap::Hook.new(configuration).enable
+
+    @tracer = AppMap.tracing.trace
+    AppMap::Event.reset_id_counter
+  end
+
+  def record(&block)
+    start_recording
+    begin
+      yield
+    ensure
+      stop_recording
+    end
+  end
+
+  def stop_recording
+    AppMap.tracing.delete(@tracer)
+  end
+
   def collect_events(tracer)
     [].tap do |events|
       while tracer.event?
@@ -47,22 +68,15 @@ describe 'Net::HTTP handler' do
 
   context 'with trace enabled' do
     let(:configuration) { AppMap::Config.new('record_net_http_spec', []) }
-    before do
-      AppMap.configuration = configuration
-      AppMap::Hook.new(configuration).enable
-
-      @tracer = AppMap.tracing.trace
-      AppMap::Event.reset_id_counter
-    end
 
     after do
       AppMap.configuration = nil
     end
     
     it 'records a GET request' do
-      get_hello
-  
-      AppMap.tracing.delete(@tracer)
+      record do
+        get_hello
+      end
   
       puts JSON.pretty_generate(collect_events(@tracer))
     end

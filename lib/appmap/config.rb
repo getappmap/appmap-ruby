@@ -3,7 +3,12 @@
 module AppMap
   class Config
     Package = Struct.new(:path, :gem, :package_name, :exclude, :labels, :shallow) do
-      attr_accessor :handler_class
+      attr_writer :handler_class
+
+      def handler_class
+        require 'appmap/handler/function'
+        @handler_class || AppMap::Handler::Function
+      end
 
       # Indicates that only the entry points to a package will be recorded.
       # Once the code has entered a package, subsequent calls within the package will not be
@@ -44,14 +49,11 @@ module AppMap
           path: path,
           package_name: package_name,
           gem: gem,
+          handler_class: handler_class.name,
           exclude: exclude.blank? ? nil : exclude,
           labels: labels.blank? ? nil : labels,
           shallow: shallow
-        }
-        .tap do |hash|
-          hash[:handler_class] = handler_class if handler_class
-        end
-        .compact
+        }.compact
       end
     end
 

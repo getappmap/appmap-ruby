@@ -2,6 +2,9 @@
 
 module AppMap
   module Util
+    # Content-Type and Authorization get their own fields in the request.
+    IGNORE_HEADERS = %w[content_type authorization].map(&:upcase).map {|h| "HTTP_#{h}"}.freeze
+
     class << self
       # scenario_filename builds a suitable file name from a scenario name.
       # Special characters are removed, and the file name is truncated to fit within
@@ -70,6 +73,20 @@ module AppMap
         end
 
         event
+      end
+
+      def select_headers(env)
+        # Rack prepends HTTP_ to all client-sent headers.
+        matching_headers = env
+          .select { |k,v| k.start_with? 'HTTP_'}
+          .reject { |k,v| IGNORE_HEADERS.member?(k) }
+          .reject { |k,v| v.blank? }
+          .each_with_object({}) do |kv, memo|
+            key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
+            value = kv[1]
+            memo[key] = value
+          end
+        matching_headers.blank? ? nil : matching_headers
       end
 
       # Atomically writes AppMap data to +filename+.

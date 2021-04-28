@@ -82,7 +82,8 @@ module AppMap
 
       @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
-      @methods << Trace::ScopedMethod.new(package, defined_class, method, event.static) \
+      static = event.static if event.respond_to?(:static)
+      @methods << Trace::ScopedMethod.new(package, defined_class, method, static) \
         if package && defined_class && method && (event.event == :call)
     end
 
