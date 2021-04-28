@@ -1,3 +1,7 @@
+# v0.45.0
+
+* Record `http_client_request` and `http_client_response` data.
+
 # v0.44.0
 
 * Support recording and labeling of indivudal functions via `functions:` section in *appmap.yml*.

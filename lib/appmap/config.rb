@@ -113,7 +113,9 @@ module AppMap
         Hook.new(:invoke_after, Package.build_from_path('active_support', package_name: 'active_support', labels: %w[mvc.after_action])),
       ],
       'OpenSSL::X509::Certificate' => Hook.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
-      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http]), AppMap::Handler::NetHTTP,
+      'Net::HTTP' => Hook.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http]).tap do |package|
+        package.handler_class = AppMap::Handler::NetHTTP
+      end),
       'Net::SMTP' => Hook.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
       'Net::POP3' => Hook.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.email.pop])),
       'Net::IMAP' => Hook.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
