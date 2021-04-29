@@ -64,8 +64,16 @@ module AppMap
         delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
         delete_object_id.call(event[:receiver])
         delete_object_id.call(event[:return_value])
-        (event[:parameters] || []).each(&delete_object_id)
-        (event[:exceptions] || []).each(&delete_object_id)
+        %i[parameters exceptions].each do |field|
+          (event[field] || []).each(&delete_object_id)
+        end
+        %i[http_client_request http_client_response http_server_request http_server_response].each do |field|
+          headers = event.dig(field, :headers)
+          next unless headers
+
+          headers['Date'] = '<instanceof date>' if headers['Date']
+          headers['Server'] = headers['Server'].match(/^(\w+)/)[0] if headers['Server']
+        end
 
         case event[:event]
         when :call

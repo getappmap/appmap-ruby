@@ -20,3 +20,13 @@ end
 def use_existing_data?
   ENV['USE_EXISTING_DATA'] == 'true'
 end
+
+shared_context 'collect events' do
+  def collect_events(tracer)
+    [].tap do |events|
+      while tracer.event?
+        events << tracer.next_event.to_h
+      end
+    end.map(&AppMap::Util.method(:sanitize_event))
+  end
+end

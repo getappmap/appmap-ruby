@@ -88,6 +88,9 @@ module AppMap
         alias response_headers request_headers
     
         def handle_call(defined_class, hook_method, receiver, args)
+          # request will call itself again in a start block if it's not already started.
+          return unless receiver.started?
+
           request = args.first
           HTTPClientRequest.new(receiver, request)
         end

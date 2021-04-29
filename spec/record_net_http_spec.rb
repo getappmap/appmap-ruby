@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'diffy'
 require 'rack'
 require 'rack/handler/webrick'
 
@@ -17,6 +18,8 @@ class HelloWorldApp
 end
 
 describe 'Net::HTTP handler' do
+  include_context 'collect events'
+
   def get_hello
     http = Net::HTTP.new('localhost', 19292)
     http.get '/hello'
@@ -58,14 +61,6 @@ describe 'Net::HTTP handler' do
     AppMap.tracing.delete(@tracer)
   end
 
-  def collect_events(tracer)
-    [].tap do |events|
-      while tracer.event?
-        events << tracer.next_event.to_h
-      end
-    end.map(&AppMap::Util.method(:sanitize_event))
-  end
-
   context 'with trace enabled' do
     let(:configuration) { AppMap::Config.new('record_net_http_spec', []) }
 
@@ -77,8 +72,34 @@ describe 'Net::HTTP handler' do
       record do
         get_hello
       end
-  
-      puts JSON.pretty_generate(collect_events(@tracer))
+
+      events = collect_events(@tracer).to_yaml
+      expect(Diffy::Diff.new(<<~EVENTS, events).to_s).to eq('')
+      ---
+      - :id: 1
+        :event: :call
+        :http_client_request:
+          :request_method: GET
+          :protocol: http
+          :address: localhost
+          :path: "/hello"
+          :headers:
+            Accept-Encoding: gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+            Accept: "*/*"
+            User-Agent: Ruby
+            Connection: close
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+        :http_client_response:
+          :status_code: 200
+          :mime_type: text/html
+          :headers:
+            Server: WEBrick
+            Date: "<instanceof date>"
+            Content-Length: '12'
+            Connection: close
+      EVENTS
     end
   end
 end

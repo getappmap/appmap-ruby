@@ -76,7 +76,7 @@ module AppMap
               raise
             ensure
               with_disabled_hook.call do
-                after_hook.call(self, call_event, start_time, return_value, exception)
+                after_hook.call(self, call_event, start_time, return_value, exception) if call_event
               end
             end
           end
@@ -88,7 +88,7 @@ module AppMap
 
       def before_hook(receiver, defined_class, args)
         call_event = hook_package.handler_class.handle_call(defined_class, hook_method, receiver, args)
-        AppMap.tracing.record_event call_event, package: hook_package, defined_class: defined_class, method: hook_method
+        AppMap.tracing.record_event(call_event, package: hook_package, defined_class: defined_class, method: hook_method) if call_event
         [ call_event, TIME_NOW.call ]
       end
 
