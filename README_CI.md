@@ -4,6 +4,13 @@
 * `GEM_HOST_API_KEY`: rubygems API key
 * `GEM_ALTERNATIVE_NAME` (optional): used for testing of CI flows, 
 to avoid publication of test releases under official package name
+* `DOCKERHUB\_USERNAME`, `DOCKERHUB_PASSWORD`: optional dockerhub credentials, 
+to avoid throttling of dockerhub anonymous pulls
+
+Note: for security reasons, it's better to use dedicated (not personal) 
+Dockerhub account, 
+and also use [access tokens](https://docs.docker.com/docker-hub/access-tokens/) 
+instead of primary password
 
 # Release command
 

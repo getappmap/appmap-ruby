@@ -20,6 +20,8 @@ cache:
     - $HOME/docker
 
 # https://stackoverflow.com/a/41975912
+# also it's important to stay inside Dockerhub quota of 100-200 pulls per 6 hours
+# (see https://www.docker.com/blog/what-you-need-to-know-about-upcoming-docker-hub-rate-limiting/ )
 before_cache:
   # Save tagged docker images
   - >
@@ -29,6 +31,14 @@ before_cache:
 before_install:
   # Load cached docker images
   - if [[ -d $HOME/docker ]]; then ls $HOME/docker/*.tar.gz | xargs -I {file} sh -c "zcat {file} | docker load"; fi
+  # see https://blog.travis-ci.com/docker-rate-limits 
+  # and also https://www.docker.com/blog/what-you-need-to-know-about-upcoming-docker-hub-rate-limiting/
+  # if we do not use authorized account, 
+  # the pulls-per-IP quota is shared with other Travis users
+  - >
+    if [ ! -z "$DOCKERHUB_PASSWORD" ] && [ ! -z "$DOCKERHUB_USERNAME" ]; then
+      echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin  ;
+    fi
 
  
 # GEM_ALTERNATIVE_NAME only needed for deployment 
