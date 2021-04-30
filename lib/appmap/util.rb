@@ -93,6 +93,14 @@ module AppMap
         matching_headers.blank? ? nil : matching_headers
       end
 
+      def normalize_path(path)
+        if path.index(Dir.pwd) == 0
+          path[Dir.pwd.length + 1..-1]
+        else
+          path
+        end
+      end
+
       # Atomically writes AppMap data to +filename+.
       def write_appmap(filename, appmap)
         require 'fileutils'

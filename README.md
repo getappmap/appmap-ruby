@@ -14,6 +14,7 @@
 - [AppMap Swagger](#appmap-swagger)
 - [Uploading AppMaps](#uploading-appmaps)
 - [Development](#development)
+  - [Internal architecture](#internal-architecture)
   - [Running tests](#running-tests)
   - [Using fixture apps](#using-fixture-apps)
     - [`test/fixtures`](#testfixtures)
@@ -368,6 +369,34 @@ For instructions on uploading, see the documentation of the [AppLand CLI](https:
 
 # Development
 [![Build Status](https://travis-ci.com/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.com/applandinc/appmap-ruby)
+
+## Internal architecture
+
+**Configuration**
+
+*appmap.yml* is loaded into an `AppMap::Config`. 
+
+**Hooking**
+
+Once configuration is loaded, `AppMap::Hook` is enabled. "Hooking" refers to the process of replacing a method
+with a "hooked" version of the method. The hooked method checks to see if tracing is enabled. If so, it wraps the original
+method with calls that record the parameters and return value.
+
+**Builtins**
+
+`Hook` begins by iterating over builtin classes and modules defined in the `Config`. Builtins include code
+like `openssl` and `net/http`. This code is not dependent on any external libraries being present, and 
+`appmap` cannot guarantee that it will be loaded before builtins. Therefore, it's necessary to require it and
+hook it by looking up the classes and modules as constants in the `Object` namespace.
+
+**User code and gems**
+
+After hooking builtins, `Hook` attaches a [TracePoint](https://ruby-doc.org/core-2.6/TracePoint.html) to `:begin` events.
+This TracePoint is notified each time a new class or module is being evaluated. When this happens, `Hook` uses the `Config`
+to determine whether any code within the evaluated file is configured for hooking. If so, a `TracePoint` is attached to
+`:end` events. Each `:end` event is fired when a class or module definition is completed. When this happens, the `Hook` enumerates
+the public methods of the class or module, hooking the ones that are targeted by the `Config`. Once the `:end` TracePoint leaves
+the scope of the `:begin`, the `:end` TracePoint is disabled.
 
 ## Running tests
 

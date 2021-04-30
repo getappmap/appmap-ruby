@@ -177,7 +177,7 @@ describe 'Rails' do
             )
   
             expect(appmap['classMap']).to include hash_including(
-              'name' => 'action_view',
+              'name' => 'actionview',
               'children' => include(hash_including(
                 'name' => 'ActionView',
                 'children' => include(hash_including(
