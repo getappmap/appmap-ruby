@@ -1,3 +1,4 @@
+
 # v0.44.0
 
 * Support recording and labeling of indivudal functions via `functions:` section in *appmap.yml*.

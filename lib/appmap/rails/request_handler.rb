@@ -6,26 +6,6 @@ require 'appmap/hook'
 module AppMap
   module Rails
     module RequestHandler
-      # Host and User-Agent will just introduce needless variation.
-      # Content-Type and Authorization get their own fields in the request.
-      IGNORE_HEADERS = %w[host user_agent content_type authorization].map(&:upcase).map {|h| "HTTP_#{h}"}.freeze
-
-      class << self
-        def selected_headers(env)
-          # Rack prepends HTTP_ to all client-sent headers.
-          matching_headers = env
-            .select { |k,v| k.start_with? 'HTTP_'}
-            .reject { |k,v| IGNORE_HEADERS.member?(k) }
-            .reject { |k,v| v.blank? }
-            .each_with_object({}) do |kv, memo|
-              key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
-              value = kv[1]
-              memo[key] = value
-            end
-          matching_headers.blank? ? nil : matching_headers
-        end
-      end
-
       class HTTPServerRequest < AppMap::Event::MethodEvent
         attr_accessor :normalized_path_info, :request_method, :path_info, :params, :mime_type, :headers, :authorization
 
@@ -35,7 +15,7 @@ module AppMap
           self.request_method = request.request_method
           self.normalized_path_info = normalized_path(request)
           self.mime_type = request.headers['Content-Type']
-          self.headers = RequestHandler.selected_headers(request.env)
+          self.headers = AppMap::Util.select_headers(request.env)
           self.authorization = request.headers['Authorization']
           self.path_info = request.path_info.split('?')[0]
           # ActionDispatch::Http::ParameterFilter is deprecated
@@ -59,16 +39,18 @@ module AppMap
               headers: headers,
             }.compact
 
-            h[:message] = params.keys.map do |key|
-              val = params[key]
-              {
-                name: key,
-                class: val.class.name,
-                value: self.class.display_string(val),
-                object_id: val.__id__,
-              }.tap do |message|
-                properties = object_properties(val)
-                message[:properties] = properties if properties
+            unless params.blank?
+              h[:message] = params.keys.map do |key|
+                val = params[key]
+                {
+                  name: key,
+                  class: val.class.name,
+                  value: self.class.display_string(val),
+                  object_id: val.__id__,
+                }.tap do |message|
+                  properties = object_properties(val)
+                  message[:properties] = properties if properties
+                end
               end
             end
           end
@@ -97,13 +79,13 @@ module AppMap
           self.mime_type = response.headers['Content-Type']
           self.parent_id = parent_id
           self.elapsed = elapsed
-          self.headers = RequestHandler.selected_headers(response.headers)
+          self.headers = AppMap::Util.select_headers(response.headers)
         end
 
         def to_h
           super.tap do |h|
             h[:http_server_response] = {
-              status: status,
+              status_code: status,
               mime_type: mime_type,
               headers: headers
             }.compact

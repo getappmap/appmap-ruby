@@ -9,6 +9,7 @@ end
 
 require 'appmap/version'
 require 'appmap/hook'
+require 'appmap/handler/net_http'
 require 'appmap/config'
 require 'appmap/trace'
 require 'appmap/class_map'
