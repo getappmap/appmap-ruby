@@ -1,3 +1,16 @@
+# [0.45.0](https://github.com/applandinc/appmap-ruby/compare/v0.44.0...v0.45.0) (2021-05-03)
+
+
+### Bug Fixes
+
+* Properly name status_code in HTTP server response ([556e87c](https://github.com/applandinc/appmap-ruby/commit/556e87c9a7bf214f6b8714add4f77448fd223d33))
+
+
+### Features
+
+* Record http_client_request and http_client_response ([1db32ae](https://github.com/applandinc/appmap-ruby/commit/1db32ae0d26a7f1400b6b814d25b13368f06c158))
+* Update AppMap format version to 1.5.0 ([061705e](https://github.com/applandinc/appmap-ruby/commit/061705e4619cb881e8edd022ef835183e399e127))
+* **build:** add deployment via `semantic-release` with automatic publication to rubygems ([9f183de](https://github.com/applandinc/appmap-ruby/commit/9f183de13f405900000c3da979c3a8a5b6e34a24))
 
 # v0.44.0
 
