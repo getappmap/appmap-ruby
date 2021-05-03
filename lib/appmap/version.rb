@@ -5,5 +5,5 @@ module AppMap
 
   VERSION = '0.45.0'
 
-  APPMAP_FORMAT_VERSION = '1.4'
+  APPMAP_FORMAT_VERSION = '1.5.0'
 end
