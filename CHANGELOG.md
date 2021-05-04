@@ -1,3 +1,10 @@
+## [0.45.1](https://github.com/applandinc/appmap-ruby/compare/v0.45.0...v0.45.1) (2021-05-04)
+
+
+### Bug Fixes
+
+* Optimize instrumentation and load time ([db4a8ce](https://github.com/applandinc/appmap-ruby/commit/db4a8ceed4103a52caafa46626c66f33fbfeac27))
+
 # [0.45.0](https://github.com/applandinc/appmap-ruby/compare/v0.44.0...v0.45.0) (2021-05-03)
 
 
