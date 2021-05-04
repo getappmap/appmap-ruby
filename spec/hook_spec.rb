@@ -60,8 +60,8 @@ describe 'AppMap class Hooking', docker: false do
     config = AppMap::Config.new('hook_spec', [ package ], exclude: %w[ExcludeTest])
     AppMap.configuration = config
 
-    expect(config.never_hook?(ExcludeTest.new.method(:instance_method))).to be_truthy
-    expect(config.never_hook?(ExcludeTest.method(:cls_method))).to be_truthy
+    expect(config.never_hook?(ExcludeTest, ExcludeTest.new.method(:instance_method))).to be_truthy
+    expect(config.never_hook?(ExcludeTest, ExcludeTest.method(:cls_method))).to be_truthy
   end
 
   it "handles an instance method named 'call' without issues" do
@@ -163,7 +163,9 @@ describe 'AppMap class Hooking', docker: false do
     method = hook_cls.instance_method(:say_default)
 
     require 'appmap/hook/method'
-    hook_method = AppMap::Hook::Method.new(config.package_for_method(method), hook_cls, method)
+    package = config.lookup_package(hook_cls, method)
+    expect(package).to be
+    hook_method = AppMap::Hook::Method.new(package, hook_cls, method)
     hook_method.activate
 
     tracer = AppMap.tracing.trace
@@ -861,7 +863,9 @@ describe 'AppMap class Hooking', docker: false do
       _, _, events = test_hook_behavior 'spec/fixtures/hook/compare.rb', nil do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
+
       secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == 'ActiveSupport::SecurityUtils' }
+      expect(secure_compare_event).to be_truthy
       secure_compare_event.delete(:lineno)
       secure_compare_event.delete(:path)
 
