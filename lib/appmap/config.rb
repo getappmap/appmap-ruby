@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'appmap/handler/net_http'
+require 'appmap/handler/rails/template'
+
 module AppMap
   class Config
     # Specifies a code +path+ to be mapped.
@@ -120,15 +123,19 @@ module AppMap
     # Methods that should always be hooked, with their containing
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
-      'ActionView::Renderer' => TargetMethods.new(:render, Package.build_from_gem('actionview', package_name: 'action_view', labels: %w[mvc.view], optional: true)),
-      'ActionDispatch::Request::Session' => TargetMethods.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_gem('actionpack', package_name: 'action_dispatch', labels: %w[http.session], optional: true)),
-      'ActionDispatch::Cookies::CookieJar' => TargetMethods.new(%i[[]= clear update delete recycle], Package.build_from_gem('actionpack', package_name: 'action_dispatch', labels: %w[http.cookie], optional: true)),
-      'ActionDispatch::Cookies::EncryptedCookieJar' => TargetMethods.new(%i[[]=], Package.build_from_gem('actionpack', package_name: 'action_dispatch', labels: %w[http.cookie crypto.encrypt], optional: true)),
-      'CanCan::ControllerAdditions' => TargetMethods.new(%i[authorize! can? cannot?], Package.build_from_gem('cancancan', labels: %w[security.authorization], optional: true)),
-      'CanCan::Ability' => TargetMethods.new(%i[authorize!], Package.build_from_gem('cancancan', labels: %w[security.authorization], optional: true)),
+      'ActionView::Renderer' => TargetMethods.new(:render, Package.build_from_gem('actionview', shallow: false, package_name: 'action_view', labels: %w[mvc.view], optional: true).tap do |package|
+        package.handler_class = AppMap::Handler::Rails::Template::RenderHandler if package
+      end),
+      'ActionView::Resolver' => TargetMethods.new(%i[find_all find_all_anywhere], Package.build_from_gem('actionview', shallow: false, package_name: 'action_view', labels: %w[mvc.template.resolver], optional: true).tap do |package|
+        package.handler_class = AppMap::Handler::Rails::Template::ResolverHandler if package
+      end),
+      'ActionDispatch::Request::Session' => TargetMethods.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.session], optional: true)),
+      'ActionDispatch::Cookies::CookieJar' => TargetMethods.new(%i[[]= clear update delete recycle], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.cookie], optional: true)),
+      'ActionDispatch::Cookies::EncryptedCookieJar' => TargetMethods.new(%i[[]=], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.cookie crypto.encrypt], optional: true)),
+      'CanCan::ControllerAdditions' => TargetMethods.new(%i[authorize! can? cannot?], Package.build_from_gem('cancancan', shallow: false, labels: %w[security.authorization], optional: true)),
+      'CanCan::Ability' => TargetMethods.new(%i[authorize!], Package.build_from_gem('cancancan', shallow: false, labels: %w[security.authorization], optional: true)),
       'ActionController::Instrumentation' => [
-        TargetMethods.new(%i[process_action send_file send_data redirect_to], Package.build_from_gem('actionpack', package_name: 'action_controller', labels: %w[mvc.controller], optional: true)),
-        TargetMethods.new(%i[render], Package.build_from_gem('actionpack', package_name: 'action_controller', labels: %w[mvc.view], optional: true)),
+        TargetMethods.new(%i[process_action send_file send_data redirect_to], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_controller', labels: %w[mvc.controller], optional: true))
       ]
     }.freeze
 

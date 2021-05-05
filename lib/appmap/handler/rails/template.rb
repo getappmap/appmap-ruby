@@ -1,0 +1,149 @@
+# frozen_string_literal: true
+
+require 'appmap/event'
+
+module AppMap
+  module Handler
+    module Rails
+      class Template
+        LOG = (ENV['APPMAP_TEMPLATE_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
+
+        # All the code which is touched by the AppMap is recorded in the classMap.
+        # This duck-typed 'method' is used to represent a view template as a package, 
+        # class, and method in the classMap.
+        # The class name is generated from the template path. The package name is
+        # 'app/views', and the method name is 'render'. The source location of the method
+        # is, of course, the path to the view template.
+        TemplateMethod = Struct.new(:path) do
+          private_instance_methods :path
+          attr_reader :class_name
+ 
+          def initialize(path)
+            super
+
+            @class_name = path.parameterize.underscore
+          end
+  
+          def package
+            'app/views'
+          end
+  
+          def name
+            'render'
+          end
+  
+          def source_location
+            path
+          end
+  
+          def static
+            true
+          end
+  
+          def comment
+            nil
+          end
+  
+          def labels
+            [ 'mvc.template' ]
+          end
+        end
+  
+        # TemplateCall is a type of function call which is specialized to view template rendering. Since
+        # there isn't really a perfect method in Rails to hook, this one is synthesized from the available
+        # information. 
+        class TemplateCall < AppMap::Event::MethodEvent
+          # This is basically the +self+ parameter.
+          attr_reader :render_instance
+          # Path to the view template.
+          attr_accessor :path
+  
+          def initialize(render_instance)
+            super :call
+  
+            AppMap::Event::MethodEvent.build_from_invocation(:call, event: self)
+            @render_instance = render_instance
+          end
+  
+          def static?
+            true
+          end
+    
+          def to_h
+            super.tap do |h|
+              h[:defined_class] = path ? path.parameterize.underscore : 'inline_template'
+              h[:method_id] = 'render'
+              h[:path] = path
+              h[:static] = static?
+              h[:parameters] = []
+              h[:receiver] = {
+                class: AppMap::Event::MethodEvent.best_class_name(render_instance),
+                object_id: render_instance.__id__,
+                value: AppMap::Event::MethodEvent.display_string(render_instance)
+              }
+              h.compact
+            end
+          end
+        end
+ 
+        TEMPLATE_RENDERER = 'appmap.handler.rails.template.renderer'
+
+        # Hooks the ActionView::Resolver methods +find_all+, +find_all_anywhere+. The resolver is used
+        # during template rendering to lookup the template file path from parameters such as the
+        # template name, prefix, and partial (boolean).
+        class ResolverHandler
+          class << self
+            # Handled as a normal function call.
+            def handle_call(defined_class, hook_method, receiver, args)
+              name, prefix, partial = args
+              warn "Resolver: #{{ name: name, prefix: prefix, partial: partial }}" if LOG
+
+              AppMap::Handler::Function.handle_call(defined_class, hook_method, receiver, args)
+            end
+
+            # When the resolver returns, look to see if there is template rendering underway.
+            # If so, populate the template path. In all cases, add a TemplateMethod so that the
+            # template will be recorded in the classMap.
+            def handle_return(call_event_id, elapsed, return_value, exception)
+              warn "Resolver return: #{return_value.inspect}" if LOG
+
+              renderer = Array(Thread.current[TEMPLATE_RENDERER]).last
+              path = Array(return_value).first&.inspect
+
+              if path
+                AppMap.tracing.record_method(TemplateMethod.new(path))
+                renderer.path ||= path if renderer
+              end
+
+              AppMap::Handler::Function.handle_return(call_event_id, elapsed, return_value, exception)
+            end
+          end
+        end
+
+        # Hooks the ActionView::Renderer method +render+. This method is used by Rails to perform
+        # template rendering. The TemplateCall event which is emitted by this handler has a
+        # +path+ parameter, which is nil until it's filled in by a ResolverHandler. 
+        class RenderHandler
+          class << self
+            def handle_call(defined_class, hook_method, receiver, args)
+              context, options = args
+
+              warn "Renderer: #{options}" if LOG
+
+              TemplateCall.new(receiver).tap do |call|
+                Thread.current[TEMPLATE_RENDERER] ||= []
+                Thread.current[TEMPLATE_RENDERER] << call
+              end
+            end
+  
+            def handle_return(call_event_id, elapsed, return_value, exception)
+              Array(Thread.current[TEMPLATE_RENDERER]).pop
+
+              AppMap::Event::MethodReturnIgnoreValue.build_from_invocation(call_event_id, elapsed: elapsed)
+            end
+          end
+        end
+      end
+    end
+  end
+end

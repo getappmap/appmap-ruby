@@ -21,10 +21,10 @@ module AppMap
       LIMIT = 100
 
       class << self
-        def build_from_invocation(me, event_type)
-          me.id = AppMap::Event.next_id_counter
-          me.event = event_type
-          me.thread_id = Thread.current.object_id
+        def build_from_invocation(event_type, event:)
+          event.id = AppMap::Event.next_id_counter
+          event.event = event_type
+          event.thread_id = Thread.current.object_id
         end
 
         # Gets a display string for a value. This is not meant to be a machine deserializable value.
@@ -47,8 +47,6 @@ module AppMap
         rescue
           nil
         end
-
-        protected
 
         # Heuristic for dynamically defined class whose name can be nil
         def best_class_name(value)
@@ -103,19 +101,20 @@ module AppMap
       attr_accessor :defined_class, :method_id, :path, :lineno, :parameters, :receiver, :static
 
       class << self
-        def build_from_invocation(mc = MethodCall.new, defined_class, method, receiver, arguments)
+        def build_from_invocation(defined_class, method, receiver, arguments, event: MethodCall.new)
+          event ||= MethodCall.new
           defined_class ||= 'Class'
-          mc.tap do
+          event.tap do
             static = receiver.is_a?(Module)
-            mc.defined_class = defined_class
-            mc.method_id = method.name.to_s
+            event.defined_class = defined_class
+            event.method_id = method.name.to_s
             if method.source_location
               path = method.source_location[0]
               path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
-              mc.path = path
-              mc.lineno = method.source_location[1]
+              event.path = path
+              event.lineno = method.source_location[1]
             else
-              mc.path = [ defined_class, static ? '.' : '#', method.name ].join
+              event.path = [ defined_class, static ? '.' : '#', method.name ].join
             end
 
             # Check if the method has key parameters. If there are any they'll always be last.
@@ -123,7 +122,7 @@ module AppMap
             has_key = [[:dummy], *method.parameters].last.first.to_s.start_with?('key') && arguments[-1].is_a?(Hash)
             kwargs = has_key && arguments[-1].dup || {}
 
-            mc.parameters = method.parameters.map.with_index do |method_param, idx|
+            event.parameters = method.parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
               value = case param_type
@@ -144,13 +143,13 @@ module AppMap
                 kind: param_type
               }
             end
-            mc.receiver = {
+            event.receiver = {
               class: best_class_name(receiver),
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
-            mc.static = static
-            MethodEvent.build_from_invocation(mc, :call)
+            event.static = static
+            MethodEvent.build_from_invocation(:call, event: event)
           end
         end
       end
@@ -175,11 +174,12 @@ module AppMap
       attr_accessor :parent_id, :elapsed
 
       class << self
-        def build_from_invocation(mr = MethodReturnIgnoreValue.new, parent_id, elapsed)
-          mr.tap do |_|
-            mr.parent_id = parent_id
-            mr.elapsed = elapsed
-            MethodEvent.build_from_invocation(mr, :return)
+        def build_from_invocation(parent_id, elapsed: nil, event: MethodReturnIgnoreValue.new)
+          event ||= MethodReturnIgnoreValue.new
+          event.tap do |_|
+            event.parent_id = parent_id
+            event.elapsed = elapsed
+            MethodEvent.build_from_invocation(:return, event: event)
           end
         end
       end
@@ -187,7 +187,7 @@ module AppMap
       def to_h
         super.tap do |h|
           h[:parent_id] = parent_id
-          h[:elapsed] = elapsed
+          h[:elapsed] = elapsed if elapsed
         end
       end
     end
@@ -196,10 +196,11 @@ module AppMap
       attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(mr = MethodReturn.new, parent_id, elapsed, return_value, exception)
-          mr.tap do |_|
+        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new)
+          event ||= MethodReturn.new
+          event.tap do |_|
             if return_value
-              mr.return_value = {
+              event.return_value = {
                 class: best_class_name(return_value),
                 value: display_string(return_value),
                 object_id: return_value.__id__
@@ -220,9 +221,9 @@ module AppMap
                 next_exception = next_exception.cause
               end
 
-              mr.exceptions = exceptions
+              event.exceptions = exceptions
             end
-            MethodReturnIgnoreValue.build_from_invocation(mr, parent_id, elapsed)
+            MethodReturnIgnoreValue.build_from_invocation(parent_id, elapsed: elapsed, event: event)
           end
         end
       end

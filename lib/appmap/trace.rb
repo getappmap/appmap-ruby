@@ -2,14 +2,36 @@
 
 module AppMap
   module Trace
-    class ScopedMethod < SimpleDelegator
-      attr_reader :package, :defined_class, :static
+    class RubyMethod
+      attr_reader :class_name, :static
 
-      def initialize(package, defined_class, method, static)
+      def initialize(package, class_name, method, static)
         @package = package
-        @defined_class = defined_class
+        @class_name = class_name
+        @method = method
         @static = static
-        super(method)
+      end
+
+      def source_location
+        @method.source_location
+      end
+
+      def comment
+        @method.comment
+      rescue MethodSource::SourceNotFoundError
+        nil
+      end
+
+      def package
+        @package.name
+      end
+
+      def name
+        @method.name
+      end
+
+      def labels
+        @package.labels
       end
     end
 
@@ -40,6 +62,12 @@ module AppMap
       def record_event(event, package: nil, defined_class: nil, method: nil)
         @tracers.each do |tracer|
           tracer.record_event(event, package: package, defined_class: defined_class, method: method)
+        end
+      end
+
+      def record_method(method)
+        @tracers.each do |tracer|
+          tracer.record_method(method)
         end
       end
 
@@ -83,8 +111,20 @@ module AppMap
       @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
       static = event.static if event.respond_to?(:static)
-      @methods << Trace::ScopedMethod.new(package, defined_class, method, static) \
+      @methods << Trace::RubyMethod.new(package, defined_class, method, static) \
         if package && defined_class && method && (event.event == :call)
+    end
+
+    # +method+ should be duck-typed to respond to the following:
+    # * package
+    # * defined_class
+    # * name
+    # * static
+    # * comment
+    # * labels
+    # * source_location
+    def record_method(method)
+      @methods << method
     end
 
     # Gets the last package which was observed on the current thread.

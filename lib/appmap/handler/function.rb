@@ -11,7 +11,7 @@ module AppMap
         end
 
         def handle_return(call_event_id, elapsed, return_value, exception)
-          AppMap::Event::MethodReturn.build_from_invocation(call_event_id, elapsed, return_value, exception)
+          AppMap::Event::MethodReturn.build_from_invocation(call_event_id, return_value, exception, elapsed: elapsed)
         end
       end
     end

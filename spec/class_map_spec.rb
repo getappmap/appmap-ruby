@@ -5,7 +5,7 @@ require 'spec_helper'
 describe 'AppMap::ClassMap' do
   describe '.build_from_methods' do
     it 'includes method comment' do
-      map = AppMap.class_map([scoped_method((method :test_method))])
+      map = AppMap.class_map([ruby_method((method :test_method))])
       function = dig_map(map, 5)[0]
       expect(function).to include(:comment)
     end
@@ -15,8 +15,8 @@ describe 'AppMap::ClassMap' do
       'test method body'
     end
 
-    def scoped_method(method)
-      AppMap::Trace::ScopedMethod.new AppMap::Config::Package.new, method.receiver.class.name, method, false
+    def ruby_method(method)
+      AppMap::Trace::RubyMethod.new AppMap::Config::Package.new, method.receiver.class.name, method, false
     end
 
     def dig_map(map, depth)
