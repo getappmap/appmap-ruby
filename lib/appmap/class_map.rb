@@ -82,16 +82,13 @@ module AppMap
       protected
 
       def add_function(root, method)
-        package = method.package
-        static = method.static
-
         object_infos = [
           {
-            name: package.name,
+            name: method.package,
             type: 'package'
           }
         ]
-        object_infos += method.defined_class.split('::').map do |name|
+        object_infos += method.class_name.split('::').map do |name|
           {
             name: name,
             type: 'class'
@@ -100,7 +97,7 @@ module AppMap
         function_info = {
           name: method.name,
           type: 'function',
-          static: static
+          static: method.static
         }
         location = method.source_location
 
@@ -108,20 +105,15 @@ module AppMap
           if location
             location_file, lineno = location
             location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-            [ location_file, lineno ].join(':')
+            [ location_file, lineno ].compact.join(':')
           else
-            [ method.defined_class, static ? '.' : '#', method.name ].join
+            [ method.class_name, method.static ? '.' : '#', method.name ].join
           end
 
-        comment = begin
-          method.comment
-        rescue MethodSource::SourceNotFoundError
-          nil
-        end
-
+        comment = method.comment
         function_info[:comment] = comment unless comment.blank?
 
-        function_info[:labels] = parse_labels(comment) + (package.labels || [])
+        function_info[:labels] = parse_labels(comment) + (method.labels || [])
         object_infos << function_info
 
         parent = root
