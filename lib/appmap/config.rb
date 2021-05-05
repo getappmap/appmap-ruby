@@ -124,7 +124,7 @@ module AppMap
     # package and labels that should be applied to them.
     HOOKED_METHODS = {
       'ActionView::Renderer' => TargetMethods.new(:render, Package.build_from_gem('actionview', package_name: 'action_view', labels: %w[mvc.view], optional: true).tap do |package|
-        package.handler_class = AppMap::Handler::Rails::TemplateHandler
+        package.handler_class = AppMap::Handler::Rails::TemplateHandler if package
       end),
       'ActionDispatch::Request::Session' => TargetMethods.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_gem('actionpack', package_name: 'action_dispatch', labels: %w[http.session], optional: true)),
       'ActionDispatch::Cookies::CookieJar' => TargetMethods.new(%i[[]= clear update delete recycle], Package.build_from_gem('actionpack', package_name: 'action_dispatch', labels: %w[http.cookie], optional: true)),
