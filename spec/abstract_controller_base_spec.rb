@@ -165,7 +165,7 @@ describe 'Rails' do
               'children' => include(hash_including(
                 'name' => 'ViewTemplate',
                 'children' => include(hash_including(
-                  'name' => 'render',
+                  'name' => 'template(app/views/users/index.html.haml)',
                   'type' => 'function',
                   'location' => 'app/views/users/index.html.haml',
                   'static' => true
@@ -177,7 +177,7 @@ describe 'Rails' do
               'children' => include(hash_including(
                 'name' => 'ViewTemplate',
                 'children' => include(hash_including(
-                  'name' => 'render_template',
+                  'name' => 'layout(app/views/layouts/application.html.haml)',
                   'type' => 'function',
                   'location' => 'app/views/layouts/application.html.haml',
                   'static' => true

@@ -83,10 +83,12 @@ module AppMap
           trim_path = ->(path) { path.index(Dir.pwd) == 0 ? path[Dir.pwd.length + 1..-1] : path }
 
           path = trim_path.(path)
+          AppMap.tracing.record_method(TemplateMethod.new(path, %Q[template(#{path})]))
 
           if layout
             layout_path = view_event.lookup_context.find_template(layout)
             layout_path = trim_path.(layout_path.inspect)
+            AppMap.tracing.record_method(TemplateMethod.new(layout_path, %Q[layout(#{layout_path})]))
           end
 
           render_template = {
@@ -94,9 +96,6 @@ module AppMap
             layout_path: layout_path,
             template_type: @template_type
           }.compact
-
-          AppMap.tracing.record_method(TemplateMethod.new(path, :render))
-          AppMap.tracing.record_method(TemplateMethod.new(layout_path, :render_template))
 
           view_event.render_template = render_template
         end
