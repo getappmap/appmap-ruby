@@ -1,7 +1,7 @@
 require 'rails_spec_helper'
 
 describe 'Rails' do
-  %w[5 6].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
+  %w[5].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
 
@@ -144,7 +144,50 @@ describe 'Rails' do
       end
 
       describe 'a UI route' do
-        describe 'rendering a page' do
+        describe 'rendering a page using a template file' do
+          let(:appmap_json_file) do
+            'UsersController_GET_users_lists_the_users.appmap.json'
+          end
+
+          it 'records the template file' do
+            expect(events).to include hash_including(
+              'event' => 'call',
+              'method_id' => 'render',
+              'render_template' => {
+                'path' => 'app/views/users/index.html.haml',
+                'layout_path' => 'app/views/layouts/application.html.haml',
+                'template_type' => 'template'
+              }
+            )
+
+            expect(appmap['classMap']).to include hash_including(
+              'name' => 'views',
+              'children' => include(hash_including(
+                'name' => 'ViewTemplate',
+                'children' => include(hash_including(
+                  'name' => 'render',
+                  'type' => 'function',
+                  'location' => 'app/views/users/index.html.haml',
+                  'static' => true
+                ))
+              ))
+            )
+            expect(appmap['classMap']).to include hash_including(
+              'name' => 'views',
+              'children' => include(hash_including(
+                'name' => 'ViewTemplate',
+                'children' => include(hash_including(
+                  'name' => 'render_template',
+                  'type' => 'function',
+                  'location' => 'app/views/layouts/application.html.haml',
+                  'static' => true
+                ))
+              ))
+            )
+          end
+        end
+
+        describe 'rendering a page using a text template' do
           let(:appmap_json_file) do
             'UsersController_GET_users_login_shows_the_user.appmap.json'
           end
@@ -162,6 +205,26 @@ describe 'Rails' do
                   }
                 }
               )
+            )
+          end
+
+          it 'ignores the text template' do
+            expect(events).to_not include hash_including(
+              'event' => 'call',
+              'method_id' => 'render',
+              'render_template' => anything
+            )
+
+            expect(appmap['classMap']).to_not include hash_including(
+              'name' => 'views',
+              'children' => include(hash_including(
+                'name' => 'ViewTemplate',
+                'children' => include(hash_including(
+                  'name' => 'render',
+                  'type' => 'function',
+                  'location' => 'text template'
+                ))
+              ))
             )
           end
 

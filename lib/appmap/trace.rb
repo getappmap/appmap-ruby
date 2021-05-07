@@ -125,7 +125,7 @@ module AppMap
         if package && defined_class && method && (event.event == :call)
     end
 
-    # +method+ shoul be duck-typed to respond to the following:
+    # +method+ should be duck-typed to respond to the following:
     # * package
     # * defined_class
     # * name

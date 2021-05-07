@@ -5,7 +5,7 @@ require 'appmap/event'
 module AppMap
   module Handler
     module Rails
-      TemplateMethod = Struct.new(:path) do
+      TemplateMethod = Struct.new(:path, :name) do
         private_methods :path
 
         def package
@@ -14,10 +14,6 @@ module AppMap
 
         def class_name
           'ViewTemplate'
-        end
-
-        def name
-          'render'
         end
 
         def source_location
@@ -39,7 +35,7 @@ module AppMap
 
       module TemplateEvent
         def self.included(base)
-          attr_accessor :render_template
+          attr_accessor :lookup_context, :render_template
         end
 
         def to_h
@@ -60,6 +56,7 @@ module AppMap
               class << event
                 include TemplateEvent
               end
+              event.lookup_context = receiver.lookup_context
             end
           end
 
@@ -72,29 +69,36 @@ module AppMap
           return if AppMap.tracing.empty?
 
           path = payload[:identifier]
-          unless path
-            warn "No :identifier in template payload #{payload.inspect}"
-            return
-          end
-
-          path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
           layout = payload[:layout]
 
-          render_template = {
-            path: path,
-            template_type: @template_type,
-            layout_path: layout
-          }.compact
+          return warn "No :identifier in template payload #{payload.inspect}" unless path
 
-          AppMap.tracing.record_method(TemplateMethod.new(path))
+          return unless File.exists?(path)
+
           view_event = AppMap.tracing.find_last_event do |event|
             event.is_a?(TemplateEvent)
           end
-          if view_event
-            view_event.render_template = render_template
-          else
-            warn "TemplateEvent not found for #{payload.inspect}"
+          return warn "TemplateEvent not found for #{payload.inspect}" unless view_event
+
+          trim_path = ->(path) { path.index(Dir.pwd) == 0 ? path[Dir.pwd.length + 1..-1] : path }
+
+          path = trim_path.(path)
+
+          if layout
+            layout_path = view_event.lookup_context.find_template(layout)
+            layout_path = trim_path.(layout_path.inspect)
           end
+
+          render_template = {
+            path: path,
+            layout_path: layout_path,
+            template_type: @template_type
+          }.compact
+
+          AppMap.tracing.record_method(TemplateMethod.new(path, :render))
+          AppMap.tracing.record_method(TemplateMethod.new(layout_path, :render_template))
+
+          view_event.render_template = render_template
         end
       end
     end
