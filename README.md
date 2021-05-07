@@ -326,7 +326,7 @@ if defined?(AppMap)
 end
 ```
 
-2. Download and unpack the [AppLand browser extension](https://github.com/applandinc/appland-browser-extension). Install into Chrome using `chrome://extensions/`. Turn on "Developer Mode" and then load the extension using the "Load unpacked" button.
+2. (optional) Download and unpack the [AppLand browser extension](https://github.com/applandinc/appland-browser-extension). Install into Chrome using `chrome://extensions/`. Turn on "Developer Mode" and then load the extension using the "Load unpacked" button.
 
 3. Start your Rails application server. For example:
 
@@ -334,17 +334,17 @@ end
 $ bundle exec rails server
 ```
 
-4. Open the AppLand browser extension and push `Start`.
+4. Start the recording
+
+Option 1: Open the AppLand browser extension and push `Start`.
+Option 2: `curl -XPOST localhost:3000/_appmap/record` (be sure and get the port number right)
 
 5. Use your app. For example, perform a login flow, or run through a manual UI test.
 
-6. Open the AppLand browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
+6. Finish the recording.
 
-## Server process recording
-
-Run your Rails server with `APPMAP_RECORD=true`. When the server exits, an *appmap.json* file will be written to the project directory. This is a great way to start the server, interact with your app as a user (or through it's API), and then view an AppMap of everything that happened.
-
-Be sure and set `WEB_CONCURRENCY=1`, if you are using a webserver that can run multiple processes. You only want there to be one process while you are recording, otherwise they will both try and write *appmap.json* and one of them will clobber the other.
+Option 1: Open the AppLand browser extension and push `Stop`. The recording will be transferred to the AppLand website and opened in your browser.
+Option 2: `curl -XDELETE localhost:3000/_appmap/record > recording.appmap.json` - Saves the recording as a local file.
 
 
 # AppMap for VSCode
