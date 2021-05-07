@@ -119,10 +119,20 @@ module AppMap
       return unless @enabled
 
       @last_package_for_thread[Thread.current.object_id] = package if package
-      @events << event
-      static = event.static if event.respond_to?(:static)
-      record_method(Trace::RubyMethod.new(package, defined_class, method, static)) \
-        if package && defined_class && method && (event.event == :call)
+      if @events.empty? || event.id > @events.last.id
+        @events << event
+      else
+        # If the event cannot be simply appended to the events list, then find the
+        # last event in the events list whose id is less than the id of the new event
+        # (the "preceding" event). Then insert the event before the event which follows
+        # the "preceding" event. That's how the Array API works.
+        preceding_index = @events.rindex { |evt| evt.id < event.id }
+        @events.insert preceding_index + 1, event
+      end
+      if package && defined_class && method && (event.event == :call)
+        static = event.static if event.respond_to?(:static)
+        record_method(Trace::RubyMethod.new(package, defined_class, method, static))
+      end        
     end
 
     # +method+ should be duck-typed to respond to the following:

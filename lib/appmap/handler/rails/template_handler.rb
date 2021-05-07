@@ -5,43 +5,40 @@ require 'appmap/event'
 module AppMap
   module Handler
     module Rails
-      TemplateMethod = Struct.new(:path, :name) do
-        private_methods :path
+      class TemplateCall < MethodEvent
+        attr_reader :render_instance, :path
 
-        def package
-          'views'
+        def initialize(id, render_instance, path)
+          super id, :call, Thread.current.object_id
+
+          @render_instance = render_instance
+          @path = path
         end
-
-        def class_name
-          'ViewTemplate'
-        end
-
-        def source_location
-          path
-        end
-
-        def static
-          true
-        end
-
-        def comment
-          nil
-        end
-
-        def labels
-          []
-        end
-      end
-
-      module TemplateEvent
-        def self.included(base)
-          attr_accessor :lookup_context, :render_template
-        end
-
+  
         def to_h
           super.tap do |h|
-            h[:render_template] = render_template if render_template
+            # This is a lie. The class is really something like Template::HTML, but we don't have
+            # access to that without doing more work.
+            h[:defined_class] = render_instance.class.name
+            h[:method_id] = [ 'render(', path, ')' ].join
+            h[:path] = path
+            h[:static] = true
+            h[:parameters] = []
+            h[:receiver] = {
+              class: best_class_name(render_instance),
+              object_id: render_instance.__id__,
+              value: display_string(render_instance)
+            }
+            h.delete_if { |_, v| v.nil? }
           end
+        end
+  
+        alias static? static
+      end
+  
+      module TemplateEvent
+        def self.included(base)
+          attr_accessor :render_instance
         end
       end
 
@@ -56,7 +53,10 @@ module AppMap
               class << event
                 include TemplateEvent
               end
-              event.lookup_context = receiver.lookup_context
+              # Insert a gap into the event ids, so that when the template notification arrives, there is room
+              # in the event list to inject up to two new :call events - one for the layout, and one for the template.
+              AppMap::Event.next_id_counter += 2
+              event.render_instance = receiver
             end
           end
 
@@ -82,22 +82,26 @@ module AppMap
 
           trim_path = ->(path) { path.index(Dir.pwd) == 0 ? path[Dir.pwd.length + 1..-1] : path }
 
-          path = trim_path.(path)
-          AppMap.tracing.record_method(TemplateMethod.new(path, %Q[template(#{path})]))
-
-          if layout
-            layout_path = view_event.lookup_context.find_template(layout)
+          report_layout_event = lambda do
+            layout_path = view_event.render_instance.lookup_context.find_template(layout)
             layout_path = trim_path.(layout_path.inspect)
+
+            layout_event = TemplateCall.new(view_event.id + 1, view_event.render_instance, layout_path)
+
+            AppMap.tracing.record_event(layout_event)
             AppMap.tracing.record_method(TemplateMethod.new(layout_path, %Q[layout(#{layout_path})]))
           end
 
-          render_template = {
-            path: path,
-            layout_path: layout_path,
-            template_type: @template_type
-          }.compact
+          report_template_event = lambda do
+            template_path = trim_path.(path)
+  
+            template_event = TemplateCall.new(view_event.id + 2, view_event.render_instance, template_path)
+            AppMap.tracing.record_event(template_event)
+            AppMap.tracing.record_method(TemplateMethod.new(layout_path, %Q[template(#{template_path})]))
+          end
 
-          view_event.render_template = render_template
+          report_layout_event.() if layout
+          report_template_event.()
         end
       end
     end
