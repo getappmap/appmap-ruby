@@ -9,7 +9,6 @@
   - [Minitest](#minitest)
   - [Cucumber](#cucumber)
   - [Remote recording](#remote-recording)
-  - [Server process recording](#server-process-recording)
 - [AppMap for VSCode](#appmap-for-vscode)
 - [AppMap Swagger](#appmap-swagger)
 - [Uploading AppMaps](#uploading-appmaps)
@@ -328,10 +327,10 @@ end
 
 2. (optional) Download and unpack the [AppLand browser extension](https://github.com/applandinc/appland-browser-extension). Install into Chrome using `chrome://extensions/`. Turn on "Developer Mode" and then load the extension using the "Load unpacked" button.
 
-3. Start your Rails application server. For example:
+3. Start your Rails application server, with `APPMAP_RECORD=true`. For example:
 
 ```sh-session
-$ bundle exec rails server
+$ APPMAP_RECORD=true bundle exec rails server
 ```
 
 4. Start the recording
