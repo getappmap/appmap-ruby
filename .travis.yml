@@ -16,8 +16,6 @@ before_script:
 
 cache:
   bundler: true
-  directories:
-    - $HOME/docker
 
 before_install:
   # see https://blog.travis-ci.com/docker-rate-limits 
