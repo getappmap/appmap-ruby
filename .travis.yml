@@ -17,6 +17,16 @@ before_script:
 cache:
   bundler: true
 
+before_install:
+  # see https://blog.travis-ci.com/docker-rate-limits 
+  # and also https://www.docker.com/blog/what-you-need-to-know-about-upcoming-docker-hub-rate-limiting/
+  # if we do not use authorized account, 
+  # the pulls-per-IP quota is shared with other Travis users
+  - >
+    if [ ! -z "$DOCKERHUB_PASSWORD" ] && [ ! -z "$DOCKERHUB_USERNAME" ]; then
+      echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin  ;
+    fi
+
  
 # GEM_ALTERNATIVE_NAME only needed for deployment 
 jobs:
