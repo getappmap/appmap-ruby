@@ -1,3 +1,10 @@
+# [0.46.0](https://github.com/applandinc/appmap-ruby/compare/v0.45.1...v0.46.0) (2021-05-12)
+
+
+### Features
+
+* Record view template rendering events and template paths ([973b258](https://github.com/applandinc/appmap-ruby/commit/973b2581b6e2d4e15a1b93331e4e95a88678faae))
+
 ## [0.45.1](https://github.com/applandinc/appmap-ruby/compare/v0.45.0...v0.45.1) (2021-05-04)
 
 
