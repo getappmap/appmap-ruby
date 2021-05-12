@@ -95,7 +95,7 @@ module AppMap
       def after_hook(_receiver, call_event, start_time, return_value, exception)
         elapsed = TIME_NOW.call - start_time
         return_event = hook_package.handler_class.handle_return(call_event.id, elapsed, return_value, exception)
-        AppMap.tracing.record_event return_event
+        AppMap.tracing.record_event(return_event) if return_event
         nil
       end
 

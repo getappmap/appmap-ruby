@@ -144,7 +144,49 @@ describe 'Rails' do
       end
 
       describe 'a UI route' do
-        describe 'rendering a page' do
+        describe 'rendering a page using a template file' do
+          let(:appmap_json_file) do
+            'UsersController_GET_users_lists_the_users.appmap.json'
+          end
+
+          it 'records the template file' do
+            expect(events).to include hash_including(
+              'event' => 'call',
+              'defined_class' => 'app_views_users_index_html_haml',
+              'method_id' => 'render',
+              'path' => 'app/views/users/index.html.haml'
+            )
+
+            expect(appmap['classMap']).to include hash_including(
+              'name' => 'app/views',
+              'children' => include(hash_including(
+                'name' => 'app_views_users_index_html_haml',
+                'children' => include(hash_including(
+                  'name' => 'render',
+                  'type' => 'function',
+                  'location' => 'app/views/users/index.html.haml',
+                  'static' => true,
+                  'labels' => [ 'mvc.template' ]
+                ))
+              ))
+            )
+            expect(appmap['classMap']).to include hash_including(
+              'name' => 'app/views',
+              'children' => include(hash_including(
+                'name' => 'app_views_layouts_application_html_haml',
+                'children' => include(hash_including(
+                  'name' => 'render',
+                  'type' => 'function',
+                  'location' => 'app/views/layouts/application.html.haml',
+                  'static' => true,
+                  'labels' => [ 'mvc.template' ]
+                ))
+              ))
+            )
+          end
+        end
+
+        describe 'rendering a page using a text template' do
           let(:appmap_json_file) do
             'UsersController_GET_users_login_shows_the_user.appmap.json'
           end
@@ -165,15 +207,32 @@ describe 'Rails' do
             )
           end
 
+          it 'ignores the text template' do
+            expect(events).to_not include hash_including(
+              'event' => 'call',
+              'method_id' => 'render',
+              'render_template' => anything
+            )
+
+            expect(appmap['classMap']).to_not include hash_including(
+              'name' => 'views',
+              'children' => include(hash_including(
+                'name' => 'ViewTemplate',
+                'children' => include(hash_including(
+                  'name' => 'render',
+                  'type' => 'function',
+                  'location' => 'text template'
+                ))
+              ))
+            )
+          end
+
           it 'records and labels view rendering' do
             expect(events).to include hash_including(
               'event' => 'call',
               'thread_id' => Numeric,
-              'defined_class' => 'ActionView::Renderer',
-              'method_id' => 'render',
-              'path' => String,
-              'lineno' => Integer,
-              'static' => false
+              'defined_class' => 'inline_template',
+              'method_id' => 'render'
             )
   
             expect(appmap['classMap']).to include hash_including(

@@ -8,12 +8,12 @@ module AppMap
     # appmap.subscribe subscribes to ActiveSupport Notifications so that they can be recorded as
     # AppMap events.
     initializer 'appmap.subscribe' do |_| # params: app
-      require 'appmap/rails/sql_handler'
-      require 'appmap/rails/request_handler'
-      ActiveSupport::Notifications.subscribe 'sql.sequel', AppMap::Rails::SQLHandler.new
-      ActiveSupport::Notifications.subscribe 'sql.active_record', AppMap::Rails::SQLHandler.new
+      require 'appmap/handler/rails/sql_handler'
+      require 'appmap/handler/rails/request_handler'
+      ActiveSupport::Notifications.subscribe 'sql.sequel', AppMap::Handler::Rails::SQLHandler.new
+      ActiveSupport::Notifications.subscribe 'sql.active_record', AppMap::Handler::Rails::SQLHandler.new
 
-      AppMap::Rails::RequestHandler::HookMethod.new.activate
+      AppMap::Handler::Rails::RequestHandler::HookMethod.new.activate
     end
 
     # appmap.trace begins recording an AppMap trace and writes it to appmap.json.
