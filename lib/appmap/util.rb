@@ -101,6 +101,16 @@ module AppMap
         end
       end
 
+      # Convert a Rails-style path from /org/:org_id(.:format)
+      # to Swagger-style paths like /org/{org_id}
+      def swaggerize_path(path)
+        path = path.split('(.')[0]
+        tokens = path.split('/')
+        tokens.map do |token|
+          token.gsub /^:(.*)/, '{\1}'
+        end.join('/')
+      end
+
       # Atomically writes AppMap data to +filename+.
       def write_appmap(filename, appmap)
         require 'fileutils'

@@ -42,7 +42,7 @@ describe 'Rails' do
               hash_including(
                 'http_server_request' => hash_including(
                   'request_method' => 'POST',
-                  'normalized_path_info' => '/api/users(.:format)',
+                  'normalized_path_info' => '/api/users',
                   'path_info' => '/api/users'
                 ),
                 'message' => include(
@@ -197,7 +197,7 @@ describe 'Rails' do
                 'http_server_request' => {
                   'request_method' => 'GET',
                   'path_info' => '/users/alice',
-                  'normalized_path_info' => '/users/:id(.:format)',
+                  'normalized_path_info' => '/users/{id}',
                   'headers' => {
                     'Host' => 'test.host', 
                     'User-Agent' => 'Rails Testing'
