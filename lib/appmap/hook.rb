@@ -64,7 +64,7 @@ module AppMap
         end
       end
 
-      config.builtin_methods.each do |class_name, hooks|
+      config.builtin_hooks.each do |class_name, hooks|
         Array(hooks).each do |hook|
           require hook.package.package_name if hook.package.package_name
           Array(hook.method_names).each do |method_name|
@@ -138,6 +138,8 @@ module AppMap
           # Don't try and trace the AppMap methods or there will be
           # a stack overflow in the defined hook method.
           next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
+
+          next if method_id == :call
 
           method = begin
             hook_cls.public_instance_method(method_id)

@@ -105,12 +105,18 @@ module AppMap
             # If so, populate the template path. In all cases, add a TemplateMethod so that the
             # template will be recorded in the classMap.
             def handle_return(call_event_id, elapsed, return_value, exception)
-              warn "Resolver return: #{return_value.inspect}" if LOG
-
               renderer = Array(Thread.current[TEMPLATE_RENDERER]).last
-              path = Array(return_value).first&.inspect
+              path_obj = Array(return_value).first
+              
+              warn "Resolver return: #{path_obj}" if LOG
 
-              if path
+              if path_obj
+                path = if path_obj.respond_to?(:identifier) && path_obj.inspect.index('#<')
+                  path_obj.identifier
+                else
+                  path_obj.inspect
+                end
+                path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
                 AppMap.tracing.record_method(TemplateMethod.new(path))
                 renderer.path ||= path if renderer
               end
