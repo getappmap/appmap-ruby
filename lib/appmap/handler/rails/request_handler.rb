@@ -65,7 +65,7 @@ module AppMap
               next unless app.matches? request
               return normalized_path request, app.rack_app.routes.router if app.engine?
 
-              return route.path.spec.to_s
+              return AppMap::Util.swaggerize_path(route.path.spec.to_s)
             end
           end
         end
