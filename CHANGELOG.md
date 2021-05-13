@@ -1,3 +1,10 @@
+# [0.47.0](https://github.com/applandinc/appmap-ruby/compare/v0.46.0...v0.47.0) (2021-05-13)
+
+
+### Features
+
+* Emit swagger-style normalized paths instead of Rails-style ones ([5a93cd7](https://github.com/applandinc/appmap-ruby/commit/5a93cd7096ca195146a84a6733c7d502dbcd0272))
+
 # [0.46.0](https://github.com/applandinc/appmap-ruby/compare/v0.45.1...v0.46.0) (2021-05-12)
 
 
