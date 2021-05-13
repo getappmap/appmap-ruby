@@ -64,65 +64,14 @@ describe 'AppMap class Hooking', docker: false do
     expect(config.never_hook?(ExcludeTest, ExcludeTest.method(:cls_method))).to be_truthy
   end
 
-  it "handles an instance method named 'call' without issues" do
+  it "an instance method named 'call' will be ignored" do
     events_yaml = <<~YAML
-    ---
-    - :id: 1
-      :event: :call
-      :defined_class: MethodNamedCall
-      :method_id: call
-      :path: spec/fixtures/hook/method_named_call.rb
-      :lineno: 8
-      :static: false
-      :parameters:
-      - :name: :a
-        :class: Integer
-        :value: '1'
-        :kind: :req
-      - :name: :b
-        :class: Integer
-        :value: '2'
-        :kind: :req
-      - :name: :c
-        :class: Integer
-        :value: '3'
-        :kind: :req
-      - :name: :d
-        :class: Integer
-        :value: '4'
-        :kind: :req
-      - :name: :e
-        :class: Integer
-        :value: '5'
-        :kind: :req
-      :receiver:
-        :class: MethodNamedCall
-        :value: MethodNamedCall
-    - :id: 2
-      :event: :return
-      :parent_id: 1
-      :return_value:
-        :class: String
-        :value: 1 2 3 4 5
+    --- []
     YAML
 
     _, tracer = test_hook_behavior 'spec/fixtures/hook/method_named_call.rb', events_yaml do
       expect(MethodNamedCall.new.call(1, 2, 3, 4, 5)).to eq('1 2 3 4 5')
     end
-    class_map = AppMap.class_map(tracer.event_methods)
-    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
-    ---
-    - :name: spec/fixtures/hook/method_named_call.rb
-      :type: package
-      :children:
-      - :name: MethodNamedCall
-        :type: class
-        :children:
-        - :name: call
-          :type: function
-          :location: spec/fixtures/hook/method_named_call.rb:8
-          :static: false
-    CLASSMAP
   end
 
   it 'can custom hook and label a function' do

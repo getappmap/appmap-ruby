@@ -85,18 +85,7 @@ module AppMap
       end
     end
 
-    Function = Struct.new(:package, :cls, :labels, :function_names) do # :nodoc:
-      def to_h
-        {
-          package: package,
-          class: cls,
-          labels: labels,
-          functions: function_names.map(&:to_sym)
-        }.compact
-      end
-    end
-    private_constant :Function
-
+    # Identifies specific methods within a package which should be hooked.
     class TargetMethods # :nodoc:
       attr_reader :method_names, :package
 
@@ -118,28 +107,91 @@ module AppMap
     end
     private_constant :TargetMethods
 
+    # Function represents a specific function configured for hooking by the +functions+
+    # entry in appmap.yml. When the Config is initialized, each Function is converted into
+    # a Package and TargetMethods. It's called a Function rather than a Method, because Function
+    # is the AppMap terminology.
+    Function = Struct.new(:package, :cls, :labels, :function_names) do # :nodoc:
+      def to_h
+        {
+          package: package,
+          class: cls,
+          labels: labels,
+          functions: function_names.map(&:to_sym)
+        }.compact
+      end
+    end
+    private_constant :Function
+
+    ClassTargetMethods = Struct.new(:cls, :target_methods) # :nodoc:
+    private_constant :ClassTargetMethods
+
+    MethodHook = Struct.new(:cls, :method_names, :labels) # :nodoc:
+    private_constant :MethodHook
+    
+    class << self
+      def package_hooks(gem_name, methods, handler_class: nil, package_name: nil)
+        Array(methods).map do |method|
+          package = Package.build_from_gem(gem_name, package_name: package_name, labels: method.labels, shallow: false, optional: true)
+          next unless package
+
+          package.handler_class = handler_class if handler_class
+          ClassTargetMethods.new(method.cls, TargetMethods.new(Array(method.method_names), package))
+        end.compact
+      end
+
+      def method_hook(cls, method_names, labels)
+        MethodHook.new(cls, method_names, labels)
+      end
+    end
+
+    # Hook well-known functions. When a function configured here is available in the bundle, it will be hooked with the
+    # predefined labels specified here. If any of these hooks are not desired, they can be disabled in the +exclude+ section
+    # of appmap.yml.
+    METHOD_HOOKS = [
+      package_hooks('actionview',
+        [
+          method_hook('ActionView::Renderer', :render, %w[mvc.view]),
+          method_hook('ActionView::TemplateRenderer', :render, %w[mvc.view]),
+          method_hook('ActionView::PartialRenderer', :render, %w[mvc.view])
+        ],
+        handler_class: AppMap::Handler::Rails::Template::RenderHandler,
+        package_name: 'action_view'
+      ),
+      package_hooks('actionview',
+        [
+          method_hook('ActionView::Resolver', %i[find_all find_all_anywhere], %w[mvc.template.resolver])
+        ],
+        handler_class: AppMap::Handler::Rails::Template::ResolverHandler,
+        package_name: 'action_view'
+      ),
+      package_hooks('actionpack',
+        [
+          method_hook('ActionDispatch::Request::Session', %i[destroy [] dig values []= clear update delete fetch merge], %w[http.session]),
+          method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session]),
+          method_hook('ActionDispatch::Cookies::EncryptedCookieJar', %i[[]= clear update delete recycle], %w[http.cookie crypto.encrypt])
+        ],
+        package_name: 'action_dispatch'
+      ),
+      package_hooks('cancancan',
+        [
+          method_hook('CanCan::ControllerAdditions', %i[authorize! can? cannot?], %w[security.authorization]),
+          method_hook('CanCan::Ability', %i[authorize?], %w[security.authorization])
+        ]
+      ),
+      package_hooks('actionpack',
+        [
+          method_hook('ActionController::Instrumentation', %i[process_action send_file send_data redirect_to], %w[mvc.controller])
+        ],
+        package_name: 'action_controller'
+      )
+    ].flatten.freeze
+
     OPENSSL_PACKAGES = ->(labels) { Package.build_from_path('openssl', package_name: 'openssl', labels: labels) }
 
-    # Methods that should always be hooked, with their containing
-    # package and labels that should be applied to them.
-    HOOKED_METHODS = {
-      'ActionView::Renderer' => TargetMethods.new(:render, Package.build_from_gem('actionview', shallow: false, package_name: 'action_view', labels: %w[mvc.view], optional: true).tap do |package|
-        package.handler_class = AppMap::Handler::Rails::Template::RenderHandler if package
-      end),
-      'ActionView::Resolver' => TargetMethods.new(%i[find_all find_all_anywhere], Package.build_from_gem('actionview', shallow: false, package_name: 'action_view', labels: %w[mvc.template.resolver], optional: true).tap do |package|
-        package.handler_class = AppMap::Handler::Rails::Template::ResolverHandler if package
-      end),
-      'ActionDispatch::Request::Session' => TargetMethods.new(%i[destroy [] dig values []= clear update delete fetch merge], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.session], optional: true)),
-      'ActionDispatch::Cookies::CookieJar' => TargetMethods.new(%i[[]= clear update delete recycle], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.cookie], optional: true)),
-      'ActionDispatch::Cookies::EncryptedCookieJar' => TargetMethods.new(%i[[]=], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_dispatch', labels: %w[http.cookie crypto.encrypt], optional: true)),
-      'CanCan::ControllerAdditions' => TargetMethods.new(%i[authorize! can? cannot?], Package.build_from_gem('cancancan', shallow: false, labels: %w[security.authorization], optional: true)),
-      'CanCan::Ability' => TargetMethods.new(%i[authorize!], Package.build_from_gem('cancancan', shallow: false, labels: %w[security.authorization], optional: true)),
-      'ActionController::Instrumentation' => [
-        TargetMethods.new(%i[process_action send_file send_data redirect_to], Package.build_from_gem('actionpack', shallow: false, package_name: 'action_controller', labels: %w[mvc.controller], optional: true))
-      ]
-    }.freeze
-
-    BUILTIN_METHODS = {
+    # Hook functions which are builtin to Ruby. Because they are builtins, they may be loaded before appmap.
+    # Therefore, we can't rely on TracePoint to report the loading of this code.
+    BUILTIN_HOOKS = {
       'OpenSSL::PKey::PKey' => TargetMethods.new(:sign, OPENSSL_PACKAGES.(%w[crypto.pkey])),
       'OpenSSL::X509::Request' => TargetMethods.new(%i[sign verify], OPENSSL_PACKAGES.(%w[crypto.x509])),
       'OpenSSL::PKCS5' => TargetMethods.new(%i[pbkdf2_hmac_sha1 pbkdf2_hmac], OPENSSL_PACKAGES.(%w[crypto.pkcs5])),
@@ -166,26 +218,29 @@ module AppMap
       'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
     }.freeze
 
-    attr_reader :name, :packages, :exclude, :hooked_methods, :builtin_methods
+    attr_reader :name, :packages, :exclude, :hooked_methods, :builtin_hooks
 
     def initialize(name, packages, exclude: [], functions: [])
       @name = name
       @packages = packages
-      @hook_paths = packages.map(&:path)
+      @hook_paths = Set.new(packages.map(&:path))
       @exclude = exclude
-      @builtin_methods = BUILTIN_METHODS
+      @builtin_hooks = BUILTIN_HOOKS
       @functions = functions
-      @hooked_methods = HOOKED_METHODS.dup
+
+      @hooked_methods = METHOD_HOOKS.each_with_object(Hash.new { |h,k| h[k] = [] }) do |cls_target_methods, hooked_methods|
+        hooked_methods[cls_target_methods.cls] << cls_target_methods.target_methods
+      end
+
       functions.each do |func|
         package_options = {}
         package_options[:labels] = func.labels if func.labels
-        @hooked_methods[func.cls] ||= []
         @hooked_methods[func.cls] << TargetMethods.new(func.function_names, Package.build_from_path(func.package, package_options))
       end
 
       @hooked_methods.each_value do |hooks|
         Array(hooks).each do |hook|
-          @hook_paths << hook.package.path if hook.package
+          @hook_paths << hook.package.path
         end
       end
     end
