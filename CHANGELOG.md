@@ -1,3 +1,10 @@
+## [0.47.1](https://github.com/applandinc/appmap-ruby/compare/v0.47.0...v0.47.1) (2021-05-13)
+
+
+### Bug Fixes
+
+* Add the proper template function hooks for Rails 6.0.7 ([175f489](https://github.com/applandinc/appmap-ruby/commit/175f489acbaed77ad52a18d805e4b6eeae1abfdb))
+
 # [0.47.0](https://github.com/applandinc/appmap-ruby/compare/v0.46.0...v0.47.0) (2021-05-13)
 
 
