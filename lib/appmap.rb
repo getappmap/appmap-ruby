@@ -98,4 +98,4 @@ module AppMap
 end
 
 require 'appmap/railtie' if defined?(::Rails::Railtie)
-AppMap.initialize unless ENV['APPMAP_INITIALIZE'] == 'false'
+AppMap.initialize if ENV['APPMAP'] == 'true'
