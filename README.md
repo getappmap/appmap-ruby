@@ -83,22 +83,6 @@ If you are using Ruby on Rails, require the railtie after Rails is loaded.
 require 'appmap/railtie' if defined?(AppMap).
 ```
 
-**application.rb**
-
-Add this line to *application.rb*, to enable server recording with `APPMAP_RECORD=true`:
-
-```ruby
-module MyApp
-  class Application < Rails::Application
-    ...
-  
-    config.appmap.enabled = true if ENV['APPMAP_RECORD']
-    
-    ...
-  end
-end
-```
-
 # Configuration
 
 When you run your program, the `appmap` gem reads configuration settings from `appmap.yml`. Here's a sample configuration
