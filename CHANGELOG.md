@@ -1,3 +1,11 @@
+# [0.48.0](https://github.com/applandinc/appmap-ruby/compare/v0.47.1...v0.48.0) (2021-05-19)
+
+
+### Features
+
+* Hook the code only when APPMAP=true ([dd9e383](https://github.com/applandinc/appmap-ruby/commit/dd9e383024d1d9205a617d46bd64b90820035533))
+* Remove server process recording from doc and tests ([383ba0a](https://github.com/applandinc/appmap-ruby/commit/383ba0ad444922a0a85409477d11bc7ed06a9160))
+
 ## [0.47.1](https://github.com/applandinc/appmap-ruby/compare/v0.47.0...v0.47.1) (2021-05-13)
 
 
