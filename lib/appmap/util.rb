@@ -94,7 +94,8 @@ module AppMap
       end
 
       def normalize_path(path)
-        if path.index(Dir.pwd) == 0
+        require 'bundler'
+        if path.index(Dir.pwd) == 0 && !path.index(Bundler.bundle_path.to_s)
           path[Dir.pwd.length + 1..-1]
         else
           path
