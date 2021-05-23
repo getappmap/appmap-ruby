@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'bundler'
+
 module AppMap
   module Util
     class << self
@@ -94,7 +96,7 @@ module AppMap
       end
 
       def normalize_path(path)
-        if path.index(Dir.pwd) == 0
+        if path.index(Dir.pwd) == 0 && !path.index(Bundler.bundle_path.to_s)
           path[Dir.pwd.length + 1..-1]
         else
           path

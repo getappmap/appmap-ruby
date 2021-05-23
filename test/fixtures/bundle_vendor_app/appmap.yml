@@ -1,0 +1,4 @@
+name: bundle_vendor_app
+packages:
+  - gem: gli
+  - gem: hacer

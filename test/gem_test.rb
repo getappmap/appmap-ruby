@@ -4,7 +4,7 @@
 require 'test_helper'
 require 'English'
 
-class MinitestTest < Minitest::Test
+class GemTest < Minitest::Test
   def perform_gem_test(test_name)
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/gem_test' do
