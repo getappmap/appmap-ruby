@@ -213,7 +213,7 @@ module AppMap
                 exception_backtrace = next_exception.backtrace_locations.try(:[], 0)
                 exceptions << {
                   class: best_class_name(next_exception),
-                  message: next_exception.message,
+                  message: display_string(next_exception.message),
                   object_id: next_exception.__id__,
                   path: exception_backtrace&.path,
                   lineno: exception_backtrace&.lineno
