@@ -183,7 +183,7 @@ module AppMap
           if exception
             m[:exception] = {
               class: exception.class.name,
-              message: exception.to_s
+              message: AppMap::Event::MethodEvent.display_string(exception.to_s)
             }
           end
         end

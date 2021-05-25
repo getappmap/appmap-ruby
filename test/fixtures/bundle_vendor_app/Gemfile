@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+
+gem 'gli'
+gem 'hacer'
+
+appmap_gem_opts = {}
+appmap_gem_opts[:path] = '../../..' if File.exist?('../../../appmap.gemspec')
+gem 'appmap', appmap_gem_opts

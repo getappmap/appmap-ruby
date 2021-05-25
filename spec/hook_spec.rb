@@ -583,7 +583,7 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
-  it 'Reports exceptions' do
+  it 'reports exceptions' do
     events_yaml = <<~YAML
     ---
     - :id: 1
@@ -609,6 +609,38 @@ describe 'AppMap class Hooking', docker: false do
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
       begin
         ExceptionMethod.new.raise_exception
+      rescue
+        # don't let the exception fail the test
+      end
+    end
+  end
+
+  it 'sanitizes exception messages' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: ExceptionMethod
+      :method_id: raise_illegal_utf8_message
+      :path: spec/fixtures/hook/exception_method.rb
+      :lineno: 58
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: ExceptionMethod
+        :value: Exception Method fixture
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :exceptions:
+      - :class: RuntimeError
+        :message: '809: unexpected token at ''x__=_v_ƶ_2_]__qdI_eǫ4_h΅__z_____D__J2_E______1__ā'''
+        :path: spec/fixtures/hook/exception_method.rb
+        :lineno: 59
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
+      begin
+        ExceptionMethod.new.raise_illegal_utf8_message
       rescue
         # don't let the exception fail the test
       end
