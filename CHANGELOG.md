@@ -1,3 +1,11 @@
+## [0.48.1](https://github.com/applandinc/appmap-ruby/compare/v0.48.0...v0.48.1) (2021-05-25)
+
+
+### Bug Fixes
+
+* Account for bundle path when normalizing source path ([095c278](https://github.com/applandinc/appmap-ruby/commit/095c27818fc8ae8dfa39b30516d37c6dfd642d9c))
+* Scan exception messages for non-UTF8 characters ([3dcaeae](https://github.com/applandinc/appmap-ruby/commit/3dcaeae44da5e40e432eda41caf5b9ebff5bea12))
+
 # [0.48.0](https://github.com/applandinc/appmap-ruby/compare/v0.47.1...v0.48.0) (2021-05-19)
 
 
