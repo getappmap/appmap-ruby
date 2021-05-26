@@ -36,7 +36,7 @@ module AppMap
 
     def initialize(config)
       @config = config
-      @trace_locations = []
+      @trace_enabled = []
       # Paths that are known to be non-tracing
       @notrace_paths = Set.new
     end
@@ -47,10 +47,8 @@ module AppMap
 
       hook_builtins
 
-      @trace_begin = TracePoint.new(:class, &method(:trace_class))
       @trace_end = TracePoint.new(:end, &method(:trace_end))
-
-      @trace_begin.enable(&block)
+      @trace_end.enable(&block)
     end
 
     # hook_builtins builds hooks for code that is built in to the Ruby standard library.
@@ -96,29 +94,22 @@ module AppMap
 
     protected
 
-    def trace_class(trace_point)
-      path = trace_point.path
-
-      return if @notrace_paths.member?(path)
-
-      if config.path_enabled?(path)
-        location = trace_location(trace_point)
-        warn "Entering hook-enabled location #{location}" if Hook::LOG || Hook::LOG_HOOK
-        @trace_locations << location
-        unless @trace_end.enabled?
-          warn "Enabling hooking" if Hook::LOG || Hook::LOG_HOOK
-          @trace_end.enable
-        end
-      else
-        @notrace_paths << path
-      end
-    end
-
     def trace_location(trace_point)
       [ trace_point.path, trace_point.lineno ].join(':')
     end
 
     def trace_end(trace_point)
+      location = trace_location(trace_point)
+      warn "Class or module ends at location #{trace_location(trace_point)}" if Hook::LOG || Hook::LOG_HOOK
+
+      path = trace_point.path
+      enabled = !@notrace_paths.member?(path) && config.path_enabled?(path)
+      if !enabled
+        warn "Not hooking - path is not enabled" if Hook::LOG || Hook::LOG_HOOK
+        @notrace_paths << path
+        return
+      end
+
       cls = trace_point.self
 
       instance_methods = cls.public_instance_methods(false) - OBJECT_INSTANCE_METHODS
@@ -151,7 +142,8 @@ module AppMap
           warn "AppMap: Examining #{hook_cls} #{method.name}" if LOG
 
           disasm = RubyVM::InstructionSequence.disasm(method)
-          # Skip methods that have no instruction sequence, as they are obviously trivial.
+          # Skip methods that have no instruction sequence, as they are either have no body or they are or native.
+          # TODO: Figure out how to tell the difference?
           next unless disasm
 
           package = config.lookup_package(hook_cls, method)
@@ -169,13 +161,6 @@ module AppMap
         # NameError:
         #   uninitialized constant Faraday::Connection
         warn "NameError in #{__FILE__}: #{$!.message}"
-      end
-
-      location = @trace_locations.pop
-      warn "Leaving hook-enabled location #{location}" if Hook::LOG || Hook::LOG_HOOK
-      if @trace_locations.empty?
-        warn "Disabling hooking" if Hook::LOG || Hook::LOG_HOOK
-        @trace_end.disable
       end
     end
   end
