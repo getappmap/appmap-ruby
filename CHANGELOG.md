@@ -1,3 +1,10 @@
+## [0.48.2](https://github.com/applandinc/appmap-ruby/compare/v0.48.1...v0.48.2) (2021-05-26)
+
+
+### Bug Fixes
+
+* Correct the method-hooking logic to capture some missing model methods ([be529bd](https://github.com/applandinc/appmap-ruby/commit/be529bdce7d4fdf9f1a2fdd32259d792f29f4f13))
+
 ## [0.48.1](https://github.com/applandinc/appmap-ruby/compare/v0.48.0...v0.48.1) (2021-05-25)
 
 
