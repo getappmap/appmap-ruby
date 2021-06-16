@@ -26,7 +26,9 @@ before_install:
     if [ ! -z "$DOCKERHUB_PASSWORD" ] && [ ! -z "$DOCKERHUB_USERNAME" ]; then
       echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin  ;
     fi
-
+  - |
+    nvm install --lts \
+      && nvm use --lts
  
 # GEM_ALTERNATIVE_NAME only needed for deployment 
 jobs:
