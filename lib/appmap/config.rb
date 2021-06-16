@@ -167,8 +167,10 @@ module AppMap
       ),
       package_hooks('actionpack',
         [
-          method_hook('ActionDispatch::Request::Session', %i[destroy [] dig values []= clear update delete fetch merge], %w[http.session]),
-          method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session]),
+          method_hook('ActionDispatch::Request::Session', %i[[] dig values fetch], %w[http.session.read]),
+          method_hook('ActionDispatch::Request::Session', %i[destroy[]= clear update delete merge], %w[http.session.write]),
+          method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session.read]),
+          method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session.write]),
           method_hook('ActionDispatch::Cookies::EncryptedCookieJar', %i[[]= clear update delete recycle], %w[http.cookie crypto.encrypt])
         ],
         package_name: 'action_dispatch'
@@ -213,9 +215,12 @@ module AppMap
       # This is happening: Method send_command not found on Net::IMAP
       # 'Net::IMAP' => TargetMethods.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
       # 'Marshal' => TargetMethods.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal])),
-      'Psych' => TargetMethods.new(%i[dump dump_stream load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml])),
-      'JSON::Ext::Parser' => TargetMethods.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
-      'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json])),
+      'Psych' => [
+        TargetMethods.new(%i[load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml.parse])),
+        TargetMethods.new(%i[dump dump_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml.generate])),
+      ],
+      'JSON::Ext::Parser' => TargetMethods.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.parse])),
+      'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.generate])),
     }.freeze
 
     attr_reader :name, :packages, :exclude, :hooked_methods, :builtin_hooks
