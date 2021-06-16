@@ -1,12 +1,8 @@
 {
-  "name": "appmap-ruby-lore",
+  "name": "appmap-ruby",
   "version": "1.0.0",
-  "description": "Lore for the AppMap Rubygem",
-  "scripts": {
-    "start": "./node_modules/applore/bin/lore serve"
-  },
+  "description": "AppMap client agent for Ruby",
   "directories": {
-    "example": "examples",
     "lib": "lib",
     "test": "test"
   },
@@ -14,11 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/applandinc/appmap-ruby.git"
   },
+  "author": "kgilpin@gmail.com",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/applandinc/appmap-ruby/issues"
   },
   "homepage": "https://github.com/applandinc/appmap-ruby#readme",
   "dependencies": {
-    "applore": "^0.3.0"
+    "@appland/cli": "^1.1.0"
   }
 }

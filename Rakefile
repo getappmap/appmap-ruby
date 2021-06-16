@@ -16,6 +16,22 @@ end
 
 namespace 'gem' do
   require 'bundler/gem_tasks'
+  
+  module Bundler
+    class GemHelper
+      alias default_build_gem build_gem
+  
+      # A handy tip - find the location of any Rake task using `rake -W`.
+      # rake -W build
+      # ~/.rbenv/versions/2.6.6/lib/ruby/gems/2.6.0/gems/bundler-2.1.4/lib/bundler/gem_helper.rb:39:in `install'
+      def build_gem
+        # Ensure that NPM packages are installed before building.
+        sh('yarn install --prod'.shellsplit)
+  
+        default_build_gem
+      end
+    end
+  end
 end
 
 RUBY_VERSIONS=%w[2.5 2.6 2.7]
@@ -34,18 +50,20 @@ def run_cmd(*cmd)
     raise 'Docker build failed'
   end
 end
-  
+
 def build_base_image(ruby_version)
   run_cmd "docker build" \
          " --build-arg RUBY_VERSION=#{ruby_version}"    \
          " --build-arg GEM_VERSION=#{GEM_VERSION}"      \
          " -t appmap:#{GEM_VERSION} -f Dockerfile.appmap ."
 end
-  
+
 def build_app_image(app, ruby_version)
   Dir.chdir "spec/fixtures/#{app}" do
-    run_cmd( {"RUBY_VERSION" => ruby_version, "GEM_VERSION" => GEM_VERSION},
-      " docker-compose build" \
+    env = {"RUBY_VERSION" => ruby_version, "GEM_VERSION" => GEM_VERSION}
+    warn "Running docker-compose build in spec/fixtures/#{app}, with #{env}"
+    run_cmd(env,
+      "docker-compose build" \
       " --build-arg RUBY_VERSION=#{ruby_version}" \
       " --build-arg GEM_VERSION=#{GEM_VERSION}"  ) 
   end

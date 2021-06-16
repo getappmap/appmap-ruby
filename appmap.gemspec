@@ -4,8 +4,6 @@ lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'appmap/version'
 
-
-
 Gem::Specification.new do |spec|
   # ability to parameterize gem name is added intentionally, 
   # to support the possibility of unofficial releases, e.g. during CI tests
@@ -22,8 +20,13 @@ Gem::Specification.new do |spec|
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
   spec.files         = `git ls-files --no-deleted`.split("
 ")
-  spec.extensions << "ext/appmap/extconf.rb"
 
+  Dir.glob('node_modules/**/*').each do |filename|
+    next if File.directory?(filename) || filename.length > 100
+    spec.files << filename
+  end
+
+  spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport'
