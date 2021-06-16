@@ -52,7 +52,7 @@ module AppMap
     end
 
     def info(msg)
-      if defined?(::Rails)
+      if defined?(::Rails) && defined?(::Rails.logger)
         ::Rails.logger.info msg
       else
         warn msg
