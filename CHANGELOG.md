@@ -1,3 +1,10 @@
+# [0.49.0](https://github.com/applandinc/appmap-ruby/compare/v0.48.2...v0.49.0) (2021-06-16)
+
+
+### Features
+
+* Add refinement to the labels ([6a93396](https://github.com/applandinc/appmap-ruby/commit/6a93396ba73f1b3ed21b4e9e15a2c271af04d866))
+
 ## [0.48.2](https://github.com/applandinc/appmap-ruby/compare/v0.48.1...v0.48.2) (2021-05-26)
 
 
