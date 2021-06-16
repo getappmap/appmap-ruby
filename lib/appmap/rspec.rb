@@ -139,15 +139,21 @@ module AppMap
 
     @recordings_by_example = {}
     @event_methods = Set.new
+    @recording_count = 0
 
     class << self
       def init
-        warn 'Configuring AppMap recorder for RSpec'
-
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
+      def first_recording?
+        @recording_count == 0
+      end
+
       def begin_spec(example)
+        AppMap.info 'Configuring AppMap recorder for RSpec' if first_recording?
+        @recording_count += 1
+
         @recordings_by_example[example.object_id] = Recording.new(example)
       end
 

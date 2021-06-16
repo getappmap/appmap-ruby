@@ -3,6 +3,13 @@
 module AppMap
   # Railtie connects the AppMap recorder to Rails-specific features.
   class Railtie < ::Rails::Railtie
+    initializer 'appmap.remote_recording' do
+      require 'appmap/middleware/remote_recording'
+      Rails.application.config.middleware.insert_after \
+        Rails::Rack::Logger,
+        AppMap::Middleware::RemoteRecording
+    end
+
     # appmap.subscribe subscribes to ActiveSupport Notifications so that they can be recorded as
     # AppMap events.
     initializer 'appmap.subscribe' do |_| # params: app

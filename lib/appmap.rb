@@ -51,6 +51,14 @@ module AppMap
       end
     end
 
+    def info(msg)
+      if defined?(::Rails) && defined?(::Rails.logger)
+        ::Rails.logger.info msg
+      else
+        warn msg
+      end
+    end
+
     # Used to start tracing, stop tracing, and record events.
     def tracing
       @tracing ||= Trace::Tracing.new
@@ -97,5 +105,17 @@ module AppMap
   end
 end
 
-require 'appmap/railtie' if defined?(::Rails::Railtie)
+if defined?(::Rails::Railtie)
+  require 'appmap/railtie' 
+end
+
+if defined?(::RSpec)
+  require 'appmap/rspec'
+end
+
+# defined?(::Minitest) returns nil...
+if Gem.loaded_specs['minitest']
+  require 'appmap/minitest'
+end
+
 AppMap.initialize if ENV['APPMAP'] == 'true'

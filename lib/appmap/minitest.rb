@@ -54,15 +54,21 @@ module AppMap
 
     @recordings_by_test = {}
     @event_methods = Set.new
+    @recording_count = 0
 
     class << self
       def init
-        warn 'Configuring AppMap recorder for Minitest'
-
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
+      def first_recording?
+        @recording_count == 0
+      end
+
       def begin_test(test, name)
+        AppMap.info 'Configuring AppMap recorder for Minitest' if first_recording?
+        @recording_count += 1
+
         @recordings_by_test[test.object_id] = Recording.new(test, name)
       end
 
