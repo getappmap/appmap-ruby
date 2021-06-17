@@ -1,3 +1,17 @@
+# [0.50.0](https://github.com/applandinc/appmap-ruby/compare/v0.49.0...v0.50.0) (2021-06-17)
+
+
+### Bug Fixes
+
+* Remove appmap configuration in test cases which now occurs automatically ([7391c4c](https://github.com/applandinc/appmap-ruby/commit/7391c4c36ed80f98a6b82ccd43f05de488e7cd2f))
+
+
+### Features
+
+* Direct minitest and rspec startup messages to the Rails log, when available ([15f6444](https://github.com/applandinc/appmap-ruby/commit/15f6444b0fad3ce7d9e91273b6a1116e470c2a89))
+* Enroll railtie, rspec, and minitest helpers automatically ([1709374](https://github.com/applandinc/appmap-ruby/commit/1709374ee7b5183482c55cf4c7386266fa517262))
+* railtie enrolls the app in remote recording ([3a1f8aa](https://github.com/applandinc/appmap-ruby/commit/3a1f8aac1d83c4df04b5da55ed33d418235e348b))
+
 # [0.49.0](https://github.com/applandinc/appmap-ruby/compare/v0.48.2...v0.49.0) (2021-06-16)
 
 
