@@ -20,6 +20,8 @@ require 'appmap/open'
 require 'appmap/appmap'
 
 module AppMap
+  DEFAULT_APPMAP_DIR = 'tmp/appmap'.freeze
+
   class << self
     @configuration = nil
     @configuration_file_path = nil

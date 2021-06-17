@@ -1,5 +1,5 @@
 require 'rake'
-require 'appmap/swagger/appmap_js'
+require 'appmap/node_cli'
 require 'appmap/swagger/markdown_descriptions'
 require 'appmap/swagger/stable'
 
@@ -11,8 +11,7 @@ module AppMap
 
       def define_tasks(configuration = Configuration.new)
         generate_swagger = lambda do |t, args|
-          appmap_js = AppMapJS.new(verbose: Rake.verbose == true)
-          appmap_js.detect_nodejs
+          appmap_js = AppMap::NodeCLI.new(verbose: Rake.verbose == true)
 
           FileUtils.mkdir_p configuration.output_dir
 

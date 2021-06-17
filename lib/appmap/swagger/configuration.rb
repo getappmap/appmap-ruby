@@ -3,7 +3,7 @@ module AppMap
     class Configuration
       DEFAULT_VERSION = '1.0'
       DEFAULT_OUTPUT_DIR = 'swagger'
-      DEFAULT_APPMAP_DIR = 'tmp/appmap'
+      DEFAULT_APPMAP_DIR = AppMap::DEFAULT_APPMAP_DIR
       DEFAULT_DESCRIPTION = 'Generate Swagger from AppMaps'
 
       attr_accessor :project_name,
