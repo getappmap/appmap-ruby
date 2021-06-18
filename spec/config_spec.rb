@@ -55,4 +55,25 @@ describe AppMap::Config, docker: false do
 
     expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
   end
+
+  context do
+    let(:warnings) { @warnings ||= [] }
+    let(:warning) { warnings.join }
+    before do
+      expect(AppMap::Config).to receive(:warn).at_least(1) { |msg| warnings << msg }
+    end
+    it 'prints a warning and uses a default config' do
+      config = AppMap::Config.load_from_file 'no/such/file'
+      expect(config.to_h).to eq(YAML.load(<<~CONFIG))
+      :name: appmap-ruby
+      :packages:
+      - :path: lib
+        :handler_class: AppMap::Handler::Function
+        :shallow: false
+      :functions: []
+      :exclude: []
+      CONFIG
+      expect(warning).to include('NOTICE: The AppMap config file no/such/file was not found!')
+    end
+  end
 end
