@@ -5,7 +5,7 @@ DEPENDS_BASE_DIR = DEPENDS_TEST_DIR
 
 def update_appmap_index
   require 'appmap/node_cli'
-  AppMap::NodeCLI.new(verbose: ENV['DEBUG'] == 'true').index_appmaps(DEPENDS_TEST_DIR)
+  AppMap::NodeCLI.new(verbose: ENV['DEBUG'] == 'true', appmap_dir: DEPENDS_TEST_DIR).index_appmaps
 end
 
 RSpec.configure do |rspec|
