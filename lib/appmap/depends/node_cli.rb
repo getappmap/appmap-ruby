@@ -5,26 +5,22 @@ module AppMap
   module Depends
     # +Command+ wraps the Node +depends+ command.
     class NodeCLI < ::AppMap::NodeCLI
-
-      # Directory to scan for AppMaps.
-      attr_accessor :appmap_dir
       # Directory name to prefix to the list of modified files which is provided to +depends+.
       attr_accessor :base_dir
       # AppMap field to report.
       attr_accessor :field
 
       def initialize(verbose:, appmap_dir:)
-        super(verbose: verbose)
+        super(verbose: verbose, appmap_dir: appmap_dir)
 
-        @appmap_dir = appmap_dir
-        @base_dir = false
+        @base_dir = nil
         @field = 'source_location'
       end
 
       # Returns the source_location field of every AppMap that is "out of date" with respect to one of the
       # +modified_files+.
       def depends(modified_files = nil)
-        index_appmaps(appmap_dir)
+        index_appmaps
 
         cmd = %w[depends]
         cmd += [ '--field', field ] if field

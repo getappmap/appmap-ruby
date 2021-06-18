@@ -10,9 +10,13 @@ module AppMap
     APPMAP_JS = Pathname.new(__dir__).join('../../node_modules/@appland/cli/src/cli.js').expand_path.to_s
 
     attr_reader :verbose
+    # Directory to scan for AppMaps.
+    attr_accessor :appmap_dir
 
-    def initialize(verbose: false)
+    def initialize(verbose: false, appmap_dir: AppMap::DEFAULT_APPMAP_DIR)
       @verbose = verbose
+      @appmap_dir = appmap_dir
+
       detect_nodejs
     end
 
@@ -21,7 +25,7 @@ module AppMap
       true
     end
 
-    def index_appmaps(appmap_dir)
+    def index_appmaps
       command [ 'index', '--appmap-dir', appmap_dir ]
       true
     end

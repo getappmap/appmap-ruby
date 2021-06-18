@@ -36,7 +36,7 @@ module AppMap
 
         yield test_files
 
-        AppMap::NodeCLI.new(verbose: verbose).command [ 'index', '--appmap-dir', appmap_dir ]
+        AppMap::NodeCLI.new(verbose: verbose, appmap_dir: appmap_dir).index_appmaps
       end
 
       # Remove out-of-date AppMaps which are unmodified +since+ the start time. This operation is used to remove AppMaps

@@ -3,22 +3,32 @@ module AppMap
     class Configuration
       DEFAULT_VERSION = '1.0'
       DEFAULT_OUTPUT_DIR = 'swagger'
-      DEFAULT_APPMAP_DIR = AppMap::DEFAULT_APPMAP_DIR
       DEFAULT_DESCRIPTION = 'Generate Swagger from AppMaps'
 
-      attr_accessor :project_name,
-        :project_version,
+      attr_accessor :project_version,
         :output_dir,
-        :appmap_dir,
         :description
-      attr_writer :template
+      attr_writer :project_name, :template
+
+      class << self
+        def load(config_data)
+          Configuration.new.tap do |config|
+            config_data.each do |k,v|
+              config.send "#{k}=", v
+            end
+          end
+        end
+      end
 
       def initialize
-        @project_name = default_project_name
+        @project_name = nil
         @project_version = DEFAULT_VERSION
         @output_dir = DEFAULT_OUTPUT_DIR
-        @appmap_dir = DEFAULT_APPMAP_DIR
         @description = DEFAULT_DESCRIPTION
+      end
+
+      def project_name
+        @project_name || default_project_name
       end
 
       def template
@@ -45,6 +55,8 @@ module AppMap
         # https://www.rubydoc.info/docs/rails/Module#module_parent_name-instance_method
         module_parent_name = ->(cls) { cls.name =~ /::[^:]+\Z/ ? $`.freeze : nil }
 
+        # Lazy-evaluate this so that Rails.application will be defined.
+        # If this code runs too early in the lifecycle, Rails.application is nil.
         if defined?(::Rails)
           [module_parent_name.(::Rails.application.class).humanize.titleize, "API"].join(" ")
         else
