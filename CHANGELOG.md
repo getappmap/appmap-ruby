@@ -1,3 +1,10 @@
+# [0.51.0](https://github.com/applandinc/appmap-ruby/compare/v0.50.0...v0.51.0) (2021-06-21)
+
+
+### Features
+
+* Provide default appmap.yml settings ([7fa8159](https://github.com/applandinc/appmap-ruby/commit/7fa8159b5020e35f13379017b44906d671e62e64))
+
 # [0.50.0](https://github.com/applandinc/appmap-ruby/compare/v0.49.0...v0.50.0) (2021-06-17)
 
 
