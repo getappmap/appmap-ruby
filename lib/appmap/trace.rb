@@ -2,10 +2,12 @@
 
 module AppMap
   module Trace
-    class RubyMethod
+    class RubyMethod < SimpleDelegator
       attr_reader :class_name, :static
 
       def initialize(package, class_name, method, static)
+        super(method)
+
         @package = package
         @class_name = class_name
         @method = method
@@ -111,7 +113,7 @@ module AppMap
       @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
       static = event.static if event.respond_to?(:static)
-      @methods << Trace::RubyMethod.new(package, defined_class, method, static) \
+      record_method Trace::RubyMethod.new(package, defined_class, method, static) \
         if package && defined_class && method && (event.event == :call)
     end
 
