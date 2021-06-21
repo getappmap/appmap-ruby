@@ -1,3 +1,5 @@
+require 'yaml'
+
 module AppMap
   module Swagger
     class Configuration
