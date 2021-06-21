@@ -112,17 +112,19 @@ module AppMap
   end
 end
 
-if defined?(::Rails::Railtie)
+if Gem.loaded_specs['rails']
+  require 'active_support'
+  require 'active_support/core_ext'
+  require 'rails'
   require 'appmap/railtie' 
 end
 
-if defined?(::RSpec)
+if Gem.loaded_specs['rspec-core']
   require 'appmap/rspec'
 end
-
-# defined?(::Minitest) returns nil...
+  
 if Gem.loaded_specs['minitest']
   require 'appmap/minitest'
 end
-
+  
 AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
