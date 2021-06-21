@@ -14,16 +14,30 @@ module AppMap
         # The class name is generated from the template path. The package name is
         # 'app/views', and the method name is 'render'. The source location of the method
         # is, of course, the path to the view template.
-        TemplateMethod = Struct.new(:path) do
-          private_instance_methods :path
+        class TemplateMethod
           attr_reader :class_name
- 
+
+          attr_reader :path
+          private_instance_methods :path
+
           def initialize(path)
-            super
+            @path = path
 
             @class_name = path.parameterize.underscore
           end
-  
+
+          def id
+            [ package, path, name ]
+          end
+
+          def hash
+            id.hash
+          end
+
+          def eql?(other)
+            id.eql? other.id
+          end
+
           def package
             'app/views'
           end
