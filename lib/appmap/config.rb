@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'yaml'
 require 'appmap/handler/net_http'
 require 'appmap/handler/rails/template'
 
@@ -270,7 +271,6 @@ module AppMap
         config_present = true if File.exists?(config_file_name)
 
         config_data = if config_present
-          require 'yaml'
           YAML.safe_load(::File.read(config_file_name))
         else
           warn logo.()
