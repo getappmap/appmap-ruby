@@ -1,116 +1,27 @@
 # frozen_string_literal: true
 
-begin
-  require 'active_support'
-  require 'active_support/core_ext'
-rescue NameError
-  warn 'active_support is not available. AppMap execution will continue optimistically without it...'
-end
+# This is the file that's loaded when you require 'appmap'.
+# If you require this file, we assume that you want to automatically activate all
+# the AppMap functionality that seems suitable for your project.
+# For example, if your project is a Rails project, the Railtie will be loaded.
+# If your bundle includes rspec, the appmap/rspec will be loaded.
+#
+# If you don't want this "all-in" behavior, then you can use the 'require' option
+# in your Gemfile to selectively activate just the AppMap features that you want. Then
+# you can manually configure/require other features, elsewhere in your code.
+# Note that you should always require 'appmap/agent' as early as possible, so that it can
+# observe and hook as much code loading as possible.
+#
+# Modules that you can load independently include:
+# - appmap/agent
+# - appmap/railtie
+# - appmap/rspec
+# - appmap/minitest
+# - appmap/swagger (Rake task)
+# - appmap/depends (Rake task)
 
 require 'appmap/version'
-require 'appmap/hook'
-require 'appmap/config'
-require 'appmap/trace'
-require 'appmap/class_map'
-require 'appmap/metadata'
-require 'appmap/util'
-require 'appmap/open'
-
-# load extension
-require 'appmap/appmap'
-
-module AppMap
-  class << self
-    @configuration = nil
-    @configuration_file_path = nil
-
-    # Gets the configuration. If there is no configuration, the default
-    # configuration is initialized.
-    def configuration
-      @configuration ||= initialize_configuration
-    end
-
-    # Sets the configuration. This is only expected to happen once per
-    # Ruby process.
-    def configuration=(config)
-      warn 'AppMap is already configured' if @configuration && config
-
-      @configuration = config
-    end
-
-    def default_config_file_path
-      ENV['APPMAP_CONFIG_FILE'] || 'appmap.yml'
-    end
-
-    # Configures AppMap for recording. Default behavior is to configure from
-    # APPMAP_CONFIG_FILE, or 'appmap.yml'. If no config file is available, a
-    # configuration will be automatically generated and used - and the user is prompted
-    # to create the config file.
-    #
-    # This method also activates the code hooks which record function calls as trace events.
-    # Call this function before the program code is loaded by the Ruby VM, otherwise
-    # the load events won't be seen and the hooks won't activate.
-    def initialize_configuration(config_file_path = default_config_file_path)
-      warn "Configuring AppMap from path #{config_file_path}"
-      Config.load_from_file(config_file_path).tap do |configuration|
-        self.configuration = configuration
-        Hook.new(configuration).enable
-      end
-    end
-
-    def info(msg)
-      if defined?(::Rails) && defined?(::Rails.logger)
-        ::Rails.logger.info msg
-      else
-        warn msg
-      end
-    end
-
-    # Used to start tracing, stop tracing, and record events.
-    def tracing
-      @tracing ||= Trace::Tracing.new
-    end
-
-    # Records the events which occur while processing a block,
-    # and returns an AppMap as a Hash.
-    def record
-      tracer = tracing.trace
-      begin
-        yield
-      ensure
-        tracing.delete(tracer)
-      end
-
-      events = [].tap do |event_list|
-        event_list << tracer.next_event.to_h while tracer.event?
-      end
-      {
-        'version' => AppMap::APPMAP_FORMAT_VERSION,
-        'metadata' => detect_metadata,
-        'classMap' => class_map(tracer.event_methods),
-        'events' => events
-      }
-    end
-
-    # Uploads an AppMap to the AppLand website and displays it.
-    def open(appmap = nil, &block)
-      appmap ||= AppMap.record(&block)
-      AppMap::Open.new(appmap).perform
-    end
-
-    # Builds a class map from a config and a list of Ruby methods.
-    def class_map(methods)
-      ClassMap.build_from_methods(methods)
-    end
-
-    # Returns default metadata detected from the Ruby system and from the
-    # filesystem.
-    def detect_metadata
-      @metadata ||= Metadata.detect.freeze
-      @metadata.deep_dup
-    end
-  end
-end
+require 'appmap/agent'
 
 lambda do
   Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
@@ -164,5 +75,9 @@ lambda do
     require 'appmap/minitest'
   end
   
+  require 'appmap/swagger'
+
+  require 'appmap/depends'
+
   AppMap.initialize_configuration
 end.call if ENV['APPMAP'] == 'true'
