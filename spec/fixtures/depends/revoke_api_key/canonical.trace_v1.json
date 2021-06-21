@@ -1,0 +1,233 @@
+[
+  {
+    "kind": "http_server_request",
+    "mime_type": "application/json; charset=utf-8",
+    "route": "DELETE /api/api_keys",
+    "status": 200,
+    "children": [
+      {
+        "kind": "function",
+        "function": "app/models/ApiKey.authenticate",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ],
+        "children": [
+          {
+            "kind": "function",
+            "function": "app/models/ApiKey.decode",
+            "labels": []
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "api_keys"
+              ],
+              "columns": [
+                "*",
+                "login"
+              ]
+            }
+          },
+          {
+            "kind": "function",
+            "function": "app/models/ApiKey.touch",
+            "labels": [],
+            "children": [
+              {
+                "kind": "sql",
+                "sql": {
+                  "action": "update",
+                  "tables": [
+                    "api_keys"
+                  ],
+                  "columns": [
+                    "id",
+                    "last_used"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "users"
+              ],
+              "columns": [
+                "*",
+                "users.login"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_type"
+              ],
+              "columns": [
+                "pg_type.oid",
+                "typarray",
+                "typname",
+                "typrelid",
+                "typtype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_attribute",
+                "pg_type"
+              ],
+              "columns": [
+                "attisdropped",
+                "attname",
+                "attnum",
+                "attrelid",
+                "atttypid",
+                "pg_attribute.atttypid",
+                "pg_type.oid",
+                "pg_type.typbasetype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_type"
+              ],
+              "columns": [
+                "pg_type.oid",
+                "typarray",
+                "typname",
+                "typrelid",
+                "typtype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_attribute",
+                "pg_type"
+              ],
+              "columns": [
+                "attisdropped",
+                "attname",
+                "attnum",
+                "attrelid",
+                "atttypid",
+                "pg_attribute.atttypid",
+                "pg_type.oid",
+                "pg_type.typbasetype"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "app/controllers/API::APIKeysController#destroy",
+        "labels": [],
+        "children": [
+          {
+            "kind": "function",
+            "function": "app/models/ApiKey.revoke",
+            "labels": [
+              "security"
+            ],
+            "children": [
+              {
+                "kind": "function",
+                "function": "app/models/ApiKey.decode",
+                "labels": []
+              },
+              {
+                "kind": "sql",
+                "sql": {
+                  "action": "select",
+                  "tables": [
+                    "api_keys"
+                  ],
+                  "columns": [
+                    "*",
+                    "login"
+                  ]
+                }
+              },
+              {
+                "kind": "sql",
+                "sql": {
+                  "action": "delete",
+                  "tables": [
+                    "api_keys"
+                  ],
+                  "columns": [
+                    "id"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "http_server_request",
+    "mime_type": "application/json; charset=utf-8",
+    "route": "DELETE /api/api_keys",
+    "status": 401,
+    "children": [
+      {
+        "kind": "function",
+        "function": "app/models/ApiKey.authenticate",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ],
+        "children": [
+          {
+            "kind": "function",
+            "function": "app/models/ApiKey.decode",
+            "labels": []
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "api_keys"
+              ],
+              "columns": [
+                "*",
+                "login"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "json/JSON::Ext::Generator::State#generate",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      }
+    ]
+  }
+]

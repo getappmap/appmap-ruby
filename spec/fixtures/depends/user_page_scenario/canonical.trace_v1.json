@@ -1,0 +1,132 @@
+[
+  {
+    "kind": "http_server_request",
+    "mime_type": "text/html; charset=utf-8",
+    "route": "GET /organizations/new",
+    "status": 200,
+    "children": [
+      {
+        "kind": "function",
+        "function": "openssl/OpenSSL::Cipher#decrypt",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "openssl/OpenSSL::Cipher#final",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "json/JSON::Ext::Parser#parse",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "json/JSON::Ext::Parser#parse",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      },
+      {
+        "kind": "sql",
+        "sql": {
+          "tables": [],
+          "columns": []
+        }
+      },
+      {
+        "kind": "function",
+        "function": "app/models/User.find_by_id!",
+        "labels": [],
+        "children": [
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "users"
+              ],
+              "columns": [
+                "*",
+                "id"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "app/models/User::Show#accept_eula?",
+        "labels": []
+      },
+      {
+        "kind": "function",
+        "function": "app/models/Configuration.find",
+        "labels": [],
+        "children": [
+          {
+            "kind": "function",
+            "function": "json/JSON::Ext::Parser#parse",
+            "labels": [
+              "serialization",
+              "json"
+            ]
+          },
+          {
+            "kind": "function",
+            "function": "app/models/Configuration#attributes=",
+            "labels": []
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "app/models/Configuration#attributes",
+        "labels": []
+      },
+      {
+        "kind": "function",
+        "function": "app/controllers/OrganizationsController#new",
+        "labels": []
+      },
+      {
+        "kind": "function",
+        "function": "openssl/Digest::Instance#digest",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "json/JSON::Ext::Parser#parse",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      },
+      {
+        "kind": "function",
+        "function": "app/models/Configuration#attributes",
+        "labels": []
+      },
+      {
+        "kind": "sql",
+        "sql": {
+          "tables": [],
+          "columns": []
+        }
+      }
+    ]
+  }
+]

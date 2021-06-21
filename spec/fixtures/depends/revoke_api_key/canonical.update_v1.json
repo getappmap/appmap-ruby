@@ -1,0 +1,64 @@
+[
+  {
+    "kind": "http_server_request",
+    "route": "DELETE /api/api_keys",
+    "status": 200,
+    "children": [
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ],
+        "children": [
+          {
+            "kind": "function",
+            "labels": [
+              "security"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "action": "update",
+    "tables": [
+      "api_keys"
+    ],
+    "columns": [
+      "id",
+      "last_used"
+    ]
+  },
+  {
+    "action": "delete",
+    "tables": [
+      "api_keys"
+    ],
+    "columns": [
+      "id"
+    ]
+  },
+  {
+    "kind": "http_server_request",
+    "route": "DELETE /api/api_keys",
+    "status": 401,
+    "children": [
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "name": "app/models",
+    "type": "package",
+    "children": [
+      {
+        "name": "ApiKey",
+        "type": "class",
+        "children": [
+          {
+            "name": "issue",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:28"
+          },
+          {
+            "name": "encode",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:20"
+          },
+          {
+            "name": "authenticate",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:51"
+          },
+          {
+            "name": "decode",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:24"
+          },
+          {
+            "name": "touch",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:11"
+          },
+          {
+            "name": "revoke",
+            "type": "function",
+            "static": true,
+            "location": "app/models/api_key.rb:40"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "app/controllers",
+    "type": "package",
+    "children": [
+      {
+        "name": "API",
+        "type": "class",
+        "children": [
+          {
+            "name": "APIKeysController",
+            "type": "class",
+            "children": [
+              {
+                "name": "destroy",
+                "type": "function",
+                "static": false,
+                "location": "app/controllers/api/api_keys_controller.rb:15"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "json",
+    "type": "package",
+    "children": [
+      {
+        "name": "JSON",
+        "type": "class",
+        "children": [
+          {
+            "name": "Ext",
+            "type": "class",
+            "children": [
+              {
+                "name": "Generator",
+                "type": "class",
+                "children": [
+                  {
+                    "name": "State",
+                    "type": "class",
+                    "children": [
+                      {
+                        "name": "generate",
+                        "type": "function",
+                        "static": false,
+                        "location": "JSON::Ext::Generator::State#generate"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Database",
+    "type": "database",
+    "children": [
+      {
+        "name": "INSERT INTO \"api_keys\" (\"login\", \"description\") VALUES ('admin', 'example api key') RETURNING *",
+        "type": "query"
+      },
+      {
+        "name": "SELECT * FROM \"api_keys\" WHERE (\"login\" = 'admin')",
+        "type": "query"
+      },
+      {
+        "name": "UPDATE \"api_keys\" SET \"last_used\" = '2021-01-12 18:48:00.281150+0000' WHERE (\"id\" = 9)",
+        "type": "query"
+      },
+      {
+        "name": "SELECT * FROM \"users\" WHERE (\"users\".\"login\" = 'admin') LIMIT 1",
+        "type": "query"
+      },
+      {
+        "name": "SELECT \"pg_type\".\"oid\", \"typrelid\", \"typarray\" FROM \"pg_type\" WHERE ((\"typtype\" = 'c') AND (\"typname\" = 'q_class')) LIMIT 1",
+        "type": "query"
+      },
+      {
+        "name": "SELECT \"attname\", (CASE \"pg_type\".\"typbasetype\" WHEN 0 THEN \"atttypid\" ELSE \"pg_type\".\"typbasetype\" END) AS \"atttypid\" FROM \"pg_attribute\" INNER JOIN \"pg_type\" ON (\"pg_type\".\"oid\" = \"pg_attribute\".\"atttypid\") WHERE ((\"attrelid\" = 223731) AND (\"attnum\" > 0) AND NOT \"attisdropped\") ORDER BY \"attnum\"",
+        "type": "query"
+      },
+      {
+        "name": "SELECT \"pg_type\".\"oid\", \"typrelid\", \"typarray\" FROM \"pg_type\" WHERE ((\"typtype\" = 'c') AND (\"typname\" = 'fn_call')) LIMIT 1",
+        "type": "query"
+      },
+      {
+        "name": "SELECT \"attname\", (CASE \"pg_type\".\"typbasetype\" WHEN 0 THEN \"atttypid\" ELSE \"pg_type\".\"typbasetype\" END) AS \"atttypid\" FROM \"pg_attribute\" INNER JOIN \"pg_type\" ON (\"pg_type\".\"oid\" = \"pg_attribute\".\"atttypid\") WHERE ((\"attrelid\" = 223734) AND (\"attnum\" > 0) AND NOT \"attisdropped\") ORDER BY \"attnum\"",
+        "type": "query"
+      },
+      {
+        "name": "DELETE FROM \"api_keys\" WHERE \"id\" = 9",
+        "type": "query"
+      }
+    ]
+  },
+  {
+    "name": "HTTP server requests",
+    "type": "http",
+    "children": [
+      {
+        "name": "DELETE /api/api_keys",
+        "type": "route"
+      }
+    ]
+  }
+]

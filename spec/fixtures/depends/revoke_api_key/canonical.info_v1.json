@@ -1,0 +1,202 @@
+[
+  {
+    "kind": "http_server_request",
+    "route": "DELETE /api/api_keys",
+    "status": 200,
+    "children": [
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ],
+        "children": [
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "api_keys"
+              ],
+              "columns": [
+                "*",
+                "login"
+              ]
+            },
+            "children": [
+              {
+                "kind": "sql",
+                "sql": {
+                  "action": "update",
+                  "tables": [
+                    "api_keys"
+                  ],
+                  "columns": [
+                    "id",
+                    "last_used"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "users"
+              ],
+              "columns": [
+                "*",
+                "users.login"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_type"
+              ],
+              "columns": [
+                "pg_type.oid",
+                "typarray",
+                "typname",
+                "typrelid",
+                "typtype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_attribute",
+                "pg_type"
+              ],
+              "columns": [
+                "attisdropped",
+                "attname",
+                "attnum",
+                "attrelid",
+                "atttypid",
+                "pg_attribute.atttypid",
+                "pg_type.oid",
+                "pg_type.typbasetype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_type"
+              ],
+              "columns": [
+                "pg_type.oid",
+                "typarray",
+                "typname",
+                "typrelid",
+                "typtype"
+              ]
+            }
+          },
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "pg_attribute",
+                "pg_type"
+              ],
+              "columns": [
+                "attisdropped",
+                "attname",
+                "attnum",
+                "attrelid",
+                "atttypid",
+                "pg_attribute.atttypid",
+                "pg_type.oid",
+                "pg_type.typbasetype"
+              ]
+            },
+            "children": [
+              {
+                "kind": "function",
+                "labels": [
+                  "security"
+                ],
+                "children": [
+                  {
+                    "kind": "sql",
+                    "sql": {
+                      "action": "select",
+                      "tables": [
+                        "api_keys"
+                      ],
+                      "columns": [
+                        "*",
+                        "login"
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "sql",
+                    "sql": {
+                      "action": "delete",
+                      "tables": [
+                        "api_keys"
+                      ],
+                      "columns": [
+                        "id"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "http_server_request",
+    "route": "DELETE /api/api_keys",
+    "status": 401,
+    "children": [
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "provider.authenticate"
+        ],
+        "children": [
+          {
+            "kind": "sql",
+            "sql": {
+              "action": "select",
+              "tables": [
+                "api_keys"
+              ],
+              "columns": [
+                "*",
+                "login"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      }
+    ]
+  }
+]

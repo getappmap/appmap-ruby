@@ -1,0 +1,234 @@
+[
+  {
+    "name": "json",
+    "type": "package",
+    "children": [
+      {
+        "name": "JSON",
+        "type": "class",
+        "children": [
+          {
+            "name": "Ext",
+            "type": "class",
+            "children": [
+              {
+                "name": "Generator",
+                "type": "class",
+                "children": [
+                  {
+                    "name": "State",
+                    "type": "class",
+                    "children": [
+                      {
+                        "name": "generate",
+                        "type": "function",
+                        "static": false,
+                        "location": "JSON::Ext::Generator::State#generate"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Parser",
+                "type": "class",
+                "children": [
+                  {
+                    "name": "parse",
+                    "type": "function",
+                    "static": false,
+                    "location": "JSON::Ext::Parser#parse"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "net/http",
+    "type": "package",
+    "children": [
+      {
+        "name": "Net",
+        "type": "class",
+        "children": [
+          {
+            "name": "HTTP",
+            "type": "class",
+            "children": [
+              {
+                "name": "request",
+                "type": "function",
+                "static": false,
+                "location": "/Users/kgilpin/source/appland/appmap-ruby/lib/appmap/hook/method.rb:49"
+              },
+              {
+                "name": "request",
+                "type": "function",
+                "static": false,
+                "location": "/Users/kgilpin/.rbenv/versions/2.6.6/lib/ruby/2.6.0/net/http.rb:1468"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "openssl",
+    "type": "package",
+    "children": [
+      {
+        "name": "OpenSSL",
+        "type": "class",
+        "children": [
+          {
+            "name": "Cipher",
+            "type": "class",
+            "children": [
+              {
+                "name": "decrypt",
+                "type": "function",
+                "static": false,
+                "location": "OpenSSL::Cipher#decrypt"
+              },
+              {
+                "name": "final",
+                "type": "function",
+                "static": false,
+                "location": "OpenSSL::Cipher#final"
+              },
+              {
+                "name": "encrypt",
+                "type": "function",
+                "static": false,
+                "location": "OpenSSL::Cipher#encrypt"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Digest",
+        "type": "class",
+        "children": [
+          {
+            "name": "Instance",
+            "type": "class",
+            "children": [
+              {
+                "name": "digest",
+                "type": "function",
+                "static": false,
+                "location": "Digest::Instance#digest"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "app/models",
+    "type": "package",
+    "children": [
+      {
+        "name": "User",
+        "type": "class",
+        "children": [
+          {
+            "name": "find_by_id!",
+            "type": "function",
+            "static": true,
+            "location": "app/models/user.rb:31"
+          },
+          {
+            "name": "Show",
+            "type": "class",
+            "children": [
+              {
+                "name": "accept_eula?",
+                "type": "function",
+                "static": false,
+                "location": "app/models/user.rb:109"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Configuration",
+        "type": "class",
+        "children": [
+          {
+            "name": "find",
+            "type": "function",
+            "static": true,
+            "location": "app/models/configuration.rb:8"
+          },
+          {
+            "name": "attributes=",
+            "type": "function",
+            "static": false,
+            "location": "app/models/configuration.rb:33"
+          },
+          {
+            "name": "attributes",
+            "type": "function",
+            "static": false,
+            "location": "app/models/configuration.rb:22"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "app/controllers",
+    "type": "package",
+    "children": [
+      {
+        "name": "OrganizationsController",
+        "type": "class",
+        "children": [
+          {
+            "name": "new",
+            "type": "function",
+            "static": false,
+            "location": "app/controllers/organizations_controller.rb:11"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "HTTP server requests",
+    "type": "http",
+    "children": [
+      {
+        "name": "GET /organizations/new",
+        "type": "route"
+      }
+    ]
+  },
+  {
+    "name": "Database",
+    "type": "database",
+    "children": [
+      {
+        "name": "BEGIN",
+        "type": "query"
+      },
+      {
+        "name": "SELECT * FROM \"users\" WHERE (\"id\" = 1) LIMIT 1",
+        "type": "query"
+      },
+      {
+        "name": "COMMIT",
+        "type": "query"
+      }
+    ]
+  }
+]

@@ -1,0 +1,60 @@
+[
+  {
+    "kind": "http_server_request",
+    "route": "GET /organizations/new",
+    "status": 200,
+    "children": [
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "serialization",
+          "json"
+        ],
+        "children": [
+          {
+            "kind": "function",
+            "labels": [
+              "serialization",
+              "json"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "security",
+          "crypto"
+        ]
+      },
+      {
+        "kind": "function",
+        "labels": [
+          "serialization",
+          "json"
+        ]
+      }
+    ]
+  }
+]

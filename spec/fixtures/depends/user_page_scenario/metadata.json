@@ -1,0 +1,61 @@
+{
+  "app": "appland/AppLand",
+  "language": {
+    "name": "ruby",
+    "engine": "ruby",
+    "version": "2.6.6"
+  },
+  "client": {
+    "name": "appmap",
+    "url": "https://github.com/applandinc/appmap-ruby",
+    "version": "0.37.2"
+  },
+  "frameworks": [
+    {
+      "name": "rails",
+      "version": "5.2.4.2"
+    },
+    {
+      "name": "rspec",
+      "version": "3.9.1"
+    }
+  ],
+  "git": {
+    "repository": "git@github.com:applandinc/appland.git",
+    "branch": "add-notifications",
+    "commit": "2e7738908480aeefab818ddd17c91dff57db1ab0",
+    "status_code": [],
+    "git_last_annotated_tag": null,
+    "git_last_tag": "v0.13.0",
+    "git_commits_since_last_annotated_tag": null,
+    "git_commits_since_last_tag": 0
+  },
+  "name": "User page for an admin user organization list has a link to create an organization",
+  "feature": "User page for an admin user",
+  "feature_group": "User page",
+  "recorder": {
+    "name": "rspec"
+  },
+  "source_location": "spec/fixtures/depends/spec/user_spec.rb",
+  "test_status": "failed",
+  "fingerprints": [
+    {
+      "appmap_digest": "4a2f6e28befc256c3cdc3ad05f3e51156e0fb805300f095a74f7719cc2bcb650",
+      "canonicalization_algorithm": "update_v1",
+      "digest": "997ec23276e3bfb491dcf6aefc138a7681fd9d4e6b74af6615878d238c968170",
+      "fingerprint_algorithm": "sha256"
+    },
+    {
+      "appmap_digest": "4a2f6e28befc256c3cdc3ad05f3e51156e0fb805300f095a74f7719cc2bcb650",
+      "canonicalization_algorithm": "info_v1",
+      "digest": "cec1d48810b037d61d5643a096c1c57eb6ee74f9e5d8f8905b36f87fae52068c",
+      "fingerprint_algorithm": "sha256"
+    },
+    {
+      "appmap_digest": "4a2f6e28befc256c3cdc3ad05f3e51156e0fb805300f095a74f7719cc2bcb650",
+      "canonicalization_algorithm": "trace_v1",
+      "digest": "7306476448a5d143fc59777e3769326659b7b508007accddbb84cd382c6ca847",
+      "fingerprint_algorithm": "sha256"
+    }
+  ]
+}
