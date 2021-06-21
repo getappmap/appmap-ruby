@@ -1,6 +1,3 @@
-require 'active_support'
-require 'active_support/core_ext'
-
 module AppMap
   module Swagger
     # Transform raw Swagger into a "stable" variant. For example, remove descriptions

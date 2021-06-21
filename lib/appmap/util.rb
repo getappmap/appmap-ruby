@@ -101,13 +101,13 @@ module AppMap
         # Rack prepends HTTP_ to all client-sent headers.
         matching_headers = env
           .select { |k,v| k.start_with? 'HTTP_'}
-          .reject { |k,v| v.blank? }
+          .reject { |k,v| blank?(v) }
           .each_with_object({}) do |kv, memo|
             key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
             value = kv[1]
             memo[key] = value
           end
-        matching_headers.blank? ? nil : matching_headers
+        blank?(matching_headers) ? nil : matching_headers
       end
 
       def normalize_path(path)
@@ -157,6 +157,18 @@ module AppMap
       def deep_dup(hash)
         # This is a simple way to avoid the need for deep_dup from activesupport.
         Marshal.load(Marshal.dump(hash))
+      end
+
+      def blank?(obj)
+        return true if obj.nil?
+        
+        return true if obj.is_a?(String) && obj == ''
+
+        return true if obj.respond_to?(:length) && obj.length == 0
+
+        return true if obj.respond_to?(:size) && obj.size == 0
+
+        false
       end
     end
   end

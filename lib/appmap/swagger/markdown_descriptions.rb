@@ -1,5 +1,3 @@
-require 'active_support'
-require 'active_support/core_ext'
 require 'rdoc'
 require 'reverse_markdown'
 

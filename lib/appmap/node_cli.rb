@@ -1,7 +1,5 @@
 require 'open3'
 require 'shellwords'
-require 'active_support'
-require 'active_support/core_ext'
 require 'appmap/command_error'
 
 module AppMap
@@ -37,8 +35,8 @@ module AppMap
 
       warn command.join(' ') if verbose
       stdout, stderr, status = Open3.capture3({ 'NODE_OPTIONS' => '--trace-warnings' }, *command.map(&:shellescape), options)
-      stdout_msg = stdout.split("\n").map {|line| "stdout: #{line}"}.join("\n") unless stdout.blank?
-      stderr_msg = stderr.split("\n").map {|line| "stderr: #{line}"}.join("\n") unless stderr.blank?
+      stdout_msg = stdout.split("\n").map {|line| "stdout: #{line}"}.join("\n") unless Util.blank?(stdout)
+      stderr_msg = stderr.split("\n").map {|line| "stderr: #{line}"}.join("\n") unless Util.blank?(stderr)
       if verbose
         warn stdout_msg if stdout_msg
         warn stderr_msg if stderr_msg

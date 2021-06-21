@@ -40,9 +40,9 @@ module AppMap
         git_sha = `git rev-parse HEAD`.strip
         git_status = `git status -s`.split("\n").map(&:strip)
         git_last_annotated_tag = `git describe --abbrev=0 2>/dev/null`.strip
-        git_last_annotated_tag = nil if git_last_annotated_tag.blank?
+        git_last_annotated_tag = nil if Util.blank?(git_last_annotated_tag)
         git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
-        git_last_tag = nil if git_last_tag.blank?
+        git_last_tag = nil if Util.blank?(git_last_tag)
         git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_annotated_tag
         git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_tag
 

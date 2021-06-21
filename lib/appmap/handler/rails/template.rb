@@ -37,7 +37,11 @@ module AppMap
           def eql?(other)
             id.eql? other.id
           end
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> e6dcc5a... wip
           def package
             'app/views'
           end

@@ -23,7 +23,7 @@ module AppMap
 
       def normalize_path_fn(pwd)
         lambda do |path|
-          next path if path.blank?
+          next path if AppMap::Util.blank?(path)
 
           path = path[pwd.length + 1..-1] if path.index(pwd) == 0
           path.split(':')[0]

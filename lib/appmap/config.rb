@@ -81,8 +81,8 @@ module AppMap
           package_name: package_name,
           gem: gem,
           handler_class: handler_class.name,
-          exclude: exclude.blank? ? nil : exclude,
-          labels: labels.blank? ? nil : labels,
+          exclude: Util.blank?(exclude) ? nil : exclude,
+          labels: Util.blank?(labels) ? nil : labels,
           shallow: shallow
         }.compact
       end

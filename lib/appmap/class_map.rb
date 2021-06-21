@@ -111,7 +111,7 @@ module AppMap
           end
 
         comment = method.comment
-        function_info[:comment] = comment unless comment.blank?
+        function_info[:comment] = comment unless Util.blank?(comment)
 
         function_info[:labels] = parse_labels(comment) + (method.labels || [])
         object_infos << function_info

@@ -26,9 +26,13 @@ Gem::Specification.new do |spec|
     spec.files << filename
   end
 
+  spec.bindir = 'exe'
+  spec.executables << 'appmap-inspect'
+
   spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'activesupport'
   spec.add_dependency 'method_source'
   spec.add_dependency 'rack'
   spec.add_dependency 'reverse_markdown'
