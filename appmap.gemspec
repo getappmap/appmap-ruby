@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files --no-deleted`.split("
 ")
 
-  Dir.glob('node_modules/**/*').each do |filename|
+  Dir.glob(File.join(__dir__, 'node_modules/**/*')).each do |filename|
     next if File.directory?(filename) || filename.length > 100
     spec.files << filename
   end
@@ -29,16 +29,12 @@ Gem::Specification.new do |spec|
   spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activesupport'
-  spec.add_dependency 'faraday'
-  spec.add_dependency 'gli'
   spec.add_dependency 'method_source'
-  spec.add_dependency 'parser'
   spec.add_dependency 'rack'
   spec.add_dependency 'reverse_markdown'
 
   spec.add_development_dependency 'bundler', '>= 1.16'
-  spec.add_development_dependency 'minitest', '~> 5.0'
+  spec.add_development_dependency 'minitest', '= 5.14.4'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'
