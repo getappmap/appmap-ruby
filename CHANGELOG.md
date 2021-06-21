@@ -1,3 +1,10 @@
+## [0.51.1](https://github.com/applandinc/appmap-ruby/compare/v0.51.0...v0.51.1) (2021-06-21)
+
+
+### Bug Fixes
+
+* Add missing require 'yaml' ([1187a02](https://github.com/applandinc/appmap-ruby/commit/1187a023243caaab8cd48de5cbbddefa361636ad))
+
 # [0.51.0](https://github.com/applandinc/appmap-ruby/compare/v0.50.0...v0.51.0) (2021-06-21)
 
 
