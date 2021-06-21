@@ -62,7 +62,7 @@ describe 'Net::HTTP handler' do
   end
 
   context 'with trace enabled' do
-    let(:configuration) { AppMap::Config.new('record_net_http_spec', []) }
+    let(:configuration) { AppMap::Config.new('record_net_http_spec') }
 
     after do
       AppMap.configuration = nil

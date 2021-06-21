@@ -4,6 +4,21 @@ require 'bundler'
 
 module AppMap
   module Util
+    # https://wynnnetherland.com/journal/a-stylesheet-author-s-guide-to-terminal-colors/
+    # Embed in a String to clear all previous ANSI sequences.
+    CLEAR   = "\e[0m"
+    BOLD    = "\e[1m"
+
+    # Colors
+    BLACK   = "\e[30m"
+    RED     = "\e[31m"
+    GREEN   = "\e[32m"
+    YELLOW  = "\e[33m"
+    BLUE    = "\e[34m"
+    MAGENTA = "\e[35m"
+    CYAN    = "\e[36m"
+    WHITE   = "\e[37m"
+
     class << self
       # scenario_filename builds a suitable file name from a scenario name.
       # Special characters are removed, and the file name is truncated to fit within
@@ -127,6 +142,12 @@ module AppMap
           # Atomically move the tempfile into place.
           FileUtils.mv tempfile.path, filename
         end
+      end
+
+      def color(text, color, bold: false)
+        color = Util.const_get(color.to_s.upcase) if color.is_a?(Symbol)
+        bold  = bold ? BOLD : ""
+        "#{bold}#{color}#{text}#{CLEAR}"
       end
     end
   end

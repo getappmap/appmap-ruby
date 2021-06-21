@@ -1,9 +1,30 @@
 require 'rails_spec_helper'
 
 describe 'Rails' do
+  shared_context 'rails integration test setup' do
+    def tmpdir
+      'tmp/spec/AbstractControllerBase'
+    end
+
+    unless use_existing_data?
+      before(:all) do
+        FileUtils.rm_rf tmpdir
+        FileUtils.mkdir_p tmpdir
+        run_spec 'spec/controllers/users_controller_spec.rb'
+        run_spec 'spec/controllers/users_controller_api_spec.rb'
+      end
+    end
+
+    let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
+    let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
+    let(:appmap) { JSON.parse File.read(appmap_json_path) }
+    let(:events) { appmap['events'] }
+  end
+
   %w[5 6].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
+      include_context 'rails integration test setup'
 
       def run_spec(spec_name)
         cmd = <<~CMD.gsub "\n", ' '
@@ -12,24 +33,6 @@ describe 'Rails' do
         CMD
         run_cmd cmd, chdir: fixture_dir
       end
-
-      def tmpdir
-        'tmp/spec/AbstractControllerBase'
-      end
-
-      unless use_existing_data?
-        before(:all) do
-          FileUtils.rm_rf tmpdir
-          FileUtils.mkdir_p tmpdir
-          run_spec 'spec/controllers/users_controller_spec.rb'
-          run_spec 'spec/controllers/users_controller_api_spec.rb'
-        end
-      end
-
-      let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
-      let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
-      let(:appmap) { JSON.parse File.read(appmap_json_path) }
-      let(:events) { appmap['events'] }
 
       describe 'an API route' do
         describe 'creating an object' do
@@ -251,6 +254,42 @@ describe 'Rails' do
           end  
         end
       end
+    end
+  end
+
+  describe 'with default appmap.yml' do
+    include_context 'Rails app pg database', "spec/fixtures/rails5_users_app" unless use_existing_data?
+    include_context 'rails integration test setup'
+
+    def run_spec(spec_name)
+      cmd = <<~CMD.gsub "\n", ' '
+        docker-compose run --rm -e RAILS_ENV=test -e APPMAP=true -e APPMAP_CONFIG_FILE=no/such/file
+        -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}
+      CMD
+      run_cmd cmd, chdir: fixture_dir
+    end
+
+    let(:appmap_json_file) do
+      'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
+    end
+
+    it 'http_server_request is recorded' do
+      expect(events).to include(
+        hash_including(
+          'http_server_request' => hash_including(
+            'request_method' => 'POST',
+            'path_info' => '/api/users'
+          )
+        )
+      )
+    end
+
+    it 'controller method is recorded' do
+      expect(events).to include hash_including(
+        'defined_class' => 'Api::UsersController',
+        'method_id' => 'build_user',
+        'path' => 'app/controllers/api/users_controller.rb',
+      )
     end
   end
 end

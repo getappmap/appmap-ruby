@@ -6,4 +6,6 @@ module AppMap
   VERSION = '0.50.0'
 
   APPMAP_FORMAT_VERSION = '1.5.1'
+
+  DEFAULT_APPMAP_DIR = 'tmp/appmap'.freeze
 end

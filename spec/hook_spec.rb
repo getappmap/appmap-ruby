@@ -21,7 +21,7 @@ describe 'AppMap class Hooking', docker: false do
   def invoke_test_file(file, setup: nil, &block)
     AppMap.configuration = nil
     package = AppMap::Config::Package.build_from_path(file)
-    config = AppMap::Config.new('hook_spec', [ package ])
+    config = AppMap::Config.new('hook_spec', packages: [ package ])
     AppMap.configuration = config
     tracer = nil
     AppMap::Hook.new(config).enable do
@@ -57,7 +57,7 @@ describe 'AppMap class Hooking', docker: false do
   it 'excludes named classes and methods' do
     load 'spec/fixtures/hook/exclude.rb'
     package = AppMap::Config::Package.build_from_path('spec/fixtures/hook/exclude.rb')
-    config = AppMap::Config.new('hook_spec', [ package ], exclude: %w[ExcludeTest])
+    config = AppMap::Config.new('hook_spec', packages: [ package ], exclude: %w[ExcludeTest])
     AppMap.configuration = config
 
     expect(config.never_hook?(ExcludeTest, ExcludeTest.new.method(:instance_method))).to be_truthy

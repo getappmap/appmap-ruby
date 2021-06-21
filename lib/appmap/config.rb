@@ -223,10 +223,14 @@ module AppMap
       'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.generate])),
     }.freeze
 
-    attr_reader :name, :packages, :exclude, :hooked_methods, :builtin_hooks
+    attr_reader :name, :appmap_dir, :packages, :exclude, :hooked_methods, :builtin_hooks
 
-    def initialize(name, packages, exclude: [], functions: [])
+    def initialize(name,
+      packages: [],
+      exclude: [],
+      functions: [])
       @name = name
+      @appmap_dir = AppMap::DEFAULT_APPMAP_DIR
       @packages = packages
       @hook_paths = Set.new(packages.map(&:path))
       @exclude = exclude
@@ -253,38 +257,119 @@ module AppMap
     class << self
       # Loads configuration data from a file, specified by the file name.
       def load_from_file(config_file_name)
-        require 'yaml'
-        load YAML.safe_load(::File.read(config_file_name))
+        logo = lambda do
+          Util.color(<<~LOGO, :magenta)
+             ___             __  ___
+            / _ | ___  ___  /  |/  /__ ____
+           / __ |/ _ \\/ _ \\/ /|_/ / _ `/ _ \\
+          /_/ |_/ .__/ .__/_/  /_/\\_,_/ .__/
+               /_/  /_/              /_/
+          LOGO
+        end
+
+        config_present = true if File.exists?(config_file_name)
+
+        config_data = if config_present
+          require 'yaml'
+          YAML.safe_load(::File.read(config_file_name))
+        else
+          warn logo.()
+          warn ''
+          warn Util.color(%Q|NOTICE: The AppMap config file #{config_file_name} was not found!|, :magenta, bold: true)
+          warn ''
+          warn Util.color(<<~MISSING_FILE_MSG, :magenta)
+          AppMap uses this file to customize its behavior. For example, you can use
+          the 'packages' setting to indicate which local file paths and dependency
+          gems you want to include in the AppMap. Since you haven't provided specific
+          settings, the appmap gem will try and guess some reasonable defaults.
+          To suppress this message, create the file:
+          
+          #{Pathname.new(config_file_name).expand_path}.
+          
+          Here are the default settings that will be used in the meantime. You can
+          copy and paste this example to start your appmap.yml.
+          MISSING_FILE_MSG
+          {}
+        end
+        load(config_data).tap do |config|
+          config_yaml = {
+            'name' => config.name,
+            'packages' => config.packages.select{|p| p.path}.map do |pkg|
+              { 'path' => pkg.path }
+            end,
+            'exclude' => []
+          }.compact
+          unless config_present
+            warn Util.color(YAML.dump(config_yaml), :magenta)
+            warn logo.()
+          end
+        end
       end
 
       # Loads configuration from a Hash.
       def load(config_data)
-        functions = (config_data['functions'] || []).map do |function_data|
-          package = function_data['package']
-          cls = function_data['class']
-          functions = function_data['function'] || function_data['functions']
-          raise 'AppMap class configuration should specify package, class and function(s)' unless package && cls && functions
-          functions = Array(functions).map(&:to_sym)
-          labels = function_data['label'] || function_data['labels']
-          labels = Array(labels).map(&:to_s) if labels
-          Function.new(package, cls, labels, functions)
-        end
-        packages = (config_data['packages'] || []).map do |package|
-          gem = package['gem']
-          path = package['path']
-          raise 'AppMap package configuration should specify gem or path, not both' if gem && path
+        name = config_data['name'] || guess_name
+        config_params = {
+          exclude: config_data['exclude']
+        }.compact
 
-          if gem
-            shallow = package['shallow']
-            # shallow is true by default for gems
-            shallow = true if shallow.nil?
-            Package.build_from_gem(gem, exclude: package['exclude'] || [], shallow: shallow)
-          else
-            Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
+        if config_data['functions']
+          config_params[:functions] = config_data['functions'].map do |function_data|
+            package = function_data['package']
+            cls = function_data['class']
+            functions = function_data['function'] || function_data['functions']
+            raise %q(AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions') unless package && cls && functions
+
+            functions = Array(functions).map(&:to_sym)
+            labels = function_data['label'] || function_data['labels']
+            labels = Array(labels).map(&:to_s) if labels
+            Function.new(package, cls, labels, functions)
           end
-        end.compact
-        exclude = config_data['exclude'] || []
-        Config.new config_data['name'], packages, exclude: exclude, functions: functions
+        end
+
+        config_params[:packages] = \
+          if config_data['packages']
+            config_data['packages'].map do |package|
+              gem = package['gem']
+              path = package['path']
+              raise %q(AppMap config 'package' element should specify 'gem' or 'path', not both) if gem && path
+
+              if gem
+                shallow = package['shallow']
+                # shallow is true by default for gems
+                shallow = true if shallow.nil?
+                Package.build_from_gem(gem, exclude: package['exclude'] || [], shallow: shallow)
+              else
+                Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
+              end
+            end.compact
+          else
+            Array(guess_paths).map do |path|
+              Package.build_from_path(path)
+            end
+          end
+
+        Config.new name, config_params
+      end
+
+      def guess_name
+        reponame = lambda do
+          next unless File.directory?('.git')
+
+          repo_name = `git config --get remote.origin.url`.strip
+          repo_name.split('/').last.split('.').first unless repo_name == ''
+        end
+        dirname = -> { Dir.pwd.split('/').last }
+
+        reponame.() || dirname.()
+      end
+
+      def guess_paths
+        if defined?(::Rails)
+          %w[app/controllers app/models]
+        elsif File.directory?('lib')
+          %w[lib]
+        end
       end
     end
 
@@ -294,7 +379,7 @@ module AppMap
         packages: packages.map(&:to_h),
         functions: @functions.map(&:to_h),
         exclude: exclude
-      }
+      }.compact
     end
 
     # Determines if methods defined in a file path should possibly be hooked.

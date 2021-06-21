@@ -27,7 +27,7 @@ module AppMap
     # Gets the configuration. If there is no configuration, the default
     # configuration is initialized.
     def configuration
-      @configuration ||= initialize
+      @configuration ||= initialize_configuration
     end
 
     # Sets the configuration. This is only expected to happen once per
@@ -38,12 +38,19 @@ module AppMap
       @configuration = config
     end
 
-    # Configures AppMap for recording. Default behavior is to configure from "appmap.yml".
+    def default_config_file_path
+      ENV['APPMAP_CONFIG_FILE'] || 'appmap.yml'
+    end
+
+    # Configures AppMap for recording. Default behavior is to configure from
+    # APPMAP_CONFIG_FILE, or 'appmap.yml'. If no config file is available, a
+    # configuration will be automatically generated and used - and the user is prompted
+    # to create the config file.
+    #
     # This method also activates the code hooks which record function calls as trace events.
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
-    def initialize(config_file_path = 'appmap.yml')
-      raise "AppMap configuration file #{config_file_path} does not exist" unless ::File.exists?(config_file_path)
+    def initialize_configuration(config_file_path = default_config_file_path)
       warn "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
@@ -118,4 +125,4 @@ if Gem.loaded_specs['minitest']
   require 'appmap/minitest'
 end
 
-AppMap.initialize if ENV['APPMAP'] == 'true'
+AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
