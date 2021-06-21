@@ -28,7 +28,7 @@ module AppMap
           obj
         end
 
-        to_markdown.(@swagger_yaml.deep_dup)
+        to_markdown.(Util.deep_dup(@swagger_yaml))
       end
 
       protected

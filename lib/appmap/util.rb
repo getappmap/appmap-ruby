@@ -149,6 +149,15 @@ module AppMap
         bold  = bold ? BOLD : ""
         "#{bold}#{color}#{text}#{CLEAR}"
       end
+
+      def classify(word)
+        word.split(/[\-_]/).map(&:capitalize).join
+      end
+
+      def deep_dup(hash)
+        # This is a simple way to avoid the need for deep_dup from activesupport.
+        Marshal.load(Marshal.dump(hash))
+      end
     end
   end
 end
