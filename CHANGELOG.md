@@ -1,3 +1,13 @@
+## [0.51.2](https://github.com/applandinc/appmap-ruby/compare/v0.51.1...v0.51.2) (2021-06-22)
+
+
+### Bug Fixes
+
+* Be less verbose when logging config messages ([fba2fd0](https://github.com/applandinc/appmap-ruby/commit/fba2fd01dbb7b1830194b49285654d6657d1c786))
+* Method objects must support eql? and hash to ensure they are unique in a Set ([f4d5b11](https://github.com/applandinc/appmap-ruby/commit/f4d5b11db90aa50bdd1f768e039927833e83c30f))
+* Require rails, then appmap/railtie ([07967a1](https://github.com/applandinc/appmap-ruby/commit/07967a14609891544a7dd874c648b7ef5a505f21))
+* Use a hybrid strategy to auto-requiring appmap modules ([6fb09b8](https://github.com/applandinc/appmap-ruby/commit/6fb09b8c0bd55b1e29967d459ce1e2bd5b1ba9fe))
+
 ## [0.51.1](https://github.com/applandinc/appmap-ruby/compare/v0.51.0...v0.51.1) (2021-06-21)
 
 
