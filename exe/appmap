@@ -18,7 +18,7 @@ class App
   preserve_argv true
 
   desc 'AppMap configuration file name'
-  default_value ENV['APPMAP_CONFIG'] || '.appmap.yml'
+  default_value ENV['APPMAP_CONFIG'] || AppMap::DEFAULT_CONFIG_FILE_PATH
   arg_name 'filename'
   flag %i[c config]
 

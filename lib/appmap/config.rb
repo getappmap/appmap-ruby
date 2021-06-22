@@ -2,6 +2,7 @@
 
 require 'appmap/handler/net_http'
 require 'appmap/handler/rails/template'
+require 'appmap/service/guesser'
 
 module AppMap
   class Config
@@ -308,7 +309,7 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        name = config_data['name'] || guess_name
+        name = config_data['name'] || Guesser.guess_name
         config_params = {
           exclude: config_data['exclude']
         }.compact
@@ -344,32 +345,12 @@ module AppMap
               end
             end.compact
           else
-            Array(guess_paths).map do |path|
+            Array(Guesser.guess_paths).map do |path|
               Package.build_from_path(path)
             end
           end
 
         Config.new name, config_params
-      end
-
-      def guess_name
-        reponame = lambda do
-          next unless File.directory?('.git')
-
-          repo_name = `git config --get remote.origin.url`.strip
-          repo_name.split('/').last.split('.').first unless repo_name == ''
-        end
-        dirname = -> { Dir.pwd.split('/').last }
-
-        reponame.() || dirname.()
-      end
-
-      def guess_paths
-        if defined?(::Rails)
-          %w[app/controllers app/models]
-        elsif File.directory?('lib')
-          %w[lib]
-        end
       end
     end
 

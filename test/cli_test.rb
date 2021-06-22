@@ -4,15 +4,35 @@
 require 'test_helper'
 
 class CLITest < Minitest::Test
-  def test_init
+  CONFIG_FILENAME = '123.yml'
+  SUBFOLDER_CONFIG_FILEPATH = 'conf/123.yml'
+  EXPECTED_CONFIG_CONTENT = %(name: appmap-ruby
+packages:
+- path: lib
+)
+
+  def test_init_when_config_exists
     output = `./exe/appmap init`
+    p output
     assert_equal 0, $CHILD_STATUS.exitstatus
-    assert_equal 'Initializing .appmap.yml...', output
+    assert_includes output, 'The AppMap config file appmap.yml already exists.'
   end
 
-  def test_init_with_custom_config_file
-    output = `./exe/appmap -c 123.yml init`
+  def test_init_with_custom_config_filename
+    output = `./exe/appmap -c #{CONFIG_FILENAME} init`
     assert_equal 0, $CHILD_STATUS.exitstatus
-    assert_equal 'Initializing 123.yml...', output
+    assert_includes output, "The following AppMap config file #{CONFIG_FILENAME} has been created:"
+    assert_equal EXPECTED_CONFIG_CONTENT, File.read(CONFIG_FILENAME)
+  ensure
+    File.delete(CONFIG_FILENAME) if File.exist?(CONFIG_FILENAME)
+  end
+
+  def test_init_with_custom_config_file_in_subfolder
+    output = `./exe/appmap -c #{SUBFOLDER_CONFIG_FILEPATH} init`
+    assert_equal 0, $CHILD_STATUS.exitstatus
+    assert_includes output, "The following AppMap config file #{SUBFOLDER_CONFIG_FILEPATH} has been created:"
+    assert_equal EXPECTED_CONFIG_CONTENT, File.read(SUBFOLDER_CONFIG_FILEPATH)
+  ensure
+    File.delete(SUBFOLDER_CONFIG_FILEPATH) if File.exist?(SUBFOLDER_CONFIG_FILEPATH)
   end
 end
