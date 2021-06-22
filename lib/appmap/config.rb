@@ -309,7 +309,7 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        name = config_data['name'] || Guesser.guess_name
+        name = config_data['name'] || Service::Guesser.guess_name
         config_params = {
           exclude: config_data['exclude']
         }.compact
@@ -345,7 +345,7 @@ module AppMap
               end
             end.compact
           else
-            Array(Guesser.guess_paths).map do |path|
+            Array(Service::Guesser.guess_paths).map do |path|
               Package.build_from_path(path)
             end
           end
