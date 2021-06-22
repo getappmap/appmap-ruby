@@ -3,6 +3,7 @@
 require 'yaml'
 require 'appmap/handler/net_http'
 require 'appmap/handler/rails/template'
+require 'appmap/swagger/configuration'
 require 'appmap/depends/configuration'
 
 module AppMap
