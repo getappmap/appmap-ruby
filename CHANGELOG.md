@@ -1,3 +1,10 @@
+## [0.51.3](https://github.com/applandinc/appmap-ruby/compare/v0.51.2...v0.51.3) (2021-06-22)
+
+
+### Bug Fixes
+
+* Remove outdate lore, command, and algorithm code ([d899989](https://github.com/applandinc/appmap-ruby/commit/d8999896c611c16f51a092f5f7afb3d7203d7e72))
+
 ## [0.51.2](https://github.com/applandinc/appmap-ruby/compare/v0.51.1...v0.51.2) (2021-06-22)
 
 
