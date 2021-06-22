@@ -22,6 +22,9 @@ Gem::Specification.new do |spec|
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
   spec.files         = `git ls-files --no-deleted`.split("
 ")
+  spec.bindir        = 'exe'
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+
   spec.extensions << "ext/appmap/extconf.rb"
 
   spec.require_paths = ['lib']

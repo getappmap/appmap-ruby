@@ -8,4 +8,5 @@ module AppMap
   APPMAP_FORMAT_VERSION = '1.5.1'
 
   DEFAULT_APPMAP_DIR = 'tmp/appmap'.freeze
+  DEFAULT_CONFIG_FILE_PATH = 'appmap.yml'.freeze
 end
