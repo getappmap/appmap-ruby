@@ -75,9 +75,10 @@ lambda do
     require 'appmap/minitest'
   end
   
-  require 'appmap/swagger'
-
-  require 'appmap/depends'
-
+  if defined?(::Rake)
+    require 'appmap/swagger'
+    require 'appmap/depends'
+  end
+  
   AppMap.initialize_configuration
 end.call if ENV['APPMAP'] == 'true'
