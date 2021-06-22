@@ -112,19 +112,57 @@ module AppMap
   end
 end
 
-if Gem.loaded_specs['rails']
-  require 'active_support'
-  require 'active_support/core_ext'
-  require 'rails'
-  require 'appmap/railtie' 
-end
+lambda do
+  Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
 
-if Gem.loaded_specs['rspec-core']
-  require 'appmap/rspec'
-end
+  INITIALIZERS = {
+    'Rails::Railtie' => Initializer.new('AppMap::Railtie', 'appmap/railtie', 'railtie'),
+    'RSpec' => Initializer.new('AppMap::RSpec', 'appmap/rspec', 'rspec-core'),
+    'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest')
+  }
+
+  print_msg = if defined?(::Rails) && Rails.logger
+    Rails.logger
+  elsif ENV['DEBUG'] == 'true'
+    Object.method(:warn)
+  else
+    ->(msg) {}
+  end
+
+  TracePoint.new(:class) do |tp|
+    cls_name = tp.self.name
+    initializers = INITIALIZERS.delete(cls_name)
+    if initializers
+      initializers = [ initializers ] unless initializers.is_a?(Array)
+      next if Object.const_defined?(initializers.first.class_name)
+
+      gem_module_name = initializers.first.gem_module_name
+
+      print_msg.call AppMap::Util.color(<<~LOAD_MSG, :magenta)
+      When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
+      just been loaded, so the following AppMap modules will be automatically required:
+
+      #{initializers.map(&:module_name).join("\n")}
+
+      To suppress this message, ensure '#{gem_module_name}' appears before 'appmap' in your Gemfile.
+      LOAD_MSG
+      initializers.each do |init|
+        require init.module_name
+      end
+    end
+  end.enable
+
+  if defined?(::Rails::Railtie)
+    require 'appmap/railtie'
+  end
   
-if Gem.loaded_specs['minitest']
-  require 'appmap/minitest'
-end
+  if defined?(::RSpec)
+    require 'appmap/rspec'
+  end
   
-AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
+  if defined?(::Minitest)
+    require 'appmap/minitest'
+  end
+  
+  AppMap.initialize_configuration
+end.call if ENV['APPMAP'] == 'true'
