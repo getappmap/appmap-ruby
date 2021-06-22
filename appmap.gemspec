@@ -4,8 +4,6 @@ lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'appmap/version'
 
-
-
 Gem::Specification.new do |spec|
   # ability to parameterize gem name is added intentionally, 
   # to support the possibility of unofficial releases, e.g. during CI tests
@@ -25,19 +23,23 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
 
-  spec.extensions << "ext/appmap/extconf.rb"
+  strip_dir = ->(file) { file.index(Dir.pwd) == 0 ? file[Dir.pwd.length+1...file.length] : file }
+  Dir.glob(File.join(__dir__, 'node_modules/**/*')).map(&strip_dir).each do |filename|
+    next if File.directory?(filename) || filename.length > 100
+    spec.files << filename
+  end
 
+  spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport'
-  spec.add_dependency 'faraday'
   spec.add_dependency 'gli'
   spec.add_dependency 'method_source'
-  spec.add_dependency 'parser'
   spec.add_dependency 'rack'
+  spec.add_dependency 'reverse_markdown'
 
   spec.add_development_dependency 'bundler', '>= 1.16'
-  spec.add_development_dependency 'minitest', '~> 5.0'
+  spec.add_development_dependency 'minitest', '= 5.14.4'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'

@@ -8,12 +8,12 @@ rescue NameError
 end
 
 require 'appmap/version'
+require 'appmap/util'
 require 'appmap/hook'
 require 'appmap/config'
 require 'appmap/trace'
 require 'appmap/class_map'
 require 'appmap/metadata'
-require 'appmap/util'
 require 'appmap/open'
 
 # load extension
@@ -51,7 +51,7 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize_configuration(config_file_path = default_config_file_path)
-      startup_message "Configuring AppMap from path #{config_file_path}"
+      Util.startup_message "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
         Hook.new(configuration).enable
@@ -109,14 +109,6 @@ module AppMap
       @metadata ||= Metadata.detect.freeze
       @metadata.deep_dup
     end
-
-    def startup_message(msg)
-      if defined?(::Rails) && defined?(::Rails.logger) && ::Rails.logger
-        ::Rails.logger.debug msg
-      elsif ENV['DEBUG'] == 'true'
-        warn msg
-      end
-    end
   end
 end
 
@@ -138,7 +130,7 @@ lambda do
 
       gem_module_name = initializers.first.gem_module_name
 
-      AppMap.startup_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
+      AppMap::Util.startup_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
       When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
       just been loaded, so the following AppMap modules will be automatically required:
 

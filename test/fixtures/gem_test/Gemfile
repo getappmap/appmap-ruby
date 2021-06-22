@@ -4,3 +4,4 @@ gem 'appmap', git: 'applandinc/appmap-ruby', branch: `git rev-parse --abbrev-ref
 gem 'activesupport'
 gem 'byebug'
 gem 'minitest'
+gem 'parser'

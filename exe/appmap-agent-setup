@@ -8,7 +8,7 @@ require 'appmap'
 class App
   extend GLI::App
 
-  program_desc 'CLI tool to be used by IDEs for AppMap setup and configuration'
+  program_desc 'CLI tool to be used by code editor plugins for AppMap setup and configuration'
 
   version AppMap::VERSION
 
@@ -24,8 +24,8 @@ class App
   desc 'Creates base configuration file for the current project'
   command :init do |c|
     c.action do
-      require 'appmap/command/init'
-      AppMap::Command::Init.new(@config_file).perform
+      require 'appmap/command/agent_setup/init'
+      AppMap::Command::AgentSetup::Init.new(@config_file).perform
     end
   end
 

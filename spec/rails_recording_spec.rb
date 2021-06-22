@@ -1,26 +1,6 @@
 require 'rails_spec_helper'
 
 describe 'Rails' do
-  shared_context 'rails integration test setup' do
-    def tmpdir
-      'tmp/spec/AbstractControllerBase'
-    end
-
-    unless use_existing_data?
-      before(:all) do
-        FileUtils.rm_rf tmpdir
-        FileUtils.mkdir_p tmpdir
-        run_spec 'spec/controllers/users_controller_spec.rb'
-        run_spec 'spec/controllers/users_controller_api_spec.rb'
-      end
-    end
-
-    let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
-    let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
-    let(:appmap) { JSON.parse File.read(appmap_json_path) }
-    let(:events) { appmap['events'] }
-  end
-
   %w[5 6].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
@@ -243,7 +223,8 @@ describe 'Rails' do
               'children' => include(hash_including(
                 'name' => 'ActionView',
                 'children' => include(hash_including(
-                  'name' => 'Renderer',
+                  # Rails 6/5 difference
+                  'name' => /^(Template)?Renderer$/,                  
                   'children' => include(hash_including(
                     'name' => 'render',
                     'labels' => ['mvc.view']

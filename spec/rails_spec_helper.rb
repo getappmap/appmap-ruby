@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'active_support'
+require 'active_support/core_ext'
 require 'open3'
 
 def wait_for_container(app_name)
@@ -57,4 +59,24 @@ shared_context 'Rails app pg database' do |fixture_dir|
       run_cmd cmd, chdir: fixture_dir
     end
   end
+end
+
+shared_context 'rails integration test setup' do
+  def tmpdir
+    'tmp/spec/AbstractControllerBase'
+  end
+
+  unless use_existing_data?
+    before(:all) do
+      FileUtils.rm_rf tmpdir
+      FileUtils.mkdir_p tmpdir
+      run_spec 'spec/controllers/users_controller_spec.rb'
+      run_spec 'spec/controllers/users_controller_api_spec.rb'
+    end
+  end
+
+  let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
+  let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
+  let(:appmap) { JSON.parse File.read(appmap_json_path) }
+  let(:events) { appmap['events'] }
 end
