@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
+require 'appmap/util'
 require 'appmap/handler/net_http'
 require 'appmap/handler/rails/template'
 require 'appmap/service/guesser'
@@ -54,7 +55,7 @@ module AppMap
           if path
             Package.new(path, gem, package_name, exclude, labels, shallow)
           else
-            warn "#{gem} is not available in the bundle" if AppMap::Hook::LOG
+            AppMap::Util.startup_message "#{gem} is not available in the bundle"
           end
         end
 

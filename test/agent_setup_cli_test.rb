@@ -3,7 +3,7 @@
 
 require 'test_helper'
 
-class CLITest < Minitest::Test
+class AgentSetupCLITest < Minitest::Test
   CONFIG_FILENAME = '123.yml'
   SUBFOLDER_CONFIG_FILEPATH = 'conf/123.yml'
   EXPECTED_CONFIG_CONTENT = %(name: appmap-ruby

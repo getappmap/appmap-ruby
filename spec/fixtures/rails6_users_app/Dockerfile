@@ -4,8 +4,17 @@ ARG RUBY_VERSION
 FROM appmap:${GEM_VERSION} as appmap
 
 FROM ruby:${RUBY_VERSION}
+
+SHELL ["/bin/bash", "-c"]
+
 RUN apt-get update && apt-get install -y vim less
 RUN apt-get install -y postgresql-client
+
+RUN curl -fsSL https://fnm.vercel.app/install | bash \
+    && source /root/.bashrc \
+    && fnm install --lts \
+    && echo 'fnm default $(fnm current)' >> ~/.bashrc \
+    && ln -s $(which node) /usr/local/bin/node
 
 RUN mkdir /app
 WORKDIR /app
