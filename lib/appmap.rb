@@ -51,7 +51,7 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize_configuration(config_file_path = default_config_file_path)
-      warn "Configuring AppMap from path #{config_file_path}"
+      config_message "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
         Hook.new(configuration).enable
@@ -109,6 +109,17 @@ module AppMap
       @metadata ||= Metadata.detect.freeze
       @metadata.deep_dup
     end
+
+    def config_message(msg)
+      logger = if defined?(::Rails) && ::Rails.logger
+        ::Rails.logger
+      elsif ENV['DEBUG'] == 'true'
+        method(:warn)
+      else
+        ->(msg) { }
+      end
+      logger.call(msg)
+    end
   end
 end
 
@@ -121,14 +132,6 @@ lambda do
     'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest')
   }
 
-  print_msg = if defined?(::Rails) && Rails.logger
-    Rails.logger
-  elsif ENV['DEBUG'] == 'true'
-    Object.method(:warn)
-  else
-    ->(msg) {}
-  end
-
   TracePoint.new(:class) do |tp|
     cls_name = tp.self.name
     initializers = INITIALIZERS.delete(cls_name)
@@ -138,7 +141,7 @@ lambda do
 
       gem_module_name = initializers.first.gem_module_name
 
-      print_msg.call AppMap::Util.color(<<~LOAD_MSG, :magenta)
+      AppMap.config_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
       When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
       just been loaded, so the following AppMap modules will be automatically required:
 
@@ -163,6 +166,6 @@ lambda do
   if defined?(::Minitest)
     require 'appmap/minitest'
   end
-  
-  AppMap.initialize_configuration
-end.call if ENV['APPMAP'] == 'true'
+end.call
+
+AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
