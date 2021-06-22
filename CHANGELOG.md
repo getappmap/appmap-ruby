@@ -1,3 +1,10 @@
+# [0.52.0](https://github.com/applandinc/appmap-ruby/compare/v0.51.3...v0.52.0) (2021-06-22)
+
+
+### Features
+
+* Bundle NPM package @appland/cli with this gem ([945e28c](https://github.com/applandinc/appmap-ruby/commit/945e28c699fff6bd97ae51983816e97955c4ff36))
+
 ## [0.51.3](https://github.com/applandinc/appmap-ruby/compare/v0.51.2...v0.51.3) (2021-06-22)
 
 
