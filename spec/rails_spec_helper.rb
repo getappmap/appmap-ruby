@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'active_support'
+require 'active_support/core_ext'
 require 'open3'
 
 def wait_for_container(app_name)
