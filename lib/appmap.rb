@@ -29,7 +29,11 @@ lambda do
   INITIALIZERS = {
     'Rails::Railtie' => Initializer.new('AppMap::Railtie', 'appmap/railtie', 'railtie'),
     'RSpec' => Initializer.new('AppMap::RSpec', 'appmap/rspec', 'rspec-core'),
-    'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest')
+    'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest'),
+    'Rake' => [
+      Initializer.new('AppMap::Swagger', 'appmap/swagger', 'rake'),
+      Initializer.new('AppMap::Depends', 'appmap/depends', 'rake')
+    ]
   }
 
   TracePoint.new(:class) do |tp|
