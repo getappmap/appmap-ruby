@@ -285,7 +285,7 @@ module AppMap
           settings, the appmap gem will try and guess some reasonable defaults.
           To suppress this message, create the file:
           
-          #{Pathname.new(config_file_name).expand_path}.
+          #{Pathname.new(config_file_name).expand_path}
           
           Here are the default settings that will be used in the meantime. You can
           copy and paste this example to start your appmap.yml.

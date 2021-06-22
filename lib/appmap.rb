@@ -51,7 +51,7 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize_configuration(config_file_path = default_config_file_path)
-      warn "Configuring AppMap from path #{config_file_path}"
+      startup_message "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
         Hook.new(configuration).enable
@@ -109,20 +109,60 @@ module AppMap
       @metadata ||= Metadata.detect.freeze
       @metadata.deep_dup
     end
+
+    def startup_message(msg)
+      if defined?(::Rails) && defined?(::Rails.logger) && ::Rails.logger
+        ::Rails.logger.debug msg
+      elsif ENV['DEBUG'] == 'true'
+        warn msg
+      end
+    end
   end
 end
 
-if defined?(::Rails::Railtie)
-  require 'appmap/railtie' 
-end
+lambda do
+  Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
 
-if defined?(::RSpec)
-  require 'appmap/rspec'
-end
+  INITIALIZERS = {
+    'Rails::Railtie' => Initializer.new('AppMap::Railtie', 'appmap/railtie', 'railtie'),
+    'RSpec' => Initializer.new('AppMap::RSpec', 'appmap/rspec', 'rspec-core'),
+    'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest')
+  }
 
-# defined?(::Minitest) returns nil...
-if Gem.loaded_specs['minitest']
-  require 'appmap/minitest'
-end
+  TracePoint.new(:class) do |tp|
+    cls_name = tp.self.name
+    initializers = INITIALIZERS.delete(cls_name)
+    if initializers
+      initializers = [ initializers ] unless initializers.is_a?(Array)
+      next if Object.const_defined?(initializers.first.class_name)
+
+      gem_module_name = initializers.first.gem_module_name
+
+      AppMap.startup_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
+      When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
+      just been loaded, so the following AppMap modules will be automatically required:
+
+      #{initializers.map(&:module_name).join("\n")}
+
+      To suppress this message, ensure '#{gem_module_name}' appears before 'appmap' in your Gemfile.
+      LOAD_MSG
+      initializers.each do |init|
+        require init.module_name
+      end
+    end
+  end.enable
+
+  if defined?(::Rails::Railtie)
+    require 'appmap/railtie'
+  end
+  
+  if defined?(::RSpec)
+    require 'appmap/rspec'
+  end
+  
+  if defined?(::Minitest)
+    require 'appmap/minitest'
+  end
+end.call
 
 AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
