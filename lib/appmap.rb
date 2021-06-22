@@ -32,14 +32,6 @@ lambda do
     'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest')
   }
 
-  print_msg = if defined?(::Rails) && Rails.logger
-    Rails.logger
-  elsif ENV['DEBUG'] == 'true'
-    Object.method(:warn)
-  else
-    ->(msg) {}
-  end
-
   TracePoint.new(:class) do |tp|
     cls_name = tp.self.name
     initializers = INITIALIZERS.delete(cls_name)
@@ -49,7 +41,7 @@ lambda do
 
       gem_module_name = initializers.first.gem_module_name
 
-      print_msg.call AppMap::Util.color(<<~LOAD_MSG, :magenta)
+      AppMap.config_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
       When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
       just been loaded, so the following AppMap modules will be automatically required:
 
@@ -80,5 +72,6 @@ lambda do
     require 'appmap/depends'
   end
   
-  AppMap.initialize_configuration
-end.call if ENV['APPMAP'] == 'true'
+end.call
+
+AppMap.initialize_configuration if ENV['APPMAP'] == 'true'

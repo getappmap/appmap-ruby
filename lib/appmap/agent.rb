@@ -42,7 +42,7 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize_configuration(config_file_path = default_config_file_path)
-      warn "Configuring AppMap from path #{config_file_path}"
+      config_message "Configuring AppMap from path #{config_file_path}"
       Config.load_from_file(config_file_path).tap do |configuration|
         self.configuration = configuration
         Hook.new(configuration).enable
@@ -55,6 +55,17 @@ module AppMap
       else
         warn msg
       end
+    end
+
+    def config_message(msg)
+      logger = if defined?(::Rails) && ::Rails.logger
+        ::Rails.logger
+      elsif ENV['DEBUG'] == 'true'
+        method(:warn)
+      else
+        ->(msg) { }
+      end
+      logger.call(msg)
     end
 
     # Used to start tracing, stop tracing, and record events.
