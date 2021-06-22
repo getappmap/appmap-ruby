@@ -68,10 +68,14 @@ module AppMap
           source_location = Util.normalize_path(metadata['source_location'])
           test_status = metadata['test_status']
           source_location_mtime = (File.stat(source_location).mtime.to_f * 1000).to_i rescue nil
-  
+ 
+          # It's normal for "remote recordings" to not have a source_location or test_status.
+          recorder_name = metadata.dig('recorder', 'name')
+          next if recorder_name == 'remote_recording' && !(source_location && test_status)
+
           raise "Metadata #{metadata_file} does not contain source_location" unless source_location
           raise "Metadata #{metadata_file} does not contain test_status" unless test_status
-  
+
           source_locations << source_location
           if source_location_mtime
             changed_test_files << source_location if source_location_mtime > appmap_mtime
