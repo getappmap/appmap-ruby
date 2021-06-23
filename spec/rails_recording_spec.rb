@@ -224,7 +224,7 @@ describe 'Rails' do
                 'name' => 'ActionView',
                 'children' => include(hash_including(
                   # Rails 6/5 difference
-                  'name' => /^(Template)?Renderer$/,                  
+                  'name' => /^(Template)?Renderer$/,
                   'children' => include(hash_including(
                     'name' => 'render',
                     'labels' => ['mvc.view']

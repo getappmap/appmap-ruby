@@ -111,7 +111,7 @@ module AppMap
           end
 
         comment = method.comment
-        function_info[:comment] = comment unless comment.blank?
+        function_info[:comment] = comment unless Util.blank?(comment)
 
         function_info[:labels] = parse_labels(comment) + (method.labels || [])
         object_infos << function_info
@@ -119,7 +119,7 @@ module AppMap
         parent = root
         object_infos.each do |info|
           parent = find_or_create parent.children, info do
-            Types.const_get(info[:type].classify).new(info[:name].to_s).tap do |type|
+            Types.const_get(Util.classify(info[:type])).new(info[:name].to_s).tap do |type|
               info.keys.tap do |keys|
                 keys.delete(:name)
                 keys.delete(:type)

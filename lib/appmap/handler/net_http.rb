@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/event'
+require 'appmap/util'
 
 module AppMap
   module Handler
@@ -38,7 +39,7 @@ module AppMap
             headers: headers
           }.compact
 
-          unless params.blank?
+          unless Util.blank?(params)
             h[:message] = params.keys.map do |key|
               val = params[key]
               {

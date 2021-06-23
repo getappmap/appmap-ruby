@@ -115,7 +115,7 @@ module AppMap
           scope = scope.parent
         end
 
-        description.reject!(&:nil?).reject!(&:blank?)
+        description.reject!(&:nil?).reject!(&Util.method(:blank?))
         default_description = description.last
         description.reverse!
 

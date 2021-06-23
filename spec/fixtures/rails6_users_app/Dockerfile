@@ -2,7 +2,6 @@ ARG GEM_VERSION
 ARG RUBY_VERSION
 
 FROM appmap:${GEM_VERSION} as appmap
-
 FROM ruby:${RUBY_VERSION}
 
 SHELL ["/bin/bash", "-c"]

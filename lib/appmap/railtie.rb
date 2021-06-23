@@ -5,8 +5,8 @@ module AppMap
   class Railtie < ::Rails::Railtie
     initializer 'appmap.remote_recording' do
       require 'appmap/middleware/remote_recording'
-      Rails.application.config.middleware.insert_after \
-        Rails::Rack::Logger,
+      Rails.application.config.middleware.insert_before \
+        ActionDispatch::Executor,
         AppMap::Middleware::RemoteRecording
     end
 
