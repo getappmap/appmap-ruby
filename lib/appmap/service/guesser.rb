@@ -6,15 +6,8 @@ module AppMap
       POSSIBLE_PATHS = %w[app/controllers app/models lib]
       class << self
         def guess_name
-          reponame = lambda do
-            next unless File.directory?('.git')
-
-            repo_name = `git config --get remote.origin.url`.strip
-            repo_name.split('/').last.split('.').first unless repo_name == ''
-          end
-          dirname = -> { Dir.pwd.split('/').last }
-
-          reponame.() || dirname.()
+          return Pathname.new(`git rev-parse --show-toplevel`.strip).basename.to_s if File.directory?('.git')
+          Dir.pwd.split('/').last
         end
 
         def guess_paths
