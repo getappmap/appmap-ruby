@@ -1,3 +1,10 @@
+# [0.53.0](https://github.com/applandinc/appmap-ruby/compare/v0.52.1...v0.53.0) (2021-06-23)
+
+
+### Features
+
+* appmap-agent-setup as a separate command not using GLI library ([f0eedb7](https://github.com/applandinc/appmap-ruby/commit/f0eedb7451368ea0399872f3be680e1581ac6200))
+
 ## [0.52.1](https://github.com/applandinc/appmap-ruby/compare/v0.52.0...v0.52.1) (2021-06-23)
 
 
