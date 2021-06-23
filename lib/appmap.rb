@@ -18,6 +18,7 @@
 # - appmap/rspec
 # - appmap/minitest
 # - appmap/swagger (Rake task)
+# - appmap/depends (Rake task)
 
 require 'appmap/version'
 require 'appmap/agent'
@@ -70,6 +71,7 @@ lambda do
 
   if defined?(::Rake)
     require 'appmap/swagger'
+    require 'appmap/depends'
   end
   
 end.call

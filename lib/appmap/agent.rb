@@ -57,17 +57,6 @@ module AppMap
       end
     end
 
-    def config_message(msg)
-      logger = if defined?(::Rails) && ::Rails.logger
-        ::Rails.logger
-      elsif ENV['DEBUG'] == 'true'
-        method(:warn)
-      else
-        ->(msg) { }
-      end
-      logger.call(msg)
-    end
-
     # Used to start tracing, stop tracing, and record events.
     def tracing
       @tracing ||= Trace::Tracing.new

@@ -7,6 +7,7 @@ require 'appmap/handler/net_http'
 require 'appmap/handler/rails/template'
 require 'appmap/service/guesser'
 require 'appmap/swagger/configuration'
+require 'appmap/depends/configuration'
 
 module AppMap
   class Config
@@ -228,17 +229,19 @@ module AppMap
       'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.generate])),
     }.freeze
 
-    attr_reader :name, :appmap_dir, :packages, :exclude, :swagger_config, :hooked_methods, :builtin_hooks
+    attr_reader :name, :appmap_dir, :packages, :exclude, :swagger_config, :depends_config, :hooked_methods, :builtin_hooks
 
     def initialize(name,
       packages: [],
       swagger_config: Swagger::Configuration.new,
+      depends_config: Depends::Configuration.new,
       exclude: [],
       functions: [])
       @name = name
       @appmap_dir = AppMap::DEFAULT_APPMAP_DIR
       @packages = packages
       @swagger_config = swagger_config
+      @depends_config = depends_config
       @hook_paths = Set.new(packages.map(&:path))
       @exclude = exclude
       @builtin_hooks = BUILTIN_HOOKS
@@ -358,6 +361,10 @@ module AppMap
         if config_data['swagger']
           swagger_config = Swagger::Configuration.load(config_data['swagger'])
           config_params[:swagger_config] = swagger_config
+        end
+        if config_data['depends']
+          depends_config = Depends::Configuration.load(config_data['depends'])
+          config_params[:depends_config] = depends_config
         end
 
         Config.new name, config_params
