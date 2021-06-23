@@ -33,7 +33,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'activesupport'
-  spec.add_dependency 'gli'
   spec.add_dependency 'method_source'
   spec.add_dependency 'rack'
   spec.add_dependency 'reverse_markdown'
