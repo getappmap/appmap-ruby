@@ -1,3 +1,10 @@
+## [0.52.1](https://github.com/applandinc/appmap-ruby/compare/v0.52.0...v0.52.1) (2021-06-23)
+
+
+### Bug Fixes
+
+* Better project name guesser ([d22f379](https://github.com/applandinc/appmap-ruby/commit/d22f379623bd3022ba34d7241838fe6abbbb61d6))
+
 # [0.52.0](https://github.com/applandinc/appmap-ruby/compare/v0.51.3...v0.52.0) (2021-06-22)
 
 
