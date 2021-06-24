@@ -1,3 +1,15 @@
+# [0.54.0](https://github.com/applandinc/appmap-ruby/compare/v0.53.0...v0.54.0) (2021-06-24)
+
+
+### Bug Fixes
+
+* Handle new behavior in RSpec ExampleGroup ([176d0df](https://github.com/applandinc/appmap-ruby/commit/176d0dfca0b2e4cc5a8908fa67c01dd0c79ef175))
+
+
+### Features
+
+* Add swagger rake task ([0aaae49](https://github.com/applandinc/appmap-ruby/commit/0aaae4973f0df530c75ed92b93f8a1940a948091))
+
 # [0.53.0](https://github.com/applandinc/appmap-ruby/compare/v0.52.1...v0.53.0) (2021-06-23)
 
 
