@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'appmap/util'
+require 'active_support'
+require 'active_support/core_ext'
 
 module AppMap
   # Integration of AppMap with Minitest. When enabled with APPMAP=true, the AppMap tracer will

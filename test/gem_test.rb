@@ -3,6 +3,7 @@
 
 require 'test_helper'
 require 'English'
+require 'json'
 
 class GemTest < Minitest::Test
   def perform_gem_test(test_name)

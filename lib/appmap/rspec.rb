@@ -62,8 +62,10 @@ module AppMap
         example_group_parent = \
           if example_group.respond_to?(:module_parent)
             example_group.module_parent
-          else
+          elsif example_group.respond_to?(:parent)
             example_group.parent
+          elsif example_group.respond_to?(:parent_groups)
+            example_group.parent_groups.first
           end
 
         example_group_parent != example_group ? ScopeExampleGroup.new(example_group_parent) : nil
@@ -109,13 +111,13 @@ module AppMap
 
         description = []
         scope = ScopeExample.new(example)
-
         while scope
           description << scope.description
           scope = scope.parent
         end
 
-        description.reject!(&:nil?).reject!(&:blank?)
+        description.reject!(&:nil?)
+        description.reject!(&Util.method(:blank?))
         default_description = description.last
         description.reverse!
 

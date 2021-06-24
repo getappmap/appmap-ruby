@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_spec_helper'
-require 'active_support/core_ext'
 require 'appmap/config'
 
 describe AppMap::Config, docker: false do
