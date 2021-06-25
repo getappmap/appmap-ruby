@@ -26,7 +26,8 @@ lambda do
   Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
 
   INITIALIZERS = {
-    'Rails::Railtie' => Initializer.new('AppMap::Railtie', 'appmap/railtie', 'railtie'),
+    # In a Rails app, Rails is always defined by the time the other gems are loaded. Therefore, we
+    # don't try and trap the loading of Rails itself here.
     'RSpec' => Initializer.new('AppMap::RSpec', 'appmap/rspec', 'rspec-core'),
     'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest'),
     'Rake' => [
@@ -57,7 +58,7 @@ lambda do
     end
   end.enable
 
-  if defined?(::Rails::Railtie)
+  if defined?(::Rails)
     require 'appmap/railtie'
   end
   
@@ -68,7 +69,7 @@ lambda do
   if defined?(::Minitest)
     require 'appmap/minitest'
   end
-  
+
   if defined?(::Rake)
     require 'appmap/swagger'
   end
