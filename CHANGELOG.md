@@ -1,3 +1,10 @@
+## [0.54.3](https://github.com/applandinc/appmap-ruby/compare/v0.54.2...v0.54.3) (2021-06-25)
+
+
+### Bug Fixes
+
+* Get deployment working with packaging of NodeJS code ([733c5b8](https://github.com/applandinc/appmap-ruby/commit/733c5b85ec1a0c17ada81be524fa572f78f52500))
+
 ## [0.54.2](https://github.com/applandinc/appmap-ruby/compare/v0.54.1...v0.54.2) (2021-06-25)
 
 
