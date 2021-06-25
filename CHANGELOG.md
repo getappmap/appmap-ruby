@@ -1,3 +1,11 @@
+## [0.54.1](https://github.com/applandinc/appmap-ruby/compare/v0.54.0...v0.54.1) (2021-06-25)
+
+
+### Bug Fixes
+
+* Add missing imports and remove deprecation warnings ([f1cb087](https://github.com/applandinc/appmap-ruby/commit/f1cb087f80cad88093227ebf8b4a4cd574853667))
+* Workaround Ruby bug in 2.7.3 with kwrest ([26e34ca](https://github.com/applandinc/appmap-ruby/commit/26e34ca421fdae6602b27fee5653c8fe26b3793b))
+
 # [0.54.0](https://github.com/applandinc/appmap-ruby/compare/v0.53.0...v0.54.0) (2021-06-24)
 
 
