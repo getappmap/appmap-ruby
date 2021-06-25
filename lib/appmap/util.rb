@@ -178,6 +178,10 @@ module AppMap
           warn msg
         end
       end  
+
+      def ruby_minor_version
+        @ruby_minor_version ||= RUBY_VERSION.split('.')[0..1].join('.').to_f
+      end
     end
   end
 end

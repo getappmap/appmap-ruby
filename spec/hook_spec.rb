@@ -985,4 +985,13 @@ describe 'AppMap class Hooking', docker: false do
       expect(InstanceMethod.new.method(:say_echo).arity).to be(1)
     end
   end
+
+  describe 'kwargs handling' do
+    # https://github.com/applandinc/appmap-ruby/issues/153
+    it 'empty hash for **kwrest can be proxied as a regular function argument', github_issue: 153 do
+      invoke_test_file 'spec/fixtures/hook/kwargs.rb' do
+        expect(Kwargs.has_kwrest_calls_no_kwargs(nil, {})).to eq({})
+      end
+    end
+  end
 end
