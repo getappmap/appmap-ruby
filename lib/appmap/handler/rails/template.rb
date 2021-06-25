@@ -146,7 +146,8 @@ module AppMap
         class RenderHandler
           class << self
             def handle_call(defined_class, hook_method, receiver, args)
-              context, options = args
+              # context, options
+              _, options = args
 
               warn "Renderer: #{options}" if LOG
 

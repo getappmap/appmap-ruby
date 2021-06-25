@@ -99,7 +99,6 @@ module AppMap
     end
 
     def trace_end(trace_point)
-      location = trace_location(trace_point)
       warn "Class or module ends at location #{trace_location(trace_point)}" if Hook::LOG || Hook::LOG_HOOK
 
       path = trace_point.path

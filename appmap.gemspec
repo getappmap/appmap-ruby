@@ -54,4 +54,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'webdrivers', '~> 4.0'
   spec.add_development_dependency 'timecop'
   spec.add_development_dependency 'hashie'
+  spec.add_development_dependency 'webrick'
 end

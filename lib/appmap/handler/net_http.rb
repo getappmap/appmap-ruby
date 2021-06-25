@@ -82,7 +82,7 @@ module AppMap
         def request_headers(request)
           {}.tap do |headers|
             request.each_header do |k,v|
-              key = [ 'HTTP', k.underscore.upcase ].join('_')
+              key = [ 'HTTP', Util.underscore(k).upcase ].join('_')
               headers[key] = v
             end
           end
