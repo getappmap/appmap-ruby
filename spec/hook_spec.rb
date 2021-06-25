@@ -371,7 +371,11 @@ describe 'AppMap class Hooking', docker: false do
         :value: one2{:kw3=>:three}45
     YAML
     test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
-      expect(InstanceMethod.new.say_kws(4, 5, kw1: 'one', kw2: 2, kw3: :three)).to eq('one2{:kw3=>:three}45')
+      if AppMap::Util.ruby_minor_version < 3
+        expect(InstanceMethod.new.say_kws(4, 5, kw1: 'one', kw2: 2, kw3: :three)).to eq('one2{:kw3=>:three}45')
+      else
+        expect(InstanceMethod.new.say_kws(4, 5, kw1: 'one', kw2: 2, **{ kw3: :three })).to eq('one2{:kw3=>:three}45')
+      end
     end
   end
 
@@ -385,11 +389,7 @@ describe 'AppMap class Hooking', docker: false do
       :path: spec/fixtures/hook/instance_method.rb
       :lineno: 24
       :static: false
-      :parameters:
-      - :name: :block
-        :class: NilClass
-        :value: null
-        :kind: :block
+      :parameters: []
       :receiver:
         :class: InstanceMethod
         :value: Instance Method fixture
@@ -402,6 +402,15 @@ describe 'AppMap class Hooking', docker: false do
     YAML
     test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
       expect(InstanceMethod.new.say_block { 'albert' }).to eq('albert')
+    end
+  end
+
+  it 'handles mixed kwargs and a block' do
+    events_yaml = <<~YAML
+    ---
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+      expect(InstanceMethod.new.say_kws_block('hi', kw1: 'friend', **{ 'of' => 'mine' }) { 'albert' }).to eq([ ['hi'], 'friend', { 'of' => 'mine' }, 'albert' ])
     end
   end
 
@@ -986,11 +995,14 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
-  describe 'kwargs handling' do
-    # https://github.com/applandinc/appmap-ruby/issues/153
-    it 'empty hash for **kwrest can be proxied as a regular function argument', github_issue: 153 do
-      invoke_test_file 'spec/fixtures/hook/kwargs.rb' do
-        expect(Kwargs.has_kwrest_calls_no_kwargs(nil, {})).to eq({})
+  if AppMap::Util.ruby_minor_version < 3
+    describe 'kwargs handling' do
+      # https://github.com/applandinc/appmap-ruby/issues/153
+      it 'empty hash for **kwrest can be proxied as a regular function argument', github_issue: 153 do
+        invoke_test_file 'spec/fixtures/hook/kwargs.rb' do
+          # This is illegal call syntax in Ruby 3
+          expect(Kwargs.has_kwrest_calls_no_kwargs(nil, {})).to eq({})
+        end
       end
     end
   end

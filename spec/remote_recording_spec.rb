@@ -3,7 +3,7 @@ require 'net/http'
 require 'socket'
 
 describe 'remote recording', :order => :defined do
-  include_context 'Rails app pg database', 'spec/fixtures/rails5_users_app' do
+  include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do
     before(:all) do
       fixture_dir = 'spec/fixtures/rails5_users_app'
       start_cmd = 'docker-compose up -d app'

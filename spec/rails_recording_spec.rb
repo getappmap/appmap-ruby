@@ -1,7 +1,10 @@
 require 'rails_spec_helper'
 
 describe 'Rails' do
-  %w[5 6].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
+  %w[5 6]
+    .select { |version| AppMap::Util.ruby_minor_version < 3 || version >= 6 }
+    .each do |rails_major_version| # rubocop:disable Metrics/BlockLength
+
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
       include_context 'rails integration test setup'

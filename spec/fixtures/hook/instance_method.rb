@@ -28,4 +28,8 @@ class InstanceMethod
   def say_the_time
     Time.now.to_s
   end
+
+  def say_kws_block(*args, kw1: 'kw1', **kws, &block)
+    [ args, kw1, kws, yield ]
+  end
 end

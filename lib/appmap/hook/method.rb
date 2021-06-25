@@ -49,6 +49,7 @@ module AppMap
 
         if Util.ruby_minor_version >= 3
           hook_method_def = Proc.new do |*args, **kwargs, &block|
+            record_args = (args + [ kwargs ]).compact
             instance_method = hook_method.bind(self).to_proc
             call_instance_method = -> {
               instance_method.call(*args, **kwargs, &block)
@@ -68,8 +69,7 @@ module AppMap
             return call_instance_method.call unless enabled
   
             call_event, start_time = with_disabled_hook.call do
-              # TODO: add kwargs
-              before_hook.call(self, defined_class, args)
+              before_hook.call(self, defined_class, record_args)
             end
             return_value = nil
             exception = nil
@@ -125,7 +125,7 @@ module AppMap
               end
             end
           end
-          hook_method_def = hook_method_def.ruby2_keywords if Util.ruby_minor_version >= 2.7
+          hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
         end
 
         hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)

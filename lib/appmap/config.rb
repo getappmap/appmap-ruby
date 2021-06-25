@@ -250,7 +250,7 @@ module AppMap
       functions.each do |func|
         package_options = {}
         package_options[:labels] = func.labels if func.labels
-        @hooked_methods[func.cls] << TargetMethods.new(func.function_names, Package.build_from_path(func.package, package_options))
+        @hooked_methods[func.cls] << TargetMethods.new(func.function_names, Package.build_from_path(func.package, **package_options))
       end
 
       @hooked_methods.each_value do |hooks|
@@ -359,7 +359,7 @@ module AppMap
           config_params[:swagger_config] = swagger_config
         end
 
-        Config.new name, config_params
+        Config.new name, **config_params
       end
     end
 
