@@ -1,3 +1,10 @@
+## [0.54.2](https://github.com/applandinc/appmap-ruby/compare/v0.54.1...v0.54.2) (2021-06-25)
+
+
+### Bug Fixes
+
+* Require appmap/railtie if Rails is defined ([66b4cbd](https://github.com/applandinc/appmap-ruby/commit/66b4cbd4d418695b0e69150d253dfd5a6f9096cf))
+
 ## [0.54.1](https://github.com/applandinc/appmap-ruby/compare/v0.54.0...v0.54.1) (2021-06-25)
 
 
