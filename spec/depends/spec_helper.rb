@@ -4,8 +4,16 @@ DEPENDS_TEST_DIR = 'spec/fixtures/depends'
 DEPENDS_BASE_DIR = DEPENDS_TEST_DIR
 
 def update_appmap_index
-  require 'appmap/node_cli'
-  AppMap::NodeCLI.new(verbose: ENV['DEBUG'] == 'true', appmap_dir: DEPENDS_TEST_DIR).index_appmaps
+  cmd = [
+    './exe/appmap-index',
+    '--appmap-dir',
+    DEPENDS_TEST_DIR
+  ]
+  if ENV['DEBUG'] == 'true'
+    cmd << '--verbose'
+  end
+
+  system cmd.join(' ') or raise "Failed to update AppMap index in #{DEPENDS_TEST_DIR}"
 end
 
 RSpec.configure do |rspec|
