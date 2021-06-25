@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'diffy'
 require 'rack'
+require 'webrick'
 require 'rack/handler/webrick'
 
 class HelloWorldApp

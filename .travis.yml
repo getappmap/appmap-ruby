@@ -1,5 +1,10 @@
 language: ruby
 
+rbenv:
+- 2.5
+- 2.6
+- 2.7
+
 addons:
   apt:
     packages:
@@ -38,7 +43,6 @@ jobs:
     - mkdir tmp
     - GEM_ALTERNATIVE_NAME='' bundle exec rake test
 
-    
 before_deploy:
   - |
     nvm install --lts \

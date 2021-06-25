@@ -6,8 +6,7 @@ require 'rake/testtask'
 require 'rdoc/task'
 
 require 'open3'
-
-require "rake/extensiontask"
+require 'rake/extensiontask'
 
 desc 'build the native extension'
 Rake::ExtensionTask.new("appmap") do |ext|
@@ -26,7 +25,7 @@ namespace 'gem' do
       # ~/.rbenv/versions/2.6.6/lib/ruby/gems/2.6.0/gems/bundler-2.1.4/lib/bundler/gem_helper.rb:39:in `install'
       def build_gem
         # Ensure that NPM packages are installed before building.
-        sh('yarn install --prod'.shellsplit)
+        sh('yarn install --prod')
   
         default_build_gem
       end
@@ -34,7 +33,17 @@ namespace 'gem' do
   end
 end
 
-RUBY_VERSIONS=%w[2.5 2.6 2.7]
+RUBY_VERSIONS=%w[2.5 2.6 2.7].select do |version|
+  travis_ruby_version = ENV['TRAVIS_RUBY_VERSION']
+  next true unless travis_ruby_version
+
+  if travis_ruby_version.index(version) == 0
+    warn "Testing Ruby version #{version}, since it matches TRAVIS_RUBY_VERSION=#{travis_ruby_version}"
+    next true
+  end
+
+  false
+end
 FIXTURE_APPS=%w[rack_users_app rails6_users_app rails5_users_app]
 
 def run_cmd(*cmd)

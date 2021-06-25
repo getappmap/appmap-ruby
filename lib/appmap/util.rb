@@ -124,7 +124,7 @@ module AppMap
         path = path.split('(.')[0]
         tokens = path.split('/')
         tokens.map do |token|
-          token.gsub /^:(.*)/, '{\1}'
+          token.gsub(/^:(.*)/, '{\1}')
         end.join('/')
       end
 
@@ -154,6 +154,18 @@ module AppMap
         word.split(/[\-_]/).map(&:capitalize).join
       end
 
+      # https://api.rubyonrails.org/v6.1.3.2/classes/ActiveSupport/Inflector.html#method-i-underscore
+      def underscore(camel_cased_word)
+        return camel_cased_word unless /[A-Z-]|::/.match?(camel_cased_word)
+        word = camel_cased_word.to_s.gsub("::", "/")
+        # word.gsub!(inflections.acronyms_underscore_regex) { "#{$1 && '_' }#{$2.downcase}" }
+        word.gsub!(/([A-Z\d]+)([A-Z][a-z])/, '\1_\2')
+        word.gsub!(/([a-z\d])([A-Z])/, '\1_\2')
+        word.tr!("-", "_")
+        word.downcase!
+        word
+      end
+
       def deep_dup(hash)
         # This is a simple way to avoid the need for deep_dup from activesupport.
         Marshal.load(Marshal.dump(hash))
@@ -178,6 +190,10 @@ module AppMap
           warn msg
         end
       end  
+
+      def ruby_minor_version
+        @ruby_minor_version ||= RUBY_VERSION.split('.')[0..1].join('.').to_f
+      end
     end
   end
 end
