@@ -47,47 +47,86 @@ module AppMap
         after_hook = self.method(:after_hook)
         with_disabled_hook = self.method(:with_disabled_hook)
 
-        hook_method_def = Proc.new do |*args, &block|
-          instance_method = hook_method.bind(self).to_proc
-          call_instance_method = -> {
-            # https://github.com/applandinc/appmap-ruby/issues/153
-            if Util.ruby_minor_version >= 2.7 && args == ARRAY_OF_EMPTY_HASH && hook_method.arity == 1
-              instance_method.call({}, &block)
-            else
-              instance_method.call(*args, &block)
+        if Util.ruby_minor_version >= 3
+          hook_method_def = Proc.new do |*args, **kwargs, &block|
+            instance_method = hook_method.bind(self).to_proc
+            call_instance_method = -> {
+              instance_method.call(*args, **kwargs, &block)
+            }
+  
+            # We may not have gotten the class for the method during
+            # initialization (e.g. for a singleton method on an embedded
+            # struct), so make sure we have it now.
+            defined_class, = Hook.qualify_method_name(hook_method) unless defined_class
+  
+            reentrant = Thread.current[HOOK_DISABLE_KEY]
+            disabled_by_shallow_flag = \
+              -> { hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package }
+  
+            enabled = true if AppMap.tracing.enabled? && !reentrant && !disabled_by_shallow_flag.call
+  
+            return call_instance_method.call unless enabled
+  
+            call_event, start_time = with_disabled_hook.call do
+              # TODO: add kwargs
+              before_hook.call(self, defined_class, args)
             end
-          }
-
-          # We may not have gotten the class for the method during
-          # initialization (e.g. for a singleton method on an embedded
-          # struct), so make sure we have it now.
-          defined_class, = Hook.qualify_method_name(hook_method) unless defined_class
-
-          reentrant = Thread.current[HOOK_DISABLE_KEY]
-          disabled_by_shallow_flag = \
-            -> { hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package }
-
-          enabled = true if AppMap.tracing.enabled? && !reentrant && !disabled_by_shallow_flag.call
-
-          return call_instance_method.call unless enabled
-
-          call_event, start_time = with_disabled_hook.call do
-            before_hook.call(self, defined_class, args)
-          end
-          return_value = nil
-          exception = nil
-          begin
-            return_value = call_instance_method.call
-          rescue
-            exception = $ERROR_INFO
-            raise
-          ensure
-            with_disabled_hook.call do
-              after_hook.call(self, call_event, start_time, return_value, exception) if call_event
+            return_value = nil
+            exception = nil
+            begin
+              return_value = call_instance_method.call
+            rescue
+              exception = $ERROR_INFO
+              raise
+            ensure
+              with_disabled_hook.call do
+                after_hook.call(self, call_event, start_time, return_value, exception) if call_event
+              end
             end
           end
+        else
+          hook_method_def = Proc.new do |*args, &block|
+            instance_method = hook_method.bind(self).to_proc
+            call_instance_method = -> {
+              # https://github.com/applandinc/appmap-ruby/issues/153
+              if Util.ruby_minor_version >= 2.7 && args == ARRAY_OF_EMPTY_HASH && hook_method.arity == 1
+                instance_method.call({}, &block)
+              else
+                instance_method.call(*args, &block)
+              end
+            }
+  
+            # We may not have gotten the class for the method during
+            # initialization (e.g. for a singleton method on an embedded
+            # struct), so make sure we have it now.
+            defined_class, = Hook.qualify_method_name(hook_method) unless defined_class
+  
+            reentrant = Thread.current[HOOK_DISABLE_KEY]
+            disabled_by_shallow_flag = \
+              -> { hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package }
+  
+            enabled = true if AppMap.tracing.enabled? && !reentrant && !disabled_by_shallow_flag.call
+  
+            return call_instance_method.call unless enabled
+  
+            call_event, start_time = with_disabled_hook.call do
+              before_hook.call(self, defined_class, args)
+            end
+            return_value = nil
+            exception = nil
+            begin
+              return_value = call_instance_method.call
+            rescue
+              exception = $ERROR_INFO
+              raise
+            ensure
+              with_disabled_hook.call do
+                after_hook.call(self, call_event, start_time, return_value, exception) if call_event
+              end
+            end
+          end
+          hook_method_def = hook_method_def.ruby2_keywords if Util.ruby_minor_version >= 2.7
         end
-        hook_method_def = hook_method_def.ruby2_keywords if Util.ruby_minor_version >= 2.7
 
         hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
       end
