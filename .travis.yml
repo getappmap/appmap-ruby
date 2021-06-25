@@ -34,27 +34,29 @@ before_install:
   - |
     nvm install --lts \
       && nvm use --lts
- 
+
 # GEM_ALTERNATIVE_NAME only needed for deployment 
 jobs:
   include:
   - stage: test
     script:
+    - set -e
     - mkdir tmp
-    - GEM_ALTERNATIVE_NAME='' bundle exec rake test
+    - npm i -g yarn
+    - GEM_ALTERNATIVE_NAME='' bundle exec rake gem:build test
 
 before_deploy:
   - |
-    nvm install --lts \
-      && nvm use --lts \
-      && npm i -g \
-        semantic-release \
-        @semantic-release/git \
-        @semantic-release/changelog \
-        semantic-release-rubygem
+    npm i -g \
+      yarn \
+      semantic-release \
+      @semantic-release/git \
+      @semantic-release/changelog \
+      semantic-release-rubygem
 
 deploy:
   - provider: script
     script: ./release.sh
     on:
       branch: master
+      condition: "$TRAVIS_RUBY_VERSION = 2.7"

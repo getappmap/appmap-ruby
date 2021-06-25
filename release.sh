@@ -14,4 +14,3 @@ fi
 
 set -x
 exec semantic-release $RELEASE_FLAGS
-
