@@ -13,5 +13,4 @@ else
 fi
 
 set -x
-exec semantic-release $RELEASE_FLAGS
-
+echo exec semantic-release $RELEASE_FLAGS
