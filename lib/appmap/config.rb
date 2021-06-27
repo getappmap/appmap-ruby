@@ -343,7 +343,7 @@ module AppMap
                 shallow = package['shallow']
                 # shallow is true by default for gems
                 shallow = true if shallow.nil?
-                Package.build_from_gem(gem, exclude: package['exclude'] || [], shallow: shallow)
+                Package.build_from_gem(gem, package_name: package['package'], exclude: package['exclude'] || [], shallow: shallow)
               else
                 Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
               end
