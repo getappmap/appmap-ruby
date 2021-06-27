@@ -1,3 +1,10 @@
+## [0.54.4](https://github.com/applandinc/appmap-ruby/compare/v0.54.3...v0.54.4) (2021-06-27)
+
+
+### Bug Fixes
+
+* Only allow trace_end once per location ([10e48cf](https://github.com/applandinc/appmap-ruby/commit/10e48cf855907f9029479b4b7b63bc4d25d664ab))
+
 ## [0.54.3](https://github.com/applandinc/appmap-ruby/compare/v0.54.2...v0.54.3) (2021-06-25)
 
 
