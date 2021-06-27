@@ -37,8 +37,6 @@ module AppMap
     def initialize(config)
       @config = config
       @trace_enabled = []
-      # Paths that are known to be non-tracing
-      @notrace_paths = Set.new
     end
 
     # Observe class loading and hook all methods which match the config.
@@ -46,6 +44,11 @@ module AppMap
       require 'appmap/hook/method'
 
       hook_builtins
+
+      # Paths that are known to be non-tracing.
+      @notrace_paths = Set.new
+      # Locations that have already been visited.
+      @trace_locations = Set.new
 
       @trace_end = TracePoint.new(:end, &method(:trace_end))
       @trace_end.enable(&block)
@@ -99,7 +102,9 @@ module AppMap
     end
 
     def trace_end(trace_point)
-      warn "Class or module ends at location #{trace_location(trace_point)}" if Hook::LOG || Hook::LOG_HOOK
+      location = trace_location(trace_point)
+      warn "Class or module ends at location #{location}" if Hook::LOG || Hook::LOG_HOOK
+      return unless @trace_locations.add?(location)
 
       path = trace_point.path
       enabled = !@notrace_paths.member?(path) && config.path_enabled?(path)
