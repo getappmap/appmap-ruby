@@ -29,11 +29,31 @@ module AppMap
 
         # Gets a display string for a value. This is not meant to be a machine deserializable value.
         def display_string(value)
-          return nil unless value
+          return nil if value.equal?(nil)
 
+          # With setting APPMAP_PROFILE_DISPLAY_STRING, stringifying this class is shown to take 9 seconds(!) of a 17 second test run.
+          return nil if best_class_name(value) == 'ActiveSupport::Callbacks::Filters::Environment'
+
+          if @times.nil? && ENV['APPMAP_PROFILE_DISPLAY_STRING'] == 'true'
+            @times = Hash.new {|memo,key| memo[key] = 0}
+            Thread.new do
+              sleep 0.5
+              while true
+                warn @times.to_a.sort{|a,b| b[1] <=> a[1]}[0..9].join("\n")
+                sleep 3
+              end
+            end
+          end
+
+          start = Time.now
           value_string = custom_display_string(value) || default_display_string(value)
 
-          (value_string||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          if @times
+            elapsed = Time.now - start
+            @times[best_class_name(value)] += elapsed
+          end
+
+          encode_dislay_string(value_string)
         end
 
         def object_properties(hash_like)
@@ -57,8 +77,16 @@ module AppMap
           value_cls.name
         end
 
+        def encode_dislay_string(value)
+          (value||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+        end
+
         def custom_display_string(value)
           case value
+          when NilClass, TrueClass, FalseClass, Numeric, Time, Date
+            value.to_s
+          when String
+            value[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
           when File
             "#{value.class}[path=#{value.path}]"
           when Net::HTTP
@@ -71,6 +99,8 @@ module AppMap
         end
 
         def default_display_string(value)
+          return nil if ENV['APPMAP_OBJECT_STRING'] == 'false'
+
           last_resort_string = lambda do
             warn "AppMap encountered an error inspecting a #{value.class.name}: #{$!.message}"
             '*Error inspecting variable*'

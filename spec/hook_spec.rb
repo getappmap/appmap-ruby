@@ -970,7 +970,7 @@ describe 'AppMap class Hooking', docker: false do
         tz = ENV['TZ']
         ENV['TZ'] = 'UTC'
         Timecop.freeze(Time.utc('2020-01-01')) do
-          expect(Time).to receive(:now).exactly(3).times.and_call_original
+          expect(Time).to receive(:now).at_least(3).times.and_call_original
           expect(InstanceMethod.new.say_the_time).to be
         end
       ensure
