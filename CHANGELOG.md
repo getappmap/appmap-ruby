@@ -1,3 +1,19 @@
+# [0.55.0](https://github.com/applandinc/appmap-ruby/compare/v0.54.4...v0.55.0) (2021-06-28)
+
+
+### Bug Fixes
+
+* Avoid calling == ([f30ed9f](https://github.com/applandinc/appmap-ruby/commit/f30ed9f309753252df35e372d925db3b914260d4))
+* Log dynamic loading of appmap helpers at info level ([15dcd3c](https://github.com/applandinc/appmap-ruby/commit/15dcd3c913fa1c32aea034b28ddae59668efa217))
+* Remove dynamic loading of rake and rspec helpers ([6790970](https://github.com/applandinc/appmap-ruby/commit/67909702f3c8a52081ef1e23a87c292908883334))
+
+
+### Features
+
+* APPMAP_PROFILE_DISPLAY_STRING and APPMAP_OBJECT_STRING ([3f5daa8](https://github.com/applandinc/appmap-ruby/commit/3f5daa890bfbfd39b7f825794d0c43da509b3201))
+* Package name to require can be specified when hooking a gem ([fcc5eb6](https://github.com/applandinc/appmap-ruby/commit/fcc5eb691a0330444560eb4c2afe7fc3c4c8afa8))
+* Profile packaging hooking ([c020a31](https://github.com/applandinc/appmap-ruby/commit/c020a312f4545348ec7cc302443269c57a7fc026))
+
 ## [0.54.4](https://github.com/applandinc/appmap-ruby/compare/v0.54.3...v0.54.4) (2021-06-27)
 
 
