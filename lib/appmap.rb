@@ -28,11 +28,9 @@ lambda do
   INITIALIZERS = {
     # In a Rails app, Rails is always defined by the time the other gems are loaded. Therefore, we
     # don't try and trap the loading of Rails itself here.
-    'RSpec' => Initializer.new('AppMap::RSpec', 'appmap/rspec', 'rspec-core'),
+    # Emperically, Rake and RSpec are also defined before appmap is loaded whenever a Rake task or
+    # RSpec tests are being run. Therefore, the only hook we need here is Minitest.
     'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest'),
-    'Rake' => [
-      Initializer.new('AppMap::Swagger', 'appmap/swagger', 'rake')
-    ]
   }
 
   TracePoint.new(:class) do |tp|
