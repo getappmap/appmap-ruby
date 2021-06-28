@@ -9,6 +9,7 @@ module AppMap
 
     OBJECT_INSTANCE_METHODS = %i[! != !~ <=> == === =~ __id__ __send__ class clone define_singleton_method display dup enum_for eql? equal? extend freeze frozen? hash inspect instance_eval instance_exec instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method methods nil? object_id private_methods protected_methods public_method public_methods public_send remove_instance_variable respond_to? send singleton_class singleton_method singleton_methods taint tainted? tap then to_enum to_s to_h to_a trust untaint untrust untrusted? yield_self].freeze
     OBJECT_STATIC_METHODS = %i[! != !~ < <= <=> == === =~ > >= __id__ __send__ alias_method allocate ancestors attr attr_accessor attr_reader attr_writer autoload autoload? class class_eval class_exec class_variable_defined? class_variable_get class_variable_set class_variables clone const_defined? const_get const_missing const_set constants define_method define_singleton_method deprecate_constant display dup enum_for eql? equal? extend freeze frozen? hash include include? included_modules inspect instance_eval instance_exec instance_method instance_methods instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method method_defined? methods module_eval module_exec name new nil? object_id prepend private_class_method private_constant private_instance_methods private_method_defined? private_methods protected_instance_methods protected_method_defined? protected_methods public_class_method public_constant public_instance_method public_instance_methods public_method public_method_defined? public_methods public_send remove_class_variable remove_instance_variable remove_method respond_to? send singleton_class singleton_class? singleton_method singleton_methods superclass taint tainted? tap then to_enum to_s trust undef_method untaint untrust untrusted? yield_self].freeze
+    SLOW_PACKAGE_THRESHOLD = 0.05
 
     @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
     @method_arity = ::Method.instance_method(:arity)
@@ -49,6 +50,27 @@ module AppMap
       @notrace_paths = Set.new
       # Locations that have already been visited.
       @trace_locations = Set.new
+      @module_load_times = Hash.new {|memo,k| memo[k] = 0}
+      @slow_packages = Set.new
+
+      if ENV['APPMAP_PROFILE_HOOK'] == 'true'
+        Thread.new do
+          sleep 1
+          while true
+            @module_load_times
+              .keys
+              .select { |key| !@slow_packages.member?(key) }
+              .each do |key|
+              elapsed = @module_load_times[key]
+              if elapsed >= SLOW_PACKAGE_THRESHOLD
+                @slow_packages.add(key)
+                warn "AppMap: Package #{key} took #{@module_load_times[key]} seconds to hook"
+              end
+            end
+            sleep 5
+          end
+        end
+      end
 
       @trace_end = TracePoint.new(:end, &method(:trace_end))
       @trace_end.enable(&block)
@@ -157,6 +179,7 @@ module AppMap
         end
       end
 
+      start = Time.now
       instance_methods.each(&hook.(cls))
       begin
         # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
@@ -165,6 +188,11 @@ module AppMap
         # NameError:
         #   uninitialized constant Faraday::Connection
         warn "NameError in #{__FILE__}: #{$!.message}"
+      end
+      elapsed = Time.now - start
+      if location.index(Bundler.bundle_path.to_s) == 0
+        package_tokens = location[Bundler.bundle_path.to_s.length + 1..-1].split('/')
+        @module_load_times[package_tokens[1]] += elapsed
       end
     end
   end

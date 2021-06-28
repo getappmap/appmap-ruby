@@ -185,7 +185,7 @@ module AppMap
 
       def startup_message(msg)
         if defined?(::Rails) && defined?(::Rails.logger) && ::Rails.logger
-          ::Rails.logger.debug msg
+          ::Rails.logger.info msg
         elsif ENV['DEBUG'] == 'true'
           warn msg
         end

@@ -49,9 +49,14 @@ module AppMap
 
         hook_method_def = Proc.new do |*args, &block|
           instance_method = hook_method.bind(self).to_proc
+
+          is_array_containing_empty_hash = ->(obj) {
+            obj.is_a?(Array) && obj.length == 1 && obj[0].is_a?(Hash) && obj[0].size == 0
+          }
+
           call_instance_method = -> {
             # https://github.com/applandinc/appmap-ruby/issues/153
-            if Util.ruby_minor_version >= 2.7 && args == ARRAY_OF_EMPTY_HASH && hook_method.arity == 1
+            if Util.ruby_minor_version >= 2.7 && is_array_containing_empty_hash.(args) && hook_method.arity == 1
               instance_method.call({}, &block)
             else
               instance_method.call(*args, &block)
