@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'json'
 require 'appmap/service/config_analyzer'
 
 module AppMap
@@ -13,13 +14,13 @@ module AppMap
             :properties => {
               :config => {
                 :app => config_analyzer.app_name,
-                :present => config_analyzer.is_present?,
-                :valid => config_analyzer.is_valid?
+                :present => config_analyzer.present?,
+                :valid => config_analyzer.valid?
               },
               :project => {
                 :agentVersionProject => AppMap::VERSION,
                 :language => 'ruby',
-                :remoteRecordingCapable => defined?(::Rails) ? true : false,
+                :remoteRecordingCapable => Gem.loaded_specs.has_key?('rails'),
                 :integrationTests => false #TODO
               }
             }

@@ -11,21 +11,21 @@ module AppMap
       end
 
       def app_name
-        @config.to_h[:name] if is_present?
+        @config.to_h[:name] if present?
       end
 
-      def is_present?
+      def present?
         File.exist?(@config_file)
       end
 
-      def is_valid?
-        is_present? && @config.to_h.key?(:name) && @config.to_h.key?(:packages)
+      def valid?
+        present? && @config.to_h.key?(:name) && @config.to_h.key?(:packages)
       end
 
       private
 
       def load_config
-        AppMap::Config.load_from_file @config_file if is_present?
+        AppMap::Config.load_from_file @config_file if present?
       rescue
         nil
       end

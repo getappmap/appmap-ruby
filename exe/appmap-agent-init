@@ -5,10 +5,10 @@ require 'optparse'
 require 'appmap'
 require 'appmap/command/agent_setup/init'
 
-@options = {:config_file => AppMap::DEFAULT_CONFIG_FILE_PATH}
+@options = { config_file: AppMap::DEFAULT_CONFIG_FILE_PATH }
 
 OptionParser.new do |parser|
-  parser.banner = 'Usage: bundle exec exe/appmap-agent-init [options]'
+  parser.banner = 'Usage: appmap-agent-init [options]'
 
   description = "AppMap configuration file path (default: #{AppMap::DEFAULT_CONFIG_FILE_PATH})"
   parser.on('-c', '--config=FILEPATH', description) do |filepath|

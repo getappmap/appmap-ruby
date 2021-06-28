@@ -17,13 +17,13 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'returns false' do
-        expect(subject.is_valid?).to be_falsey
+        expect(subject.valid?).to be_falsey
       end
     end
 
     describe '.is_present?' do
       it 'returns false' do
-        expect(subject.is_present?).to be_falsey
+        expect(subject.present?).to be_falsey
       end
     end
   end
@@ -39,13 +39,13 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'returns true' do
-        expect(subject.is_valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
     end
 
     describe '.is_present?' do
       it 'returns true' do
-        expect(subject.is_present?).to be_truthy
+        expect(subject.present?).to be_truthy
       end
     end
   end
@@ -61,13 +61,13 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'returns false' do
-        expect(subject.is_valid?).to be_falsey
+        expect(subject.valid?).to be_falsey
       end
     end
 
     describe '.is_present?' do
       it 'return true' do
-        expect(subject.is_present?).to be_truthy
+        expect(subject.present?).to be_truthy
       end
     end
   end
@@ -83,13 +83,13 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'guesses paths and returns true ' do
-        expect(subject.is_valid?).to be_truthy
+        expect(subject.valid?).to be_truthy
       end
     end
 
     describe '.is_present?' do
       it 'returns true' do
-        expect(subject.is_present?).to be_truthy
+        expect(subject.present?).to be_truthy
       end
     end
   end
