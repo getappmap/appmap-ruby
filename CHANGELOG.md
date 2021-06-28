@@ -1,3 +1,10 @@
+# [0.56.0](https://github.com/applandinc/appmap-ruby/compare/v0.55.0...v0.56.0) (2021-06-28)
+
+
+### Features
+
+* add appmap-agent-status executable with config/project properties ([043f845](https://github.com/applandinc/appmap-ruby/commit/043f8453a2533a6e172d1cd23fcde04f19e73173))
+
 # [0.55.0](https://github.com/applandinc/appmap-ruby/compare/v0.54.4...v0.55.0) (2021-06-28)
 
 
