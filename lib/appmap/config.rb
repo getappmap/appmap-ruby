@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'set'
 require 'yaml'
 require 'appmap/util'
 require 'appmap/handler/net_http'
