@@ -1,3 +1,10 @@
+# [0.57.0](https://github.com/applandinc/appmap-ruby/compare/v0.56.0...v0.57.0) (2021-06-29)
+
+
+### Features
+
+* Update init command to return JSON ([1f93e89](https://github.com/applandinc/appmap-ruby/commit/1f93e8909684e1018f513d69adfde2a5d0bf6bc9))
+
 # [0.56.0](https://github.com/applandinc/appmap-ruby/compare/v0.55.0...v0.56.0) (2021-06-28)
 
 
