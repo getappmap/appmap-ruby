@@ -18,7 +18,7 @@ module AppMap
                 :valid => config_analyzer.valid?
               },
               :project => {
-                :agentVersionProject => AppMap::VERSION,
+                :agentVersion => AppMap::VERSION,
                 :language => 'ruby',
                 :remoteRecordingCapable => Gem.loaded_specs.has_key?('rails'),
                 :integrationTests => false #TODO
