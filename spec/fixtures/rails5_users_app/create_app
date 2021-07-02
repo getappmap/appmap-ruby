@@ -27,7 +27,7 @@ set -e
 psql -h pg -U postgres -c "create database app_development"
 psql -h pg -U postgres -c "create database app_test"
 
-RAILS_ENV=development ./bin/rake -t db:migrate
-RAILS_ENV=test ./bin/rake -t db:migrate
+env RAILS_ENV=development bundle exec rake -t db:migrate
+env RAILS_ENV=test bundle exec rake -t db:migrate
 
 echo "INSERT INTO users ( login ) VALUES ( 'admin' )  " | psql -h pg -U postgres app_development
