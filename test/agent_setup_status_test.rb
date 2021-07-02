@@ -15,7 +15,7 @@ class AgentSetupInitTest < Minitest::Test
           :valid => true
         },
         :project => {
-          :agentVersionProject => AppMap::VERSION,
+          :agentVersion => AppMap::VERSION,
           :language => 'ruby',
           :remoteRecordingCapable => false,
           :integrationTests => false
