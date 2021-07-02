@@ -1,3 +1,10 @@
+## [0.57.1](https://github.com/applandinc/appmap-ruby/compare/v0.57.0...v0.57.1) (2021-07-02)
+
+
+### Bug Fixes
+
+* rename agentVersionPorject to agentVersion ([905fc5d](https://github.com/applandinc/appmap-ruby/commit/905fc5dd643411deb94f8a1087bcdb3a562d218a))
+
 # [0.57.0](https://github.com/applandinc/appmap-ruby/compare/v0.56.0...v0.57.0) (2021-06-29)
 
 
