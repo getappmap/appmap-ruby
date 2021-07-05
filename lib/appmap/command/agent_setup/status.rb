@@ -2,6 +2,8 @@
 
 require 'json'
 require 'appmap/service/config_analyzer'
+require 'appmap/service/integration_test_path_finder'
+require 'appmap/service/test_command_provider'
 
 module AppMap
   module Command
@@ -11,22 +13,23 @@ module AppMap
       class Status < StatusStruct
         def perform
           status = {
-            :properties => {
-              :config => {
-                :app => config_analyzer.app_name,
-                :present => config_analyzer.present?,
-                :valid => config_analyzer.valid?
+            test_commands: Service::TestCommandProvider.all,
+            properties: {
+              config: {
+                app: config_analyzer.app_name,
+                present: config_analyzer.present?,
+                valid: config_analyzer.valid?
               },
-              :project => {
-                :agentVersion => AppMap::VERSION,
-                :language => 'ruby',
-                :remoteRecordingCapable => Gem.loaded_specs.has_key?('rails'),
-                :integrationTests => false #TODO
+              project: {
+                agentVersion: AppMap::VERSION,
+                language: 'ruby',
+                remoteRecordingCapable: Gem.loaded_specs.has_key?('rails'),
+                integrationTests: Service::IntegrationTestPathFinder.count_paths > 0
               }
             }
           }
 
-          puts status.to_json
+          puts JSON.pretty_generate(status)
         end
 
         private
