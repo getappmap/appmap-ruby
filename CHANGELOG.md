@@ -1,3 +1,10 @@
+# [0.58.0](https://github.com/applandinc/appmap-ruby/compare/v0.57.1...v0.58.0) (2021-07-06)
+
+
+### Features
+
+* Add `test_commands` sections to `appmap-agent-status` executable ([4cd8fe5](https://github.com/applandinc/appmap-ruby/commit/4cd8fe58acb4af72b7818db96de9e479562b9ea0))
+
 ## [0.57.1](https://github.com/applandinc/appmap-ruby/compare/v0.57.0...v0.57.1) (2021-07-02)
 
 
