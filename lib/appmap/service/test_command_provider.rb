@@ -13,21 +13,27 @@ module AppMap
           if TestFrameworkDetector.rspec_present? && !integration_test_paths[:rspec].empty?
             commands << {
               framework: :rspec,
-              command: "APPMAP=true bundle exec rspec #{integration_test_paths[:rspec].join(' ')}"
+              command: {
+                program: 'bundle',
+                args: %w[exec rspec] + integration_test_paths[:rspec].map { |path| "./#{path}" },
+                environment: {
+                  APPMAP: 'true'
+                }
+              }
             }
           end
 
           if TestFrameworkDetector.minitest_present? && !integration_test_paths[:minitest].empty?
-            commands << {
-              framework: :minitest,
-              command: minitest_command
-            }
+            commands += minitest_commands
           end
-
           if TestFrameworkDetector.cucumber_present? && !integration_test_paths[:cucumber].empty?
             commands << {
               framework: :cucumber,
-              command: 'APPMAP=true bundle exec cucumber'
+              command: {
+                program: 'bundle',
+                args: %w[exec cucumber],
+                environment: { APPMAP: 'true' }
+              }
             }
           end
 
@@ -36,12 +42,29 @@ module AppMap
 
         private
 
-        def minitest_command
+        def minitest_commands
           if Gem.loaded_specs.has_key?('rails')
-            "APPMAP=true bundle exec rails test #{integration_test_paths[:minitest].join(' ')}"
+            [
+              {
+                framework: :minitest,
+                command: {
+                  program: 'bundle',
+                  args: %w[exec rails test] + integration_test_paths[:minitest].map { |path| "./#{path}" },
+                  environment: { APPMAP: 'true' }
+                }
+              }
+            ]
           else
-            subcommands = integration_test_paths[:minitest].map { |path| "APPMAP=true bundle exec ruby #{path}" }
-            subcommands.join(' && ')
+            integration_test_paths[:minitest].map do |path|
+              {
+                framework: :minitest,
+                command: {
+                  program: 'bundle',
+                  args: ['exec', 'ruby', "./#{path}"],
+                  environment: { APPMAP: 'true' }
+                }
+              }
+            end
           end
         end
 
