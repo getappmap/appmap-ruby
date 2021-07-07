@@ -1,3 +1,10 @@
+# [0.59.0](https://github.com/applandinc/appmap-ruby/compare/v0.58.0...v0.59.0) (2021-07-07)
+
+
+### Features
+
+* define commands as objects ([1b43203](https://github.com/applandinc/appmap-ruby/commit/1b432039040277e1b5349cc2f75aa436238ea873))
+
 # [0.58.0](https://github.com/applandinc/appmap-ruby/compare/v0.57.1...v0.58.0) (2021-07-06)
 
 
