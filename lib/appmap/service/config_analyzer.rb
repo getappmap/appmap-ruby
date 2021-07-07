@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'appmap/service/validator/config_validator'
+
 module AppMap
   module Service
     class ConfigAnalyzer
@@ -7,11 +9,10 @@ module AppMap
 
       def initialize(config_file)
         @config_file = config_file
-        @config = load_config
       end
 
       def app_name
-        @config.to_h[:name] if present?
+        config_validator.config.to_h[:name] if present?
       end
 
       def present?
@@ -19,15 +20,13 @@ module AppMap
       end
 
       def valid?
-        present? && @config.to_h.key?(:name) && @config.to_h.key?(:packages)
+        config_validator.valid?
       end
 
       private
 
-      def load_config
-        AppMap::Config.load_from_file @config_file if present?
-      rescue
-        nil
+      def config_validator
+        @validator ||= AppMap::Service::Validator::ConfigValidator.new(@config_file)
       end
     end
   end

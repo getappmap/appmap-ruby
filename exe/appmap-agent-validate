@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'optparse'
+require 'appmap'
+require 'appmap/command/agent_setup/validate'
+
+@options = { config_file: AppMap::DEFAULT_CONFIG_FILE_PATH }
+
+OptionParser.new do |parser|
+  parser.banner = 'Usage: appmap-agent-validate [options]'
+
+  description = "AppMap configuration file path (default: #{AppMap::DEFAULT_CONFIG_FILE_PATH})"
+  parser.on('-c', '--config=FILEPATH', description) do |filepath|
+    @options[:config_file] = filepath
+  end
+end.parse!
+
+AppMap::Command::AgentSetup::Validate.new(@options[:config_file]).perform
