@@ -71,11 +71,16 @@ module AppMap
           attr_reader :render_instance
           # Path to the view template.
           attr_accessor :path
-  
+          # Indicates when the event is fully constructed.
+          attr_accessor :ready
+
+          alias ready? ready
+ 
           def initialize(render_instance)
             super :call
   
             AppMap::Event::MethodEvent.build_from_invocation(:call, event: self)
+            @ready = false
             @render_instance = render_instance
           end
   
@@ -95,8 +100,7 @@ module AppMap
                 object_id: render_instance.__id__,
                 value: AppMap::Event::MethodEvent.display_string(render_instance)
               }
-              h.compact
-            end
+            end.compact
           end
         end
  
@@ -158,7 +162,8 @@ module AppMap
             end
   
             def handle_return(call_event_id, elapsed, return_value, exception)
-              Array(Thread.current[TEMPLATE_RENDERER]).pop
+              template_call = Array(Thread.current[TEMPLATE_RENDERER]).pop
+              template_call.ready = true
 
               AppMap::Event::MethodReturnIgnoreValue.build_from_invocation(call_event_id, elapsed: elapsed)
             end
