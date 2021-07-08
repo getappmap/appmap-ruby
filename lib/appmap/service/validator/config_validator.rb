@@ -15,8 +15,9 @@ module AppMap
         end
 
         def valid?
+          validate_ruby_version
           validate_config_presence
-          @violations.length == 0
+          @violations.empty?
         end
 
         private
@@ -26,11 +27,19 @@ module AppMap
         end
 
         def load_config
+          YAML.parse_file(@config_file) if present?
           AppMap::Config.load_from_file(@config_file) if present?
-        rescue StandardError => e
+        rescue Psych::SyntaxError => e
           @violations << Violation.error(
             filename: @config_file,
             message: 'AppMap configuration is not valid YAML',
+            detailed_message: e.message
+          )
+          nil
+        rescue StandardError => e
+          @violations << Violation.error(
+            filename: @config_file,
+            message: 'AppMap configuration could not be loaded.',
             detailed_message: e.message
           )
           nil
@@ -42,6 +51,15 @@ module AppMap
               filename: @config_file,
               message: 'AppMap configuration file does not exist'
             )
+          end
+        end
+
+        def validate_ruby_version
+          unless RUBY_VERSION =~ AppMap::SUPPORTED_RUBY_VERSIONS_REGEX
+            @violations << Violation.error(
+              message: "AppMap does not support Ruby #{RUBY_VERSION}. " \
+                "Supported versions are: #{AppMap::SUPPORTED_RUBY_VERSIONS.join(', ')}."
+              )
           end
         end
       end

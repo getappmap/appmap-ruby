@@ -7,6 +7,9 @@ module AppMap
 
   APPMAP_FORMAT_VERSION = '1.5.1'
 
+  SUPPORTED_RUBY_VERSIONS_REGEX = /^2\.[567]\./.freeze
+  SUPPORTED_RUBY_VERSIONS = %w[2.5 2.6 2.7].freeze
+
   DEFAULT_APPMAP_DIR = 'tmp/appmap'.freeze
   DEFAULT_CONFIG_FILE_PATH = 'appmap.yml'.freeze
 end
