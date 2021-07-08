@@ -1,3 +1,11 @@
+# [0.60.0](https://github.com/applandinc/appmap-ruby/compare/v0.59.2...v0.60.0) (2021-07-08)
+
+
+### Features
+
+* add agent-setup-validate command ([d9b3bc1](https://github.com/applandinc/appmap-ruby/commit/d9b3bc15e01bf89994aa67b0256dd69b9983be76))
+* validate ruby version (+ better config loading validation) ([1756e6c](https://github.com/applandinc/appmap-ruby/commit/1756e6c30b5c44a033c23eb47c27c56732d12470))
+
 ## [0.59.2](https://github.com/applandinc/appmap-ruby/compare/v0.59.1...v0.59.2) (2021-07-08)
 
 
