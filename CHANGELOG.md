@@ -1,3 +1,10 @@
+## [0.59.2](https://github.com/applandinc/appmap-ruby/compare/v0.59.1...v0.59.2) (2021-07-08)
+
+
+### Bug Fixes
+
+* Remove improper reliance on Rails 'try' ([c6b5b16](https://github.com/applandinc/appmap-ruby/commit/c6b5b16a6963988e20bab5f88b99401e25691f3c))
+
 ## [0.59.1](https://github.com/applandinc/appmap-ruby/compare/v0.59.0...v0.59.1) (2021-07-08)
 
 
