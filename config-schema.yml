@@ -1,0 +1,57 @@
+type: object
+additionalProperties: false
+required:
+  - name
+properties:
+  name:
+    type: string
+  packages:
+    type: array
+    items:
+      anyOf:
+        - type: object
+          additionalProperties: false
+          required:
+            - path
+          properties:
+            path:
+              type: string
+            shallow:
+              type: boolean
+            exclude:
+              type: array
+              items:
+                type: string
+        - type: object
+          additionalProperties: false
+          required:
+            - gem
+          properties:
+            gem:
+              type: string
+            shallow:
+              type: boolean
+            exclude:
+              type: array
+              items:
+                type: string
+  exclude:
+    type: array
+    items:
+      type: string
+  functions:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      properties:
+        package:
+          type: string
+        class:
+          type: string
+        function:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
