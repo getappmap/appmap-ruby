@@ -64,7 +64,7 @@ class AgentSetupInitTest < Minitest::Test
       ],
       properties: {
         config: {
-          app: nil,
+          app: 'rails6_users_app',
           present: true,
           valid: false
         },

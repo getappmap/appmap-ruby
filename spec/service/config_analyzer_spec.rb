@@ -51,7 +51,7 @@ describe AppMap::Service::ConfigAnalyzer do
   end
 
   context 'with invalid YAML config' do
-    let(:config_file) { 'spec/fixtures/config/invalid_config.yml'}
+    let(:config_file) { 'spec/fixtures/config/invalid_yaml_config.yml'}
 
     describe '.app_name' do
       it 'returns app name value from config' do
