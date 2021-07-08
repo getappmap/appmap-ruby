@@ -183,6 +183,15 @@ module AppMap
         false
       end
 
+      # https://github.com/rails/rails/blob/8cd143900978902ed9bbba10b34099a3140de5c6/activesupport/lib/active_support/core_ext/object/try.rb
+      def try(obj, *methods)
+        return nil if methods.empty?
+
+        return nil unless obj.respond_to?(methods.first)
+
+        obj.public_send(*methods)
+      end
+
       def startup_message(msg)
         if defined?(::Rails) && defined?(::Rails.logger) && ::Rails.logger
           ::Rails.logger.info msg

@@ -248,7 +248,7 @@ module AppMap
               next_exception = exception
               exceptions = []
               while next_exception
-                exception_backtrace = next_exception.backtrace_locations.try(:[], 0)
+                exception_backtrace = AppMap::Util.try(next_exception.backtrace_locations, :[], 0)
                 exceptions << {
                   class: best_class_name(next_exception),
                   message: display_string(next_exception.message),
