@@ -119,6 +119,14 @@ module AppMap
           end
         end
       end
+      
+      # An event may be partially constructed, and then completed at a later time. When the event
+      # is only partially constructed, it's not ready for serialization to the AppMap file. 
+      # 
+      # @return false until the event is fully constructed and available.
+      def ready?
+        true
+      end
 
       protected
 

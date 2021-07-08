@@ -143,12 +143,12 @@ module AppMap
 
     # Whether there is an event available for processing.
     def event?
-      !@events.empty?
+      !@events.empty? && @events.first.ready?
     end
 
     # Gets the next available event, if any.
     def next_event
-      @events.shift
+      @events.shift if event?
     end
   end
 end
