@@ -11,12 +11,13 @@ module AppMap
         def initialize(config_file)
           @config_file = config_file
           @violations = []
-          @config = load_config
         end
 
         def valid?
           validate_ruby_version
           validate_config_presence
+          validate_yaml_syntax
+          validate_config_load
           @violations.empty?
         end
 
@@ -26,9 +27,10 @@ module AppMap
           File.exist?(@config_file)
         end
 
-        def load_config
-          YAML.parse_file(@config_file) if present?
-          AppMap::Config.load_from_file(@config_file) if present?
+        def validate_yaml_syntax
+          return unless present?
+
+          @config_data = YAML.load_file(@config_file)
         rescue Psych::SyntaxError => e
           @violations << Violation.error(
             filename: @config_file,
@@ -36,10 +38,16 @@ module AppMap
             detailed_message: e.message
           )
           nil
+        end
+
+        def validate_config_load
+          return unless @config_data
+
+          AppMap::Config.load(@config_data)
         rescue StandardError => e
           @violations << Violation.error(
             filename: @config_file,
-            message: 'AppMap configuration could not be loaded.',
+            message: 'AppMap configuration could not be loaded',
             detailed_message: e.message
           )
           nil
