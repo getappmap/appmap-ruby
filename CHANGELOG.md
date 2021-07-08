@@ -1,3 +1,10 @@
+## [0.59.1](https://github.com/applandinc/appmap-ruby/compare/v0.59.0...v0.59.1) (2021-07-08)
+
+
+### Bug Fixes
+
+* Events may be constructed in stages ([b0b23f5](https://github.com/applandinc/appmap-ruby/commit/b0b23f59a84158b8162424b84430894fe4278324))
+
 # [0.59.0](https://github.com/applandinc/appmap-ruby/compare/v0.58.0...v0.59.0) (2021-07-07)
 
 
