@@ -6,17 +6,21 @@ module AppMap
   module Service
     module Validator
       class ConfigValidator
-        attr_reader :config, :violations
+        attr_reader :violations
 
         def initialize(config_file)
           @config_file = config_file
           @violations = []
         end
 
+        def config
+          parse_config
+        end
+
         def valid?
           validate_ruby_version
           validate_config_presence
-          validate_yaml_syntax
+          parse_config
           validate_config_load
           @violations.empty?
         end
@@ -27,10 +31,10 @@ module AppMap
           File.exist?(@config_file)
         end
 
-        def validate_yaml_syntax
+        def parse_config
           return unless present?
 
-          @config_data = YAML.load_file(@config_file)
+          @config_data ||= YAML.load_file(@config_file)
         rescue Psych::SyntaxError => e
           @violations << Violation.error(
             filename: @config_file,

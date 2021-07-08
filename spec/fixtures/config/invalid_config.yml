@@ -1,2 +1,2 @@
 name: name
-packages: not_array
+packages: [1,2,3]

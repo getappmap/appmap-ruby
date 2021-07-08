@@ -12,7 +12,7 @@ module AppMap
       end
 
       def app_name
-        config_validator.config.to_h[:name] if present?
+        config_validator.config.to_h['name'] if present?
       end
 
       def present?

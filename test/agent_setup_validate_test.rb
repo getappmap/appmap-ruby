@@ -50,7 +50,7 @@ class AgentSetupValidateTest < Minitest::Test
         level: :error,
         filename: INVALID_CONFIG_FILENAME,
         message: 'AppMap configuration could not be loaded',
-        detailed_message: "undefined method `map' for \"not_array\":String\nDid you mean?  tap"
+        detailed_message: "no implicit conversion of String into Integer"
       }
     ])
     assert_equal expected, output.strip
