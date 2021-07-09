@@ -28,7 +28,7 @@ module AppMap
 
 
         def find_minitest_paths
-          find_non_empty_paths(%w[test/controllers test/integration])
+          find_non_empty_paths(Dir.glob('test/**/{controllers,integration}').sort)
         end
 
         def find_cucumber_paths
