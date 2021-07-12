@@ -69,7 +69,7 @@ module AppMap
         end
 
         def integration_test_paths
-          @paths ||= Service::IntegrationTestPathFinder.find
+          @paths ||= Service::IntegrationTestPathFinder.new.find
         end
       end
     end

@@ -24,7 +24,7 @@ module AppMap
                 agentVersion: AppMap::VERSION,
                 language: 'ruby',
                 remoteRecordingCapable: Gem.loaded_specs.has_key?('rails'),
-                integrationTests: Service::IntegrationTestPathFinder.count_paths > 0
+                integrationTests: Service::IntegrationTestPathFinder.new.count_paths > 0
               }
             }
           }
