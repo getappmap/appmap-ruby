@@ -28,7 +28,7 @@ describe AppMap::Service::ConfigAnalyzer do
     end
   end
 
-  context 'with valid config' do
+  context 'with valid but non rails config' do
     let(:config_file) { 'spec/fixtures/config/valid_config.yml'}
 
     describe '.app_name' do
@@ -39,7 +39,7 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'returns true' do
-        expect(subject.valid?).to be_truthy
+        expect(subject.valid?).to be_falsey
       end
     end
 
@@ -83,7 +83,7 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'guesses paths and returns true ' do
-        expect(subject.valid?).to be_truthy
+        expect(subject.valid?).to be_falsey
       end
     end
 

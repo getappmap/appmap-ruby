@@ -19,6 +19,7 @@ module AppMap
 
         def valid?
           validate_ruby_version
+          validate_rails_presence
           validate_config_presence
           parse_config
           validate_config_load
@@ -62,6 +63,14 @@ module AppMap
             @violations << Violation.error(
               filename: @config_file,
               message: 'AppMap configuration file does not exist'
+            )
+          end
+        end
+
+        def validate_rails_presence
+          unless Gem.loaded_specs.has_key?('rails')
+            @violations << Violation.error(
+              message: 'AppMap auto-configuration is currently not available for non Rails projects'
             )
           end
         end
