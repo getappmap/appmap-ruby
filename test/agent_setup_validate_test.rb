@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'test_helper'
@@ -11,13 +10,23 @@ class AgentSetupValidateTest < Minitest::Test
   def test_init_when_config_exists
     output = `./exe/appmap-agent-validate`
     assert_equal 0, $CHILD_STATUS.exitstatus
-    assert_equal JSON.pretty_generate([]), output.strip
+    expected = JSON.pretty_generate([
+      {
+        level: :error,
+        message: 'AppMap auto-configuration is currently not available for non Rails projects'
+      }
+    ])
+    assert_equal expected, output.strip
   end
 
   def test_init_with_non_existing_config_file
     output = `./exe/appmap-agent-validate -c #{NON_EXISTING_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     expected = JSON.pretty_generate([
+      {
+        level: :error,
+        message: 'AppMap auto-configuration is currently not available for non Rails projects'
+      },
       {
         level: :error,
         filename: NON_EXISTING_CONFIG_FILENAME,
@@ -33,6 +42,10 @@ class AgentSetupValidateTest < Minitest::Test
     expected = JSON.pretty_generate([
       {
         level: :error,
+        message: 'AppMap auto-configuration is currently not available for non Rails projects'
+      },
+      {
+        level: :error,
         filename: INVALID_YAML_CONFIG_FILENAME,
         message: 'AppMap configuration is not valid YAML',
         detailed_message: "(#{INVALID_YAML_CONFIG_FILENAME}): " \
@@ -46,6 +59,10 @@ class AgentSetupValidateTest < Minitest::Test
     output = `./exe/appmap-agent-validate -c #{INVALID_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     expected = JSON.pretty_generate([
+      {
+        level: :error,
+        message: 'AppMap auto-configuration is currently not available for non Rails projects'
+      },
       {
         level: :error,
         filename: INVALID_CONFIG_FILENAME,
