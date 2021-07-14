@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rake'
 require 'appmap/node_cli'
 require_relative 'api'
@@ -16,7 +18,7 @@ module AppMap
         AppMap.configuration
       end
 
-      def define_tasks(test_runner:)
+      def define_tasks
         namespace :depends do
           task :modified do
             @appmap_modified_files = depends_api.modified(appmap_dir: configuration.appmap_dir, base_dir: configuration.depends_config.base_dir)
@@ -40,15 +42,11 @@ module AppMap
             end
       
             start_time = Time.current
-            succeeded = nil
-            depends_api.run_tests(@appmap_modified_files, appmap_dir: configuration.appmap_dir) do |test_files|
-              test_runner.call(test_files)
-            end
-            if succeeded
-              warn "Tests succeeded - removing out of date AppMaps."
-              removed = depends_api.remove_out_of_date_appmaps(start_time, appmap_dir: configuration.appmap_dir, base_dir: configuration.depends_config.base_dir)
-              warn "Removed out of date AppMaps: #{removed.join(' ')}" unless removed.empty?
-            end
+            depends_api.run_tests(@appmap_modified_files, appmap_dir: configuration.appmap_dir)
+
+            warn "Tests succeeded - removing out of date AppMaps."
+            removed = depends_api.remove_out_of_date_appmaps(start_time, appmap_dir: configuration.appmap_dir, base_dir: configuration.depends_config.base_dir)
+            warn "Removed out of date AppMaps: #{removed.join(' ')}" unless removed.empty?
           end
 
           desc configuration.depends_config.description

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-require 'appmap/depends/node_cli'
-require 'appmap/depends/test_file_inspector'
-require 'appmap/depends/util'
+require_relative 'util'
+require_relative 'node_cli'
+require_relative 'test_file_inspector'
+require_relative 'test_runner'
 
 module AppMap
   module Depends
@@ -30,11 +31,11 @@ module AppMap
         warn [ title, files.to_a.sort.join(' ') ].join(': ') unless files.empty?
       end
 
-      def run_tests(test_files, appmap_dir:, &block)
+      def run_tests(test_files, appmap_dir:)
         test_files = test_files.to_a.sort
         warn "Running tests: #{test_files.join(' ')}"
 
-        yield test_files
+        TestRunner.new(test_files).run
 
         AppMap::NodeCLI.new(verbose: verbose, appmap_dir: appmap_dir).index_appmaps
       end

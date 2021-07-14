@@ -1,6 +1,40 @@
 require_relative './spec_helper'
 require 'appmap/depends/api'
 
+module AppMap
+  module Depends
+    module APISpec
+      class << self
+        def minitest_environment_method
+          AppMap::Depends.test_env
+        end
+
+        def rspec_environment_method
+          AppMap::Depends.test_env
+        end
+
+        def minitest_test_command(test_files)
+          "time bundle exec ruby -rminitest -Itest #{test_files}"
+        end
+
+        alias minitest_test_command_method minitest_test_command
+
+        def rspec_test_command_method(test_files)
+          "time bundle exec rspec #{test_files}"
+        end
+
+        def rspec_select_tests_method(test_files)
+          AppMap::Depends.select_rspec_tests(test_files)
+        end
+
+        def minitest_select_tests_method(test_files)
+          AppMap::Depends.select_minitest_tests(test_files)
+        end
+      end
+    end
+  end
+end 
+
 describe 'Depends API' do
   let(:api) { AppMap::Depends::API.new(ENV['DEBUG'] == 'true') }
   let(:fixture_dir) { DEPENDS_TEST_DIR }
@@ -63,6 +97,49 @@ describe 'Depends API' do
       ensure
         FileUtils.rm_f new_spec_file if File.exists?(new_spec_file)
         FileUtils.rm_rf new_spec_file.split('.')[0]
+      end
+    end
+  end
+
+  describe '.run_tests' do
+    def run_tests
+      Dir.chdir 'spec/fixtures/depends' do
+        api.run_tests([ 'spec/actual_rspec_test.rb', 'test/actual_minitest_test.rb' ], appmap_dir: Pathname.new(DEPENDS_TEST_DIR).expand_path.to_s)
+      end
+    end
+
+    describe 'smoke test' do
+      around do |test|
+        @minitest_test_command_method = AppMap.configuration.depends_config.minitest_test_command_method
+        AppMap.configuration.depends_config.minitest_test_command_method = 'AppMap::Depends::APISpec.minitest_test_command'
+  
+        test.call
+      ensure
+        AppMap.configuration.depends_config.minitest_test_command_method = @minitest_test_command
+      end
+  
+      it 'passes a smoke test' do
+        run_tests
+      end
+    end
+
+    describe 'configuration settings' do
+      it 'can all be modified' do
+        defaults = {}
+
+        %i[rspec minitest].each do |framework|
+          %i[environment_method select_tests_method test_command_method].each do |setting|
+            full_setting = [ framework, setting ].join('_').to_sym
+            defaults[full_setting] = AppMap.configuration.depends_config.send(full_setting)
+            AppMap.configuration.depends_config.send("#{full_setting}=", "AppMap::Depends::APISpec.#{full_setting}")
+          end
+        end
+
+        run_tests
+      ensure
+        defaults.keys.each do |setting|
+          AppMap.configuration.depends_config.send("#{setting}=", defaults[setting])
+        end
       end
     end
   end
