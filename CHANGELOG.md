@@ -1,3 +1,10 @@
+# [0.61.0](https://github.com/applandinc/appmap-ruby/compare/v0.60.0...v0.61.0) (2021-07-14)
+
+
+### Features
+
+* check if rails is present in `appmap-agent-validate` ([b584c2d](https://github.com/applandinc/appmap-ruby/commit/b584c2d9bb37f166932c0b91eed4db94fbafa8a7))
+
 # [0.60.0](https://github.com/applandinc/appmap-ruby/compare/v0.59.2...v0.60.0) (2021-07-08)
 
 
