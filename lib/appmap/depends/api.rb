@@ -14,6 +14,8 @@ module AppMap
         @verbose = verbose
       end
 
+      # Compute the set of test files which are "out of date" with respect to source files in +base_dir+.
+      # Use AppMaps in +appmap_dir+ to make this computation.
       def modified(appmap_dir:, base_dir:)
         depends = AppMap::Depends::NodeCLI.new(verbose: verbose, appmap_dir: appmap_dir)
         depends.base_dir = base_dir if base_dir
@@ -22,15 +24,22 @@ module AppMap
         Set.new prune_directory_prefix(test_files)
       end
 
+      # Compute which test case files have been added, removed, changed, or failed, relative to the
+      # AppMaps.
       def inspect_test_files(appmap_dir:, test_file_patterns:)
         inspector = AppMap::Depends::TestFileInspector.new(appmap_dir, test_file_patterns)
         inspector.report
       end
 
+      # Print a brief report to STDERR.
       def report_list(title, files)
         warn [ title, files.to_a.sort.join(' ') ].join(': ') unless files.empty?
       end
 
+      # Run the specified test files. After running the tests, update the AppMap index.
+      # TODO: If the tests fail, this method will raise, and the index won't be updated.
+      # What's the right behavior for the index if there is a test failure? Current behavior may not match
+      # user expectations.
       def run_tests(test_files, appmap_dir:)
         test_files = test_files.to_a.sort
         warn "Running tests: #{test_files.join(' ')}"
