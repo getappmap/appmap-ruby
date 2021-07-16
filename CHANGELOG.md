@@ -1,3 +1,10 @@
+## [0.61.1](https://github.com/applandinc/appmap-ruby/compare/v0.61.0...v0.61.1) (2021-07-16)
+
+
+### Bug Fixes
+
+* add `DISABLE_SPRING` flag by default ([51ffd76](https://github.com/applandinc/appmap-ruby/commit/51ffd769558dd473f993889fe694c761779f5ef1))
+
 # [0.61.0](https://github.com/applandinc/appmap-ruby/compare/v0.60.0...v0.61.0) (2021-07-14)
 
 
