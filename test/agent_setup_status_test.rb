@@ -37,7 +37,8 @@ class AgentSetupInitTest < Minitest::Test
             program: 'bundle',
             args: %w[exec rspec ./spec/controllers],
             environment: {
-              APPMAP: 'true'
+              APPMAP: 'true',
+              DISABLE_SPRING: 'true'
             }
           }
         },
@@ -47,7 +48,8 @@ class AgentSetupInitTest < Minitest::Test
             program: 'bundle',
             args: %w[exec ruby ./test/controllers],
             environment: {
-              APPMAP: 'true'
+              APPMAP: 'true',
+              DISABLE_SPRING: 'true'
             }
           }
         },
@@ -57,7 +59,8 @@ class AgentSetupInitTest < Minitest::Test
             program: 'bundle',
             args: %w[exec ruby ./test/integration],
             environment: {
-              APPMAP: 'true'
+              APPMAP: 'true',
+              DISABLE_SPRING: 'true'
             }
           }
         }

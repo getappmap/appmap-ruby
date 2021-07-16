@@ -16,9 +16,7 @@ module AppMap
               command: {
                 program: 'bundle',
                 args: %w[exec rspec] + integration_test_paths[:rspec].map { |path| "./#{path}" },
-                environment: {
-                  APPMAP: 'true'
-                }
+                environment: { APPMAP: 'true', DISABLE_SPRING: 'true' }
               }
             }
           end
@@ -32,7 +30,7 @@ module AppMap
               command: {
                 program: 'bundle',
                 args: %w[exec cucumber],
-                environment: { APPMAP: 'true' }
+                environment: { APPMAP: 'true', DISABLE_SPRING: 'true' }
               }
             }
           end
@@ -50,7 +48,7 @@ module AppMap
                 command: {
                   program: 'bundle',
                   args: %w[exec rails test] + integration_test_paths[:minitest].map { |path| "./#{path}" },
-                  environment: { APPMAP: 'true' }
+                  environment: { APPMAP: 'true', DISABLE_SPRING: 'true' }
                 }
               }
             ]
@@ -61,7 +59,7 @@ module AppMap
                 command: {
                   program: 'bundle',
                   args: ['exec', 'ruby', "./#{path}"],
-                  environment: { APPMAP: 'true' }
+                  environment: { APPMAP: 'true', DISABLE_SPRING: 'true' }
                 }
               }
             end
