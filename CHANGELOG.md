@@ -1,3 +1,18 @@
+# [0.62.0](https://github.com/applandinc/appmap-ruby/compare/v0.61.1...v0.62.0) (2021-07-21)
+
+
+### Bug Fixes
+
+* Update @appland/cli version ([e41fd65](https://github.com/applandinc/appmap-ruby/commit/e41fd6527dfc8730ad57471a62b3a058068829c8))
+
+
+### Features
+
+* Add 'depends' Rake tasks ([a2e6793](https://github.com/applandinc/appmap-ruby/commit/a2e67939ae4d580eabf666ee52287e66701bca53))
+* Add standalone appmap-index command ([ee497c9](https://github.com/applandinc/appmap-ruby/commit/ee497c9d1bb1eedf426f50fd00775d2421a852bf))
+* Update @appland/cli to 1.3.0 ([5821df3](https://github.com/applandinc/appmap-ruby/commit/5821df304665de6b0c2277da760d34efe1232766))
+* User no longer has to supply the command to run tests ([7ac2fed](https://github.com/applandinc/appmap-ruby/commit/7ac2fed796a09d53faacf40682f27a7c617f63da))
+
 ## [0.61.1](https://github.com/applandinc/appmap-ruby/compare/v0.61.0...v0.61.1) (2021-07-16)
 
 
