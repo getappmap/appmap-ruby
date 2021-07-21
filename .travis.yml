@@ -14,14 +14,6 @@ addons:
 services:
 - docker
 
-# We expect RAILS_ENV to start off unset, then adjust its value as
-# necessary.
-before_script:
-  - unset RAILS_ENV
-
-cache:
-  bundler: true
-
 before_install:
   # see https://blog.travis-ci.com/docker-rate-limits 
   # and also https://www.docker.com/blog/what-you-need-to-know-about-upcoming-docker-hub-rate-limiting/
@@ -33,22 +25,20 @@ before_install:
     fi
   - |
     nvm install --lts \
-      && nvm use --lts
+      && nvm use --lts \
+      && npm i -g yarn
 
-# GEM_ALTERNATIVE_NAME only needed for deployment 
 jobs:
   include:
   - stage: test
-    script:
-    - set -e
-    - mkdir tmp
-    - npm i -g yarn
-    - GEM_ALTERNATIVE_NAME='' bundle exec rake gem:build test
+    env:
+      # GEM_ALTERNATIVE_NAME only needed for deployment 
+      - GEM_ALTERNATIVE_NAME=''
+    script: bundle exec rake
 
 before_deploy:
   - |
     npm i -g \
-      yarn \
       semantic-release \
       @semantic-release/git \
       @semantic-release/changelog \

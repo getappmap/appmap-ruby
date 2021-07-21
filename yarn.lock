@@ -2,14 +2,15 @@
 # yarn lockfile v1
 
 
-"@appland/cli@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@appland/cli/-/cli-1.1.0.tgz#db2e207cc10f0fac7ae435128390c3656b430a74"
-  integrity sha512-zhxi2Yk6ssueMYMkZk509VR4oJb7+zoskQNoBiqIXYeZs0geBj/kJPQTIjIcIxk1gBoq0JhXWEd7mEUGVWfFfA==
+"@appland/cli@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@appland/cli/-/cli-1.3.2.tgz#84c8b995c9dc103b7a45680c20196db0abbda48b"
+  integrity sha512-j2lMuz1ydNDVPmHr3oXBrcsl3vFAFziZiRwArLMRCcfLVsNkSdFN7IdwVF939Xi+M0cYb5VYx0RSR6iZomC4dQ==
   dependencies:
-    "@appland/models" "1.0.6"
+    "@appland/models" "1.3.0"
     async "^3.2.0"
     chokidar "^3.5.1"
+    cli-progress "^3.9.0"
     console-table-printer "^2.9.0"
     crypto-js "^4.0.0"
     diff "^5.0.0"
@@ -19,10 +20,10 @@
     semver "^7.3.5"
     yargs "^17.0.1"
 
-"@appland/models@1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@appland/models/-/models-1.0.6.tgz#a3ce8a0063125b9bed8cb71e396067e2853151c9"
-  integrity sha512-54FvtaoZyJOIzeS8SxY1UXkYfDa/gGwZcynEWT+KLT9hkAjGsr9pIhgJCvZ1EJpUmiXYoH6sxYl8SvGlNuG5Xw==
+"@appland/models@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@appland/models/-/models-1.3.0.tgz#8da9cb5d0e5e89bd3ad5e354c914da133edc8307"
+  integrity sha512-Oax4/6vJMHyh75CWZdbL3Zxojf3sLKY50tiPMWKqwqDqlP2BgjdOvCFfw5rMMeOW2afs+yptBBPeDPuiS1Kb7w==
   dependencies:
     "@rollup/plugin-alias" "^3.1.2"
     cross-env "^7.0.3"
@@ -113,6 +114,14 @@ chokidar@^3.5.1:
   optionalDependencies:
     fsevents "~2.3.2"
 
+cli-progress@^3.9.0:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/cli-progress/-/cli-progress-3.9.0.tgz#25db83447deb812e62d05bac1af9aec5387ef3d4"
+  integrity sha512-g7rLWfhAo/7pF+a/STFH/xPyosaL1zgADhI0OM83hl3c7S43iGvJWEAV2QuDOnQ8i6EMBj/u4+NTd0d5L+4JfA==
+  dependencies:
+    colors "^1.1.2"
+    string-width "^4.2.0"
+
 cliui@^7.0.2:
   version "7.0.4"
   resolved "https://registry.yarnpkg.com/cliui/-/cliui-7.0.4.tgz#a0265ee655476fc807aea9df3df8df7783808b4f"
@@ -133,6 +142,11 @@ color-name@~1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
+
+colors@^1.1.2:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
+  integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
 
 concat-map@0.0.1:
   version "0.0.1"

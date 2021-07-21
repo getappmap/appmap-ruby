@@ -3,19 +3,18 @@ require 'appmap/node_cli'
 
 module AppMap
   module Command
-    class Inspect < AppMap::NodeCLI
+    class Index < AppMap::NodeCLI
       class << self
         def run
-          command = Inspect.new(verbose: ENV['DEBUG'] == 'true')
-          command.inspect(ARGV)
+          command = Index.new(verbose: ENV['DEBUG'] == 'true')
+          command.index(ARGV)
         end
       end
 
-      def inspect(arguments)
+      def index(arguments)
         detect_nodejs
-        index_appmaps
 
-        arguments.unshift 'inspect'
+        arguments.unshift 'index'
         arguments.unshift APPMAP_JS
         arguments.unshift 'node'
 
