@@ -12,5 +12,6 @@ else
     echo "No GEM_ALTERNATIVE_NAME is provided, releasing gem with default name ('appmap')"
 fi
 
-set -x
+set -ex
+yarn install --prod
 exec semantic-release $RELEASE_FLAGS
