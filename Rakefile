@@ -18,16 +18,11 @@ namespace 'gem' do
   
   module Bundler
     class GemHelper
-      alias default_build_gem build_gem
-  
       # A handy tip - find the location of any Rake task using `rake -W`.
       # rake -W build
       # ~/.rbenv/versions/2.6.6/lib/ruby/gems/2.6.0/gems/bundler-2.1.4/lib/bundler/gem_helper.rb:39:in `install'
       def build_gem
-        # Ensure that NPM packages are installed before building.
-        sh('yarn install --prod')
-  
-        default_build_gem
+        raise "Don't use 'rake gem:build' - use 'yarn install --prod && gem build <gemspec>', because that's what ./release.sh does"
       end
     end
   end
