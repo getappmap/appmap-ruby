@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/applandinc/appmap-ruby#readme",
   "dependencies": {
-    "@appland/cli": "^1.3.2"
+    "@appland/appmap": "^3.0.0"
   }
 }
