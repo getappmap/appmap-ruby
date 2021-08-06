@@ -1,3 +1,7 @@
+# [0.62.1](https://github.com/applandinc/appmap-ruby/compare/v0.62.0...v0.62.1) (2021-08-06)
+
+* Ensure that `node_modules` is present in the release.
+
 # [0.62.0](https://github.com/applandinc/appmap-ruby/compare/v0.61.1...v0.62.0) (2021-07-21)
 
 
