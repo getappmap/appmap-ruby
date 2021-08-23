@@ -30,7 +30,7 @@ class AgentSetupValidateTest < Minitest::Test
       {
         level: :error,
         filename: NON_EXISTING_CONFIG_FILENAME,
-        message: 'AppMap configuration file does not exist'
+        message: "AppMap configuration #{NON_EXISTING_CONFIG_FILENAME} file does not exist"
       }
     ])
     assert_equal expected, output.strip
@@ -47,7 +47,7 @@ class AgentSetupValidateTest < Minitest::Test
       {
         level: :error,
         filename: INVALID_YAML_CONFIG_FILENAME,
-        message: 'AppMap configuration is not valid YAML',
+        message: "AppMap configuration #{INVALID_YAML_CONFIG_FILENAME} is not valid YAML",
         detailed_message: "(#{INVALID_YAML_CONFIG_FILENAME}): " \
           'did not find expected key while parsing a block mapping at line 1 column 1'
       }
@@ -66,7 +66,7 @@ class AgentSetupValidateTest < Minitest::Test
       {
         level: :error,
         filename: INVALID_CONFIG_FILENAME,
-        message: 'AppMap configuration could not be loaded',
+        message: "AppMap configuration #{INVALID_CONFIG_FILENAME} could not be loaded",
         detailed_message: "no implicit conversion of String into Integer"
       }
     ])
