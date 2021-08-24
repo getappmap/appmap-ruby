@@ -1,3 +1,15 @@
+# [0.63.0](https://github.com/applandinc/appmap-ruby/compare/v0.62.1...v0.63.0) (2021-08-24)
+
+
+### Bug Fixes
+
+* Run yarn install --prod in ./release.sh ([8cf73f0](https://github.com/applandinc/appmap-ruby/commit/8cf73f0ad2ee6907bdd36aae38c3a03c1bf77c88))
+
+
+### Features
+
+* Migrate from @appland/cli to @appland/appmap ([81854e6](https://github.com/applandinc/appmap-ruby/commit/81854e6b268545ae11286402a930a521ed844df9))
+
 # [0.62.1](https://github.com/applandinc/appmap-ruby/compare/v0.62.0...v0.62.1) (2021-08-06)
 
 * Ensure that `node_modules` is present in the release.
