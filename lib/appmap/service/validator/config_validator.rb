@@ -39,7 +39,7 @@ module AppMap
         rescue Psych::SyntaxError => e
           @violations << Violation.error(
             filename: @config_file,
-            message: 'AppMap configuration is not valid YAML',
+            message: "AppMap configuration #{@config_file} is not valid YAML",
             detailed_message: e.message
           )
           nil
@@ -52,7 +52,7 @@ module AppMap
         rescue StandardError => e
           @violations << Violation.error(
             filename: @config_file,
-            message: 'AppMap configuration could not be loaded',
+            message: "AppMap configuration #{@config_file} could not be loaded",
             detailed_message: e.message
           )
           nil
@@ -62,7 +62,7 @@ module AppMap
           unless present?
             @violations << Violation.error(
               filename: @config_file,
-              message: 'AppMap configuration file does not exist'
+              message: "AppMap configuration #{@config_file} file does not exist"
             )
           end
         end
