@@ -1,3 +1,10 @@
+# [0.64.0](https://github.com/applandinc/appmap-ruby/compare/v0.63.0...v0.64.0) (2021-08-24)
+
+
+### Features
+
+* Show config file name in validation messages ([95520f8](https://github.com/applandinc/appmap-ruby/commit/95520f83a2b27fae6a3d5751cc1a4a1180c2dc25))
+
 # [0.63.0](https://github.com/applandinc/appmap-ruby/compare/v0.62.1...v0.63.0) (2021-08-24)
 
 
