@@ -6,9 +6,9 @@ The official documentation for `appmap-ruby` is at [appland.com/docs](https://ap
 
 ## Integration with appmap-js
 
-Most of the analytics functionality for AppMap JSON is implemented in [appmap-js](https://github.com/applandinc/appmap-js/). In particular, `packages/cli`. `appmap-ruby` includes the source code and dependencies of `@appland/cli`. Check the [Rakefile](./Rakefile) for references to npm and/or yarn to see how the packaging works.
+Most of the analytics functionality for AppMap JSON is implemented in [appmap-js](https://github.com/applandinc/appmap-js/). In particular, `packages/cli`. `appmap-ruby` includes the source code and dependencies of `@appland/appmap`. Check the [Rakefile](./Rakefile) for references to npm and/or yarn to see how the packaging works.
 
-`appmap-ruby` executes command-line programs provdied by `@appland/cli`; it doesn't attempt to load a Node.js library in-process. `@appland/cli` commands are designed to produce clean output on stdout, which is obtained and processed by `appmap-ruby`.
+`appmap-ruby` executes command-line programs provided by `@appland/appmap`; it doesn't attempt to load a Node.js library in-process. `@appland/appmap` commands are designed to produce clean output on stdout, which is obtained and processed by `appmap-ruby`.
 
 ## Swagger (OpenAPI) generation
 
@@ -41,7 +41,7 @@ The package `appmap/swagger` is loaded automatically by `appmap`, when Rake is a
 
 ## Depends (incremental testing)
 
-`appmap-ruby` provides a [Rake task](./lib/appmap/depends/rake_tasks.rb) to automatically run tests and update AppMaps as local source files and test files are modified. It leans heavily on the `depends` command provided by `@appland/cli`. To understand how the Rake tasks work, consider running `appmap-js depends` on your local AppMaps - you can `touch` source files to see the dependency detection in action.
+`appmap-ruby` provides a [Rake task](./lib/appmap/depends/rake_tasks.rb) to automatically run tests and update AppMaps as local source files and test files are modified. It leans heavily on the `depends` command provided by `@appland/appmap`. To understand how the Rake tasks work, consider running `appmap-js depends` on your local AppMaps - you can `touch` source files to see the dependency detection in action.
 
 However, computing which AppMaps need updating as a result of source files changes is only part of the story. `depends` also has to:
 
@@ -50,7 +50,7 @@ However, computing which AppMaps need updating as a result of source files chang
 * Update the AppMap index after updating the AppMaps.
 * Remove any AppMaps which refer to tests that have been deleted.
 
-Because `depends` has some complexity, there is an [API](./lib/appmap/depends/api.rb) module that implements key commands. To understand `depends` in further detail, after trying out the `@appland/cli` command, read this API.
+Because `depends` has some complexity, there is an [API](./lib/appmap/depends/api.rb) module that implements key commands. To understand `depends` in further detail, after trying out the `@appland/appmap` command, read this API.
 
 The package `appmap/depends` is loaded automatically by `appmap`, when Rake is available in the bundle.
 
