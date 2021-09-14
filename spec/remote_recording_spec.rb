@@ -3,9 +3,9 @@ require 'net/http'
 require 'socket'
 
 describe 'remote recording', :order => :defined do
-  include_context 'Rails app pg database', 'spec/fixtures/rails5_users_app' do
+  include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do
     before(:all) do
-      fixture_dir = 'spec/fixtures/rails5_users_app'
+      fixture_dir = 'spec/fixtures/rails6_users_app'
       start_cmd = 'docker-compose up -d app'
       run_cmd({ 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true' }, start_cmd, chdir: fixture_dir)
       Dir.chdir fixture_dir do
@@ -44,7 +44,7 @@ describe 'remote recording', :order => :defined do
     end
 
     after(:all) do
-      fixture_dir = 'spec/fixtures/rails5_users_app'
+      fixture_dir = 'spec/fixtures/rails6_users_app'
       run_cmd 'docker-compose rm -fs app', chdir: fixture_dir
     end
 

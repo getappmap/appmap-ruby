@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile
     image: rails6-app:${RUBY_VERSION}
     command:
-      [ "./bin/rails", "server", "-b", "0.0.0.0", "webrick" ]
+      [ "./bin/rails", "server", "-b", "0.0.0.0", "-u", "webrick" ]
     environment:
       RAILS_ENV:
       ORM_MODULE:

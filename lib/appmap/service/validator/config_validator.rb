@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/service/validator/violation'
+require 'yaml'
 
 module AppMap
   module Service
@@ -76,7 +77,10 @@ module AppMap
         end
 
         def validate_ruby_version
-          unless RUBY_VERSION =~ AppMap::SUPPORTED_RUBY_VERSIONS_REGEX
+          major, minor, _ = RUBY_VERSION.split('.')
+          version = [ major, minor ].join('.')
+
+          unless AppMap::SUPPORTED_RUBY_VERSIONS.member?(version)
             @violations << Violation.error(
               message: "AppMap does not support Ruby #{RUBY_VERSION}. " \
                 "Supported versions are: #{AppMap::SUPPORTED_RUBY_VERSIONS.join(', ')}."

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'yaml'
 require 'appmap/service/guesser'
 
 module AppMap

@@ -1,7 +1,7 @@
 require 'rails_spec_helper'
 
 describe 'SQL events' do
-  include_context 'Rails app pg database', 'spec/fixtures/rails5_users_app' do
+  include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do
     around(:each) do |example|
       FileUtils.rm_rf tmpdir
       FileUtils.mkdir_p tmpdir

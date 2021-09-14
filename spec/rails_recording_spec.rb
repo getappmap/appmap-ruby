@@ -1,7 +1,10 @@
 require 'rails_spec_helper'
 
+# Rails5 doesn't work with Ruby 3.x
+RailsVersions = ruby_2? ? [ 5, 6 ] : [ 6 ]
+
 describe 'Rails' do
-  %w[5 6].each do |rails_major_version| # rubocop:disable Metrics/BlockLength
+  RailsVersions.each do |rails_major_version| # rubocop:disable Metrics/BlockLength
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
       include_context 'rails integration test setup'
@@ -239,7 +242,7 @@ describe 'Rails' do
   end
 
   describe 'with default appmap.yml' do
-    include_context 'Rails app pg database', "spec/fixtures/rails5_users_app" unless use_existing_data?
+    include_context 'Rails app pg database', "spec/fixtures/rails6_users_app" unless use_existing_data?
     include_context 'rails integration test setup'
 
     def run_spec(spec_name)

@@ -117,11 +117,11 @@ root@6fab5f89125f:/src/app# bundle
 ```
 
 At this point, the bundle is built with the `appmap` gem located  in `/src/appmap`, which is volume-mounted from the host.
-So you can edit the fixture code and the appmap code and run test commands such as `rspec` and `cucumber` in the container.
+So you can edit the fixture code and the appmap code and run test commands such as `rspec` in the container.
 For example:
 
 ```sh-session
-root@6fab5f89125f:/src/app# bundle exec rspec
+root@6fab5f89125f:/src/app# APPMAP=true bundle exec rspec
 Configuring AppMap from path appmap.yml
 ....
 
