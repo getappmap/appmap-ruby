@@ -7,7 +7,7 @@ gem 'haml-rails'
 
 gem 'activerecord', require: false
 gem 'pg'
-gem 'sequel', '= 5.20.0', require: false
+gem 'sequel', '>= 5.43.0', require: false
 gem 'sequel-rails', require: false
 gem 'sequel_secure_password', require: false
 

@@ -28,7 +28,7 @@ namespace 'gem' do
   end
 end
 
-RUBY_VERSIONS=%w[2.5 2.6 2.7].select do |version|
+RUBY_VERSIONS=%w[2.6 2.7 3.0].select do |version|
   travis_ruby_version = ENV['TRAVIS_RUBY_VERSION']
   next true unless travis_ruby_version
 

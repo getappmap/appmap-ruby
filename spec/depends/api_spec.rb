@@ -55,7 +55,7 @@ describe 'Depends API' do
   describe '.inspect_test_files' do
     it 'reports metadata, added, removed, changed, failed' do
       test_report = api.inspect_test_files(appmap_dir: DEPENDS_TEST_DIR, test_file_patterns: %w[spec/fixtures/depends/spec/*_spec.rb])
-      expect(test_report.metadata_files).to eq(%w[spec/fixtures/depends/user_page_scenario/metadata.json spec/fixtures/depends/revoke_api_key/metadata.json])
+      expect(test_report.metadata_files.sort).to eq(%w[spec/fixtures/depends/revoke_api_key/metadata.json spec/fixtures/depends/user_page_scenario/metadata.json])
       expect(test_report.added).to be_empty
       expect(test_report.removed).to be_empty
       expect(test_report.changed).to be_empty

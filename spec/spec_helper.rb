@@ -21,6 +21,10 @@ def use_existing_data?
   ENV['USE_EXISTING_DATA'] == 'true'
 end
 
+def ruby_2?
+  RUBY_VERSION.split('.')[0].to_i == 2
+end
+
 shared_context 'collect events' do
   def collect_events(tracer)
     [].tap do |events|

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/util'
+require 'fileutils'
 
 module AppMap
   module Cucumber

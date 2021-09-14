@@ -1,7 +1,7 @@
 require 'rails_spec_helper'
 
 describe 'AppMap tracer via Railtie' do
-  include_context 'Rails app pg database', 'spec/fixtures/rails5_users_app' do 
+  include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do 
     let(:env) { {} }
 
     let(:cmd) { %(docker-compose run --rm -e RAILS_ENV=development -e APPMAP app ./bin/rails r "puts AppMap.instance_variable_get('@configuration').nil?") }
@@ -10,13 +10,13 @@ describe 'AppMap tracer via Railtie' do
       Open3.capture3(env, cmd, chdir: fixture_dir).tap do |result|
         unless result[2] == 0
           warn <<~STDERR
-            Failed to run rails5_users_app container
+            Failed to run rails6_users_app container
             <<< Output:
             #{result[0]}
             #{result[1]}
             >>> End of output
           STDERR
-          raise 'Failed to run rails5_users_app container'
+          raise 'Failed to run rails6_users_app container'
         end
       end
     end
