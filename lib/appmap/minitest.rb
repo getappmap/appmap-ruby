@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/util'
+require 'fileutils'
 require 'active_support'
 require 'active_support/core_ext'
 

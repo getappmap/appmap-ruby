@@ -2,6 +2,7 @@
 
 require 'appmap/util'
 require 'set'
+require 'fileutils'
 
 module AppMap
   # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will

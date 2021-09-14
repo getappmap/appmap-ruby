@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module AppMap
   module Depends
     module Util

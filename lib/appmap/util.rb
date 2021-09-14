@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bundler'
+require 'fileutils'
 
 module AppMap
   module Util
@@ -130,7 +131,6 @@ module AppMap
 
       # Atomically writes AppMap data to +filename+.
       def write_appmap(filename, appmap)
-        require 'fileutils'
         require 'tmpdir'
 
         # This is what Ruby Tempfile does; but we don't want the file to be unlinked.

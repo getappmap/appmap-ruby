@@ -1,5 +1,6 @@
 require 'rake'
 require 'yaml'
+require 'fileutils'
 require 'appmap/node_cli'
 require 'appmap/swagger/markdown_descriptions'
 require 'appmap/swagger/stable'
