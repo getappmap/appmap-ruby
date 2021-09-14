@@ -1,3 +1,15 @@
+# [0.65.0](https://github.com/applandinc/appmap-ruby/compare/v0.64.0...v0.65.0) (2021-09-14)
+
+
+### Bug Fixes
+
+* Require fileutils as needed ([790c3a8](https://github.com/applandinc/appmap-ruby/commit/790c3a88b0e69581e0e4f73b7a92f46448b3cdd8))
+
+
+### Features
+
+* Add support for Ruby 3.0, and drop Ruby 2.5 ([eba14e1](https://github.com/applandinc/appmap-ruby/commit/eba14e1669bdf50dc51ce8623c5d586edfdb1a2f))
+
 # [0.64.0](https://github.com/applandinc/appmap-ruby/compare/v0.63.0...v0.64.0) (2021-08-24)
 
 
