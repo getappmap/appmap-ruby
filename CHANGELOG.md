@@ -1,3 +1,11 @@
+## [0.65.1](https://github.com/applandinc/appmap-ruby/compare/v0.65.0...v0.65.1) (2021-09-16)
+
+
+### Performance Improvements
+
+* Cache method metadata ([d11e0f3](https://github.com/applandinc/appmap-ruby/commit/d11e0f3361057b7cada204656ca833c12bb704c1))
+* Don't scan the backtrace on every SQL query ([9bb7457](https://github.com/applandinc/appmap-ruby/commit/9bb74576d24f7954a388f09f33e69ae9d11a4188))
+
 # [0.65.0](https://github.com/applandinc/appmap-ruby/compare/v0.64.0...v0.65.0) (2021-09-14)
 
 
