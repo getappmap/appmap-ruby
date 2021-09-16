@@ -53,7 +53,7 @@ module AppMap
             @times[best_class_name(value)] += elapsed
           end
 
-          encode_dislay_string(value_string)
+          encode_display_string(value_string)
         end
 
         def object_properties(hash_like)
@@ -77,7 +77,7 @@ module AppMap
           value_cls.name
         end
 
-        def encode_dislay_string(value)
+        def encode_display_string(value)
           (value||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
 
@@ -138,22 +138,46 @@ module AppMap
     class MethodCall < MethodEvent
       attr_accessor :defined_class, :method_id, :path, :lineno, :parameters, :receiver, :static
 
+      MethodMetadata = Struct.new(:defined_class, :method_id, :path, :lineno, :static)
+
+      @@method_metadata = {}
+
       class << self
+        private
+
+        def method_metadata(defined_class, method, receiver)
+          result = @@method_metadata[method]
+          return result if result
+
+          result = MethodMetadata.new
+          result.static = receiver.is_a?(Module)
+          result.defined_class = defined_class
+          result.method_id = method.name.to_s
+          if method.source_location
+            path = method.source_location[0]
+            path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
+            result.path = path
+            result.lineno = method.source_location[1]
+          else
+            result.path = [ defined_class, result.static ? '.' : '#', method.name ].join
+          end
+          @@method_metadata[method] = result
+        end
+
+        public
+
         def build_from_invocation(defined_class, method, receiver, arguments, event: MethodCall.new)
           event ||= MethodCall.new
           defined_class ||= 'Class'
+
           event.tap do
-            static = receiver.is_a?(Module)
-            event.defined_class = defined_class
-            event.method_id = method.name.to_s
-            if method.source_location
-              path = method.source_location[0]
-              path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
-              event.path = path
-              event.lineno = method.source_location[1]
-            else
-              event.path = [ defined_class, static ? '.' : '#', method.name ].join
-            end
+            metadata = method_metadata(defined_class, method, receiver)
+
+            event.defined_class = metadata.defined_class
+            event.method_id = metadata.method_id
+            event.path = metadata.path
+            event.lineno = metadata.lineno
+            event.static = metadata.static
 
             # Check if the method has key parameters. If there are any they'll always be last.
             # If yes, then extract it from arguments.
@@ -186,7 +210,7 @@ module AppMap
               object_id: receiver.__id__,
               value: display_string(receiver)
             }
-            event.static = static
+
             MethodEvent.build_from_invocation(:call, event: event)
           end
         end

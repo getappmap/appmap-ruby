@@ -109,34 +109,6 @@ module AppMap
           begin
             sql = payload[:sql].strip
 
-            # Detect whether a function call within a specified filename is present in the call stack.
-            find_in_backtrace = lambda do |file_name, function_name = nil|
-              Thread.current.backtrace.find do |line|
-                tokens = line.split(':')
-                matches_file = tokens.find { |t| t.rindex(file_name) == (t.length - file_name.length) }
-                matches_function = function_name.nil? || tokens.find { |t| t == "in `#{function_name}'" }
-                matches_file && matches_function
-              end
-            end
-
-            # Ignore SQL calls which are made while establishing a new connection.
-            #
-            # Example:
-            # /path/to/ruby/2.6.0/gems/sequel-5.20.0/lib/sequel/connection_pool.rb:122:in `make_new'
-            return if find_in_backtrace.call('lib/sequel/connection_pool.rb', 'make_new')
-            # lib/active_record/connection_adapters/abstract/connection_pool.rb:811:in `new_connection'
-            return if find_in_backtrace.call('lib/active_record/connection_adapters/abstract/connection_pool.rb', 'new_connection')
-
-            # Ignore SQL calls which are made while inspecting the DB schema.
-            #
-            # Example:
-            # /path/to/ruby/2.6.0/gems/sequel-5.20.0/lib/sequel/model/base.rb:812:in `get_db_schema'
-            return if find_in_backtrace.call('lib/sequel/model/base.rb', 'get_db_schema')
-            # /usr/local/bundle/gems/activerecord-5.2.3/lib/active_record/model_schema.rb:466:in `load_schema!'
-            return if find_in_backtrace.call('lib/active_record/model_schema.rb', 'load_schema!')
-            return if find_in_backtrace.call('lib/active_model/attribute_methods.rb', 'define_attribute_methods')
-            return if find_in_backtrace.call('lib/active_record/connection_adapters/schema_cache.rb')
-
             SQLExaminer.examine payload, sql: sql
 
             call = SQLCall.new(payload)
