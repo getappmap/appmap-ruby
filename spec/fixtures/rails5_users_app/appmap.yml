@@ -5,3 +5,7 @@ packages:
   - path: app/controllers
     labels: [ mvc.controller ]
   - gem: sequel
+functions:
+  - name: logger/Logger::LogDevice#write
+    builtin: true
+    label: log

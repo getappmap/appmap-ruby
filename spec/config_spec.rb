@@ -55,6 +55,34 @@ describe AppMap::Config, docker: false do
     expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
   end
 
+  it 'interprets a function in canonical name format' do
+    config_data = {
+      name: 'test',
+      packages: [],
+      functions: [
+        {
+          name: 'pkg/cls#fn',
+        }
+      ]
+    }.deep_stringify_keys!
+    config = AppMap::Config.load(config_data)
+
+    config_expectation = {
+      exclude: [],
+      name: 'test',
+      packages: [],
+      functions: [
+        {
+          package: 'pkg',
+          class: 'cls',
+          functions: [ :fn ],
+        }
+      ]
+    }.deep_stringify_keys!
+
+    expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
+  end
+
   context do
     let(:warnings) { @warnings ||= [] }
     let(:warning) { warnings.join }

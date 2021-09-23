@@ -5,6 +5,10 @@ packages:
   - path: app/controllers
     labels: [ mvc.controller ]
   - gem: sequel
+functions:
+  - name: logger/Logger::LogDevice#write
+    builtin: true
+    label: log
 swagger:
   project_version: 1.1.0
   output_dir: tmp/swagger
