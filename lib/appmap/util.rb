@@ -21,6 +21,17 @@ module AppMap
     WHITE   = "\e[37m"
 
     class << self
+      def parse_function_name(name)
+        package_tokens = name.split('/')
+        raise "Malformed fully-qualified function name #{name}" if package_tokens.length < 2
+
+        class_and_name = package_tokens.pop
+        class_name, function_name, static = class_and_name.include?('.') ? class_and_name.split('.', 2) + [ true ] : class_and_name.split('#', 2) + [ false ]
+
+        raise "Malformed fully-qualified function name #{name}" unless function_name
+        [ package_tokens.join('/'), class_name, static, function_name ]
+      end
+
       # scenario_filename builds a suitable file name from a scenario name.
       # Special characters are removed, and the file name is truncated to fit within
       # shell limitations.
