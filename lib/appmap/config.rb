@@ -117,10 +117,11 @@ module AppMap
     # entry in appmap.yml. When the Config is initialized, each Function is converted into
     # a Package and TargetMethods. It's called a Function rather than a Method, because Function
     # is the AppMap terminology.
-    Function = Struct.new(:package, :cls, :labels, :function_names, :builtin) do # :nodoc:
+    Function = Struct.new(:package, :cls, :labels, :function_names, :builtin, :package_name) do # :nodoc:
       def to_h
         {
           package: package,
+          package_name: package_name,
           class: cls,
           labels: labels,
           functions: function_names.map(&:to_sym),
@@ -255,7 +256,8 @@ module AppMap
       functions.each do |func|
         package_options = {}
         package_options[:labels] = func.labels if func.labels
-        package_options[:package_name] = func.package if func.builtin
+        package_options[:package_name] = func.package_name
+        package_options[:package_name] ||= func.package if func.builtin
         hook = TargetMethods.new(func.function_names, Package.build_from_path(func.package, **package_options))
         if func.builtin
           @builtin_hooks[func.cls] ||= []
@@ -348,7 +350,7 @@ module AppMap
             functions = Array(functions).map(&:to_sym)
             labels = function_data['label'] || function_data['labels']
             labels = Array(labels).map(&:to_s) if labels
-            Function.new(package, cls, labels, functions, function_data['builtin'])
+            Function.new(package, cls, labels, functions, function_data['builtin'], function_data['require'])
           end
         end
 
