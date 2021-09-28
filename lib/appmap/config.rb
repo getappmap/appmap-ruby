@@ -117,13 +117,15 @@ module AppMap
     # entry in appmap.yml. When the Config is initialized, each Function is converted into
     # a Package and TargetMethods. It's called a Function rather than a Method, because Function
     # is the AppMap terminology.
-    Function = Struct.new(:package, :cls, :labels, :function_names) do # :nodoc:
+    Function = Struct.new(:package, :cls, :labels, :function_names, :builtin, :package_name) do # :nodoc:
       def to_h
         {
           package: package,
+          package_name: package_name,
           class: cls,
           labels: labels,
-          functions: function_names.map(&:to_sym)
+          functions: function_names.map(&:to_sym),
+          builtin: builtin
         }.compact
       end
     end
@@ -244,7 +246,7 @@ module AppMap
       @depends_config = depends_config
       @hook_paths = Set.new(packages.map(&:path))
       @exclude = exclude
-      @builtin_hooks = BUILTIN_HOOKS
+      @builtin_hooks = BUILTIN_HOOKS.dup
       @functions = functions
 
       @hooked_methods = METHOD_HOOKS.each_with_object(Hash.new { |h,k| h[k] = [] }) do |cls_target_methods, hooked_methods|
@@ -254,7 +256,15 @@ module AppMap
       functions.each do |func|
         package_options = {}
         package_options[:labels] = func.labels if func.labels
-        @hooked_methods[func.cls] << TargetMethods.new(func.function_names, Package.build_from_path(func.package, **package_options))
+        package_options[:package_name] = func.package_name
+        package_options[:package_name] ||= func.package if func.builtin
+        hook = TargetMethods.new(func.function_names, Package.build_from_path(func.package, **package_options))
+        if func.builtin
+          @builtin_hooks[func.cls] ||= []
+          @builtin_hooks[func.cls] << hook
+        else
+          @hooked_methods[func.cls] << hook
+        end
       end
 
       @hooked_methods.each_value do |hooks|
@@ -300,6 +310,7 @@ module AppMap
           MISSING_FILE_MSG
           {}
         end
+
         load(config_data).tap do |config|
           config_yaml = {
             'name' => config.name,
@@ -324,15 +335,22 @@ module AppMap
 
         if config_data['functions']
           config_params[:functions] = config_data['functions'].map do |function_data|
-            package = function_data['package']
-            cls = function_data['class']
-            functions = function_data['function'] || function_data['functions']
-            raise %q(AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions') unless package && cls && functions
+            function_name = function_data['name']
+            package, cls, functions = []
+            if function_name
+              package, cls, _, function = Util.parse_function_name(function_name)
+              functions = Array(function)
+            else
+              package = function_data['package']
+              cls = function_data['class']
+              functions = function_data['function'] || function_data['functions']
+              raise %q(AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions') unless package && cls && functions
+            end
 
             functions = Array(functions).map(&:to_sym)
             labels = function_data['label'] || function_data['labels']
             labels = Array(labels).map(&:to_s) if labels
-            Function.new(package, cls, labels, functions)
+            Function.new(package, cls, labels, functions, function_data['builtin'], function_data['require'])
           end
         end
 

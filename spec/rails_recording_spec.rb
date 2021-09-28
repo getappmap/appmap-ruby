@@ -1,7 +1,11 @@
 require 'rails_spec_helper'
 
+def default_rails_versions
+  ruby_2? ? [ 5, 6 ] : [ 6 ]
+end
+
 # Rails5 doesn't work with Ruby 3.x
-RailsVersions = ruby_2? ? [ 5, 6 ] : [ 6 ]
+RailsVersions = ENV['RAILS_VERSIONS'] || default_rails_versions
 
 describe 'Rails' do
   RailsVersions.each do |rails_major_version| # rubocop:disable Metrics/BlockLength
@@ -88,6 +92,15 @@ describe 'Rails' do
               'thread_id' => Integer,
               'parent_id' => Integer,
               'elapsed' => Numeric
+            )
+          end
+
+          it 'captures log events' do
+            expect(events).to include hash_including(
+              'event' => 'call',
+              'defined_class' => 'Logger::LogDevice',
+              'method_id' => 'write',
+              'static' => false
             )
           end
 
