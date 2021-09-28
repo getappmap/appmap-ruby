@@ -1,3 +1,11 @@
+# [0.66.0](https://github.com/applandinc/appmap-ruby/compare/v0.65.1...v0.66.0) (2021-09-28)
+
+
+### Features
+
+* Add option for explicit 'require' in function config ([1cf6c2a](https://github.com/applandinc/appmap-ruby/commit/1cf6c2aed8ee2d89c900f2959484b88b6fd3eb93))
+* Builtin code such as Ruby Logger can be hooked via appmap.yml ([779c9e5](https://github.com/applandinc/appmap-ruby/commit/779c9e5e4177d58ea7b63e663e7c5a0810a78c60))
+
 ## [0.65.1](https://github.com/applandinc/appmap-ruby/compare/v0.65.0...v0.65.1) (2021-09-16)
 
 
