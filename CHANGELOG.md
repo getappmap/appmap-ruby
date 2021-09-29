@@ -1,3 +1,10 @@
+## [0.66.1](https://github.com/applandinc/appmap-ruby/compare/v0.66.0...v0.66.1) (2021-09-29)
+
+
+### Bug Fixes
+
+* Fix compilation on macOS with Xcode 13 ([8c66e08](https://github.com/applandinc/appmap-ruby/commit/8c66e08393bf8d9efac9635ad7a150329797729d))
+
 # [0.66.0](https://github.com/applandinc/appmap-ruby/compare/v0.65.1...v0.66.0) (2021-09-28)
 
 
