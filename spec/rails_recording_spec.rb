@@ -58,7 +58,7 @@ describe 'Rails' do
               hash_including(
                 'http_server_response' => hash_including(
                   'status_code' => 201,
-                  'mime_type' => 'application/json; charset=utf-8',
+                  'headers' => hash_including('Content-Type' => 'application/json; charset=utf-8'),
                 )
               )
             )
