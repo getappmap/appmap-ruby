@@ -93,9 +93,9 @@ describe 'Depends API' do
 
         test_report.clean_appmaps
 
-        expect(File.exists?(new_spec_file)).to be_falsey
+        expect(File.exist?(new_spec_file)).to be_falsey
       ensure
-        FileUtils.rm_f new_spec_file if File.exists?(new_spec_file)
+        FileUtils.rm_f new_spec_file if File.exist?(new_spec_file)
         FileUtils.rm_rf new_spec_file.split('.')[0]
       end
     end

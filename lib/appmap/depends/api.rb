@@ -63,7 +63,7 @@ module AppMap
         removed = []
         out_of_date_appmaps.each do |appmap_path|
           mtime_path = File.join(appmap_path, 'mtime')
-          next unless File.exists?(mtime_path)
+          next unless File.exist?(mtime_path)
 
           appmap_mtime = File.read(mtime_path).to_i
           if appmap_mtime < since_ms

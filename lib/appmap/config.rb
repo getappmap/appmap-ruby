@@ -287,7 +287,7 @@ module AppMap
           LOGO
         end
 
-        config_present = true if File.exists?(config_file_name)
+        config_present = true if File.exist?(config_file_name)
 
         config_data = if config_present
           YAML.safe_load(::File.read(config_file_name))
