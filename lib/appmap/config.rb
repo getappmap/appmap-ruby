@@ -176,8 +176,8 @@ module AppMap
       package_hooks('actionpack',
         [
           method_hook('ActionDispatch::Request::Session', %i[[] dig values fetch], %w[http.session.read]),
-          method_hook('ActionDispatch::Request::Session', %i[destroy[]= clear update delete merge], %w[http.session.write]),
-          method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session.read]),
+          method_hook('ActionDispatch::Request::Session', %i[destroy []= clear update delete merge], %w[http.session.write]),
+          method_hook('ActionDispatch::Cookies::CookieJar', %i[[] fetch], %w[http.session.read]),
           method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session.write]),
           method_hook('ActionDispatch::Cookies::EncryptedCookieJar', %i[[]= clear update delete recycle], %w[http.cookie crypto.encrypt])
         ],
@@ -287,7 +287,7 @@ module AppMap
           LOGO
         end
 
-        config_present = true if File.exists?(config_file_name)
+        config_present = true if File.exist?(config_file_name)
 
         config_data = if config_present
           YAML.safe_load(::File.read(config_file_name))
@@ -360,6 +360,7 @@ module AppMap
               gem = package['gem']
               path = package['path']
               raise %q(AppMap config 'package' element should specify 'gem' or 'path', not both) if gem && path
+              raise %q(AppMap config 'package' element should specify 'gem' or 'path') unless gem || path
 
               if gem
                 shallow = package['shallow']

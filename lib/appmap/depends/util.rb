@@ -16,7 +16,7 @@ module AppMap
       def delete_appmap(appmap_path)
         FileUtils.rm_rf(appmap_path)
         appmap_file_path = [ appmap_path, 'appmap.json' ].join('.')
-        File.unlink(appmap_file_path) if File.exists?(appmap_file_path)
+        File.unlink(appmap_file_path) if File.exist?(appmap_file_path)
       rescue
         warn "Unable to delete AppMap: #{$!}"
       end

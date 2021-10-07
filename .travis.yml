@@ -1,4 +1,5 @@
 language: ruby
+dist: bionic
 
 rbenv:
 - 2.6
@@ -15,6 +16,7 @@ services:
 - docker
 
 before_install:
+  - sudo apt-get update && sudo apt-get install apt-transport-https ca-certificates -y && sudo update-ca-certificates
   # see https://blog.travis-ci.com/docker-rate-limits 
   # and also https://www.docker.com/blog/what-you-need-to-know-about-upcoming-docker-hub-rate-limiting/
   # if we do not use authorized account, 
