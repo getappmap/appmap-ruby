@@ -6,6 +6,7 @@ class AgentSetupValidateTest < Minitest::Test
   NON_EXISTING_CONFIG_FILENAME = '123.yml'
   INVALID_YAML_CONFIG_FILENAME = 'spec/fixtures/config/invalid_yaml_config.yml'
   INVALID_CONFIG_FILENAME = 'spec/fixtures/config/invalid_config.yml'
+  MISSING_PATH_OR_GEM_CONFIG_FILENAME = 'spec/fixtures/config/missing_path_or_gem.yml'
 
   def test_init_when_config_exists
     output = `./exe/appmap-agent-validate`
@@ -68,6 +69,24 @@ class AgentSetupValidateTest < Minitest::Test
         filename: INVALID_CONFIG_FILENAME,
         message: "AppMap configuration #{INVALID_CONFIG_FILENAME} could not be loaded",
         detailed_message: "no implicit conversion of String into Integer"
+      }
+    ])
+    assert_equal expected, output.strip
+  end
+
+  def test_init_with_missing_package_key
+    output = `./exe/appmap-agent-validate -c #{MISSING_PATH_OR_GEM_CONFIG_FILENAME}`
+    assert_equal 0, $CHILD_STATUS.exitstatus
+    expected = JSON.pretty_generate([
+      {
+        level: :error,
+        message: 'AppMap auto-configuration is currently not available for non Rails projects'
+      },
+      {
+        level: :error,
+        filename: MISSING_PATH_OR_GEM_CONFIG_FILENAME,
+        message: "AppMap configuration #{MISSING_PATH_OR_GEM_CONFIG_FILENAME} could not be loaded",
+        detailed_message: "AppMap config 'package' element should specify 'gem' or 'path'"
       }
     ])
     assert_equal expected, output.strip
