@@ -108,8 +108,18 @@ module AppMap
         event
       end
 
-      def select_headers(env)
+      def select_rack_headers(env)
+        finalize_headers = lambda do |headers|
+          blank?(headers) ? nil : headers
+        end
+
         # Rack prepends HTTP_ to all client-sent headers.
+
+        if !env['rack.version']
+          warn "Request headers does not contain rack.version. HTTP_ prefix is not expected."
+          return finalize_headers.call(env.dup)
+        end
+
         matching_headers = env
           .select { |k,v| k.start_with? 'HTTP_'}
           .reject { |k,v| blank?(v) }
@@ -118,7 +128,7 @@ module AppMap
             value = kv[1]
             memo[key] = value
           end
-        blank?(matching_headers) ? nil : matching_headers
+        finalize_headers.call(matching_headers)
       end
 
       def normalize_path(path)

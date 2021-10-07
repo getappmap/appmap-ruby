@@ -27,7 +27,7 @@ module AppMap
 
         self.request_method = request.method
         self.url = url
-        self.headers = AppMap::Util.select_headers(NetHTTP.request_headers(request))
+        self.headers = NetHTTP.copy_headers(request)
         self.params = Rack::Utils.parse_nested_query(query)
       end
 
@@ -55,7 +55,7 @@ module AppMap
     end
 
     class HTTPClientResponse < AppMap::Event::MethodReturnIgnoreValue
-      attr_accessor :status, :mime_type, :headers
+      attr_accessor :status, :headers
 
       def initialize(response, parent_id, elapsed)
         super AppMap::Event.next_id_counter, :return, Thread.current.object_id
@@ -63,14 +63,13 @@ module AppMap
         self.status = response.code.to_i
         self.parent_id = parent_id
         self.elapsed = elapsed
-        self.headers = AppMap::Util.select_headers(NetHTTP.response_headers(response))
+        self.headers = NetHTTP.copy_headers(response)
       end
 
       def to_h
         super.tap do |h|
           h[:http_client_response] = {
             status_code: status,
-            mime_type: mime_type,
             headers: headers
           }.compact
         end
@@ -79,17 +78,15 @@ module AppMap
 
     class NetHTTP
       class << self
-        def request_headers(request)
+        def copy_headers(obj)
           {}.tap do |headers|
-            request.each_header do |k,v|
-              key = [ 'HTTP', Util.underscore(k).upcase ].join('_')
-              headers[key] = v
+            obj.each_header do |key, value|
+              key = key.split('-').map(&:capitalize).join('-')
+              headers[key] = value
             end
           end
         end
-    
-        alias response_headers request_headers
-    
+
         def handle_call(defined_class, hook_method, receiver, args)
           # request will call itself again in a start block if it's not already started.
           return unless receiver.started?

@@ -9,16 +9,14 @@ module AppMap
     module Rails
       module RequestHandler
         class HTTPServerRequest < AppMap::Event::MethodEvent
-          attr_accessor :normalized_path_info, :request_method, :path_info, :params, :mime_type, :headers, :authorization
+          attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers
 
           def initialize(request)
             super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
             self.request_method = request.request_method
             self.normalized_path_info = normalized_path(request)
-            self.mime_type = request.headers['Content-Type']
-            self.headers = AppMap::Util.select_headers(request.env)
-            self.authorization = request.headers['Authorization']
+            self.headers = AppMap::Util.select_rack_headers(request.env)
             self.path_info = request.path_info.split('?')[0]
             # ActionDispatch::Http::ParameterFilter is deprecated
             parameter_filter_cls = \
@@ -35,9 +33,7 @@ module AppMap
               h[:http_server_request] = {
                 request_method: request_method,
                 path_info: path_info,
-                mime_type: mime_type,
                 normalized_path_info: normalized_path_info,
-                authorization: authorization,
                 headers: headers,
               }.compact
 
@@ -72,23 +68,21 @@ module AppMap
         end
 
         class HTTPServerResponse < AppMap::Event::MethodReturnIgnoreValue
-          attr_accessor :status, :mime_type, :headers
+          attr_accessor :status, :headers
 
           def initialize(response, parent_id, elapsed)
             super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
             self.status = response.status
-            self.mime_type = response.headers['Content-Type']
             self.parent_id = parent_id
             self.elapsed = elapsed
-            self.headers = AppMap::Util.select_headers(response.headers)
+            self.headers = response.headers.dup
           end
 
           def to_h
             super.tap do |h|
               h[:http_server_response] = {
                 status_code: status,
-                mime_type: mime_type,
                 headers: headers
               }.compact
             end

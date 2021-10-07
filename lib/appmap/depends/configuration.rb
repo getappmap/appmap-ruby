@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'appmap'
-
 module AppMap
   module Depends
     class Configuration
