@@ -1,3 +1,14 @@
+## [0.66.2](https://github.com/applandinc/appmap-ruby/compare/v0.66.1...v0.66.2) (2021-10-07)
+
+
+### Bug Fixes
+
+* fix Travis for Ruby 3.0 ([8ec7359](https://github.com/applandinc/appmap-ruby/commit/8ec7359287f5b204ae9fb0724d8b683adfb79df5))
+* Fix warning of circular import ([84d456d](https://github.com/applandinc/appmap-ruby/commit/84d456d8ac26ef3fc7a81ca6517e4363aac9916d))
+* Properly handle headers which aren't mangled by Rack ([8e78e13](https://github.com/applandinc/appmap-ruby/commit/8e78e138776cb563f984e3592cf5024af16da2b7))
+* replace deprecated File.exists? method ([80ce5b5](https://github.com/applandinc/appmap-ruby/commit/80ce5b59fd010a806ca6320365f453f1e74f095d))
+* Validate presence package configuration ([f478d6b](https://github.com/applandinc/appmap-ruby/commit/f478d6b60a786608c21217755cec9a8185e084d3))
+
 ## [0.66.1](https://github.com/applandinc/appmap-ruby/compare/v0.66.0...v0.66.1) (2021-09-29)
 
 
