@@ -74,6 +74,6 @@ lambda do
     require 'appmap/depends'
   end
   
-end.call
+end.call unless ENV['APPMAP_AUTOREQUIRE'] == 'false'
 
-AppMap.initialize_configuration if ENV['APPMAP'] == 'true'
+AppMap.initialize_configuration if ENV['APPMAP'] == 'true' && ENV['APPMAP_INITIALIZE'] != 'false'
