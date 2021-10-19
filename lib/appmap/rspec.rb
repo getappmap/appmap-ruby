@@ -87,6 +87,7 @@ module AppMap
         end
 
         warn "Starting recording of example #{example}@#{source_location}" if AppMap::RSpec::LOG
+        GC.start
         @trace = AppMap.tracing.trace
         @webdriver_port = webdriver_port.()
       end
