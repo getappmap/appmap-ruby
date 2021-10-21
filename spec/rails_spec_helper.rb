@@ -5,9 +5,14 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'open3'
 
+# docker compose v2 replaced the --filter flag with --status
+PS_CMD=`docker-compose --version` =~ /version v2/ ?
+         "docker-compose ps -q --status running" :
+         "docker-compose ps -q --filter health=healthy"
+
 def wait_for_container(app_name)
   start_time = Time.now
-  until `docker-compose ps -q --filter health=healthy #{app_name}`.strip != ''
+  until `#{PS_CMD} #{app_name}`.strip != ''
     elapsed = Time.now - start_time
     raise "Timeout waiting for container #{app_name} to be ready" if elapsed > 10
 
