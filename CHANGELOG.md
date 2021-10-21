@@ -1,3 +1,17 @@
+# [0.67.0](https://github.com/applandinc/appmap-ruby/compare/v0.66.2...v0.67.0) (2021-10-21)
+
+
+### Bug Fixes
+
+* Ensure rack is available, and handle nil HTTP response ([5e81dc4](https://github.com/applandinc/appmap-ruby/commit/5e81dc4310c9b7f2d81c31339f8490639c845f76))
+* Handle WeakRef ([852ee04](https://github.com/applandinc/appmap-ruby/commit/852ee047880f9d1492be38772ed3f0cc1a670cb5))
+
+
+### Features
+
+* APPMAP_AUTOREQUIRE and APPMAP_INITIALIZE env vars to customize loading behavior ([369807e](https://github.com/applandinc/appmap-ruby/commit/369807e4c90243e296b324e70805bd09d0f5fc4a))
+* Perform GC before running each test ([84c895e](https://github.com/applandinc/appmap-ruby/commit/84c895e95fe8caa270cc1412e239599bfcc1b467))
+
 ## [0.66.2](https://github.com/applandinc/appmap-ruby/compare/v0.66.1...v0.66.2) (2021-10-07)
 
 
