@@ -1,0 +1,5 @@
+name: mocha_mock_app
+packages:
+  - path: lib
+  - gem: mocha
+    shallow: false

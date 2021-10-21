@@ -111,10 +111,12 @@ module AppMap
           rescue NoMethodError
             begin
               value.inspect
-            rescue StandardError
+            rescue
               last_resort_string.call
             end
-          rescue StandardError
+          rescue WeakRef::RefError
+            nil
+          rescue
             last_resort_string.call
           end
         end

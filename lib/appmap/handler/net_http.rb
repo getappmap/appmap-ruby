@@ -2,6 +2,7 @@
 
 require 'appmap/event'
 require 'appmap/util'
+require 'rack'
 
 module AppMap
   module Handler
@@ -60,10 +61,14 @@ module AppMap
       def initialize(response, parent_id, elapsed)
         super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
-        self.status = response.code.to_i
+        if response
+          self.status = response.code.to_i
+          self.headers = NetHTTP.copy_headers(response)
+        else
+          self.headers = {}
+        end
         self.parent_id = parent_id
         self.elapsed = elapsed
-        self.headers = NetHTTP.copy_headers(response)
       end
 
       def to_h
