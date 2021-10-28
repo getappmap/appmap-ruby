@@ -194,6 +194,11 @@ module AppMap
           method_hook('ActionController::Instrumentation', %i[process_action send_file send_data redirect_to], %w[mvc.controller])
         ],
         package_name: 'action_controller'
+      ),
+      package_hooks('bcrypt',
+        [
+          method_hook('BCrypt::Password', %i[is_password?], %w[crypto.secure_compare])
+        ],
       )
     ].flatten.freeze
 
@@ -229,6 +234,7 @@ module AppMap
       ],
       'JSON::Ext::Parser' => TargetMethods.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.parse])),
       'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.generate])),
+      # 'String' => TargetMethods.new(:==, Package.build_from_path(nil, labels: %w[string.equals])),
     }.freeze
 
     attr_reader :name, :appmap_dir, :packages, :exclude, :swagger_config, :depends_config, :hooked_methods, :builtin_hooks

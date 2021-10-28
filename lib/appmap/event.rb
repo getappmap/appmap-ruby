@@ -20,6 +20,14 @@ module AppMap
     class MethodEvent < MethodEventStruct
       LIMIT = 100
 
+      attr_accessor :memory_bytes
+
+      def to_h
+        super.tap do |h|
+          h[:memory_bytes] = memory_bytes unless memory_bytes.nil?
+        end
+      end
+
       class << self
         def build_from_invocation(event_type, event:)
           event.id = AppMap::Event.next_id_counter

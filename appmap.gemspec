@@ -55,4 +55,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'timecop'
   spec.add_development_dependency 'hashie'
   spec.add_development_dependency 'webrick'
+
+  spec.add_runtime_dependency 'get_process_mem'
 end

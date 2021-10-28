@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 
+$get_process_mem = begin
+  require 'get_process_mem'
+  true
+rescue LoadError
+  false
+end
+
 module AppMap
   class Hook
     class Method
@@ -99,8 +106,13 @@ module AppMap
 
       protected
 
+      def record_memory
+        %w[dao.materialize sql.materialize memory.record].find { |key| hook_package.labels.member?(key) }
+      end
+
       def before_hook(receiver, defined_class, args)
         call_event = hook_package.handler_class.handle_call(defined_class, hook_method, receiver, args)
+        call_event.memory_bytes = GetProcessMem.new.bytes if record_memory && $get_process_mem
         AppMap.tracing.record_event(call_event, package: hook_package, defined_class: defined_class, method: hook_method) if call_event
         [ call_event, TIME_NOW.call ]
       end
@@ -108,6 +120,7 @@ module AppMap
       def after_hook(_receiver, call_event, start_time, return_value, exception)
         elapsed = TIME_NOW.call - start_time
         return_event = hook_package.handler_class.handle_return(call_event.id, elapsed, return_value, exception)
+        return_event.memory_bytes = GetProcessMem.new.bytes if record_memory && $get_process_mem
         AppMap.tracing.record_event(return_event) if return_event
         nil
       end

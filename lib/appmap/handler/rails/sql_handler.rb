@@ -7,12 +7,12 @@ module AppMap
     module Rails
       class SQLHandler
         class SQLCall < AppMap::Event::MethodCall
-          attr_accessor :payload
+          attr_reader :payload
 
           def initialize(payload)
             super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
-            self.payload = payload
+            @payload = payload
           end
 
           def to_h
