@@ -15,12 +15,6 @@ module AppMap
     @method_arity = ::Method.instance_method(:arity)
 
     class << self
-      def lock_builtins
-        return if @builtins_hooked
-
-        @builtins_hooked = true
-      end
-
       # Return the class, separator ('.' or '#'), and method name for
       # the given method.
       def qualify_method_name(method)
@@ -44,7 +38,7 @@ module AppMap
     def enable(&block)
       require 'appmap/hook/method'
 
-      hook_builtins
+      hook_available
 
       # Paths that are known to be non-tracing.
       @notrace_paths = Set.new
@@ -76,29 +70,47 @@ module AppMap
       @trace_end.enable(&block)
     end
 
-    # hook_builtins builds hooks for code that is built in to the Ruby standard library.
-    # No TracePoint events are emitted for builtins, so a separate hooking mechanism is needed. 
-    def hook_builtins
-      return unless self.class.lock_builtins
+    protected
 
+    # hook_available builds hooks for code that:
+    #
+    # * Is already required and available.
+    # * Is builtin to Ruby - not a gem.
+    #
+    # Code that can't be hooked this way is hooked by registering TracePoint and watching for
+    # a code location matching the location of the gem. 
+    def hook_available
       class_from_string = lambda do |fq_class|
-        fq_class.split('::').inject(Object) do |mod, class_name|
-          mod.const_get(class_name)
+        begin
+          fq_class.split('::').inject(Object) do |mod, class_name|
+            mod.const_get(class_name)
+          end
+        rescue NameError
+          nil
         end
       end
 
-      config.builtin_hooks.each do |class_name, hooks|
-        Array(hooks).each do |hook|
-          require hook.package.package_name if hook.package.package_name && hook.package.package_name != 'ruby'
-          Array(hook.method_names).each do |method_name|
-            method_name = method_name.to_sym
-            base_cls = class_from_string.(class_name)
+      # New approach:
+      # Loop through all hooks.
+      # If the hook package is builtin, require it.
+      # If the class is defined, hook it.
+      # Otherwise wait for the source code to be loaded.
 
+      config.hooked_methods.each do |class_name, target_methods_group|
+        Array(target_methods_group).each do |target_methods|
+          if target_methods.package.builtin && target_methods.package.require_name && target_methods.package.require_name != 'ruby'
+            require target_methods.package.require_name
+          end
+          base_cls = class_from_string.(class_name)
+          next unless base_cls
+
+          Array(target_methods.method_names).each do |method_name|
+            method_name = method_name.to_sym
             hook_method = lambda do |entry|
               cls, method = entry
               return false if config.never_hook?(cls, method)
 
-              Hook::Method.new(hook.package, cls, method).activate
+              Hook::Method.new(target_methods.package, cls, method).activate
             end
 
             methods = []
@@ -107,6 +119,10 @@ module AppMap
               methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
             end
             methods.compact!
+            methods.delete_if do |pair|
+              _, method = pair
+              method.owner == Kernel && base_cls != Kernel
+            end
             if methods.empty?
               warn "Method #{method_name} not found on #{base_cls.name}"
             else
@@ -116,8 +132,6 @@ module AppMap
         end
       end
     end
-
-    protected
 
     def trace_location(trace_point)
       [ trace_point.path, trace_point.lineno ].join(':')
@@ -152,10 +166,6 @@ module AppMap
 
       hook = lambda do |hook_cls|
         lambda do |method_id|
-          # Don't try and trace the AppMap methods or there will be
-          # a stack overflow in the defined hook method.
-          next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
-
           next if method_id == :call
 
           method = begin
@@ -174,6 +184,10 @@ module AppMap
 
           package = config.lookup_package(hook_cls, method)
           next unless package
+
+          # Don't try and trace the AppMap methods or there will be
+          # a stack overflow in the defined hook method.
+          next if %w[Marshal AppMap].member?((hook_cls&.name || '').split('::')[0])
 
           Hook::Method.new(package, hook_cls, method).activate
         end
