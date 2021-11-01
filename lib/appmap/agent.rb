@@ -42,10 +42,12 @@ module AppMap
     # Call this function before the program code is loaded by the Ruby VM, otherwise
     # the load events won't be seen and the hooks won't activate.
     def initialize_configuration(config_file_path = default_config_file_path)
-      Util.startup_message "Configuring AppMap from path #{config_file_path}"
-      Config.load_from_file(config_file_path).tap do |configuration|
-        self.configuration = configuration
-        Hook.new(configuration).enable
+      Mutex.new.synchronize do
+        Util.startup_message "Configuring AppMap from path #{config_file_path}"
+        Config.load_from_file(config_file_path).tap do |configuration|
+          self.configuration = configuration
+          Hook.new(configuration).enable
+        end
       end
     end
 
