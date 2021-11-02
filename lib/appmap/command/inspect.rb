@@ -13,7 +13,6 @@ module AppMap
 
       def inspect(arguments)
         detect_nodejs
-        index_appmaps
 
         arguments.unshift 'inspect'
         arguments.unshift APPMAP_JS
