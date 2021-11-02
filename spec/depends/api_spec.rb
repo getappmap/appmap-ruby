@@ -104,7 +104,7 @@ describe 'Depends API' do
   describe '.run_tests' do
     def run_tests
       Dir.chdir 'spec/fixtures/depends' do
-        api.run_tests([ 'spec/actual_rspec_test.rb', 'test/actual_minitest_test.rb' ], appmap_dir: Pathname.new(DEPENDS_TEST_DIR).expand_path.to_s)
+        api.run_tests([ 'spec/actual_rspec_test.rb', 'test/actual_minitest_test.rb' ], appmap_dir: Pathname.new('.').expand_path.to_s)
       end
     end
 
