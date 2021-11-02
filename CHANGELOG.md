@@ -1,3 +1,10 @@
+## [0.67.1](https://github.com/applandinc/appmap-ruby/compare/v0.67.0...v0.67.1) (2021-11-02)
+
+
+### Bug Fixes
+
+* Don't try to index AppMaps when inspecting ([ca18861](https://github.com/applandinc/appmap-ruby/commit/ca188619bd7085caa75a06eeeb5d5a92213251ac))
+
 # [0.67.0](https://github.com/applandinc/appmap-ruby/compare/v0.66.2...v0.67.0) (2021-10-21)
 
 
