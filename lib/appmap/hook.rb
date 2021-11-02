@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'English'
+require 'appmap/hook/method'
 
 module AppMap
   class Hook

@@ -99,25 +99,20 @@ describe 'AppMap class Hooking', docker: false do
     config = AppMap::Config.load({
       functions: [
         {
-          package: 'hook_spec',
-          class: 'CustomInstanceMethod',
-          functions: [ :say_default ],
-          labels: ['cowsay']
+          method: {
+            name: 'CustomInstanceMethod#say_default',
+            labels: ['cowsay']
+          },
+          path: 'spec/fixtures/hook/custom_instance_method.rb'
         }
       ]
     }.deep_stringify_keys)
 
     load 'spec/fixtures/hook/custom_instance_method.rb'
     hook_cls = CustomInstanceMethod
-    method = hook_cls.instance_method(:say_default)
-
-    require 'appmap/hook/method'
-    package = config.lookup_package(hook_cls, method)
-    expect(package).to be
-    hook_method = AppMap::Hook::Method.new(package, hook_cls, method)
-    hook_method.activate
 
     tracer = AppMap.tracing.trace
+    AppMap::Hook.new(config).send :hook_available
     AppMap::Event.reset_id_counter
     begin
       expect(CustomInstanceMethod.new.say_default).to eq('default')
@@ -125,13 +120,18 @@ describe 'AppMap class Hooking', docker: false do
       AppMap.tracing.delete(tracer)
     end
 
+    method = hook_cls.instance_method(:say_default)
+    require 'appmap/hook/method'
+    package = config.lookup_package(hook_cls, method)
+    expect(package).to be
+
     events = collect_events(tracer).to_yaml
 
     expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('')
     class_map = AppMap.class_map(tracer.event_methods)
     expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq('')
     ---
-    - :name: hook_spec
+    - :name: spec/fixtures/hook/custom_instance_method.rb
       :type: package
       :children:
       - :name: CustomInstanceMethod

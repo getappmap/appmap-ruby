@@ -43,8 +43,8 @@ module AppMap
       class << self
         # Builds a package for a path, such as `app/models` in a Rails app. Generally corresponds to a `path:` entry
         # in appmap.yml. Also used for mapping specific methods via TargetMethods.
-        def build_from_path(path, shallow: false, require_name: nil, exclude: [], labels: [])
-          Package.new(path, nil, require_name, exclude, labels, shallow)
+        def build_from_path(path, shallow: false, require_name: nil, exclude: [], labels: [], builtin: false)
+          Package.new(path, nil, require_name, exclude, labels, shallow, builtin)
         end
 
         # Builds a package for a path, such as `app/models` in a Rails app. Generally corresponds to a `path:` entry
@@ -88,11 +88,11 @@ module AppMap
           gem: gem,
           path: path,
           require_name: require_name,
-          handler_class: handler_class.name,
+          handler_class: handler_class ? handler_class.name : nil,
           exclude: Util.blank?(exclude) ? nil : exclude,
           labels: Util.blank?(labels) ? nil : labels,
-          shallow: shallow,
-          bulitin: builtin
+          shallow: shallow ? true : nil,
+          builtin: builtin ? true : nil,
         }.compact
       end
     end
@@ -149,7 +149,7 @@ module AppMap
           package = if gem
             Package.build_from_gem(gem, require_name: require_name, labels: method.labels, force: force, shallow: false, optional: true)
           elsif path
-            Package.build_from_path(path, builtin: builtin, require_name: require_name, labels: method.labels, shallow: false)
+            Package.build_from_path(path, require_name: require_name, labels: method.labels, shallow: false, builtin: builtin)
           elsif builtin
             Package.build_from_builtin(require_name: require_name, labels: method.labels, shallow: false)
           end
@@ -267,29 +267,16 @@ module AppMap
       @exclude = exclude
       @functions = functions
 
-      @hooked_methods = METHOD_HOOKS
+      @hooked_methods = (METHOD_HOOKS + (functions || []))
         .each_with_object(Hash.new { |h,k| h[k] = [] }) do |cls_target_methods, hooked_methods|
         hooked_methods[cls_target_methods.cls] << cls_target_methods.target_methods
-      end
-
-      functions.each do |func|
-        package_options = {}
-        package_options[:labels] = func.labels if func.labels
-        package_options[:require_name] = func.require_name
-        package = if func.builtin
-          package_options[:require_name] ||= func.package
-          Package.build_from_builtin(**package_options)
-        else
-          Package.build_from_path(func.package, **package_options)
-        end
-        target_methods = TargetMethods.new(func.function_names, package)
-        @hooked_methods[func.cls] << target_methods
       end
 
       @hooked_methods.each_value do |target_methods_group|
         target_methods_group
           .select { |target_methods| target_methods.package.path }
           .each do |target_methods|
+          @packages << target_methods.package
           @hook_paths << target_methods.package.path
         end
       end
@@ -356,23 +343,27 @@ module AppMap
 
         if config_data['functions']
           config_params[:functions] = config_data['functions'].map do |function_data|
-            function_name = function_data['name']
-            package, cls, functions = []
-            if function_name
-              package, cls, _, function = Util.parse_function_name(function_name)
-              functions = Array(function)
-            else
-              package = function_data['package']
-              cls = function_data['class']
-              functions = function_data['function'] || function_data['functions']
-              raise %q(AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions') unless package && cls && functions
+            method_data = function_data.delete('method') || function_data.delete('methods') || []
+            method_data = [ method_data ] if method_data.is_a?(Hash)
+            methods = method_data.map do |method|
+              function_name = method['name']
+              cls, method_names = []
+              if function_name
+                cls, _, method_names = Util.parse_full_name(function_name)
+              else
+                cls = function_data['class']
+                method_names = function_data['function'] || function_data['functions']
+                raise %q(AppMap config 'method' element should specify 'class' and 'function' or 'functions') unless cls && method_names
+              end
+  
+              labels = method['label'] || method['labels']
+              labels = Array(labels).map(&:to_s) if labels
+              MethodHook.new(cls, Array(method_names), labels)
             end
 
-            functions = Array(functions).map(&:to_sym)
-            labels = function_data['label'] || function_data['labels']
-            labels = Array(labels).map(&:to_s) if labels
-            Function.new(package, cls, labels, functions, function_data['require'], function_data['builtin'])
-          end
+            function_data['handler_class'] = function_data['handler_class'].classify if function_data['handler_class']
+            package_hooks(methods, **function_data.symbolize_keys)
+          end.flatten
         end
 
         config_params[:packages] = \
@@ -411,11 +402,10 @@ module AppMap
       end
     end
 
-    def to_h
+    def to_h(package_filter: ->(pkg) { true })
       {
         name: name,
-        packages: packages.map(&:to_h),
-        functions: @functions.map(&:to_h),
+        packages: packages.select(&package_filter).map(&:to_h),
         exclude: exclude
       }.compact
     end

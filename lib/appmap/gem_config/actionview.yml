@@ -1,0 +1,14 @@
+functions:
+  - names:
+    - actionview/ActionView::Renderer#render
+    - actionview/ActionView::TemplateRenderer#render
+    - actionview/ActionView::PartialRenderer#render
+    handler_class: AppMap::Handler::Rails::Template::RenderHandler
+    require_name: action_view
+    labels: mvc.view
+  - names:
+    - actionview/ActionView::Resolver#find_all
+    - actionview/ActionView::Resolver#find_all_anywhere
+    handler_class: AppMap::Handler::Rails::Template::ResolverHandler
+    require_name: action_view
+    label: mvc.template.resolver

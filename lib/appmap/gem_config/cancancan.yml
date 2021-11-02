@@ -1,0 +1,9 @@
+- functions:
+  - names:
+    - cancancan/CanCan::ControllerAdditions#authorize!
+    - cancancan/CanCan::ControllerAdditions#can?
+    - cancancan/CanCan::ControllerAdditions#cannot?
+    label: security.authorization
+  - names:
+    - cancancan/CanCan::Ability#authorize?
+    label: security.authorization

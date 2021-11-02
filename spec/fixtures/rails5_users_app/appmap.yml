@@ -6,6 +6,8 @@ packages:
     labels: [ mvc.controller ]
   - gem: sequel
 functions:
-  - name: logger/Logger::LogDevice#write
+  - methods:
+      name: Logger::LogDevice#write
+      label: log
+    require_name: logger
     builtin: true
-    label: log

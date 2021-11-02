@@ -1,0 +1,12 @@
+functions:
+  - name: devise/Devise::Models::Recoverable#set_reset_password_token
+    label: secret
+  - name: devise/Devise::Strategies::Authenticatable#password
+    label: secret
+  - name: Devise::Strategies::DatabaseAuthenticatable#authenticate!
+    label: security.authentication
+parameters:
+  - name: password
+    label: secret
+  - name: current_password
+    label: secret
