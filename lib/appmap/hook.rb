@@ -15,10 +15,23 @@ module AppMap
     @method_arity = ::Method.instance_method(:arity)
 
     class << self
-      def lock_builtins
-        return if @builtins_hooked
+      def hook_builtins?
+        Mutex.new.synchronize do
+          @hook_builtins = true if @hook_builtins.nil?
 
-        @builtins_hooked = true
+          return false unless @hook_builtins
+
+          @hook_builtins = false
+          true
+        end
+      end
+
+      def already_hooked?(method)
+        # After a method is defined, the statement "module_function <the-method>" can convert that method
+        # into a module (class) method. The method is hooked first when it's defined, then AppMap will attempt to
+        # hook it again when it's redefined as a module method. So we check the method source location - if it's 
+        # part of the AppMap source tree, we ignore it.
+        method.source_location && method.source_location[0].index(__dir__) == 0
       end
 
       # Return the class, separator ('.' or '#'), and method name for
@@ -79,43 +92,43 @@ module AppMap
     # hook_builtins builds hooks for code that is built in to the Ruby standard library.
     # No TracePoint events are emitted for builtins, so a separate hooking mechanism is needed. 
     def hook_builtins
-      return unless self.class.lock_builtins
+      return unless self.class.hook_builtins?
 
-      class_from_string = lambda do |fq_class|
-        fq_class.split('::').inject(Object) do |mod, class_name|
-          mod.const_get(class_name)
-        end
-      end
+      hook_loaded_code = lambda do |hooks_by_class, builtin|
+        hooks_by_class.each do |class_name, hooks|
+          Array(hooks).each do |hook|
+            require hook.package.require_name if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
 
-      config.builtin_hooks.each do |class_name, hooks|
-        Array(hooks).each do |hook|
-          require hook.package.require_name if hook.package.require_name && hook.package.require_name != 'ruby'
+            Array(hook.method_names).each do |method_name|
+              method_name = method_name.to_sym
+              base_cls = Util::class_from_string(class_name, must: false)
+              next unless base_cls
 
-          Array(hook.method_names).each do |method_name|
-            method_name = method_name.to_sym
-            base_cls = class_from_string.(class_name)
+              hook_method = lambda do |entry|
+                cls, method = entry
+                return false if config.never_hook?(cls, method)
 
-            hook_method = lambda do |entry|
-              cls, method = entry
-              return false if config.never_hook?(cls, method)
+                Hook::Method.new(hook.package, cls, method).activate
+              end
 
-              Hook::Method.new(hook.package, cls, method).activate
-            end
-
-            methods = []
-            methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
-            if base_cls.respond_to?(:singleton_class)
-              methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
-            end
-            methods.compact!
-            if methods.empty?
-              warn "Method #{method_name} not found on #{base_cls.name}"
-            else
-              methods.each(&hook_method)
+              methods = []
+              methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
+              if base_cls.respond_to?(:singleton_class)
+                methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
+              end
+              methods.compact!
+              if methods.empty?
+                warn "Method #{method_name} not found on #{base_cls.name}" if LOG
+              else
+                methods.each(&hook_method)
+              end
             end
           end
         end
       end
+
+      hook_loaded_code.(config.builtin_hooks, true)
+      hook_loaded_code.(config.hooked_methods, false)
     end
 
     protected
@@ -165,6 +178,8 @@ module AppMap
             warn "AppMap: Method #{hook_cls} #{method.name} is not accessible" if LOG
             next
           end
+
+          next if self.class.already_hooked?(method)
 
           warn "AppMap: Examining #{hook_cls} #{method.name}" if LOG
 
