@@ -14,6 +14,8 @@ module AppMap
     @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
     @method_arity = ::Method.instance_method(:arity)
 
+    @@hooked_methods = Set.new
+
     class << self
       # Return the class, separator ('.' or '#'), and method name for
       # the given method.
@@ -90,6 +92,11 @@ module AppMap
         end
       end
 
+      already_hooked = lambda do |cls, method|
+        key = [ cls, method ]
+        @@hooked_methods.add?(key).nil?
+      end
+
       # New approach:
       # Loop through all hooks.
       # If the hook package is builtin, require it.
@@ -109,6 +116,10 @@ module AppMap
             hook_method = lambda do |entry|
               cls, method = entry
               return false if config.never_hook?(cls, method)
+
+              # Only hook once, in case configure is invoked multiple times.
+              # Configuring multiple times isn't really expected to work, but the test cases can't really avoid doing it.
+              return false if already_hooked.(cls, method)
 
               Hook::Method.new(target_methods.package, cls, method).activate
             end
