@@ -1,0 +1,4 @@
+- method: JSON::Ext::Parser#parse
+  label: format.json.parse
+- method: JSON::Ext::Generator::State#generate
+  label: format.json.generate

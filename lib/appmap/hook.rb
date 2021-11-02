@@ -81,41 +81,46 @@ module AppMap
     def hook_builtins
       return unless self.class.lock_builtins
 
-      class_from_string = lambda do |fq_class|
-        fq_class.split('::').inject(Object) do |mod, class_name|
-          mod.const_get(class_name)
-        end
-      end
+      hook_loaded_code = lambda do |hooks_by_class, builtin|
+        hooks_by_class.each do |class_name, hooks|
+          Array(hooks).each do |hook|
+            require hook.package.require_name if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
 
-      config.builtin_hooks.each do |class_name, hooks|
-        Array(hooks).each do |hook|
-          require hook.package.require_name if hook.package.require_name && hook.package.require_name != 'ruby'
+            Array(hook.method_names).each do |method_name|
+              method_name = method_name.to_sym
+              base_cls = begin
+                Util::class_from_string(class_name)
+              rescue NameError
+                warn "#{class_name} is not loaded yet"
+                nil
+              end
+              next unless base_cls
 
-          Array(hook.method_names).each do |method_name|
-            method_name = method_name.to_sym
-            base_cls = class_from_string.(class_name)
+              hook_method = lambda do |entry|
+                cls, method = entry
+                return false if config.never_hook?(cls, method)
 
-            hook_method = lambda do |entry|
-              cls, method = entry
-              return false if config.never_hook?(cls, method)
+                Hook::Method.new(hook.package, cls, method).activate
+              end
 
-              Hook::Method.new(hook.package, cls, method).activate
-            end
-
-            methods = []
-            methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
-            if base_cls.respond_to?(:singleton_class)
-              methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
-            end
-            methods.compact!
-            if methods.empty?
-              warn "Method #{method_name} not found on #{base_cls.name}"
-            else
-              methods.each(&hook_method)
+              methods = []
+              methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
+              if base_cls.respond_to?(:singleton_class)
+                methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
+              end
+              methods.compact!
+              if methods.empty?
+                warn "Method #{method_name} not found on #{base_cls.name}"
+              else
+                methods.each(&hook_method)
+              end
             end
           end
         end
       end
+
+      hook_loaded_code.(config.builtin_hooks, true)
+      hook_loaded_code.(config.hooked_methods, false)
     end
 
     protected

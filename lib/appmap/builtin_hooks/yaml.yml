@@ -1,0 +1,10 @@
+- methods:
+  - Psych#load
+  - Psych#load_stream
+  - Psych#parse
+  - Psych#parse_stream
+  label: format.yaml.parse
+- methods:
+  - Psych#dump
+  - Psych#dump_stream
+  label: format.yaml.generate

@@ -21,6 +21,12 @@ module AppMap
     WHITE   = "\e[37m"
 
     class << self
+      def class_from_string(fq_class)
+        fq_class.split('::').inject(Object) do |mod, class_name|
+          mod.const_get(class_name)
+        end
+      end
+
       def parse_function_name(name)
         package_tokens = name.split('/')
 

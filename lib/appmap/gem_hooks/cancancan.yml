@@ -1,0 +1,6 @@
+- methods:
+  - CanCan::ControllerAdditions#authorize!
+  - CanCan::ControllerAdditions#can?
+  - CanCan::ControllerAdditions#cannot?
+  - CanCan::Ability#authorize?
+  label: security.authorization

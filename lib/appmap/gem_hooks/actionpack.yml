@@ -1,0 +1,40 @@
+- methods:
+  - ActionDispatch::Request::Session#[]
+  - ActionDispatch::Request::Session#dig
+  - ActionDispatch::Request::Session#values
+  - ActionDispatch::Request::Session#fetch
+  - ActionDispatch::Cookies::CookieJar#[]
+  - ActionDispatch::Cookies::CookieJar#fetch
+  label: http.session.read
+  require_name: action_dispatch
+- methods:
+  - ActionDispatch::Request::Session#destroy
+  - ActionDispatch::Request::Session#[]=
+  - ActionDispatch::Request::Session#clear
+  - ActionDispatch::Request::Session#update
+  - ActionDispatch::Request::Session#delete
+  - ActionDispatch::Request::Session#merge
+  - ActionDispatch::Cookies::CookieJar#[]=
+  - ActionDispatch::Cookies::CookieJar#clear
+  - ActionDispatch::Cookies::CookieJar#update
+  - ActionDispatch::Cookies::CookieJar#delete
+  - ActionDispatch::Cookies::CookieJar#recycle
+  label: http.session.write
+  require_name: action_dispatch
+- methods:
+  - ActionDispatch::Cookies::EncryptedCookieJar#[]=
+  - ActionDispatch::Cookies::EncryptedCookieJar#clear
+  - ActionDispatch::Cookies::EncryptedCookieJar#update
+  - ActionDispatch::Cookies::EncryptedCookieJar#delete
+  - ActionDispatch::Cookies::EncryptedCookieJar#recycle
+  labels:
+  - http.cookie
+  - crypto.encrypt
+  require_name: action_dispatch
+- methods:
+  - ActionController::Instrumentation#process_action
+  - ActionController::Instrumentation#send_file
+  - ActionController::Instrumentation#send_data
+  - ActionController::Instrumentation#redirect_to
+  label: mvc.controller
+  require_name: action_controller

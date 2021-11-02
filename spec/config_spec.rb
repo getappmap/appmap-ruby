@@ -33,10 +33,12 @@ describe AppMap::Config, docker: false do
       name: 'test',
       packages: [
         {
+          name: 'path-1',
           path: 'path-1',
           handler_class: 'AppMap::Handler::Function'
         },
         {
+          name: 'path-2',
           path: 'path-2',
           handler_class: 'AppMap::Handler::Function',
           exclude: [ 'exclude-1' ]
@@ -94,7 +96,8 @@ describe AppMap::Config, docker: false do
       expect(config.to_h).to eq(YAML.load(<<~CONFIG))
       :name: appmap-ruby
       :packages:
-      - :path: lib
+      - :name: lib
+        :path: lib
         :handler_class: AppMap::Handler::Function
         :shallow: false
       :functions: []
