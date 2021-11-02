@@ -12,16 +12,17 @@ require 'appmap/depends/configuration'
 module AppMap
   class Config
     # Specifies a code +path+ to be mapped.
+    #
     # Options:
     #
     # * +gem+ may indicate a gem name that "owns" the path
-    # * +package_name+ can be used to make sure that the code is required so that it can be loaded. This is generally used with
+    # * +require_name+ can be used to make sure that the code is required so that it can be loaded. This is generally used with
     #   builtins, or when the path to be required is not automatically required when bundler requires the gem.
     # * +exclude+ can be used used to exclude sub-paths. Generally not used with +gem+.
     # * +labels+ is used to apply labels to matching code. This is really only useful when the package will be applied to
     #   specific functions, via TargetMethods.
     # * +shallow+ indicates shallow mapping, in which only the entrypoint to a gem is recorded.
-    Package = Struct.new(:path, :gem, :package_name, :exclude, :labels, :shallow) do
+    Package = Struct.new(:path, :gem, :require_name, :exclude, :labels, :shallow) do
       # This is for internal use only.
       private_methods :gem
 
@@ -43,20 +44,20 @@ module AppMap
       class << self
         # Builds a package for a path, such as `app/models` in a Rails app. Generally corresponds to a `path:` entry
         # in appmap.yml. Also used for mapping specific methods via TargetMethods.
-        def build_from_path(path, shallow: false, package_name: nil, exclude: [], labels: [])
-          Package.new(path, nil, package_name, exclude, labels, shallow)
+        def build_from_path(path, shallow: false, require_name: nil, exclude: [], labels: [])
+          Package.new(path, nil, require_name, exclude, labels, shallow)
         end
 
         # Builds a package for gem. Generally corresponds to a `gem:` entry in appmap.yml. Also used when mapping
         # a builtin.
-        def build_from_gem(gem, shallow: true, package_name: nil, exclude: [], labels: [], optional: false, force: false)
+        def build_from_gem(gem, shallow: true, require_name: nil, exclude: [], labels: [], optional: false, force: false)
           if !force && %w[method_source activesupport].member?(gem)
             warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
             return
           end
           path = gem_path(gem, optional)
           if path
-            Package.new(path, gem, package_name, exclude, labels, shallow)
+            Package.new(path, gem, require_name, exclude, labels, shallow)
           else
             AppMap::Util.startup_message "#{gem} is not available in the bundle"
           end
@@ -81,7 +82,7 @@ module AppMap
       def to_h
         {
           path: path,
-          package_name: package_name,
+          require_name: require_name,
           gem: gem,
           handler_class: handler_class.name,
           exclude: Util.blank?(exclude) ? nil : exclude,
@@ -117,11 +118,11 @@ module AppMap
     # entry in appmap.yml. When the Config is initialized, each Function is converted into
     # a Package and TargetMethods. It's called a Function rather than a Method, because Function
     # is the AppMap terminology.
-    Function = Struct.new(:package, :cls, :labels, :function_names, :builtin, :package_name) do # :nodoc:
+    Function = Struct.new(:package, :cls, :labels, :function_names, :builtin, :require_name) do # :nodoc:
       def to_h
         {
           package: package,
-          package_name: package_name,
+          require_name: require_name,
           class: cls,
           labels: labels,
           functions: function_names.map(&:to_sym),
@@ -138,9 +139,9 @@ module AppMap
     private_constant :MethodHook
     
     class << self
-      def package_hooks(gem_name, methods, handler_class: nil, package_name: nil)
+      def package_hooks(gem_name, methods, handler_class: nil, require_name: nil)
         Array(methods).map do |method|
-          package = Package.build_from_gem(gem_name, package_name: package_name, labels: method.labels, shallow: false, optional: true)
+          package = Package.build_from_gem(gem_name, require_name: require_name, labels: method.labels, shallow: false, optional: true)
           next unless package
 
           package.handler_class = handler_class if handler_class
@@ -164,14 +165,14 @@ module AppMap
           method_hook('ActionView::PartialRenderer', :render, %w[mvc.view])
         ],
         handler_class: AppMap::Handler::Rails::Template::RenderHandler,
-        package_name: 'action_view'
+        require_name: 'action_view'
       ),
       package_hooks('actionview',
         [
           method_hook('ActionView::Resolver', %i[find_all find_all_anywhere], %w[mvc.template.resolver])
         ],
         handler_class: AppMap::Handler::Rails::Template::ResolverHandler,
-        package_name: 'action_view'
+        require_name: 'action_view'
       ),
       package_hooks('actionpack',
         [
@@ -181,7 +182,7 @@ module AppMap
           method_hook('ActionDispatch::Cookies::CookieJar', %i[[]= clear update delete recycle], %w[http.session.write]),
           method_hook('ActionDispatch::Cookies::EncryptedCookieJar', %i[[]= clear update delete recycle], %w[http.cookie crypto.encrypt])
         ],
-        package_name: 'action_dispatch'
+        require_name: 'action_dispatch'
       ),
       package_hooks('cancancan',
         [
@@ -193,11 +194,11 @@ module AppMap
         [
           method_hook('ActionController::Instrumentation', %i[process_action send_file send_data redirect_to], %w[mvc.controller])
         ],
-        package_name: 'action_controller'
+        require_name: 'action_controller'
       )
     ].flatten.freeze
 
-    OPENSSL_PACKAGES = ->(labels) { Package.build_from_path('openssl', package_name: 'openssl', labels: labels) }
+    OPENSSL_PACKAGES = ->(labels) { Package.build_from_path('openssl', require_name: 'openssl', labels: labels) }
 
     # Hook functions which are builtin to Ruby. Because they are builtins, they may be loaded before appmap.
     # Therefore, we can't rely on TracePoint to report the loading of this code.
@@ -210,25 +211,25 @@ module AppMap
         TargetMethods.new(%i[decrypt], OPENSSL_PACKAGES.(%w[crypto.decrypt]))
       ],
       'ActiveSupport::Callbacks::CallbackSequence' => [
-        TargetMethods.new(:invoke_before, Package.build_from_gem('activesupport', force: true, package_name: 'active_support', labels: %w[mvc.before_action])),
-        TargetMethods.new(:invoke_after, Package.build_from_gem('activesupport', force: true, package_name: 'active_support', labels: %w[mvc.after_action])),
+        TargetMethods.new(:invoke_before, Package.build_from_gem('activesupport', force: true, require_name: 'active_support', labels: %w[mvc.before_action])),
+        TargetMethods.new(:invoke_after, Package.build_from_gem('activesupport', force: true, require_name: 'active_support', labels: %w[mvc.after_action])),
       ],
-      'ActiveSupport::SecurityUtils' => TargetMethods.new(:secure_compare, Package.build_from_gem('activesupport', force: true, package_name: 'active_support/security_utils', labels: %w[crypto.secure_compare])),
+      'ActiveSupport::SecurityUtils' => TargetMethods.new(:secure_compare, Package.build_from_gem('activesupport', force: true, require_name: 'active_support/security_utils', labels: %w[crypto.secure_compare])),
       'OpenSSL::X509::Certificate' => TargetMethods.new(:sign, OPENSSL_PACKAGES.(%w[crypto.x509])),
-      'Net::HTTP' => TargetMethods.new(:request, Package.build_from_path('net/http', package_name: 'net/http', labels: %w[protocol.http]).tap do |package|
+      'Net::HTTP' => TargetMethods.new(:request, Package.build_from_path('net/http', require_name: 'net/http', labels: %w[protocol.http]).tap do |package|
         package.handler_class = AppMap::Handler::NetHTTP
       end),
-      'Net::SMTP' => TargetMethods.new(:send, Package.build_from_path('net/smtp', package_name: 'net/smtp', labels: %w[protocol.email.smtp])),
-      'Net::POP3' => TargetMethods.new(:mails, Package.build_from_path('net/pop3', package_name: 'net/pop', labels: %w[protocol.email.pop])),
+      'Net::SMTP' => TargetMethods.new(:send, Package.build_from_path('net/smtp', require_name: 'net/smtp', labels: %w[protocol.email.smtp])),
+      'Net::POP3' => TargetMethods.new(:mails, Package.build_from_path('net/pop3', require_name: 'net/pop', labels: %w[protocol.email.pop])),
       # This is happening: Method send_command not found on Net::IMAP
-      # 'Net::IMAP' => TargetMethods.new(:send_command, Package.build_from_path('net/imap', package_name: 'net/imap', labels: %w[protocol.email.imap])),
+      # 'Net::IMAP' => TargetMethods.new(:send_command, Package.build_from_path('net/imap', require_name: 'net/imap', labels: %w[protocol.email.imap])),
       # 'Marshal' => TargetMethods.new(%i[dump load], Package.build_from_path('marshal', labels: %w[format.marshal])),
       'Psych' => [
-        TargetMethods.new(%i[load load_stream parse parse_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml.parse])),
-        TargetMethods.new(%i[dump dump_stream], Package.build_from_path('yaml', package_name: 'psych', labels: %w[format.yaml.generate])),
+        TargetMethods.new(%i[load load_stream parse parse_stream], Package.build_from_path('yaml', require_name: 'psych', labels: %w[format.yaml.parse])),
+        TargetMethods.new(%i[dump dump_stream], Package.build_from_path('yaml', require_name: 'psych', labels: %w[format.yaml.generate])),
       ],
-      'JSON::Ext::Parser' => TargetMethods.new(:parse, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.parse])),
-      'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', package_name: 'json', labels: %w[format.json.generate])),
+      'JSON::Ext::Parser' => TargetMethods.new(:parse, Package.build_from_path('json', require_name: 'json', labels: %w[format.json.parse])),
+      'JSON::Ext::Generator::State' => TargetMethods.new(:generate, Package.build_from_path('json', require_name: 'json', labels: %w[format.json.generate])),
     }.freeze
 
     attr_reader :name, :appmap_dir, :packages, :exclude, :swagger_config, :depends_config, :hooked_methods, :builtin_hooks
@@ -256,8 +257,8 @@ module AppMap
       functions.each do |func|
         package_options = {}
         package_options[:labels] = func.labels if func.labels
-        package_options[:package_name] = func.package_name
-        package_options[:package_name] ||= func.package if func.builtin
+        package_options[:require_name] = func.require_name
+        package_options[:require_name] ||= func.package if func.builtin
         hook = TargetMethods.new(func.function_names, Package.build_from_path(func.package, **package_options))
         if func.builtin
           @builtin_hooks[func.cls] ||= []
@@ -366,7 +367,11 @@ module AppMap
                 shallow = package['shallow']
                 # shallow is true by default for gems
                 shallow = true if shallow.nil?
-                Package.build_from_gem(gem, package_name: package['package'], exclude: package['exclude'] || [], shallow: shallow)
+
+                require_name = \
+                  package['package'] || #deprecated
+                  package['require_name']
+                Package.build_from_gem(gem, require_name: require_name, exclude: package['exclude'] || [], shallow: shallow)
               else
                 Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
               end

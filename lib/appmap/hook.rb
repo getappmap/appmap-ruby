@@ -89,7 +89,8 @@ module AppMap
 
       config.builtin_hooks.each do |class_name, hooks|
         Array(hooks).each do |hook|
-          require hook.package.package_name if hook.package.package_name && hook.package.package_name != 'ruby'
+          require hook.package.require_name if hook.package.require_name && hook.package.require_name != 'ruby'
+
           Array(hook.method_names).each do |method_name|
             method_name = method_name.to_sym
             base_cls = class_from_string.(class_name)
