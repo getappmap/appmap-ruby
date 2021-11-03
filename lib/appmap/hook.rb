@@ -128,7 +128,7 @@ module AppMap
       end
 
       hook_loaded_code.(config.builtin_hooks, true)
-      hook_loaded_code.(config.hooked_methods, false)
+      hook_loaded_code.(config.gem_hooks, false)
     end
 
     protected
