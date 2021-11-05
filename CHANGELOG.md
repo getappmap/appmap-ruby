@@ -1,3 +1,16 @@
+# [0.68.0](https://github.com/applandinc/appmap-ruby/compare/v0.67.1...v0.68.0) (2021-11-05)
+
+
+### Bug Fixes
+
+* Require weakref ([2f94f80](https://github.com/applandinc/appmap-ruby/commit/2f94f808bd3327aa3fc7fd8e6a3428a5da3a29bb))
+
+
+### Features
+
+* Externalize config of hooks ([8080222](https://github.com/applandinc/appmap-ruby/commit/8080222ce5b61d9824eaf20410d7b9b94b679890))
+* Support loading hook config via path env vars ([4856483](https://github.com/applandinc/appmap-ruby/commit/48564837784f8b0e87c4286ad3e2f6cb2d272dcf))
+
 ## [0.67.1](https://github.com/applandinc/appmap-ruby/compare/v0.67.0...v0.67.1) (2021-11-02)
 
 
