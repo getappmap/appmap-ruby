@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'weakref'
+
 module AppMap
   module Event
     @@id_counter = 0

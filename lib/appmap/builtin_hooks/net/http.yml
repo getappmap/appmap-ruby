@@ -1,0 +1,3 @@
+- method: Net::HTTP#request
+  label: protocol.http
+  handler_class: AppMap::Handler::NetHTTP

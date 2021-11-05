@@ -4,58 +4,7 @@ require 'rails_spec_helper'
 require 'appmap/config'
 
 describe AppMap::Config, docker: false do
-  it 'loads from a Hash' do
-    config_data = {
-      exclude: [],
-      name: 'test',
-      packages: [
-        {
-          path: 'path-1'
-        },
-        {
-          path: 'path-2',
-          exclude: [ 'exclude-1' ]
-        }
-      ],
-      functions: [
-        {
-          package: 'pkg',
-          class: 'cls',
-          function: 'fn',
-          label: 'lbl'
-        }
-      ]
-    }.deep_stringify_keys!
-    config = AppMap::Config.load(config_data)
-
-    config_expectation = {
-      exclude: [],
-      name: 'test',
-      packages: [
-        {
-          path: 'path-1',
-          handler_class: 'AppMap::Handler::Function'
-        },
-        {
-          path: 'path-2',
-          handler_class: 'AppMap::Handler::Function',
-          exclude: [ 'exclude-1' ]
-        }
-      ],
-      functions: [
-        {
-          package: 'pkg',
-          class: 'cls',
-          functions: [ :fn ],
-          labels: ['lbl']
-        }
-      ]
-    }.deep_stringify_keys!
-
-    expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
-  end
-
-  it 'interprets a function in canonical name format' do
+  it 'loads as expected' do
     config_data = {
       name: 'test',
       packages: [],
@@ -67,20 +16,212 @@ describe AppMap::Config, docker: false do
     }.deep_stringify_keys!
     config = AppMap::Config.load(config_data)
 
-    config_expectation = {
-      exclude: [],
-      name: 'test',
-      packages: [],
-      functions: [
+    expect(JSON.parse(JSON.generate(config.as_json))).to eq(JSON.parse(<<~FIXTURE))
+    {
+      "name": "test",
+      "appmap_dir": "tmp/appmap",
+      "packages": [
+      ],
+      "swagger_config": {
+        "project_name": null,
+        "project_version": "1.0",
+        "output_dir": "swagger",
+        "description": "Generate Swagger from AppMaps"
+      },
+      "depends_config": {
+        "base_dir": null,
+        "base_branches": [
+          "remotes/origin/main",
+          "remotes/origin/master"
+        ],
+        "test_file_patterns": [
+          "spec/**/*_spec.rb",
+          "test/**/*_test.rb"
+        ],
+        "dependent_tasks": [
+          "swagger"
+        ],
+        "description": "Bring AppMaps up to date with local file modifications, and updated derived data such as Swagger files",
+        "rspec_environment_method": "AppMap::Depends.test_env",
+        "minitest_environment_method": "AppMap::Depends.test_env",
+        "rspec_select_tests_method": "AppMap::Depends.select_rspec_tests",
+        "minitest_select_tests_method": "AppMap::Depends.select_minitest_tests",
+        "rspec_test_command_method": "AppMap::Depends.rspec_test_command",
+        "minitest_test_command_method": "AppMap::Depends.minitest_test_command"
+      },
+      "hook_paths": [
+        "pkg",
+        "#{Gem.loaded_specs['activesupport'].gem_dir}"
+      ],
+      "exclude": [
+      ],
+      "functions": [
         {
-          package: 'pkg',
-          class: 'cls',
-          functions: [ :fn ],
+          "cls": "cls",
+          "target_methods": {
+            "package": "pkg",
+            "method_names": [
+              "fn"
+            ]
+          }
         }
-      ]
-    }.deep_stringify_keys!
-
-    expect(config.to_h.deep_stringify_keys!).to eq(config_expectation)
+      ],
+      "builtin_hooks": {
+        "JSON::Ext::Parser": [
+          {
+            "package": "json",
+            "method_names": [
+              "parse"
+            ]
+          }
+        ],
+        "JSON::Ext::Generator::State": [
+          {
+            "package": "json",
+            "method_names": [
+              "generate"
+            ]
+          }
+        ],
+        "Net::HTTP": [
+          {
+            "package": "net/http",
+            "method_names": [
+              "request"
+            ]
+          }
+        ],
+        "OpenSSL::PKey::PKey": [
+          {
+            "package": "openssl",
+            "method_names": [
+              "sign"
+            ]
+          }
+        ],
+        "OpenSSL::X509::Request": [
+          {
+            "package": "openssl",
+            "method_names": [
+              "sign"
+            ]
+          },
+          {
+            "package": "openssl",
+            "method_names": [
+              "verify"
+            ]
+          }
+        ],
+        "OpenSSL::X509::Certificate": [
+          {
+            "package": "openssl",
+            "method_names": [
+              "sign"
+            ]
+          }
+        ],
+        "OpenSSL::PKCS5": [
+          {
+            "package": "openssl",
+            "method_names": [
+              "pbkdf2_hmac"
+            ]
+          },
+          {
+            "package": "openssl",
+            "method_names": [
+              "pbkdf2_hmac_sha1"
+            ]
+          }
+        ],
+        "OpenSSL::Cipher": [
+          {
+            "package": "openssl",
+            "method_names": [
+              "encrypt"
+            ]
+          },
+          {
+            "package": "openssl",
+            "method_names": [
+              "decrypt"
+            ]
+          }
+        ],
+        "Psych": [
+          {
+            "package": "yaml",
+            "method_names": [
+              "load"
+            ]
+          },
+          {
+            "package": "yaml",
+            "method_names": [
+              "load_stream"
+            ]
+          },
+          {
+            "package": "yaml",
+            "method_names": [
+              "parse"
+            ]
+          },
+          {
+            "package": "yaml",
+            "method_names": [
+              "parse_stream"
+            ]
+          },
+          {
+            "package": "yaml",
+            "method_names": [
+              "dump"
+            ]
+          },
+          {
+            "package": "yaml",
+            "method_names": [
+              "dump_stream"
+            ]
+          }
+        ]
+      },
+      "gem_hooks": {
+        "cls": [
+          {
+            "package": "pkg",
+            "method_names": [
+              "fn"
+            ]
+          }
+        ],
+        "ActiveSupport::Callbacks::CallbackSequence": [
+          {
+            "package": "activesupport",
+            "method_names": [
+              "invoke_before"
+            ]
+          },
+          {
+            "package": "activesupport",
+            "method_names": [
+              "invoke_after"
+            ]
+          }
+        ],
+        "ActiveSupport::SecurityUtils": [
+          {
+            "package": "activesupport",
+            "method_names": [
+              "secure_compare"
+            ]
+          }
+        ]
+      }
+    }
+    FIXTURE
   end
 
   context do
@@ -94,7 +235,8 @@ describe AppMap::Config, docker: false do
       expect(config.to_h).to eq(YAML.load(<<~CONFIG))
       :name: appmap-ruby
       :packages:
-      - :path: lib
+      - :name: lib
+        :path: lib
         :handler_class: AppMap::Handler::Function
         :shallow: false
       :functions: []

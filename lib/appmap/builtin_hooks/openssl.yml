@@ -1,0 +1,16 @@
+- method: OpenSSL::PKey::PKey#sign
+  label: crypto.pkey
+- methods:
+  - OpenSSL::X509::Request#sign
+  - OpenSSL::X509::Request#verify
+  label: crypto.x509
+- method: OpenSSL::X509::Certificate#sign
+  label: crypto.x509
+- methods:
+  - OpenSSL::PKCS5#pbkdf2_hmac
+  - OpenSSL::PKCS5#pbkdf2_hmac_sha1
+  label: crypto.pkcs5
+- method: OpenSSL::Cipher#encrypt
+  label: crypto.encrypt
+- method: OpenSSL::Cipher#decrypt
+  label: crypto.decrypt
