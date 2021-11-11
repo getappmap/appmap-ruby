@@ -45,13 +45,25 @@ properties:
       type: object
       additionalProperties: false
       properties:
-        package:
+        method:
           type: string
-        class:
+        label:
           type: string
-        function:
-          type: string
+        methods:
+          type: array
+          items:
+            type: string
         labels:
           type: array
           items:
             type: string
+        require_name:
+          type: string
+        gem:
+          type: string
+        path:
+          type: string
+        builtin:
+          type: boolean
+        force:
+          type: boolean
