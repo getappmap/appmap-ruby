@@ -366,7 +366,7 @@ module AppMap
               # hook config.
               declare_hook(hook_decl)
             end
-          end
+          end.flatten
         end
 
         config_params[:packages] = \

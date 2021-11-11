@@ -11,6 +11,10 @@ describe AppMap::Config, docker: false do
       functions: [
         {
           name: 'pkg/cls#fn',
+        },
+        {
+          methods: ['cls#new_fn'],
+          path: 'pkg'
         }
       ]
     }.deep_stringify_keys!
@@ -62,6 +66,15 @@ describe AppMap::Config, docker: false do
             "package": "pkg",
             "method_names": [
               "fn"
+            ]
+          }
+        },
+        {
+          "cls": "cls",
+          "target_methods": {
+            "package": "pkg",
+            "method_names": [
+              "new_fn"
             ]
           }
         }
@@ -194,6 +207,12 @@ describe AppMap::Config, docker: false do
             "package": "pkg",
             "method_names": [
               "fn"
+            ]
+          },
+          {
+            "package": "pkg",
+            "method_names": [
+              "new_fn"
             ]
           }
         ],
