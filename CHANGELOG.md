@@ -1,3 +1,10 @@
+## [0.68.1](https://github.com/applandinc/appmap-ruby/compare/v0.68.0...v0.68.1) (2021-11-12)
+
+
+### Bug Fixes
+
+* Support new style of `functions` syntax in appmap.yml ([dca327c](https://github.com/applandinc/appmap-ruby/commit/dca327c98db1bddf849056995541306a5fc07eea))
+
 # [0.68.0](https://github.com/applandinc/appmap-ruby/compare/v0.67.1...v0.68.0) (2021-11-05)
 
 
