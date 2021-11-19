@@ -6,7 +6,7 @@ require 'appmap/command_error'
 module AppMap
   # Utilities for invoking the +@appland/appmap+ CLI.
   class NodeCLI
-    APPMAP_JS = Pathname.new(__dir__).join('../../node_modules/@appland/appmap/src/cli.js').expand_path.to_s
+    APPMAP_JS = Pathname.new(__dir__).join('../../node_modules/@appland/appmap/built/src/cli.js').expand_path.to_s
 
     attr_reader :verbose
     # Directory to scan for AppMaps.
