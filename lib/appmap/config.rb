@@ -67,6 +67,7 @@ module AppMap
             Package.new(gem, path, gem, require_name, exclude, labels, shallow)
           else
             AppMap::Util.startup_message "#{gem} is not available in the bundle"
+            nil
           end
         end
 
