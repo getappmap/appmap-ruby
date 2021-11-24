@@ -226,7 +226,9 @@ module AppMap
         elsif ENV['DEBUG'] == 'true'
           warn msg
         end
-      end  
+
+        nil
+      end
 
       def ruby_minor_version
         @ruby_minor_version ||= RUBY_VERSION.split('.')[0..1].join('.').to_f
