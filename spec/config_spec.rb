@@ -243,6 +243,21 @@ describe AppMap::Config, docker: false do
     FIXTURE
   end
 
+  describe AppMap::Config::Package do
+    describe :build_from_gem do
+      let(:mock_rails) { double(logger: double(info: true)) }
+
+      before do
+        stub_const('Rails', mock_rails)
+      end
+
+      it 'does not return a truthy value on failure' do
+        result = AppMap::Config::Package.build_from_gem('some_missing_gem_name', optional: true)
+        expect(result).to_not be_truthy
+      end
+    end
+  end
+
   context do
     let(:warnings) { @warnings ||= [] }
     let(:warning) { warnings.join }
