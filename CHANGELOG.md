@@ -1,3 +1,10 @@
+## [0.68.2](https://github.com/applandinc/appmap-ruby/compare/v0.68.1...v0.68.2) (2021-11-25)
+
+
+### Bug Fixes
+
+* Missing gems will no longer attempt to be hooked ([ac6cf26](https://github.com/applandinc/appmap-ruby/commit/ac6cf264897e492c73ba4b66233709eb4eaf7b36))
+
 ## [0.68.1](https://github.com/applandinc/appmap-ruby/compare/v0.68.0...v0.68.1) (2021-11-12)
 
 
