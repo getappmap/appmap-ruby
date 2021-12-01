@@ -1,0 +1,2 @@
+- method: ActiveJob::Cancel#cancel
+  label: job.cancel

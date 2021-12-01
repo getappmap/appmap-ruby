@@ -1,0 +1,4 @@
+- method: Sidekiq::Client#push
+  label: job.create
+- method: Sidekiq::Job#delete
+  label: job.cancel

@@ -1,0 +1,4 @@
+- method: Resque::Job.create
+  label: job.create
+- method: Resque::Job.destroy
+  label: job.cancel
