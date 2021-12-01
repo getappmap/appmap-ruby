@@ -1,3 +1,10 @@
+# [0.69.0](https://github.com/applandinc/appmap-ruby/compare/v0.68.2...v0.69.0) (2021-12-01)
+
+
+### Features
+
+* Add labels for job creation and canceling ([644fafe](https://github.com/applandinc/appmap-ruby/commit/644fafe7f0eab626a9e0a52243ad4faf052a883a))
+
 ## [0.68.2](https://github.com/applandinc/appmap-ruby/compare/v0.68.1...v0.68.2) (2021-11-25)
 
 
