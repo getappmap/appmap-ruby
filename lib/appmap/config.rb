@@ -44,6 +44,21 @@ module AppMap
         shallow
       end
 
+      # Clones this package into a sub-package, if needed.
+      # For example, suppose the appmap.yml specifies package `app/models`. If some code in
+      # `app/models/dao/user.rb` is mapped, it will be associated with a sub-package
+      # `app/models/dao`.
+      def subpackage(location, config)
+        return self if gem
+
+        path = location.split('/')[0...-1].join('/')
+        clone.tap do |pkg|
+          pkg.name = path
+          pkg.path = path
+          config.packages << pkg
+        end
+      end
+
       class << self
         # Builds a package for a path, such as `app/models` in a Rails app. Generally corresponds to a `path:` entry
         # in appmap.yml. Also used for mapping specific methods via TargetMethods.
@@ -191,7 +206,7 @@ module AppMap
         }.compact
 
         handler_class = hook_decl['handler_class']
-        options[:handler_class] = Util::class_from_string(handler_class) if handler_class
+        options[:handler_class] = Util.class_from_string(handler_class) if handler_class
         
         package_hooks(methods, **options)
       end
@@ -215,7 +230,7 @@ module AppMap
         builtin = hook_decl['builtin']
 
         package_options = {}
-        package_options[:labels] = Array(labels).map(&:to_s) if labels if labels
+        package_options[:labels] = Array(labels).map(&:to_s) if labels
         package_options[:require_name] = req
         package_options[:require_name] ||= package if builtin
         tm = TargetMethods.new(functions, Package.build_from_path(package, **package_options))
@@ -449,13 +464,17 @@ module AppMap
         return unless location_file
 
         location_file = AppMap::Util.normalize_path(location_file)
-        config
-          .packages
-          .select { |pkg| pkg.path }
-          .find do |pkg|
-            (location_file.index(pkg.path) == 0) &&
-              !pkg.exclude.find { |p| location_file.index(p) }
-          end
+
+        pkg = config
+              .packages
+              .select { |pkg| pkg.path }
+              .select do |pkg|
+                (location_file.index(pkg.path) == 0) &&
+                  !pkg.exclude.find { |p| location_file.index(p) }
+              end
+              .min { |a, b| b.path <=> a.path } # Longest matching package first
+
+        pkg.subpackage(location_file, config) if pkg
       end
     end
 

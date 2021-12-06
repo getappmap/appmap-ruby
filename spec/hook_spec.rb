@@ -9,7 +9,7 @@ require 'diffy'
 # empty. This make some of the expected YAML below easier to
 # understand.
 module ShowYamlNulls
-  def visit_NilClass(o)
+  def visit_NilClass(_o)
     @emitter.scalar('null', nil, 'tag:yaml.org,2002:null', true, false, Psych::Nodes::Scalar::ANY)
   end
 end
@@ -18,10 +18,10 @@ Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
 describe 'AppMap class Hooking', docker: false do
   include_context 'collect events'
 
-  def invoke_test_file(file, setup: nil, &block)
+  def invoke_test_file(file, setup: nil, packages: nil)
     AppMap.configuration = nil
-    package = AppMap::Config::Package.build_from_path(file)
-    config = AppMap::Config.new('hook_spec', packages: [ package ])
+    packages ||= [ AppMap::Config::Package.build_from_path(file) ]
+    config = AppMap::Config.new('hook_spec', packages: packages)
     AppMap.configuration = config
     tracer = nil
     AppMap::Hook.new(config).enable do
@@ -153,7 +153,7 @@ describe 'AppMap class Hooking', docker: false do
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
     expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
     ---
-    - :name: spec/fixtures/hook/labels.rb
+    - :name: spec/fixtures/hook
       :type: package
       :children:
       - :name: ClassWithLabel
@@ -166,7 +166,41 @@ describe 'AppMap class Hooking', docker: false do
           :labels:
           - has-fn-label
           :comment: "# @label has-fn-label\\n"
-      YAML
+    YAML
+  end
+
+  it 'reports sub-folders as distinct packages' do
+    _, tracer = invoke_test_file 'spec/fixtures/hook/sub_packages.rb',
+                                 packages: [ AppMap::Config::Package.build_from_path('spec/fixtures/hook') ] do
+      SubPackages.invoke_a
+    end
+    class_map = AppMap.class_map(tracer.event_methods).to_yaml
+    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
+    ---
+    - :name: spec/fixtures/hook
+      :type: package
+      :children:
+      - :name: SubPackages
+        :type: class
+        :children:
+        - :name: invoke_a
+          :type: function
+          :location: spec/fixtures/hook/sub_packages.rb:4
+          :static: true
+      - :name: pkg_a
+        :type: package
+        :children:
+        - :name: PkgA
+          :type: class
+          :children:
+          - :name: A
+            :type: class
+            :children:
+            - :name: hello
+              :type: function
+              :location: spec/fixtures/hook/pkg_a/a.rb:3
+              :static: true
+    YAML
   end
 
   it 'hooks an instance method that takes no arguments' do
@@ -210,7 +244,7 @@ describe 'AppMap class Hooking', docker: false do
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
     expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq('')
     ---
-    - :name: spec/fixtures/hook/instance_method.rb
+    - :name: spec/fixtures/hook
       :type: package
       :children:
       - :name: InstanceMethod
@@ -483,7 +517,6 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
-
   it 'hooks an included method' do
     events_yaml = <<~YAML
     ---
@@ -607,11 +640,9 @@ describe 'AppMap class Hooking', docker: false do
         :lineno: 9
     YAML
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
-      begin
-        ExceptionMethod.new.raise_exception
-      rescue
-        # don't let the exception fail the test
-      end
+      ExceptionMethod.new.raise_exception
+    rescue
+      # don't let the exception fail the test
     end
   end
 
@@ -639,16 +670,13 @@ describe 'AppMap class Hooking', docker: false do
         :lineno: 59
     YAML
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
-      begin
-        ExceptionMethod.new.raise_illegal_utf8_message
-      rescue
-        # don't let the exception fail the test
-      end
+      ExceptionMethod.new.raise_illegal_utf8_message
+    rescue
+      # don't let the exception fail the test
     end
   end
 
   context 'string conversions works for the receiver when' do
-
     it 'is missing #to_s' do
       events_yaml = <<~YAML
       ---
@@ -979,7 +1007,7 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
-  it "preserves the arity of hooked methods" do
+  it 'preserves the arity of hooked methods' do
     invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
       expect(InstanceMethod.instance_method(:say_echo).arity).to be(1)
       expect(InstanceMethod.new.method(:say_echo).arity).to be(1)
