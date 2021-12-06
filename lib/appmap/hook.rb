@@ -7,8 +7,10 @@ module AppMap
     LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
     LOG_HOOK = (ENV['DEBUG_HOOK'] == 'true')
 
-    OBJECT_INSTANCE_METHODS = %i[! != !~ <=> == === =~ __id__ __send__ class clone define_singleton_method display dup enum_for eql? equal? extend freeze frozen? hash inspect instance_eval instance_exec instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method methods nil? object_id private_methods protected_methods public_method public_methods public_send remove_instance_variable respond_to? send singleton_class singleton_method singleton_methods taint tainted? tap then to_enum to_s to_h to_a trust untaint untrust untrusted? yield_self].freeze
-    OBJECT_STATIC_METHODS = %i[! != !~ < <= <=> == === =~ > >= __id__ __send__ alias_method allocate ancestors attr attr_accessor attr_reader attr_writer autoload autoload? class class_eval class_exec class_variable_defined? class_variable_get class_variable_set class_variables clone const_defined? const_get const_missing const_set constants define_method define_singleton_method deprecate_constant display dup enum_for eql? equal? extend freeze frozen? hash include include? included_modules inspect instance_eval instance_exec instance_method instance_methods instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method method_defined? methods module_eval module_exec name new nil? object_id prepend private_class_method private_constant private_instance_methods private_method_defined? private_methods protected_instance_methods protected_method_defined? protected_methods public_class_method public_constant public_instance_method public_instance_methods public_method public_method_defined? public_methods public_send remove_class_variable remove_instance_variable remove_method respond_to? send singleton_class singleton_class? singleton_method singleton_methods superclass taint tainted? tap then to_enum to_s trust undef_method untaint untrust untrusted? yield_self].freeze
+    OBJECT_INSTANCE_METHODS = %i[! != !~ <=> == === =~ __id__ __send__ class clone define_singleton_method display dup
+                                 enum_for eql? equal? extend freeze frozen? hash inspect instance_eval instance_exec instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method methods nil? object_id private_methods protected_methods public_method public_methods public_send remove_instance_variable respond_to? send singleton_class singleton_method singleton_methods taint tainted? tap then to_enum to_s to_h to_a trust untaint untrust untrusted? yield_self].freeze
+    OBJECT_STATIC_METHODS = %i[! != !~ < <= <=> == === =~ > >= __id__ __send__ alias_method allocate ancestors attr
+                               attr_accessor attr_reader attr_writer autoload autoload? class class_eval class_exec class_variable_defined? class_variable_get class_variable_set class_variables clone const_defined? const_get const_missing const_set constants define_method define_singleton_method deprecate_constant display dup enum_for eql? equal? extend freeze frozen? hash include include? included_modules inspect instance_eval instance_exec instance_method instance_methods instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method method_defined? methods module_eval module_exec name new nil? object_id prepend private_class_method private_constant private_instance_methods private_method_defined? private_methods protected_instance_methods protected_method_defined? protected_methods public_class_method public_constant public_instance_method public_instance_methods public_method public_method_defined? public_methods public_send remove_class_variable remove_instance_variable remove_method respond_to? send singleton_class singleton_class? singleton_method singleton_methods superclass taint tainted? tap then to_enum to_s trust undef_method untaint untrust untrusted? yield_self].freeze
     SLOW_PACKAGE_THRESHOLD = 0.05
 
     @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
@@ -29,7 +31,7 @@ module AppMap
       def already_hooked?(method)
         # After a method is defined, the statement "module_function <the-method>" can convert that method
         # into a module (class) method. The method is hooked first when it's defined, then AppMap will attempt to
-        # hook it again when it's redefined as a module method. So we check the method source location - if it's 
+        # hook it again when it's redefined as a module method. So we check the method source location - if it's
         # part of the AppMap source tree, we ignore it.
         method.source_location && method.source_location[0].index(__dir__) == 0
       end
@@ -63,7 +65,7 @@ module AppMap
       @notrace_paths = Set.new
       # Locations that have already been visited.
       @trace_locations = Set.new
-      @module_load_times = Hash.new {|memo,k| memo[k] = 0}
+      @module_load_times = Hash.new { |memo, k| memo[k] = 0 }
       @slow_packages = Set.new
 
       if ENV['APPMAP_PROFILE_HOOK'] == 'true'
@@ -90,18 +92,20 @@ module AppMap
     end
 
     # hook_builtins builds hooks for code that is built in to the Ruby standard library.
-    # No TracePoint events are emitted for builtins, so a separate hooking mechanism is needed. 
+    # No TracePoint events are emitted for builtins, so a separate hooking mechanism is needed.
     def hook_builtins
       return unless self.class.hook_builtins?
 
       hook_loaded_code = lambda do |hooks_by_class, builtin|
         hooks_by_class.each do |class_name, hooks|
           Array(hooks).each do |hook|
-            require hook.package.require_name if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
+            if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
+              require hook.package.require_name
+            end
 
             Array(hook.method_names).each do |method_name|
               method_name = method_name.to_sym
-              base_cls = Util::class_from_string(class_name, must: false)
+              base_cls = Util.class_from_string(class_name, must: false)
               next unless base_cls
 
               hook_method = lambda do |entry|
@@ -113,8 +117,10 @@ module AppMap
 
               methods = []
               methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
+              methods << [ base_cls, base_cls.protected_instance_method(method_name) ] rescue nil
               if base_cls.respond_to?(:singleton_class)
                 methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
+                methods << [ base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name) ] rescue nil
               end
               methods.compact!
               if methods.empty?
@@ -144,19 +150,19 @@ module AppMap
 
       path = trace_point.path
       enabled = !@notrace_paths.member?(path) && config.path_enabled?(path)
-      if !enabled
-        warn "Not hooking - path is not enabled" if Hook::LOG || Hook::LOG_HOOK
+      unless enabled
+        warn 'Not hooking - path is not enabled' if Hook::LOG || Hook::LOG_HOOK
         @notrace_paths << path
         return
       end
 
       cls = trace_point.self
 
-      instance_methods = cls.public_instance_methods(false) - OBJECT_INSTANCE_METHODS
+      instance_methods = cls.public_instance_methods(false) + cls.protected_instance_methods(false) - OBJECT_INSTANCE_METHODS
       # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
       class_methods = begin
         if cls.respond_to?(:singleton_class)
-          cls.singleton_class.public_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
+          cls.singleton_class.public_instance_methods(false) + cls.singleton_class.protected_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
         else
           []
         end
@@ -172,12 +178,13 @@ module AppMap
 
           next if method_id == :call
 
-          method = begin
-            hook_cls.public_instance_method(method_id)
-          rescue NameError
-            warn "AppMap: Method #{hook_cls} #{method.name} is not accessible" if LOG
-            next
-          end
+          method = \
+            begin
+              hook_cls.instance_method(method_id)
+            rescue NameError
+              warn "AppMap: Method #{hook_cls} #{fn} is not accessible: #{$!}" if LOG
+              next
+            end
 
           next if self.class.already_hooked?(method)
 
