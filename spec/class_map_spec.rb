@@ -16,7 +16,7 @@ describe 'AppMap::ClassMap' do
     end
 
     def ruby_method(method)
-      AppMap::Trace::RubyMethod.new AppMap::Config::Package.new, method.receiver.class.name, method, false
+      AppMap::Trace::RubyMethod.new AppMap::Config::Package.new('pkg'), method.receiver.class.name, method, false
     end
 
     def dig_map(map, depth)
