@@ -157,31 +157,31 @@ describe 'Rails' do
             )
 
             expect(appmap['classMap']).to include hash_including(
-              'name' => 'app/views',
+              'name' => 'app',
               'children' => include(hash_including(
-                'name' => 'app_views_users_index_html_haml',
+                'name' => 'views',
                 'children' => include(hash_including(
-                  'name' => 'render',
-                  'type' => 'function',
-                  'location' => 'app/views/users/index.html.haml',
-                  'static' => true,
-                  'labels' => [ 'mvc.template' ]
-                ))
-              ))
-            )
+                  'name' => 'app_views_users_index_html_haml',
+                  'children' => include(hash_including(
+                    'name' => 'render',
+                    'type' => 'function',
+                    'location' => 'app/views/users/index.html.haml',
+                    'static' => true,
+                    'labels' => [ 'mvc.template' ]
+                  )))))))
             expect(appmap['classMap']).to include hash_including(
-              'name' => 'app/views',
+              'name' => 'app',
               'children' => include(hash_including(
-                'name' => 'app_views_layouts_application_html_haml',
+                'name' => 'views',
                 'children' => include(hash_including(
-                  'name' => 'render',
-                  'type' => 'function',
-                  'location' => 'app/views/layouts/application.html.haml',
-                  'static' => true,
-                  'labels' => [ 'mvc.template' ]
-                ))
-              ))
-            )
+                  'name' => 'app_views_layouts_application_html_haml',
+                  'children' => include(hash_including(
+                    'name' => 'render',
+                    'type' => 'function',
+                    'location' => 'app/views/layouts/application.html.haml',
+                    'static' => true,
+                    'labels' => [ 'mvc.template' ]
+                  )))))))
           end
         end
 
