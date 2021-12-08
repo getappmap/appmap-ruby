@@ -1,3 +1,11 @@
+# [0.70.0](https://github.com/applandinc/appmap-ruby/compare/v0.69.0...v0.70.0) (2021-12-08)
+
+
+### Features
+
+* Hook protected methods ([a3722b5](https://github.com/applandinc/appmap-ruby/commit/a3722b504b8e5b8c032988b586b13bdd071fe577))
+* Report sub-packages for nested folders ([dce709b](https://github.com/applandinc/appmap-ruby/commit/dce709b077fd64fc2b34f9abb30a65db529f824b))
+
 # [0.69.0](https://github.com/applandinc/appmap-ruby/compare/v0.68.2...v0.69.0) (2021-12-01)
 
 
