@@ -277,6 +277,92 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
+  it 'records protected instance methods' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: ProtectedMethod
+      :method_id: call_protected
+      :path: spec/fixtures/hook/protected_method.rb
+      :lineno: 4
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: ProtectedMethod
+        :value: Protected Method fixture
+    - :id: 2
+      :event: :call
+      :defined_class: ProtectedMethod
+      :method_id: protected_method
+      :path: spec/fixtures/hook/protected_method.rb
+      :lineno: 26
+      :static: false
+      :parameters: []
+      :receiver:
+        :class: ProtectedMethod
+        :value: Protected Method fixture
+    - :id: 3
+      :event: :return
+      :parent_id: 2
+      :return_value:
+        :class: String
+        :value: protected
+    - :id: 4
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: protected
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/protected_method.rb', events_yaml do
+      expect(ProtectedMethod.new.call_protected).to eq('protected')
+    end
+  end
+
+  it 'records protected singleton (static) methods' do
+    events_yaml = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: ProtectedMethod
+      :method_id: call_protected
+      :path: spec/fixtures/hook/protected_method.rb
+      :lineno: 13
+      :static: true
+      :parameters: []
+      :receiver:
+        :class: Class
+        :value: ProtectedMethod
+    - :id: 2
+      :event: :call
+      :defined_class: ProtectedMethod
+      :method_id: protected_method
+      :path: spec/fixtures/hook/protected_method.rb
+      :lineno: 19
+      :static: true
+      :parameters: []
+      :receiver:
+        :class: Class
+        :value: ProtectedMethod
+    - :id: 3
+      :event: :return
+      :parent_id: 2
+      :return_value:
+        :class: String
+        :value: self.protected
+    - :id: 4
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: String
+        :value: self.protected
+    YAML
+    test_hook_behavior 'spec/fixtures/hook/protected_method.rb', events_yaml do
+      expect(ProtectedMethod.call_protected).to eq('self.protected')
+    end
+  end
+
   it 'hooks an instance method that takes an argument' do
     events_yaml = <<~YAML
     ---
