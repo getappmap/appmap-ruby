@@ -76,24 +76,39 @@ module AppMap
         methods.each do |method|
           add_function root, method
         end
-        root.children.map(&:to_h)
+
+        collapse_package = lambda do |package|
+          return unless package.type == 'package'
+
+          while package.children.length == 1 && package.children.all? { |child| child.type == 'package' }
+            child = package.children[0]
+            package.children.clear
+            child.children.each { |child| package.children << child }
+            package.name = [ package.name, child.name ].join('/')
+          end
+          package.tap do
+            package.children.map(&collapse_package)
+          end
+        end
+
+        root.children.map(&collapse_package).map(&:to_h)
       end
 
       protected
 
       def add_function(root, method)
-        object_infos = [
-          {
-            name: method.package,
-            type: 'package'
-          }
-        ]
-        object_infos += method.class_name.split('::').map do |name|
-          {
-            name: name,
-            type: 'class'
-          }
-        end
+        object_infos = \
+          method.package.split('/').map do |name|
+            {
+              name: name,
+              type: 'package'
+            }
+          end + method.class_name.split('::').map do |name|
+            {
+              name: name,
+              type: 'class'
+            }
+          end
         function_info = {
           name: method.name,
           type: 'function',
