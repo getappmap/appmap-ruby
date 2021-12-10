@@ -163,7 +163,7 @@ module AppMap
       def package_hooks(methods, path: nil, gem: nil, force: false, builtin: false, handler_class: nil, require_name: nil)
         Array(methods).map do |method|
           package = if builtin
-            Package.build_from_builtin(path, require_name: require_name, labels: method.labels, shallow: false)
+            Package.build_from_builtin(path || require_name, require_name: require_name, labels: method.labels, shallow: false)
           elsif gem
             Package.build_from_gem(gem, require_name: require_name, labels: method.labels, shallow: false, force: force, optional: true)
           elsif path
