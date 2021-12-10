@@ -1,3 +1,10 @@
+## [0.70.1](https://github.com/applandinc/appmap-ruby/compare/v0.70.0...v0.70.1) (2021-12-10)
+
+
+### Bug Fixes
+
+* Use require_name as the default package 'path' for builtins ([bcb4367](https://github.com/applandinc/appmap-ruby/commit/bcb4367811992c924c76950a22d11ddc3057c1ee))
+
 # [0.70.0](https://github.com/applandinc/appmap-ruby/compare/v0.69.0...v0.70.0) (2021-12-08)
 
 
