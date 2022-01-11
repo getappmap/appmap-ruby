@@ -20,6 +20,13 @@
 # - appmap/swagger (Rake task)
 # - appmap/depends (Rake task)
 
+begin
+  require 'active_support'
+  require 'active_support/core_ext'
+rescue NameError
+  warn 'active_support is not available. AppMap execution will continue optimistically without it...'
+end
+
 require 'appmap/version'
 require 'appmap/agent'
 
@@ -60,11 +67,11 @@ lambda do
   if defined?(::Rails)
     require 'appmap/railtie'
   end
-  
+
   if defined?(::RSpec)
     require 'appmap/rspec'
   end
-  
+
   if defined?(::Minitest)
     require 'appmap/minitest'
   end
@@ -73,7 +80,7 @@ lambda do
     require 'appmap/swagger'
     require 'appmap/depends'
   end
-  
+
 end.call unless ENV['APPMAP_AUTOREQUIRE'] == 'false'
 
 AppMap.initialize_configuration if ENV['APPMAP'] == 'true' && ENV['APPMAP_INITIALIZE'] != 'false'
