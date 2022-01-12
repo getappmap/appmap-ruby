@@ -1,3 +1,10 @@
+## [0.70.2](https://github.com/applandinc/appmap-ruby/compare/v0.70.1...v0.70.2) (2022-01-12)
+
+
+### Bug Fixes
+
+* switch to activesupport's deep_dup implementation ([7715f28](https://github.com/applandinc/appmap-ruby/commit/7715f28285fbdabdb4c8d652fb9ac31eb8d86eab))
+
 ## [0.70.1](https://github.com/applandinc/appmap-ruby/compare/v0.70.0...v0.70.1) (2021-12-10)
 
 
