@@ -195,8 +195,7 @@ module AppMap
       end
 
       def deep_dup(hash)
-        # This is a simple way to avoid the need for deep_dup from activesupport.
-        Marshal.load(Marshal.dump(hash))
+        hash.deep_dup
       end
 
       def blank?(obj)
