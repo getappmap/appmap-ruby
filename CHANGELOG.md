@@ -1,3 +1,10 @@
+# [0.71.0](https://github.com/applandinc/appmap-ruby/compare/v0.70.2...v0.71.0) (2022-01-19)
+
+
+### Features
+
+* Add labels for http.session.clear, dao.materialize, log ([8e6784b](https://github.com/applandinc/appmap-ruby/commit/8e6784b82959eb5924d4675b43f6b98c7bd1b779))
+
 ## [0.70.2](https://github.com/applandinc/appmap-ruby/compare/v0.70.1...v0.70.2) (2022-01-12)
 
 
