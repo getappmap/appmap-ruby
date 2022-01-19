@@ -96,6 +96,14 @@ describe AppMap::Config, docker: false do
             ]
           }
         ],
+        "Logger::LogDevice": [
+          {
+            "package": "logger",
+            "method_names": [
+              "write"
+            ]
+          }
+        ], 
         "Net::HTTP": [
           {
             "package": "net/http",

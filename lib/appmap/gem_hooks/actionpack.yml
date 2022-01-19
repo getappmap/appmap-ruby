@@ -10,16 +10,21 @@
 - methods:
   - ActionDispatch::Request::Session#destroy
   - ActionDispatch::Request::Session#[]=
-  - ActionDispatch::Request::Session#clear
   - ActionDispatch::Request::Session#update
   - ActionDispatch::Request::Session#delete
   - ActionDispatch::Request::Session#merge
   - ActionDispatch::Cookies::CookieJar#[]=
-  - ActionDispatch::Cookies::CookieJar#clear
   - ActionDispatch::Cookies::CookieJar#update
   - ActionDispatch::Cookies::CookieJar#delete
   - ActionDispatch::Cookies::CookieJar#recycle!
   label: http.session.write
+  require_name: action_dispatch
+- methods:
+  - ActionDispatch::Request::Session#clear
+  - ActionDispatch::Cookies::CookieJar#clear
+  labels:
+    - http.session.write
+    - http.session.clear
   require_name: action_dispatch
 - methods:
   - ActionDispatch::Cookies::EncryptedCookieJar#[]=
