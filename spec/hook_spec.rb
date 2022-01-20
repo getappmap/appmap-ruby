@@ -1110,4 +1110,30 @@ describe 'AppMap class Hooking', docker: false do
       end
     end
   end
+
+  describe 'prepended override' do
+    it 'does not cause stack overflow error' do
+      # For the purposes of this test, the code must be statically required, then hooked,
+      # then executed.
+
+      require_relative './fixtures/hook/prepended_override'
+      require 'appmap/hook/method'
+
+      pkg = AppMap::Config::Package.new('fixtures/hook/prependend_override')
+      AppMap::Hook::Method.new(pkg, PrependedClass, PrependedClass.public_instance_method(:say_hello)).activate
+
+      tracer = AppMap.tracing.trace
+      AppMap::Event.reset_id_counter
+      begin
+        expect(PrependedClass.new.say_hello).to eq('please allow me to introduce myself')
+      ensure
+        AppMap.tracing.delete(tracer)
+      end
+
+      events = collect_events(tracer)
+      expect(events.length).to eq(2)
+      expect(events.first[:method_id]).to eq('say_hello')
+      expect(events.second[:return_value][:value]).to eq('please allow me to introduce myself')
+    end
+  end
 end

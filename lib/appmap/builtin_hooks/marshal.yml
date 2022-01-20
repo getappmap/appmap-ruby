@@ -1,0 +1,12 @@
+- methods:
+  - Marshal#load
+  - Marshal#restore
+  require_name: ruby
+  label:
+    - deserialize
+    - deserialize.unsafe
+- methods:
+  - Marshal#dump
+  require_name: ruby
+  label:
+    - deserialize
