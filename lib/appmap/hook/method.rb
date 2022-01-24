@@ -94,9 +94,7 @@ module AppMap
         end
         hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
 
-        m = Module.new
-        m.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-        hook_class.prepend m
+        hook_class.ancestors.first.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
       end
 
       protected
