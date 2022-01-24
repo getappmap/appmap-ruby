@@ -1,3 +1,16 @@
+# [0.72.0](https://github.com/applandinc/appmap-ruby/compare/v0.71.0...v0.72.0) (2022-01-24)
+
+
+### Bug Fixes
+
+* Fix a stack overflow when an override is prepended ([540907b](https://github.com/applandinc/appmap-ruby/commit/540907b1a9fa063d25ddbaf406674f2e16b11bfe))
+* Hook the first class or module in the ancestor chain ([8143f14](https://github.com/applandinc/appmap-ruby/commit/8143f145691a98e6e83563635db783ba8d393d9c))
+
+
+### Features
+
+* Label JSON, Marshal and YAML with (de)serialize ([318d294](https://github.com/applandinc/appmap-ruby/commit/318d294c1d921dacb18f1d3e1776282d9f208215))
+
 # [0.71.0](https://github.com/applandinc/appmap-ruby/compare/v0.70.2...v0.71.0) (2022-01-19)
 
 
