@@ -1,0 +1,2 @@
+- method: Sprockets::EncodingUtils#unmarshaled_deflated
+  label: deserialize.safe
