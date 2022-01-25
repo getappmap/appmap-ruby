@@ -1,2 +1,4 @@
 - method: ActiveRecord::Relation#records
   label: dao.materialize
+- method: ActiveRecord::FixtureSet::File#raw_rows
+#  label: deserialize.safe

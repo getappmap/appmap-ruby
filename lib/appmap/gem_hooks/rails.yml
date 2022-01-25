@@ -1,0 +1,2 @@
+- method: Rails::Application#config_for
+#  label: deserialize.safe

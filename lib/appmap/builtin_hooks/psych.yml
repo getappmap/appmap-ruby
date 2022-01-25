@@ -1,0 +1,16 @@
+- methods:
+  - Psych#parse
+  - Psych#parse_stream
+  label: format.yaml.parse
+- methods:
+  - Psych#load
+  - Psych#load_stream
+  label: deserialize.unsafe
+- method: Psych#safe_load
+  label: deserialize.safe
+- methods:
+  - Psych#dump
+  - Psych#dump_stream
+  labels:
+    - format.yaml.generate
+    - serialize
