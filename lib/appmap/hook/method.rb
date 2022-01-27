@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 module AppMap
+  NEW_RUBY = Util.ruby_minor_version >= 2.7
+  if NEW_RUBY && !Proc.instance_methods.include?(:ruby2_keywords)
+    warn "Ruby is #{RUBY_VERSION}, but Procs don't respond to #ruby2_keywords"
+  end
+
   class Hook
     class Method
       attr_reader :hook_package, :hook_class, :hook_method
@@ -56,7 +61,7 @@ module AppMap
 
           call_instance_method = -> {
             # https://github.com/applandinc/appmap-ruby/issues/153
-            if Util.ruby_minor_version >= 2.7 && is_array_containing_empty_hash.(args) && hook_method.arity == 1
+            if NEW_RUBY && is_array_containing_empty_hash.(args) && hook_method.arity == 1
               instance_method.call({}, &block)
             else
               instance_method.call(*args, &block)

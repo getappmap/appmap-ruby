@@ -1,7 +1,7 @@
 require "mkmf"
 
 
-$CFLAGS='-Werror'
+$CFLAGS='-Werror ' + $CFLAGS
 
 # Per https://bugs.ruby-lang.org/issues/17865,
 # compound-token-split-by-macro was added in clang 12 and broke
