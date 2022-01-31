@@ -1,3 +1,12 @@
+## [0.72.1](https://github.com/applandinc/appmap-ruby/compare/v0.72.0...v0.72.1) (2022-01-31)
+
+
+### Bug Fixes
+
+* Check that Procs respond to #ruby2_keywords ([12863dc](https://github.com/applandinc/appmap-ruby/commit/12863dc229f91fd813430db716856f111007f1c2)), closes [#ruby2](https://github.com/applandinc/appmap-ruby/issues/ruby2) [#ruby2](https://github.com/applandinc/appmap-ruby/issues/ruby2)
+* Don't stomp on $CFLAGS ([c0b44df](https://github.com/applandinc/appmap-ruby/commit/c0b44df2d85d97b7b379d6f030df54a77a88291b))
+* Update labels for deserialization ([4f51825](https://github.com/applandinc/appmap-ruby/commit/4f5182526d74fb3491c700bca16e203a010bb111))
+
 # [0.72.0](https://github.com/applandinc/appmap-ruby/compare/v0.71.0...v0.72.0) (2022-01-24)
 
 
