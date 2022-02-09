@@ -6,7 +6,7 @@ require 'appmap/command_error'
 module AppMap
   # Utilities for invoking the +@appland/appmap+ CLI.
   class NodeCLI
-    APPMAP_JS = Pathname.new(__dir__).join('../../node_modules/@appland/appmap/src/cli.js').expand_path.to_s
+    APPMAP_JS = '@appland/appmap'
 
     attr_reader :verbose
     # Directory to scan for AppMaps.
@@ -32,7 +32,7 @@ module AppMap
     def command(command, options = {})
       command.unshift << '--verbose' if verbose
       command.unshift APPMAP_JS
-      command.unshift 'node'
+      command.unshift 'npx'
 
       warn command.join(' ') if verbose
       stdout, stderr, status = Open3.capture3({ 'NODE_OPTIONS' => '--trace-warnings' }, *command.map(&:shellescape), options)

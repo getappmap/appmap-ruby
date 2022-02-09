@@ -23,12 +23,6 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
 
-  strip_dir = ->(file) { file.index(Dir.pwd) == 0 ? file[Dir.pwd.length+1...file.length] : file }
-  Dir.glob(File.join(__dir__, 'node_modules/**/*')).map(&strip_dir).each do |filename|
-    next if File.directory?(filename) || filename.length > 100
-    spec.files << filename
-  end
-
   spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 

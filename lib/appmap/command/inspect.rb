@@ -16,7 +16,7 @@ module AppMap
 
         arguments.unshift 'inspect'
         arguments.unshift APPMAP_JS
-        arguments.unshift 'node'
+        arguments.unshift 'npx'
 
         exec(*arguments)
       end

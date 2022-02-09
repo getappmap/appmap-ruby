@@ -13,21 +13,6 @@ Rake::ExtensionTask.new("appmap") do |ext|
   ext.lib_dir = "lib/appmap"
 end
 
-namespace 'gem' do
-  require 'bundler/gem_tasks'
-  
-  module Bundler
-    class GemHelper
-      # A handy tip - find the location of any Rake task using `rake -W`.
-      # rake -W build
-      # ~/.rbenv/versions/2.6.6/lib/ruby/gems/2.6.0/gems/bundler-2.1.4/lib/bundler/gem_helper.rb:39:in `install'
-      def build_gem
-        raise "Don't use 'rake gem:build' - use 'yarn install --prod && gem build <gemspec>', because that's what ./release.sh does"
-      end
-    end
-  end
-end
-
 RUBY_VERSIONS=%w[2.6 2.7 3.0].select do |version|
   travis_ruby_version = ENV['TRAVIS_RUBY_VERSION']
   next true unless travis_ruby_version
@@ -72,6 +57,11 @@ def build_app_image(app, ruby_version)
   end
 end
 
+desc 'Install non-Ruby dependencies'
+task :install do
+  system 'yarn install' or raise 'yarn install failed'
+end
+
 namespace :build do
   namespace :base do
     RUBY_VERSIONS.each do |ruby_version|
@@ -80,7 +70,6 @@ namespace :build do
         run_system = ->(cmd) { system(cmd) or raise "Command failed: #{cmd}" }
 
         run_system.call 'mkdir -p pkg'
-        run_system.call 'yarn install --prod'
         run_system.call "gem build appmap.gemspec --output pkg/appmap-#{GEM_VERSION}.gem"
         build_base_image(ruby_version)
       end.tap do |t|
@@ -139,7 +128,7 @@ end
 namespace :spec do
   RUBY_VERSIONS.each do |ruby_version|
     desc ruby_version
-    task ruby_version, [:specs] => ["compile", "build:fixtures:#{ruby_version}:all"] do |_, task_args|
+    task ruby_version, [:specs] => ["install", "compile", "build:fixtures:#{ruby_version}:all"] do |_, task_args|
       run_specs(ruby_version, task_args)
     end.tap do |t|
       desc "Run all specs"
