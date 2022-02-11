@@ -1,3 +1,10 @@
+## [0.72.2](https://github.com/applandinc/appmap-ruby/compare/v0.72.1...v0.72.2) (2022-02-11)
+
+
+### Bug Fixes
+
+* Ensure request headers includes all relevant fields ([e866f68](https://github.com/applandinc/appmap-ruby/commit/e866f686be974dfe29f706564217e4ee302bb55a))
+
 ## [0.72.1](https://github.com/applandinc/appmap-ruby/compare/v0.72.0...v0.72.1) (2022-01-31)
 
 
