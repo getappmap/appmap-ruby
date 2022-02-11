@@ -121,15 +121,21 @@ module AppMap
           blank?(headers) ? nil : headers
         end
 
-        # Rack prepends HTTP_ to all client-sent headers.
-
         if !env['rack.version']
           warn "Request headers does not contain rack.version. HTTP_ prefix is not expected."
           return finalize_headers.call(env.dup)
         end
 
+        # Rack prepends HTTP_ to all client-sent headers (except Content-Type and Content-Length?).
+        # Apparently, it's following the CGI spec in doing so.
+        # https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.18
         matching_headers = env
-          .select { |k,v| k.start_with? 'HTTP_'}
+          .select { |k,v| k.start_with? 'HTTP_' }
+          .merge(
+            'CONTENT_TYPE' => env['CONTENT_TYPE'],
+            'CONTENT_LENGTH' => env['CONTENT_LENGTH'],
+            'AUTHORIZATION' => env['AUTHORIZATION']
+          )
           .reject { |k,v| blank?(v) }
           .each_with_object({}) do |kv, memo|
             key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')

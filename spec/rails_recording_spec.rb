@@ -33,7 +33,8 @@ describe 'Rails' do
                 'http_server_request' => hash_including(
                   'request_method' => 'POST',
                   'normalized_path_info' => '/api/users',
-                  'path_info' => '/api/users'
+                  'path_info' => '/api/users',
+                  'headers' => hash_including('Content-Type' => 'application/x-www-form-urlencoded'),
                 ),
                 'message' => include(
                   hash_including(
