@@ -13,12 +13,19 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash \
     && source /root/.bashrc \
     && fnm install --lts \
     && echo 'fnm default $(fnm current)' >> ~/.bashrc \
-    && ln -s $(which node) /usr/local/bin/node
+    && ln -s $(which node) /usr/local/bin/ \
+    && ln -s $(which npx) /usr/local/bin/ \
+    && npm install -g yarn \
+    && ln -s $(which yarn) /usr/local/bin/
 
 RUN mkdir /app
 WORKDIR /app
 
 RUN gem install -N bundler
+
+COPY package.json .
+
+RUN yarn install
 
 COPY Gemfile .
 

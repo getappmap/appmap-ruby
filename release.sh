@@ -13,5 +13,4 @@ else
 fi
 
 set -ex
-yarn install --prod
 exec semantic-release $RELEASE_FLAGS
