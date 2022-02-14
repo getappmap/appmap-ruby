@@ -1,3 +1,10 @@
+## [0.72.3](https://github.com/applandinc/appmap-ruby/compare/v0.72.2...v0.72.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* No longer bundle @appland/appmap with this gem ([7bbad49](https://github.com/applandinc/appmap-ruby/commit/7bbad49c04df5a6d6e1fcfc4812f5e0d0cd84899))
+
 ## [0.72.2](https://github.com/applandinc/appmap-ruby/compare/v0.72.1...v0.72.2) (2022-02-11)
 
 
