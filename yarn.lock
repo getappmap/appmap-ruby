@@ -2,14 +2,14 @@
 # yarn lockfile v1
 
 
-"@appland/appmap@^3.18.1":
-  version "3.18.1"
-  resolved "https://registry.yarnpkg.com/@appland/appmap/-/appmap-3.18.1.tgz#031b63b4920677695437ab3ba24f2d81d9ba3595"
-  integrity sha512-9jCCD5H/Fv31IIDVAEETb/TRjFJYobS27dWIQ4eh1nG1HT+Nfbe6tx3hz63COn6qYojY5Y8QvavlghIik8REnQ==
+"@appland/appmap@^3.18.3":
+  version "3.18.3"
+  resolved "https://registry.yarnpkg.com/@appland/appmap/-/appmap-3.18.3.tgz#fd5cbfe1bedf773c13d1ddbf6080ea3751aa705f"
+  integrity sha512-f+YaAZUwrCno8WVjiPr7eUa58Red2nG/YHyAk4XuPfDy73iQsQkP3CJY2eOWvYgfHP2299wMeWbXy8wNYx9iWQ==
   dependencies:
     "@appland/components" "1.23.0"
     "@appland/diagrams" "1.5.1"
-    "@appland/models" "^1.8.1"
+    "@appland/models" "^1.14.1"
     "@sidvind/better-ajv-errors" "^0.9.1"
     "@types/moo" "^0.5.5"
     JSONStream "^1.3.5"
@@ -68,7 +68,15 @@
     deepmerge "^4.2.2"
     sql-formatter "^4.0.2"
 
-"@appland/models@^1.8.1", "@appland/models@^1.9.0":
+"@appland/models@^1.14.1":
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/@appland/models/-/models-1.14.1.tgz#71e26590c18c38643f1fbd88bd4396577a05a25e"
+  integrity sha512-pS3MGN8u5j7vc8UmcSU+oYK0ydcxXH2mRFiHco7PpGNaSCNT1XZtK4ldtc+9anM1wHRd8G3S++Hm8Y5s2DFuuA==
+  dependencies:
+    "@appland/sql-parser" "^1.4.0"
+    crypto-js "^4.0.0"
+
+"@appland/models@^1.9.0":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@appland/models/-/models-1.12.1.tgz#45cc189e2a7deb5dc98b3bb51da54cf789c32414"
   integrity sha512-0KYe3YSvlhzdgM7XrkMGZ6CIG/0zjepg4hnHcZGj+eDd1A8xA1ga/EjsreP4Rk9Efxt+XdOMhDA5cr2AsGDzbg==
@@ -80,6 +88,11 @@
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@appland/sql-parser/-/sql-parser-1.3.0.tgz#2664079f5c042aa48d4e4c28fb0dfee5414c8f5a"
   integrity sha512-J0g/3DAsyMkPdNYAnzw8WUApNWFkZMKHAywiV8iRrWNUnowV/ZJR1/GJW2ys7EZr1F23Go1mYDU4S5VeRfdiRg==
+
+"@appland/sql-parser@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@appland/sql-parser/-/sql-parser-1.4.0.tgz#ffd655ed14b66ad5712dce5a98a0ffa2d4071952"
+  integrity sha512-9YMv8lGjf4gcZVwGC2Eq3+M8YZk7SUEba6hAjAUzy9ZEYweKXjG6pbWAEB/oOYXZE6Sy3c89pkR4se+OiRAgTA==
 
 "@azure/abort-controller@^1.0.0":
   version "1.0.4"
@@ -307,12 +320,7 @@ ansi-escapes@^4.2.1:
   dependencies:
     type-fest "^0.21.3"
 
-ansi-regex@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-5.0.0.tgz#388539f55179bf39339c81af30a654d69f87cb75"
-  integrity sha512-bY6fj56OUQ0hU1KjFNDQuJFezqKdrAyFdIevADiqrWHwSlbmBNMHp5ak2f40Pm8JTFyM2mqxkG6ngkHO11f/lg==
-
-ansi-regex@^5.0.1:
+ansi-regex@^5.0.0, ansi-regex@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/ansi-regex/-/ansi-regex-5.0.1.tgz#082cb2c89c9fe8659a311a53bd6a4dc5301db304"
   integrity sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==
