@@ -97,9 +97,87 @@ module AppMap
             end
           end
         end
-        hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
 
-        hook_class.ancestors.first.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
+        parameters = hook_method.parameters
+        # Always declare a block parameter if the method doesn't do so, because
+        # Ruby always allows a block.
+        parameters << [ :block, :_appmap_block ] if parameters.empty? || parameters.last[0] != :block
+
+        signature = parameters.map do |param|
+          type, name = param
+          name ||= '_'
+          case type.to_s
+          when 'req'
+            name
+          when 'opt'
+            "#{name} = :appmap_undefined"
+          when 'keyreq'
+            "#{name}:"
+          when 'key'
+            "#{name}: :appmap_undefined"
+          when 'keyrest'
+            "**#{name}"
+          when 'rest'
+            "*#{name}"
+          when 'block'
+            "&#{name}"
+          else
+            warn "Unrecognized parameter type: #{type}"
+            nil
+          end
+        end.compact.join(', ')
+
+        block_name = '_appmap_block'
+        invocation = parameters.map do |param|
+          type, name = param
+          name ||= '_'
+          case type.to_s
+          when 'req'
+            "_appmap_args << #{name}"
+          when 'opt'
+            "_appmap_args << #{name} unless :appmap_undefined.equal?(#{name})"
+          when 'keyreq'
+            "_appmap_kwargs[:#{name}] = #{name}"
+          when 'key'
+            "_appmap_kwargs[:#{name}] = #{name} unless :appmap_undefined.equal?(#{name})"
+          when 'keyrest'
+            "_appmap_kwargs.merge!(#{name})"
+          when 'rest'
+            "_appmap_args.concat(#{name})"
+          when 'block'
+            block_name = name
+          else
+            warn "Unrecognized parameter type: #{type}"
+            nil
+          end
+        end.compact
+
+        method_name_chars = hook_method.name.to_s.chars
+        method_name = method_name_chars.map do |chr, idx|
+          case chr
+          when /[\w\d_]/
+            chr
+          when /[!?=]/
+            idx == method_name_chars.length - 1 ? chr : "_chr#{chr.ord}_"
+          else
+            "_chr#{chr.ord}_"
+          end
+        end.join
+
+        delegate_name = [ '_appmap_hook', method_name ].join('_')
+        method_body = <<~METHOD
+          def #{hook_method.name}(#{signature})
+            _appmap_args = []
+            _appmap_kwargs = {}
+            _appmap_block = #{block_name}
+          #{invocation.map { |line| "  #{line}" }.join("\n")}
+            #{delegate_name}(*_appmap_args, **_appmap_kwargs, &_appmap_block)
+          end
+        METHOD
+
+        hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
+        hook_class.define_method_with_arity(delegate_name, hook_method.arity, hook_method_def)
+        hook_class.ancestors.first.module_eval method_body
       end
 
       protected
