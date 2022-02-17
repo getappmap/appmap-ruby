@@ -225,6 +225,12 @@ describe 'AppMap class Hooking', docker: false do
         :value: default
     YAML
     test_hook_behavior 'spec/fixtures/hook/instance_method.rb', events_yaml do
+      expect(InstanceMethod.instance_method(:say_default).parameters).to eq([])
+      expect(InstanceMethod.public_instance_method(:say_default).parameters).to eq([])
+      expect(InstanceMethod.new.method(:say_default).parameters).to eq([])
+      expect(InstanceMethod.new.public_method(:say_default).parameters).to eq([])
+      expect { InstanceMethod.new.singleton_method(:say_default) }.to raise_error(NameError)
+
       expect(InstanceMethod.new.say_default).to eq('default')
     end
   end
@@ -315,7 +321,22 @@ describe 'AppMap class Hooking', docker: false do
         :class: String
         :value: protected
     YAML
+    parameters = []
     test_hook_behavior 'spec/fixtures/hook/protected_method.rb', events_yaml do
+      expect(ProtectedMethod.singleton_method(:call_protected).parameters).to eq(parameters)
+      expect(ProtectedMethod.instance_method(:call_protected).parameters).to eq(parameters)
+      expect(ProtectedMethod.public_instance_method(:call_protected).parameters).to eq(parameters)
+      expect(ProtectedMethod.new.method(:call_protected).parameters).to eq(parameters)
+      expect(ProtectedMethod.new.public_method(:call_protected).parameters).to eq(parameters)
+      expect { ProtectedMethod.new.singleton_method(:call_protected) }.to raise_error(NameError)
+
+      expect(ProtectedMethod.singleton_method(:protected_method).parameters).to eq(parameters)
+      expect(ProtectedMethod.instance_method(:protected_method).parameters).to eq(parameters)
+      expect(ProtectedMethod.public_instance_method(:protected_method).parameters).to eq(parameters)
+      expect(ProtectedMethod.new.method(:protected_method).parameters).to eq(parameters)
+      expect(ProtectedMethod.new.public_method(:protected_method).parameters).to eq(parameters)
+      expect { ProtectedMethod.new.singleton_method(:protected_method) }.to raise_error(NameError)
+
       expect(ProtectedMethod.new.call_protected).to eq('protected')
     end
   end
@@ -358,6 +379,7 @@ describe 'AppMap class Hooking', docker: false do
         :class: String
         :value: self.protected
     YAML
+    parameters = []
     test_hook_behavior 'spec/fixtures/hook/protected_method.rb', events_yaml do
       expect(ProtectedMethod.call_protected).to eq('self.protected')
     end
@@ -1097,6 +1119,51 @@ describe 'AppMap class Hooking', docker: false do
     invoke_test_file 'spec/fixtures/hook/instance_method.rb' do
       expect(InstanceMethod.instance_method(:say_echo).arity).to be(1)
       expect(InstanceMethod.new.method(:say_echo).arity).to be(1)
+    end
+  end
+
+  it 'preserves the sighnature of hooked methods' do
+    parameters = []
+    events = <<~YAML
+    ---
+    - :id: 1
+      :event: :call
+      :defined_class: ReportParameters
+      :method_id: report_parameters
+      :path: spec/fixtures/hook/report_parameters.rb
+      :lineno: 5
+      :static: false
+      :parameters:
+      - :name: :args
+        :class: Array
+        :value: '["foo"]'
+        :kind: :rest
+      - :name: :kw1
+        :class: String
+        :value: kw1
+        :kind: :keyreq
+      - :name: :kw2
+        :class: NilClass
+        :value: null
+        :kind: :key
+      - :name: :kws
+        :class: Hash
+        :value: "{}"
+        :kind: :keyrest
+      :receiver:
+        :class: ReportParameters
+        :value: ReportParameters
+    - :id: 2
+      :event: :return
+      :parent_id: 1
+      :return_value:
+        :class: Array
+        :value: "[[:rest, :args], [:keyreq, :kw1], [:key, :kw2], [:keyrest, :kws]]"
+    YAML
+    parameters = [[:rest, :args], [:keyreq, :kw1], [:key, :kw2], [:keyrest, :kws]]
+    test_hook_behavior 'spec/fixtures/hook/report_parameters.rb', events do
+      expect(ReportParameters.instance_method(:report_parameters).parameters).to eq(parameters)
+      expect(ReportParameters.new.report_parameters('foo', kw1: 'kw1')).to eq(parameters)
     end
   end
 

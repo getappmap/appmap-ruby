@@ -25,6 +25,8 @@ module AppMap
 
       ARRAY_OF_EMPTY_HASH = [{}.freeze].freeze
 
+      SIGNATURES = {}
+
       def initialize(hook_package, hook_class, hook_method)
         @hook_package = hook_package
         @hook_class = hook_class
@@ -100,11 +102,34 @@ module AppMap
         hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
 
         hook_method_parameters = hook_method.parameters.dup.freeze
+        SIGNATURES[[ hook_class, hook_method.name ]] = hook_method_parameters
+
         hook_class.ancestors.first.tap do |cls|
           cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-          redefined_method = cls.instance_method(hook_method.name)
-          redefined_method.singleton_class.module_eval do
-            define_method(:parameters) { hook_method_parameters }
+
+          lookup_method = lambda do |id|
+            method = super(id)
+
+            signature = SIGNATURES[[ method.owner, method.name ]]
+            if signature
+              method.singleton_class.module_eval do
+                define_method(:parameters) do
+                  signature
+                end
+              end
+            end
+
+            method
+          end
+
+          cls.module_eval do
+            define_method(:method, &lookup_method)
+            define_method(:public_method, &lookup_method)
+            define_method(:singleton_method, &lookup_method)
+          end
+          cls.singleton_class.instance_eval do
+            define_method(:instance_method, &lookup_method)
+            define_method(:public_instance_method, &lookup_method)
           end
         end
       end
