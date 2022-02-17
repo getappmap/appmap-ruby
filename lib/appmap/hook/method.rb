@@ -7,6 +7,23 @@ module AppMap
   end
 
   class Hook
+    SIGNATURES = {}
+
+    LOOKUP_SIGNATURE = lambda do |id|
+      method = super(id)
+    
+      signature = SIGNATURES[[ method.owner, method.name ]]
+      if signature
+        method.singleton_class.module_eval do
+          define_method(:parameters) do
+            signature
+          end
+        end
+      end
+    
+      method
+    end
+    
     class Method
       attr_reader :hook_package, :hook_class, :hook_method
 
@@ -24,8 +41,6 @@ module AppMap
       private_constant :TIME_NOW
 
       ARRAY_OF_EMPTY_HASH = [{}.freeze].freeze
-
-      SIGNATURES = {}
 
       def initialize(hook_package, hook_class, hook_method)
         @hook_package = hook_package
@@ -106,31 +121,6 @@ module AppMap
 
         hook_class.ancestors.first.tap do |cls|
           cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-
-          lookup_method = lambda do |id|
-            method = super(id)
-
-            signature = SIGNATURES[[ method.owner, method.name ]]
-            if signature
-              method.singleton_class.module_eval do
-                define_method(:parameters) do
-                  signature
-                end
-              end
-            end
-
-            method
-          end
-
-          cls.module_eval do
-            define_method(:method, &lookup_method)
-            define_method(:public_method, &lookup_method)
-            define_method(:singleton_method, &lookup_method)
-          end
-          cls.singleton_class.instance_eval do
-            define_method(:instance_method, &lookup_method)
-            define_method(:public_instance_method, &lookup_method)
-          end
         end
       end
 
@@ -160,5 +150,28 @@ module AppMap
         end
       end
     end
+  end
+
+  module ObjectMethods
+    define_method(:method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:public_method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:singleton_method, AppMap::Hook::LOOKUP_SIGNATURE)
+  end
+
+  module ModuleMethods
+    define_method(:instance_method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:public_instance_method, AppMap::Hook::LOOKUP_SIGNATURE)
+  end
+end
+
+unless ENV['APPMAP_NO_PATCH_OBJECT'] == 'true'
+  class Object
+    prepend AppMap::ObjectMethods
+  end
+end
+
+unless ENV['APPMAP_NO_PATCH_MODULE'] == 'true'
+  class Module
+    prepend AppMap::ModuleMethods
   end
 end
