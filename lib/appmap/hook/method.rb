@@ -7,6 +7,23 @@ module AppMap
   end
 
   class Hook
+    SIGNATURES = {}
+
+    LOOKUP_SIGNATURE = lambda do |id|
+      method = super(id)
+    
+      signature = SIGNATURES[[ method.owner, method.name ]]
+      if signature
+        method.singleton_class.module_eval do
+          define_method(:parameters) do
+            signature
+          end
+        end
+      end
+    
+      method
+    end
+    
     class Method
       attr_reader :hook_package, :hook_class, :hook_method
 
@@ -100,12 +117,10 @@ module AppMap
         hook_method_def = hook_method_def.ruby2_keywords if hook_method_def.respond_to?(:ruby2_keywords)
 
         hook_method_parameters = hook_method.parameters.dup.freeze
+        SIGNATURES[[ hook_class, hook_method.name ]] = hook_method_parameters
+
         hook_class.ancestors.first.tap do |cls|
           cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-          redefined_method = cls.instance_method(hook_method.name)
-          redefined_method.singleton_class.module_eval do
-            define_method(:parameters) { hook_method_parameters }
-          end
         end
       end
 
@@ -135,5 +150,28 @@ module AppMap
         end
       end
     end
+  end
+
+  module ObjectMethods
+    define_method(:method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:public_method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:singleton_method, AppMap::Hook::LOOKUP_SIGNATURE)
+  end
+
+  module ModuleMethods
+    define_method(:instance_method, AppMap::Hook::LOOKUP_SIGNATURE)
+    define_method(:public_instance_method, AppMap::Hook::LOOKUP_SIGNATURE)
+  end
+end
+
+unless ENV['APPMAP_NO_PATCH_OBJECT'] == 'true'
+  class Object
+    prepend AppMap::ObjectMethods
+  end
+end
+
+unless ENV['APPMAP_NO_PATCH_MODULE'] == 'true'
+  class Module
+    prepend AppMap::ModuleMethods
   end
 end
