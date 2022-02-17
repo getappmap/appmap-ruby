@@ -1,3 +1,10 @@
+## [0.72.5](https://github.com/applandinc/appmap-ruby/compare/v0.72.4...v0.72.5) (2022-02-17)
+
+
+### Bug Fixes
+
+* Override method accessors to provide the correct signature ([#223](https://github.com/applandinc/appmap-ruby/issues/223)) ([936bba4](https://github.com/applandinc/appmap-ruby/commit/936bba470c5360ee313e0b3e45a65d83acd0b53d))
+
 ## [0.72.4](https://github.com/applandinc/appmap-ruby/compare/v0.72.3...v0.72.4) (2022-02-17)
 
 
