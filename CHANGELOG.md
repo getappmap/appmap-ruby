@@ -1,3 +1,10 @@
+## [0.72.4](https://github.com/applandinc/appmap-ruby/compare/v0.72.3...v0.72.4) (2022-02-17)
+
+
+### Bug Fixes
+
+* Retain the proper signature on hooked methods ([31e2de2](https://github.com/applandinc/appmap-ruby/commit/31e2de219a37311df9ba0e5caa407dc80745ca09))
+
 ## [0.72.3](https://github.com/applandinc/appmap-ruby/compare/v0.72.2...v0.72.3) (2022-02-14)
 
 
