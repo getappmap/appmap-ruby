@@ -142,7 +142,6 @@ if AppMap::Minitest.enabled?
     alias run_without_hook run
 
     def run
-      GC.start
       AppMap::Minitest.begin_test self, name
       begin
         run_without_hook
