@@ -70,8 +70,6 @@ module AppMap
         with_disabled_hook = self.method(:with_disabled_hook)
 
         hook_method_def = Proc.new do |*args, &block|
-          instance_method = hook_method.bind(self).to_proc
-
           is_array_containing_empty_hash = ->(obj) {
             obj.is_a?(Array) && obj.length == 1 && obj[0].is_a?(Hash) && obj[0].size == 0
           }
@@ -79,9 +77,17 @@ module AppMap
           call_instance_method = -> {
             # https://github.com/applandinc/appmap-ruby/issues/153
             if NEW_RUBY && is_array_containing_empty_hash.(args) && hook_method.arity == 1
-              instance_method.call({}, &block)
+              if NEW_RUBY
+                hook_method.bind_call(self, {}, &block)
+              else
+                hook_method.bind(self).call({}, &block)
+              end
             else
-              instance_method.call(*args, &block)
+              if NEW_RUBY
+                hook_method.bind_call(self, *args, &block)
+              else
+                hook_method.bind(self).call(*args, &block)
+              end
             end
           }
 
