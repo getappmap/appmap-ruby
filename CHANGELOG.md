@@ -1,3 +1,15 @@
+# [0.73.0](https://github.com/applandinc/appmap-ruby/compare/v0.72.5...v0.73.0) (2022-03-07)
+
+
+### Bug Fixes
+
+* Remove GC before test case execution, because it's slow ([d38695e](https://github.com/applandinc/appmap-ruby/commit/d38695ed9425a5363e48f2b7bdd5dc3853a827bf))
+
+
+### Features
+
+* Use bind_call when its available ([60d4fb5](https://github.com/applandinc/appmap-ruby/commit/60d4fb5919974d977722ee730b141ae398cbe927))
+
 ## [0.72.5](https://github.com/applandinc/appmap-ruby/compare/v0.72.4...v0.72.5) (2022-02-17)
 
 
