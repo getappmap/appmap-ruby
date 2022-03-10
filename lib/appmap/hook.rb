@@ -99,6 +99,11 @@ module AppMap
       hook_loaded_code = lambda do |hooks_by_class, builtin|
         hooks_by_class.each do |class_name, hooks|
           Array(hooks).each do |hook|
+            if (label = hook.package.labels.find { |label| !config.label_enabled?(label) })
+              warn "AppMap: Hooking disabled by config for label #{label}. Skipping #{hook}" if LOG
+              next
+            end
+
             if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
               require hook.package.require_name
             end
@@ -126,10 +131,8 @@ module AppMap
               end
               methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
               methods << [ base_cls, base_cls.protected_instance_method(method_name) ] rescue nil
-              if base_cls.respond_to?(:singleton_class)
-                methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
-                methods << [ base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name) ] rescue nil
-              end
+              methods << [ base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name) ] rescue nil
+              methods << [ base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name) ] rescue nil
               methods.compact!
               if methods.empty?
                 warn "Method #{method_name} not found on #{base_cls.name}" if LOG
@@ -184,7 +187,7 @@ module AppMap
           # a stack overflow in the defined hook method.
           next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
 
-          next if method_id == :call
+          next if method_id == :call || method_id.to_s =~ /^_appmap_/
 
           method = \
             begin

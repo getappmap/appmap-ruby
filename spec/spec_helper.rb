@@ -26,11 +26,12 @@ def ruby_2?
 end
 
 shared_context 'collect events' do
-  def collect_events(tracer)
-    [].tap do |events|
+  def collect_events(tracer, sanitize: true)
+    result = [].tap do |events|
       while tracer.event?
         events << tracer.next_event.to_h
       end
-    end.map(&AppMap::Util.method(:sanitize_event))
+    end
+    sanitize ? result.map(&AppMap::Util.method(:sanitize_event)) : result
   end
 end

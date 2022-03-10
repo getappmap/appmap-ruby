@@ -69,6 +69,12 @@ module AppMap
         end
       end
 
+      def record_string_event(event)
+        @tracers.each do |tracer|
+          tracer.record_string_event(event)
+        end
+      end
+
       def record_method(method)
         @tracers.each do |tracer|
           tracer.record_method(method)
@@ -85,9 +91,13 @@ module AppMap
   end
 
   class Tracer
+    # TODO: Maybe expose this differently
+    attr_reader :string_events
+
     # Records the events which happen in a program.
     def initialize
       @events = []
+      @string_events = []
       @last_package_for_thread = {}
       @methods = Set.new
       @enabled = false
@@ -117,6 +127,13 @@ module AppMap
       static = event.static if event.respond_to?(:static)
       record_method Trace::RubyMethod.new(package, defined_class, method, static) \
         if package && defined_class && method && (event.event == :call)
+    end
+
+    # Record a string event.
+    def record_string_event(event)
+      return unless @enabled
+
+      @string_events << event
     end
 
     # +method+ should be duck-typed to respond to the following:

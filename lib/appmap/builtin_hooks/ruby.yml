@@ -6,6 +6,75 @@
 - method: Marshal#dump
   require_name: ruby
   label: serialize
+- methods:
+#  - String#new
+  - String#initialize_copy
+  - String#+@
+  - String#-@
+  - String#+
+  - String#<<
+  - String#%
+  - String#*
+  - String#<<
+  - String#[]=
+  - String#byteslice
+  - String#capitalize
+  - String#center
+  - String#chomp
+  - String#chop
+  - String#clear
+  - String#concat
+  - String#crypt
+  - String#delete
+  - String#delete!
+  - String#delete_prefix
+  - String#delete_prefix!
+  - String#delete_suffix
+  - String#delete_suffix!
+  - String#downcase
+  - String#dump
+  - String#each_char
+  - String#each_line
+  - String#encode
+  - String#grapheme_clusters
+  # Setting of builtins such as $! and $& is not handled properly
+#  - String#gsub
+#  - String#gsub!
+  - String#insert
+  - String#lines
+  - String#ljust
+  - String#lstrip
+  - String#partition
+  - String#prepend
+  - String#replace
+  - String#reverse
+  - String#rjust
+  - String#rpartition
+  - String#rscrub
+  - String#rstrip
+#  - String#scan
+  - String#scrub
+  - String#setbyte
+  - String#slice
+  - String#squeeze
+  - String#succ
+  - String#split
+  - String#squeeze
+  - String#strip
+  - String#sub
+  - String#succ
+  - String#swapcase
+  - String#tr
+  - String#tr!
+  - String#tr_s
+  - String#tr_s!
+  - String#undump
+  - String#unicode_normalize
+  - String#upcase
+  - String#upto
+  require_name: ruby
+  handler_class: AppMap::Handler::Strings
+  label: string.manipulate
 - method: String#pack
   require_name: ruby
   label: string.pack

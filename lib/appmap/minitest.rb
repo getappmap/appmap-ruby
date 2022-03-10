@@ -51,7 +51,8 @@ module AppMap
                               source_location: source_location,
                               test_status: exception ? 'failed' : 'succeeded',
                               exception: exception,
-                              events: events
+                              events: events,
+                              string_events: @trace.string_events.map(&:to_h)
       end
     end
 
@@ -90,7 +91,7 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
+      def save(name:, class_map:, source_location:, test_status:, exception:, events:, string_events:)
         metadata = AppMap::Minitest.metadata.tap do |m|
           m[:name] = name
           m[:source_location] = source_location
@@ -116,7 +117,8 @@ module AppMap
           version: AppMap::APPMAP_FORMAT_VERSION,
           metadata: metadata,
           classMap: class_map,
-          events: events
+          events: events,
+          strings: string_events
         }.compact
         fname = AppMap::Util.scenario_filename(name)
 

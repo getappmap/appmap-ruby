@@ -3,6 +3,8 @@
     - format.json.parse
     - deserialize.safe
 - method: JSON::Ext::Generator::State#generate
+  # TODO: Builds strings in native code, so to capture string lineage, this function 
+  # needs special hooking to add to the string table.
   labels:
     - format.json.generate
     - serialize

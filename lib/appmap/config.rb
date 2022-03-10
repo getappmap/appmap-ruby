@@ -5,6 +5,7 @@ require 'set'
 require 'yaml'
 require 'appmap/util'
 require 'appmap/handler/net_http'
+require 'appmap/handler/strings'
 require 'appmap/handler/rails/template'
 require 'appmap/service/guesser'
 require 'appmap/swagger/configuration'
@@ -122,6 +123,10 @@ module AppMap
 
       def include_method?(method_name)
         method_names.include?(method_name.to_sym)
+      end
+
+      def to_s
+        "#{package.name} #{method_names.join(',')}"
       end
 
       def to_h
@@ -314,6 +319,15 @@ module AppMap
     end
 
     class << self
+      def exclude_pattern
+        return @exclude_pattern if @exclude_pattern
+
+        exclude_pattern = ENV['APPMAP_LABEL_EXCLUDE']
+        return nil unless exclude_pattern
+
+        @exclude_pattern = Regexp.new(exclude_pattern)
+      end
+  
       # Loads configuration data from a file, specified by the file name.
       def load_from_file(config_file_name)
         logo = lambda do
@@ -431,6 +445,12 @@ module AppMap
         functions: @functions.map(&:to_h),
         exclude: exclude
       }.compact
+    end
+
+    def label_enabled?(label)
+      return true unless Config.exclude_pattern
+
+      !Config.exclude_pattern.match(label)
     end
 
     # Determines if methods defined in a file path should possibly be hooked.

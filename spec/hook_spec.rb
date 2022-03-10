@@ -40,10 +40,11 @@ describe 'AppMap class Hooking', docker: false do
     [ config, tracer ]
   end
 
-  def test_hook_behavior(file, events_yaml, setup: nil, &block)
+  def test_hook_behavior(file, events_yaml, setup: nil, sanitize_events: true, &block)
     config, tracer = invoke_test_file(file, setup: setup, &block)
 
-    events = collect_events(tracer).to_yaml
+    events = collect_events(tracer, sanitize: sanitize_events).to_yaml
+    string_events = tracer.string_events.to_yaml
 
     expect(Diffy::Diff.new(events_yaml, events).to_s).to eq('') if events_yaml
 
