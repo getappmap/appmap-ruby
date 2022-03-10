@@ -20,7 +20,9 @@ module AppMap
     MethodEventStruct = Struct.new(:id, :event, :thread_id)
 
     class MethodEvent < MethodEventStruct
-      LIMIT = 100
+      MAX_ARRAY_ENUMERATION = 10
+      MAX_HASH_ENUMERATION = 10
+      MAX_STRING_LENGTH = 100
 
       class << self
         def build_from_invocation(event_type, event:)
@@ -48,14 +50,14 @@ module AppMap
           end
 
           start = Time.now
-          value_string = custom_display_string(value) || default_display_string(value)
+          value_string, final = custom_display_string(value) || default_display_string(value)
 
           if @times
             elapsed = Time.now - start
             @times[best_class_name(value)] += elapsed
           end
 
-          encode_display_string(value_string)
+          final ? value_string : encode_display_string(value_string)
         end
 
         def object_properties(hash_like)
@@ -80,21 +82,33 @@ module AppMap
         end
 
         def encode_display_string(value)
-          (value||'')[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
 
         def custom_display_string(value)
           case value
           when NilClass, TrueClass, FalseClass, Numeric, Time, Date
-            value.to_s
+            [ value.to_s, true ]
+          when Symbol
+            [ ":#{value}", true ]
           when String
-            value[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result = value[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result << " (...#{value.length - MAX_STRING_LENGTH} more characters)" if value.length > MAX_STRING_LENGTH
+            [ result, true ]
+          when Array
+            result = value[0...MAX_ARRAY_ENUMERATION].map{|v| display_string(v)}.join(', ')
+            result << " (...#{value.length - MAX_ARRAY_ENUMERATION} more items)" if value.length > MAX_ARRAY_ENUMERATION
+            [ [ '[', result, ']' ].join, true ]
+          when Hash
+            result = value.keys[0...MAX_HASH_ENUMERATION].map{|key| "#{display_string(key)}=>#{display_string(value[key])}"}.join(', ')
+            result << " (...#{value.size - MAX_HASH_ENUMERATION} more entries)" if value.size > MAX_HASH_ENUMERATION
+            [ [ '{', result, '}' ].join, true ]
           when File
-            "#{value.class}[path=#{value.path}]"
+            [ "#{value.class}[path=#{value.path}]", true ]
           when Net::HTTP
-            "#{value.class}[#{value.address}:#{value.port}]"
+            [ "#{value.class}[#{value.address}:#{value.port}]", true ]
           when Net::HTTPGenericRequest
-            "#{value.class}[#{value.method} #{value.path}]"
+            [ "#{value.class}[#{value.method} #{value.path}]", true ]
           end
         rescue StandardError
           nil

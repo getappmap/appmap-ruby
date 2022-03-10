@@ -78,7 +78,7 @@ describe 'Rails' do
                 'name' => 'params',
                 'class' => 'ActiveSupport::HashWithIndifferentAccess',
                 'object_id' => Integer,
-                'value' => '{"login"=>"alice"}',
+                'value' => '{login=>alice}',
                 'kind' => 'req'
               ),
               'receiver' => anything
