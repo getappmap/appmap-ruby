@@ -24,7 +24,7 @@ class GemTest < Minitest::Test
       appmap_file = 'tmp/appmap/minitest/Parser_parser.appmap.json'
       appmap = JSON.parse(File.read(appmap_file))
       events = appmap['events']
-      assert_equal 2, events.size
+      assert_equal 6, events.size
       assert_equal 'call', events.first['event']
       assert_equal 'default_parser', events.first['method_id']
       assert_match /\lib\/parser\/base\.rb$/, events.first['path']

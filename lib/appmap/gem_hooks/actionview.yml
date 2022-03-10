@@ -11,3 +11,7 @@
   label: mvc.template.resolver
   handler_class: AppMap::Handler::Rails::Template::ResolverHandler
   require_name: action_view
+- methods:
+  - ActionView::Helpers::SanitizeHelper#sanitize
+  label: string.html_safe
+  require_name: action_view
