@@ -171,7 +171,7 @@ module AppMap
         mode = File::RDWR | File::CREAT | File::EXCL
         ::Dir::Tmpname.create([ 'appmap_', '.json' ]) do |tmpname|
           tempfile = File.open(tmpname, mode)
-          tempfile.write(appmap)
+          tempfile.write(JSON.generate(appmap))
           tempfile.close
           # Atomically move the tempfile into place.
           FileUtils.mv tempfile.path, filename
