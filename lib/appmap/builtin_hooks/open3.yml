@@ -1,0 +1,13 @@
+- methods:
+  - Open3#capture2
+  - Open3#capture2e
+  - Open3#capture3
+  - Open3#pipeline
+  - Open3#pipeline_r
+  - Open3#pipeline_rw
+  - Open3#pipeline_start
+  - Open3#pipeline_w
+  - Open3#popen2
+  - Open3#popen2e
+  - Open3#popen3
+  label: system.exec

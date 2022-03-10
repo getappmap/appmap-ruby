@@ -1,8 +1,0 @@
-- methods:
-  - Marshal#load
-  - Marshal#restore
-  require_name: ruby
-  label: deserialize.unsafe
-- method: Marshal#dump
-  require_name: ruby
-  label: serialize
