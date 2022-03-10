@@ -105,6 +105,9 @@ module AppMap
 
             Array(hook.method_names).each do |method_name|
               method_name = method_name.to_sym
+
+              warn "AppMap: Initiating hook for builtin #{class_name} #{method_name}" if LOG
+
               base_cls = Util.class_from_string(class_name, must: false)
               next unless base_cls
 
