@@ -1,0 +1,38 @@
+- methods:
+  - Marshal#load
+  - Marshal#restore
+  require_name: ruby
+  label: deserialize.unsafe
+- method: Marshal#dump
+  require_name: ruby
+  label: serialize
+- method: String#pack
+  require_name: ruby
+  label: string.pack
+- methods:
+  - String#unpack
+  - String#unpack1
+  require_name: ruby
+  label: string.unpack
+- methods:
+  - Kernel#eval
+  - Binding#eval
+  - BasicObject#instance_eval
+  - BasicObject#instance_exec
+# These methods cannot be hooked as far as I can tell.
+# Why? When calling one of these functions, the context at the point of 
+# definition is used. It's not possible to bind class_eval to a new context.
+#  - Module#class_eval
+#  - Module#module_eval
+  require_name: ruby
+  label: lang.eval
+- methods:
+  - IO#popen
+  - Kernel#exec
+  - Kernel#spawn
+  - Kernel#syscall
+  - Kernel#system
+  - Process#exec
+  - Process#spawn
+  require_name: ruby
+  label: system.exec

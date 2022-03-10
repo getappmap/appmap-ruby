@@ -10,3 +10,6 @@
   label: crypto.secure_compare
   require_name: active_support/security_utils
   force: true
+- method: String#html_safe
+  label: string.html_safe
+  force: true
