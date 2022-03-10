@@ -69,28 +69,24 @@ module AppMap
         after_hook = self.method(:after_hook)
         with_disabled_hook = self.method(:with_disabled_hook)
 
-        hook_method_def = Proc.new do |*args, &block|
-          is_array_containing_empty_hash = ->(obj) {
-            obj.is_a?(Array) && obj.length == 1 && obj[0].is_a?(Hash) && obj[0].size == 0
-          }
+        is_array_containing_empty_hash = ->(obj) {
+          obj.is_a?(Array) && obj.length == 1 && obj[0].is_a?(Hash) && obj[0].size == 0
+        }
 
-          call_instance_method = -> {
-            # https://github.com/applandinc/appmap-ruby/issues/153
-            if NEW_RUBY && is_array_containing_empty_hash.(args) && hook_method.arity == 1
-              if NEW_RUBY
-                hook_method.bind_call(self, {}, &block)
-              else
-                hook_method.bind(self).call({}, &block)
-              end
+        call_instance_method = lambda do |receiver, args, &block|
+          # https://github.com/applandinc/appmap-ruby/issues/153
+          if NEW_RUBY && is_array_containing_empty_hash.(args) && hook_method.arity == 1
+            hook_method.bind_call(receiver, {}, &block)
+          else
+            if NEW_RUBY
+              hook_method.bind_call(receiver, *args, &block)
             else
-              if NEW_RUBY
-                hook_method.bind_call(self, *args, &block)
-              else
-                hook_method.bind(self).call(*args, &block)
-              end
+              hook_method.bind(receiver).call(*args, &block)
             end
-          }
+          end
+        end
 
+        hook_method_def = Proc.new do |*args, &block|
           # We may not have gotten the class for the method during
           # initialization (e.g. for a singleton method on an embedded
           # struct), so make sure we have it now.
@@ -112,7 +108,7 @@ module AppMap
           return_value = nil
           exception = nil
           begin
-            return_value = call_instance_method.call
+            return_value = call_instance_method.call(self, args, &block)
           rescue
             exception = $ERROR_INFO
             raise
