@@ -125,8 +125,12 @@ module AppMap
         hook_method_parameters = hook_method.parameters.dup.freeze
         SIGNATURES[[ hook_class, hook_method.name ]] = hook_method_parameters
 
-        hook_class.ancestors.first.tap do |cls|
-          cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
+        hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }.tap do |cls|
+          if cls
+            cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
+          else
+            warn "#{hook_method.name} not found on #{hook_class}"
+          end
         end
       end
 
