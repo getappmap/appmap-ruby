@@ -51,7 +51,7 @@ module AppMap
         appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
         scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
 
-        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, scenario_filename), JSON.generate(appmap))
+        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, scenario_filename), appmap)
       end
 
       def enabled?
