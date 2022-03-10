@@ -500,7 +500,7 @@ describe 'AppMap class Hooking', docker: false do
         :kind: :key
       - :name: :kws
         :class: Hash
-        :value: "{:kw3=>:three}"
+        :value: "{:kw3: :three}"
         :kind: :keyrest
       :receiver:
         :class: InstanceMethod
@@ -1136,7 +1136,7 @@ describe 'AppMap class Hooking', docker: false do
       :parameters:
       - :name: :args
         :class: Array
-        :value: '["foo"]'
+        :value: "[foo]"
         :kind: :rest
       - :name: :kw1
         :class: String

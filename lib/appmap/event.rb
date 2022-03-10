@@ -20,6 +20,8 @@ module AppMap
     MethodEventStruct = Struct.new(:id, :event, :thread_id)
 
     class MethodEvent < MethodEventStruct
+      MAX_ARRAY_ENUMERATION = 10
+      MAX_HASH_ENUMERATION = 10
       LIMIT = 100
 
       class << self
@@ -48,14 +50,14 @@ module AppMap
           end
 
           start = Time.now
-          value_string = custom_display_string(value) || default_display_string(value)
+          value_string, final = custom_display_string(value) || default_display_string(value)
 
           if @times
             elapsed = Time.now - start
             @times[best_class_name(value)] += elapsed
           end
 
-          encode_display_string(value_string)
+          final ? value_string : encode_display_string(value_string)
         end
 
         def object_properties(hash_like)
@@ -86,15 +88,33 @@ module AppMap
         def custom_display_string(value)
           case value
           when NilClass, TrueClass, FalseClass, Numeric, Time, Date
-            value.to_s
+            [ value.to_s, true ]
+          when Symbol
+            [ ":#{value}", true ]
           when String
-            value[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result = value[0...LIMIT].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result << "...[#{value.length - LIMIT}]" if value.length > LIMIT
+            [ result, true ]
+          when Array
+            case value.size
+            when 0...MAX_ARRAY_ENUMERATION
+              [ "[#{value.map{|v| display_string(v)}.join(', ')}]", true ]
+            else
+              [ "[#{value.size}]", true ]
+            end
+          when Hash
+            case value.size
+            when 0...MAX_HASH_ENUMERATION
+              [ "{#{value.map{|k,v| "#{display_string(k)}: #{display_string(v)}"}.join(', ')}}", true ]
+            else
+              [ "Hash[numkeys=#{value.keys.size},size=#{value.size}]", true ]
+            end
           when File
-            "#{value.class}[path=#{value.path}]"
+            [ "#{value.class}[path=#{value.path}]", true ]
           when Net::HTTP
-            "#{value.class}[#{value.address}:#{value.port}]"
+            [ "#{value.class}[#{value.address}:#{value.port}]", true ]
           when Net::HTTPGenericRequest
-            "#{value.class}[#{value.method} #{value.path}]"
+            [ "#{value.class}[#{value.method} #{value.path}]", true ]
           end
         rescue StandardError
           nil
