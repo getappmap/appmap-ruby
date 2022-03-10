@@ -102,7 +102,9 @@ module AppMap
 
           enabled = true if AppMap.tracing.enabled? && !reentrant && !disabled_by_shallow_flag.call
 
-          return call_instance_method.call unless enabled
+          enabled = false if %i[instance_eval instance_exec].member?(hook_method.name) && args.empty?
+
+          return call_instance_method.call(self, args, &block) unless enabled
 
           call_event, start_time = with_disabled_hook.call do
             before_hook.call(self, defined_class, args)
@@ -125,11 +127,17 @@ module AppMap
         hook_method_parameters = hook_method.parameters.dup.freeze
         SIGNATURES[[ hook_class, hook_method.name ]] = hook_method_parameters
 
-        hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }.tap do |cls|
-          if cls
-            cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-          else
-            warn "#{hook_method.name} not found on #{hook_class}"
+        # irb(main):001:0> Kernel.public_instance_method(:system)
+        # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)
+        if hook_class == Kernel
+          hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
+        else
+          hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }.tap do |cls|
+            if cls
+              cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
+            else
+              warn "#{hook_method.name} not found on #{hook_class}"
+            end
           end
         end
       end

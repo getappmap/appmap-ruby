@@ -116,6 +116,11 @@ module AppMap
               end
 
               methods = []
+              # irb(main):001:0> Kernel.public_instance_method(:system)
+              # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)
+              if base_cls == Kernel
+                methods << [ base_cls, base_cls.instance_method(method_name) ] rescue nil
+              end
               methods << [ base_cls, base_cls.public_instance_method(method_name) ] rescue nil
               methods << [ base_cls, base_cls.protected_instance_method(method_name) ] rescue nil
               if base_cls.respond_to?(:singleton_class)
