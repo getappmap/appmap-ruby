@@ -15,9 +15,7 @@
   require_name: ruby
   label: string.unpack
 - methods:
-  # TODO: eval does not happen in the right context, and therefore any new constants
-  # which are defined are placed on the wrong module/class.
-#  - Kernel#eval
+  - Kernel#eval
   - Binding#eval
   - BasicObject#instance_eval
 # These methods cannot be hooked as far as I can tell.

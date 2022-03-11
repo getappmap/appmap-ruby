@@ -1178,6 +1178,54 @@ describe 'AppMap class Hooking', docker: false do
     end
   end
 
+  describe 'Kernel#eval' do
+    let!(:config) { AppMap::Config.new('hook_spec') }
+
+    def record_block &block
+      AppMap.configuration = config
+      AppMap::Hook.new(config).enable do
+        tracer = AppMap.tracing.trace
+        AppMap::Event.reset_id_counter
+        begin
+          yield
+        ensure
+          AppMap.tracing.delete(tracer)
+        end
+        tracer
+      end
+    end
+
+    it 'produces a simple result' do
+      tracer = record_block do
+        expect(eval '12').to eq(12)
+      end
+      events = collect_events(tracer)
+      expect(events[0]).to match(hash_including(defined_class: 'Kernel', method_id: 'eval', parameters: [{class: "Array", kind: :rest, name: "arg", value: "[12]"}]))
+    end
+    
+    # a la Ruby 2.6.3 ruby-token.rb
+    # token_c = eval("class #{token_n} < #{super_token}; end; #{token_n}")
+    it 'can define a new class' do
+      num = (Random.random_number * 10000).to_i
+      class_name = "Cls_#{num}"
+      cls = nil
+      m = Module.new do
+        str = "class #{class_name}; end; #{class_name}"
+        cls = eval(str)
+      end
+      expect(cls).to be_instance_of(Class)
+      # The class that's being generated here is actually like: AppMap::Hook::Method::Cls_7566
+      expect { AppMap::Hook::Method.const_get(class_name) }.to raise_error(NameError)
+      # This would be the right behavior
+      expect(m.const_get(class_name)).to be_instance_of(Class)
+      expect(m.const_get(class_name)).to eq(cls)
+      new_cls = Class.new do
+        include m
+      end
+      expect(new_cls.const_get(class_name)).to eq(cls)
+    end
+  end
+
   describe 'prepended override' do
     it 'does not cause stack overflow error' do
       # For the purposes of this test, the code must be statically required, then hooked,
