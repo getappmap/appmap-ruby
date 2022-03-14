@@ -1,3 +1,19 @@
+# [0.74.0](https://github.com/applandinc/appmap-ruby/compare/v0.73.0...v0.74.0) (2022-03-14)
+
+
+### Bug Fixes
+
+* Apply special case hook handling to Kernel and instance_eval ([25823ff](https://github.com/applandinc/appmap-ruby/commit/25823ff0fb86beff3edc64da251a125ee198ef40))
+* Only apply a method hook to a class that defines the method ([ede2236](https://github.com/applandinc/appmap-ruby/commit/ede22364bfcbf324e8db3aa6d64d5b032f36ace2))
+* Optimize/improve string-ification of values ([c9b6cdb](https://github.com/applandinc/appmap-ruby/commit/c9b6cdb72dfc55cc3a166eda470eba19093e9090))
+
+
+### Features
+
+* Improve hook performance by using bind_call ([e09fce9](https://github.com/applandinc/appmap-ruby/commit/e09fce9f5b3c0b18bc3b81083c1523df6a6932db))
+* Label system.exec, string.pack, string.html_safe ([963c6dd](https://github.com/applandinc/appmap-ruby/commit/963c6ddfa0f607ad219ae8829cfb383b0d5988d0))
+* Log initiation of each builtin hook ([902a736](https://github.com/applandinc/appmap-ruby/commit/902a7360d17c6b49de97f34643c733e8c47c294d))
+
 # [0.73.0](https://github.com/applandinc/appmap-ruby/compare/v0.72.5...v0.73.0) (2022-03-07)
 
 
