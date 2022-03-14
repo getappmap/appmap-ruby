@@ -14,19 +14,19 @@
   - String#unpack1
   require_name: ruby
   label: string.unpack
-- methods:
-  # TODO: eval does not happen in the right context, and therefore any new constants
-  # which are defined are placed on the wrong module/class.
+#- methods:
+# TODO: eval does not happen in the right context, and therefore any new constants
+# which are defined are placed on the wrong module/class.
 #  - Kernel#eval
-  - Binding#eval
-  - BasicObject#instance_eval
+#  - Binding#eval
+#  - BasicObject#instance_eval
 # These methods cannot be hooked as far as I can tell.
 # Why? When calling one of these functions, the context at the point of 
 # definition is used. It's not possible to bind class_eval to a new context.
 #  - Module#class_eval
 #  - Module#module_eval
-  require_name: ruby
-  label: lang.eval
+#  require_name: ruby
+#  label: lang.eval
 - methods:
   - IO#popen
   - Kernel#exec
