@@ -10,3 +10,7 @@
   label: crypto.secure_compare
   require_name: active_support/security_utils
   force: true
+- method: ActiveSupport.run_load_hooks
+  label: deserialize.safe
+  require_name: active_support/lazy_load_hooks
+  force: true
