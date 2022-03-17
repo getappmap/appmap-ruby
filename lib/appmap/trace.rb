@@ -84,12 +84,43 @@ module AppMap
     end
   end
 
+  class StackPrinter
+    class << self
+      def enabled?
+        ENV['APPMAP_PRINT_STACKS'] == 'true'
+      end
+
+      def depth
+        (ENV['APPMAP_STACK_DEPTH'] || 20).to_i
+      end
+    end
+
+    def initialize
+      @@stacks ||= Hash.new
+    end
+
+    def record(event)
+      stack = caller.select { |line| !line.index('/lib/appmap/') }[0...StackPrinter.depth].join("\n  ")
+      stack_hash = Digest::SHA256.hexdigest(stack)
+      unless @@stacks[stack_hash]
+        @@stacks[stack_hash] = stack
+        puts
+        puts 'Event: ' + event.to_h.map { |k, v| [ "#{k}: #{v}" ] }.join(", ")
+        puts '  ' + stack
+        puts
+      end
+    end
+  end
+
   class Tracer
+    attr_accessor :stacks
+
     # Records the events which happen in a program.
     def initialize
       @events = []
       @last_package_for_thread = {}
       @methods = Set.new
+      @stack_printer = StackPrinter.new if StackPrinter.enabled?
       @enabled = false
     end
 
@@ -112,6 +143,7 @@ module AppMap
     def record_event(event, package: nil, defined_class: nil, method: nil)
       return unless @enabled
 
+      @stack_printer.record(event) if @stack_printer
       @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
       static = event.static if event.respond_to?(:static)
