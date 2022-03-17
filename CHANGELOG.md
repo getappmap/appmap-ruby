@@ -1,3 +1,11 @@
+# [0.75.0](https://github.com/applandinc/appmap-ruby/compare/v0.74.0...v0.75.0) (2022-03-17)
+
+
+### Features
+
+* Apply label deserialize.safe to ActiveSupport.run_load_hooks ([1f67f9b](https://github.com/applandinc/appmap-ruby/commit/1f67f9b260503772cba6824ef746f903def14323))
+* Print stacks if requested by env var ([72ef911](https://github.com/applandinc/appmap-ruby/commit/72ef9116d3248467632762ce63303a54bed998e9))
+
 # [0.74.0](https://github.com/applandinc/appmap-ruby/compare/v0.73.0...v0.74.0) (2022-03-14)
 
 
