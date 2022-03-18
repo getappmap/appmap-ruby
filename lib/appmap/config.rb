@@ -206,8 +206,8 @@ module AppMap
         }.compact
 
         handler_class = hook_decl['handler_class']
-        options[:handler_class] = Util.class_from_string(handler_class) if handler_class
-        
+        options[:handler_class] = Object.const_get(handler_class) if handler_class
+
         package_hooks(methods, **options)
       end
 

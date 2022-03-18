@@ -108,8 +108,11 @@ module AppMap
 
               warn "AppMap: Initiating hook for builtin #{class_name} #{method_name}" if LOG
 
-              base_cls = Util.class_from_string(class_name, must: false)
-              next unless base_cls
+              begin
+                base_cls = Object.const_get class_name
+              rescue NameError
+                next
+              end
 
               hook_method = lambda do |entry|
                 cls, method = entry
