@@ -4,8 +4,7 @@ require 'pathname'
 require 'set'
 require 'yaml'
 require 'appmap/util'
-require 'appmap/handler/net_http'
-require 'appmap/handler/rails/template'
+require 'appmap/handler'
 require 'appmap/service/guesser'
 require 'appmap/swagger/configuration'
 require 'appmap/depends/configuration'
@@ -206,7 +205,7 @@ module AppMap
         }.compact
 
         handler_class = hook_decl['handler_class']
-        options[:handler_class] = Object.const_get(handler_class) if handler_class
+        options[:handler_class] = Handler.find(handler_class) if handler_class
 
         package_hooks(methods, **options)
       end
