@@ -1,3 +1,10 @@
+# [0.76.0](https://github.com/applandinc/appmap-ruby/compare/v0.75.0...v0.76.0) (2022-03-19)
+
+
+### Features
+
+* Autoload hook handlers ([4cc0e70](https://github.com/applandinc/appmap-ruby/commit/4cc0e7003a8c37d3b6c8c8bbc68cffac0335b878))
+
 # [0.75.0](https://github.com/applandinc/appmap-ruby/compare/v0.74.0...v0.75.0) (2022-03-17)
 
 
