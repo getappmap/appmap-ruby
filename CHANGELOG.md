@@ -1,3 +1,11 @@
+# [0.77.0](https://github.com/applandinc/appmap-ruby/compare/v0.76.0...v0.77.0) (2022-03-22)
+
+
+### Features
+
+* Add label job.perform ([fb5e220](https://github.com/applandinc/appmap-ruby/commit/fb5e220a1f4fd724d8d0178fd4282fed73ff9371))
+* Add labels for devise ([734ec61](https://github.com/applandinc/appmap-ruby/commit/734ec617aa81d756acf3cb392b5eaabcf9521934))
+
 # [0.76.0](https://github.com/applandinc/appmap-ruby/compare/v0.75.0...v0.76.0) (2022-03-19)
 
 
