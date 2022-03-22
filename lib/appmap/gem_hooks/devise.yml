@@ -1,0 +1,8 @@
+- method: Devise::TokenGenerator#generate
+  label: secret
+- method: Devise.friendly_token
+  label: secret
+- method: Devise.secure_compare
+  label: security.secure_compare
+- method: Devise::Strategies::DatabaseAuthenticatable#authenticate!
+  label: security.authentication
