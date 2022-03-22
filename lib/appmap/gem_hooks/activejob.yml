@@ -1,2 +1,6 @@
 - method: ActiveJob::Enqueuing#enqueue
   label: job.create
+- methods:
+  - ActiveJob::Execution#perform
+  - ActiveJob::Execution#perform_now
+  label: job.perform
