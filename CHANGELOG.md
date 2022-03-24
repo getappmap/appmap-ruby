@@ -1,3 +1,10 @@
+## [0.77.1](https://github.com/applandinc/appmap-ruby/compare/v0.77.0...v0.77.1) (2022-03-24)
+
+
+### Bug Fixes
+
+* Add 3.1 as a supported version ([453f6df](https://github.com/applandinc/appmap-ruby/commit/453f6dfc5de29303fc9cbcf60ce0c3499528711c))
+
 # [0.77.0](https://github.com/applandinc/appmap-ruby/compare/v0.76.0...v0.77.0) (2022-03-22)
 
 
