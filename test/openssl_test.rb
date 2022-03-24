@@ -38,8 +38,14 @@ class OpenSSLTest < Minitest::Test
         event
       end
 
+      # Signature of OpenSSL::PKey::PKey.sign changed in 3.1
+      expected = if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1')
+                   expectation('openssl_test_key_sign2-3.1.json').strip
+                 else
+                   expectation('openssl_test_key_sign2.json').strip
+                 end
       diff = Diffy::Diff.new(
-        expectation('openssl_test_key_sign2.json').strip,
+        expected,
         JSON.pretty_generate(sanitized_events).strip
       )
       assert_equal '', diff.to_s
