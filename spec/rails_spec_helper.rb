@@ -5,6 +5,13 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'open3'
 
+# The RUBY_VERSION global variable indicates the version of the
+# runtime. The RUBY_VERSION environment variable is the version we're
+# testing, so it needs to be used to pick a fixture directory.
+def testing_ruby_2?
+  ENV['RUBY_VERSION'].split('.')[0].to_i == 2
+end
+
 # docker compose v2 replaced the --filter flag with --status
 PS_CMD=`docker-compose --version` =~ /version v2/ ?
          "docker-compose ps -q --status running" :

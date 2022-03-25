@@ -1,14 +1,16 @@
 require 'rails_spec_helper'
 
+# Rails5 doesn't work with Ruby 3.x
 def default_rails_versions
-  ruby_2? ? [ 5, 6 ] : [ 6 ]
+  testing_ruby_2? ? [ 5, 6 ] : [ 6 ]
 end
 
-# Rails5 doesn't work with Ruby 3.x
-RailsVersions = ENV['RAILS_VERSIONS'] || default_rails_versions
+def rails_versions
+  Array(ENV['RAILS_VERSIONS'] || default_rails_versions)
+end
 
 describe 'Rails' do
-  RailsVersions.each do |rails_major_version| # rubocop:disable Metrics/BlockLength
+  rails_versions.each do |rails_major_version| # rubocop:disable Metrics/BlockLength
     context "#{rails_major_version}" do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
       include_context 'rails integration test setup'

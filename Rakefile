@@ -2,6 +2,21 @@ $: << File.join(__dir__, 'lib')
 require 'appmap/version'
 GEM_VERSION = AppMap::VERSION
 
+# Make sure the local version is not behind the one on
+# rubygems.org (it's ok if they're the same).
+#
+# If it is behind, the fixture images won't get updated with the gem
+# built from the local source, so you'll wind up testing the rubygems
+# version instead.
+unless ENV['SKIP_VERSION_CHECK']
+  require 'json'
+  require 'net/http'
+  rubygems_version = JSON.parse(Net::HTTP.get(URI.parse('https://rubygems.org/api/v1/gems/appmap.json')))['version']
+  if Gem::Version.new(GEM_VERSION) < Gem::Version.new(rubygems_version)
+    raise "#{GEM_VERSION} < #{rubygems_version}. Rebase to avoid build issues."
+  end
+end
+
 require 'rake/testtask'
 require 'rdoc/task'
 
@@ -24,7 +39,7 @@ RUBY_VERSIONS=%w[2.6 2.7 3.0 3.1].select do |version|
 
   false
 end
-FIXTURE_APPS=%w[rack_users_app rails6_users_app rails5_users_app]
+FIXTURE_APPS=[:rack_users_app, :rails6_users_app, :rails5_users_app, :rails7_users_app => {:ruby_version => '>= 2.7'}]
 
 def run_cmd(*cmd)
   $stderr.puts "Running: #{cmd}"
@@ -83,7 +98,17 @@ namespace :build do
     RUBY_VERSIONS.each do |ruby_version|
       namespace ruby_version do
         desc "build:fixtures:#{ruby_version}"
-        FIXTURE_APPS.each do |app|
+        FIXTURE_APPS.each do |app_spec|
+          app = if app_spec.instance_of?(Hash)
+            app_spec = app_spec.flatten
+            version_rqt = Gem::Requirement.create(app_spec[1][:ruby_version])
+            next unless version_rqt =~ (Gem::Version.new(ruby_version))
+            app = app_spec[0]
+          else
+            app = app_spec
+          end.to_s
+
+
           desc app
           task app => ["base:#{ruby_version}"] do
             build_app_image(app, ruby_version)
@@ -109,12 +134,13 @@ def run_specs(ruby_version, task_args)
   # description), because it's not intended to be invoked directly
   RSpec::Core::RakeTask.new("rspec_#{ruby_version}", [:specs]) do |task, args|
     task.exclude_pattern = 'spec/fixtures/**/*_spec.rb'
+    task.rspec_opts = '-f doc'
     if args.count > 0
       # There doesn't appear to be a value for +pattern+ that will
       # cause it to be ignored. Setting it to '' or +nil+ causes an
       # empty argument to get passed to rspec, which confuses it.
       task.pattern = 'never match this'
-      task.rspec_opts = args.to_a.join(' ')
+      task.rspec_opts += " " + args.to_a.join(' ')
     end
   end
 

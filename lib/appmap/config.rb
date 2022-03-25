@@ -450,7 +450,15 @@ module AppMap
 
       # Hook a method which is specified by class and method name.
       def package_for_code_object
-        class_name = cls.to_s.index('#<Class:') == 0 ? cls.to_s['#<Class:'.length...-1] : cls.name
+        class_name = begin
+                       cls.to_s.index('#<Class:') == 0 ? cls.to_s['#<Class:'.length...-1] : cls.name
+                     rescue
+                       # Calling #to_s on some Rails classes
+                       # (e.g. those generated to represent
+                       # associations) will raise an exception. Fall
+                       # back to using the class name.
+                       cls.name
+                     end
         Array(config.gem_hooks[class_name])
           .find { |hook| hook.include_method?(method.name) }
           &.package
