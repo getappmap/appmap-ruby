@@ -33,8 +33,8 @@ describe 'rake appmap:swagger' do
     expect(swagger).to eq(YAML.load(<<~YAML
       :openapi: 3.0.1
       :info:
-        :title: My project
-        :version: v1
+        :title: Usersapp API
+        :version: 1.1.0
       :paths:
         :/api/users:
           :get:

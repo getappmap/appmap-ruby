@@ -20,9 +20,14 @@ module AppMap
           appmap_js = AppMap::NodeCLI.new(verbose: Rake.verbose == true)
 
           FileUtils.mkdir_p configuration.swagger_config.output_dir
+          swagger_template = Tempfile.new('swagger_template')
+
+          swagger_template.write(configuration.swagger_config.template.to_yaml)
+          swagger_template.close
 
           cmd = %w[swagger]
-  
+          cmd << '--openapi-template' << swagger_template.path
+
           swagger_raw, = appmap_js.command(cmd)
 
           gen_swagger = YAML.load(swagger_raw)
