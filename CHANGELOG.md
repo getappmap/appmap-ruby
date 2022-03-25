@@ -1,3 +1,10 @@
+## [0.77.2](https://github.com/applandinc/appmap-ruby/compare/v0.77.1...v0.77.2) (2022-03-25)
+
+
+### Bug Fixes
+
+* Pass the proper openapi-template arg ([05cbfde](https://github.com/applandinc/appmap-ruby/commit/05cbfdebdf80e3df2105a943ad892d5a7df614d7))
+
 ## [0.77.1](https://github.com/applandinc/appmap-ruby/compare/v0.77.0...v0.77.1) (2022-03-24)
 
 

@@ -3,7 +3,7 @@
 module AppMap
   URL = 'https://github.com/applandinc/appmap-ruby'
 
-  VERSION = '0.77.1'
+  VERSION = '0.77.2'
 
   APPMAP_FORMAT_VERSION = '1.5.1'
 
