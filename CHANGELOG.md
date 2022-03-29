@@ -1,3 +1,10 @@
+## [0.77.3](https://github.com/applandinc/appmap-ruby/compare/v0.77.2...v0.77.3) (2022-03-29)
+
+
+### Bug Fixes
+
+* Rescue exceptions when calling Class#to_s ([f59f2f6](https://github.com/applandinc/appmap-ruby/commit/f59f2f6b39664ff050486c88ff1b859ca0db48d8))
+
 ## [0.77.2](https://github.com/applandinc/appmap-ruby/compare/v0.77.1...v0.77.2) (2022-03-25)
 
 
