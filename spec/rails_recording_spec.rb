@@ -73,6 +73,7 @@ describe 'Rails' do
                 'name' => 'params',
                 'class' => 'ActiveSupport::HashWithIndifferentAccess',
                 'object_id' => Integer,
+                'size' => 1,
                 'value' => '{login=>alice}',
                 'kind' => 'req'
               ),

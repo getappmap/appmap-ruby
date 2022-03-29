@@ -491,6 +491,7 @@ describe 'AppMap class Hooking' do
         :class: Array
         :value: "[4, 5]"
         :kind: :rest
+        :size: 2
       - :name: :kw1
         :class: String
         :value: one
@@ -503,6 +504,7 @@ describe 'AppMap class Hooking' do
         :class: Hash
         :value: "{:kw3=>:three}"
         :kind: :keyrest
+        :size: 1
       :receiver:
         :class: InstanceMethod
         :value: Instance Method fixture
@@ -1139,6 +1141,7 @@ describe 'AppMap class Hooking' do
         :class: Array
         :value: "[foo]"
         :kind: :rest
+        :size: 1
       - :name: :kw1
         :class: String
         :value: kw1
@@ -1151,6 +1154,7 @@ describe 'AppMap class Hooking' do
         :class: Hash
         :value: "{}"
         :kind: :keyrest
+        :size: 0
       :receiver:
         :class: ReportParameters
         :value: ReportParameters
@@ -1160,6 +1164,7 @@ describe 'AppMap class Hooking' do
       :return_value:
         :class: Array
         :value: "[[:rest, :args], [:keyreq, :kw1], [:key, :kw2], [:keyrest, :kws]]"
+        :size: 4
     YAML
     parameters = [[:rest, :args], [:keyreq, :kw1], [:key, :kw2], [:keyrest, :kws]]
     test_hook_behavior 'spec/fixtures/hook/report_parameters.rb', events do

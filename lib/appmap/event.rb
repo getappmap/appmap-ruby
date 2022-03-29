@@ -243,6 +243,7 @@ module AppMap
                 value: display_string(value),
                 kind: param_type
                 }.tap do |param|
+                  param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
                   add_schema param, value
                 end
             end
@@ -308,6 +309,7 @@ module AppMap
                 value: display_string(return_value),
                 object_id: return_value.__id__
               }.tap do |param|
+                param[:size] = return_value.size if return_value.respond_to?(:size) && return_value.is_a?(Enumerable)
                 add_schema param, return_value, always: parameter_schema
               end
             end
