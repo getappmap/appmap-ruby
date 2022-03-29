@@ -33,16 +33,6 @@ before_install:
       && nvm use --lts \
       && npm i -g yarn
 
-jobs:
-  include:
-  - stage: test
-    env:
-      # GEM_ALTERNATIVE_NAME only needed for deployment 
-      - GEM_ALTERNATIVE_NAME=''
-      # version will always be behind, because semantic-release is
-      # about to update it.
-      - SKIP_VERSION_CHECK=true
-
 before_deploy:
   - |
     npm i -g \
