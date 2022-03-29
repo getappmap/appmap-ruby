@@ -60,16 +60,37 @@ module AppMap
           final ? value_string : encode_display_string(value_string)
         end
 
-        def object_properties(hash_like)
-          hash = hash_like.to_h
-          hash.keys.map do |key|
-            {
+        def add_schema(param, value, always: false)
+          return unless always || AppMap.parameter_schema?
+
+          if value.blank? || value.is_a?(String)
+            # pass
+          elsif value.is_a?(Enumerable)
+            if value.is_a?(Hash)
+              param[:properties] = object_properties(value)
+            elsif value.respond_to?(:first) && value.first
+              param[:properties] = object_properties(value.first)
+            end
+          elsif value.respond_to?(:as_json)
+            add_schema param, JSON.parse(value.to_json), always: always
+          end
+        end
+
+        def object_properties(hash)
+          hash = hash.attributes if hash.respond_to?(:attributes)
+          hash = hash.to_h if hash.is_a?(Struct)
+
+          return unless hash.respond_to?(:each_with_object)
+          
+          hash.each_with_object([]) do |entry, memo|
+            key, value = entry
+            memo << {
               name: key,
-              class: hash[key].class.name,
+              class: value.class.name,
             }
           end
         rescue
-          nil
+          warn $!
         end
 
         # Heuristic for dynamically defined class whose name can be nil
@@ -221,7 +242,9 @@ module AppMap
                 object_id: value.__id__,
                 value: display_string(value),
                 kind: param_type
-              }
+                }.tap do |param|
+                  add_schema param, value
+                end
             end
             event.receiver = {
               class: best_class_name(receiver),
@@ -276,7 +299,7 @@ module AppMap
       attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new)
+        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new, parameter_schema: false)
           event ||= MethodReturn.new
           event.tap do |_|
             if return_value
@@ -284,7 +307,9 @@ module AppMap
                 class: best_class_name(return_value),
                 value: display_string(return_value),
                 object_id: return_value.__id__
-              }
+              }.tap do |param|
+                add_schema param, return_value, always: parameter_schema
+              end
             end
             if exception
               next_exception = exception

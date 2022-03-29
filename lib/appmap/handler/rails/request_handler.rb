@@ -8,8 +8,6 @@ module AppMap
   module Handler
     module Rails
 
-      TEMPLATE_RENDER_VALUE = 'appmap.handler.rails.template.return_value'
-
       module RequestHandler
         class HTTPServerRequest < AppMap::Event::MethodEvent
           attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers
@@ -77,7 +75,7 @@ module AppMap
               event ||= HTTPServerResponse.new
               event.status = response.status
               event.headers = response.headers.dup
-              AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event
+              AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event, parameter_schema: true
             end
           end
 

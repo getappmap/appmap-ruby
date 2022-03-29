@@ -100,5 +100,9 @@ module AppMap
       @metadata ||= Metadata.detect.freeze
       Util.deep_dup(@metadata)
     end
+
+    def parameter_schema?
+      ENV['APPMAP_PARAMETER_SCHEMA'] == 'true'
+    end
   end
 end
