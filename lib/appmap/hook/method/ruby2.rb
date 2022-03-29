@@ -16,6 +16,18 @@ module AppMap
 
       protected
 
+      def before_hook(receiver, *args)
+        call_event = handle_call(receiver, args)
+        if call_event
+          AppMap.tracing.record_event \
+            call_event,
+            package: hook_package,
+            defined_class: defined_class,
+            method: hook_method
+        end
+        call_event
+      end
+
       ruby2_keywords def do_call(receiver, *args, &block)
         hook_method.bind(receiver).call(*args, &block)
       end

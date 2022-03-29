@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/event'
+require 'appmap/hook/method'
 require 'appmap/util'
 require 'rack'
 
@@ -81,29 +82,29 @@ module AppMap
       end
     end
 
-    class NetHTTP
-      class << self
-        def copy_headers(obj)
-          {}.tap do |headers|
-            obj.each_header do |key, value|
-              key = key.split('-').map(&:capitalize).join('-')
-              headers[key] = value
-            end
+    # Handler class for HTTP requests.
+    # Emits HTTP request events instead of method calls.
+    class NetHTTP < Hook::Method
+      def self.copy_headers(obj)
+        {}.tap do |headers|
+          obj.each_header do |key, value|
+            key = key.split('-').map(&:capitalize).join('-')
+            headers[key] = value
           end
         end
+      end
 
-        def handle_call(defined_class, hook_method, receiver, args)
-          # request will call itself again in a start block if it's not already started.
-          return unless receiver.started?
+      def handle_call(receiver, args)
+        # request will call itself again in a start block if it's not already started.
+        return unless receiver.started?
 
-          http = receiver
-          request = args.first
-          HTTPClientRequest.new(http, request)
-        end
+        http = receiver
+        request = args.first
+        HTTPClientRequest.new(http, request)
+      end
 
-        def handle_return(call_event_id, elapsed, return_value, exception)
-          HTTPClientResponse.new(return_value, call_event_id, elapsed)
-        end
+      def handle_return(call_event_id, elapsed, return_value, exception)
+        HTTPClientResponse.new(return_value, call_event_id, elapsed)
       end
     end
   end

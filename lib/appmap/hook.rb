@@ -118,7 +118,7 @@ module AppMap
                 cls, method = entry
                 return false if config.never_hook?(cls, method)
 
-                Hook::Method.new(hook.package, cls, method).activate
+                hook.package.handler_class.new(hook.package, cls, method).activate
               end
 
               methods = []
@@ -209,7 +209,7 @@ module AppMap
           package = config.lookup_package(hook_cls, method)
           next unless package
 
-          Hook::Method.new(package, hook_cls, method).activate
+          package.handler_class.new(package, hook_cls, method).activate
         end
       end
 

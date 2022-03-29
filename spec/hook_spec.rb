@@ -115,7 +115,7 @@ describe 'AppMap class Hooking', docker: false do
     require 'appmap/hook/method'
     package = config.lookup_package(hook_cls, method)
     expect(package).to be
-    hook_method = AppMap::Hook::Method.new(package, hook_cls, method)
+    hook_method = AppMap::Handler::Function.new(package, hook_cls, method)
     hook_method.activate
 
     tracer = AppMap.tracing.trace
@@ -1188,7 +1188,7 @@ describe 'AppMap class Hooking', docker: false do
       require 'appmap/hook/method'
 
       pkg = AppMap::Config::Package.new('fixtures/hook/prependend_override')
-      AppMap::Hook::Method.new(pkg, PrependedClass, PrependedClass.public_instance_method(:say_hello)).activate
+      AppMap::Handler::Function.new(pkg, PrependedClass, PrependedClass.public_instance_method(:say_hello)).activate
 
       tracer = AppMap.tracing.trace
       AppMap::Event.reset_id_counter

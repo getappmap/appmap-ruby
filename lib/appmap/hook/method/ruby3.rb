@@ -13,6 +13,23 @@ module AppMap
 
       protected
 
+      def before_hook(receiver, *args, **kwargs)
+        args = [*args, kwargs] if !kwargs.empty? || keyrest?
+        call_event = handle_call(receiver, args)
+        if call_event
+          AppMap.tracing.record_event \
+            call_event,
+            package: hook_package,
+            defined_class: defined_class,
+            method: hook_method
+        end
+        call_event
+      end
+
+      def keyrest?
+        @keyrest ||= parameters.map(&:last).include? :keyrest
+      end
+
       def do_call(receiver, *args, **kwargs, &block)
         hook_method.bind_call(receiver, *args, **kwargs, &block)
       end

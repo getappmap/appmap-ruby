@@ -88,15 +88,8 @@ module AppMap
         @defined_class ||= Hook.qualify_method_name(hook_method)&.first
       end
 
-      def before_hook(receiver, *args, **kwargs)
-        args = [*args, kwargs] if !kwargs.empty? || keyrest?
-        call_event = hook_package.handler_class.handle_call(defined_class, hook_method, receiver, args)
-        AppMap.tracing.record_event(call_event, package: hook_package, defined_class: defined_class, method: hook_method) if call_event
-        call_event
-      end
-
       def after_hook(_receiver, call_event, elapsed, return_value, exception)
-        return_event = hook_package.handler_class.handle_return(call_event.id, elapsed, return_value, exception)
+        return_event = handle_return(call_event.id, elapsed, return_value, exception)
         AppMap.tracing.record_event(return_event) if return_event
       end
 
@@ -107,10 +100,6 @@ module AppMap
         yield
       ensure
         Thread.current[HOOK_DISABLE_KEY] = false
-      end
-
-      def keyrest?
-        @keyrest ||= parameters.map(&:last).include? :keyrest
       end
     end
   end
