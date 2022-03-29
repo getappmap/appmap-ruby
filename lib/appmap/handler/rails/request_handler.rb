@@ -7,6 +7,9 @@ require 'appmap/util'
 module AppMap
   module Handler
     module Rails
+
+      TEMPLATE_RENDER_VALUE = 'appmap.handler.rails.template.return_value'
+
       module RequestHandler
         class HTTPServerRequest < AppMap::Event::MethodEvent
           attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers
@@ -46,8 +49,7 @@ module AppMap
                     value: self.class.display_string(val),
                     object_id: val.__id__,
                   }.tap do |message|
-                    properties = object_properties(val)
-                    message[:properties] = properties if properties
+                    AppMap::Event::MethodEvent.add_schema message, val, always: true
                   end
                 end
               end
@@ -67,16 +69,16 @@ module AppMap
           end
         end
 
-        class HTTPServerResponse < AppMap::Event::MethodReturnIgnoreValue
+        class HTTPServerResponse < AppMap::Event::MethodReturn
           attr_accessor :status, :headers
 
-          def initialize(response, parent_id, elapsed)
-            super AppMap::Event.next_id_counter, :return, Thread.current.object_id
-
-            self.status = response.status
-            self.parent_id = parent_id
-            self.elapsed = elapsed
-            self.headers = response.headers.dup
+          class << self
+            def build_from_invocation(parent_id, return_value, elapsed, response, event: HTTPServerResponse.new)
+              event ||= HTTPServerResponse.new
+              event.status = response.status
+              event.headers = response.headers.dup
+              AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event
+            end
           end
 
           def to_h
@@ -108,7 +110,9 @@ module AppMap
           end
 
           def after_hook(receiver, call_event, elapsed, *)
-            return_event = HTTPServerResponse.new receiver.response, call_event.id, elapsed
+            return_value = Thread.current[TEMPLATE_RENDER_VALUE]
+            Thread.current[TEMPLATE_RENDER_VALUE] = nil
+            return_event = HTTPServerResponse.build_from_invocation call_event.id, return_value, elapsed, receiver.response
             AppMap.tracing.record_event return_event
           end
         end

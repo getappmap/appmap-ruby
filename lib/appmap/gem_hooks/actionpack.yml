@@ -43,3 +43,9 @@
   - ActionController::Instrumentation#redirect_to
   label: mvc.controller
   require_name: action_controller
+- methods:
+  - AbstractController::Rendering#render_to_body
+  - ActionController::Renderers#render_to_body
+  label: mvc.render
+  handler_class: AppMap::Handler::Rails::RenderHandler
+  require_name: action_controller
