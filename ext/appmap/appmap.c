@@ -1,4 +1,5 @@
 #include <ruby.h>
+#include <ruby/debug.h>
 #include <ruby/intern.h>
 
 // Seems like CLASS_OR_MODULE_P should really be in a header file in
@@ -39,7 +40,7 @@ am_define_method_with_arity(VALUE mod, VALUE name, VALUE arity, VALUE proc)
 {
   VALUE arities_key = rb_intern(ARITIES_KEY);
   VALUE arities = rb_ivar_get(mod, arities_key);
-  
+
   if (arities == Qundef || NIL_P(arities)) {
     arities = rb_hash_new();
     rb_ivar_set(mod, arities_key, arities);
@@ -62,7 +63,7 @@ am_get_method_arity(VALUE method, VALUE orig_arity_method)
   }
   // Didn't find one, call the original method.
   if (NIL_P(arity)) {
-    VALUE bound_method = rb_funcall(orig_arity_method, rb_intern("bind"), 1, method);    
+    VALUE bound_method = rb_funcall(orig_arity_method, rb_intern("bind"), 1, method);
     arity = rb_funcall(bound_method, rb_intern("call"), 0);
   }
 
@@ -83,11 +84,29 @@ am_method_arity(VALUE method)
   return am_get_method_arity(method, orig_method_arity);
 }
 
+static VALUE
+bindings_callback(const rb_debug_inspector_t *dbg_context, void *level)
+{
+  const int i = NUM2INT((VALUE) level);
+  if (i >= RARRAY_LEN(rb_debug_inspector_backtrace_locations(dbg_context))) {
+    return Qnil;
+  } else {
+    return rb_debug_inspector_frame_binding_get(dbg_context, i);
+  }
+}
+
+static VALUE
+am_previous_bindings(VALUE self, VALUE level)
+{
+  return rb_debug_inspector_open(bindings_callback, (void *) level);
+}
+
 void Init_appmap() {
   VALUE appmap = rb_define_module("AppMap");
   am_AppMapHook = rb_define_class_under(appmap, "Hook", rb_cObject);
 
   rb_define_singleton_method(am_AppMapHook, "singleton_method_owner_name", singleton_method_owner_name, 1);
+  rb_define_module_function(appmap, "caller_binding", am_previous_bindings, 1);
 
   rb_define_method(rb_cModule, "define_method_with_arity", am_define_method_with_arity, 3);
   rb_define_method(rb_cUnboundMethod, "arity", am_unbound_method_arity, 0);
