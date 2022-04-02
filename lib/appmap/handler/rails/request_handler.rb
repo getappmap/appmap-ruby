@@ -100,15 +100,14 @@ module AppMap
 
           protected
 
-          def before_hook(receiver, defined_class, _) # args
+          def before_hook(receiver, *)
             call_event = HTTPServerRequest.new(receiver.request)
             # http_server_request events are i/o and do not require a package name.
             AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
-            [ call_event, TIME_NOW.call ]
+            call_event
           end
 
-          def after_hook(receiver, call_event, start_time, _, _) # return_value, exception
-            elapsed = TIME_NOW.call - start_time
+          def after_hook(receiver, call_event, elapsed, *)
             return_event = HTTPServerResponse.new receiver.response, call_event.id, elapsed
             AppMap.tracing.record_event return_event
           end
