@@ -2,6 +2,15 @@
 
 require 'appmap/event'
 
+if defined?(Sequel)
+  Sequel::Database.after_initialize do |db|
+    # Sequel memoizes server_version. Calling it here ensures that it
+    # will be available to SequelExaminer, without requiring that a
+    # query be executed to get it.
+    db.server_version
+  end
+end
+
 module AppMap
   module Handler
     module Rails
