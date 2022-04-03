@@ -2,16 +2,18 @@ require 'rails_spec_helper'
 
 describe 'SQL events' do
   include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do
-    around(:each) do |example|
-      FileUtils.rm_rf tmpdir
-      FileUtils.mkdir_p tmpdir
-      cmd = "docker-compose run --rm -e ORM_MODULE=#{orm_module} -e RAILS_ENV=test -e APPMAP=true -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec spec/controllers/users_controller_api_spec.rb:#{test_line_number}"
-      run_cmd cmd, chdir: fixture_dir
+    before(:all) { @app.prepare_db }
 
-      example.run
+    before do
+      FileUtils.rm_rf tmpdir
+      app.run_cmd \
+        "./bin/rspec spec/controllers/users_controller_api_spec.rb:#{test_line_number}",
+        'ORM_MODULE' => orm_module,
+        'RAILS_ENV' => 'test',
+        'APPMAP' => 'true'
     end
 
-    let(:tmpdir) { "tmp/spec/record_sql_rails_pg_spec" }
+    let(:tmpdir) { app.tmpdir }
 
     describe 'fields' do
       let(:test_line_number) { 8 }
@@ -71,7 +73,7 @@ describe 'SQL events' do
   sql_query:
     sql: SELECT * FROM "users"
             SQL_QUERY
- 
+
             expect(appmap).to include('sql:')
           end
         end

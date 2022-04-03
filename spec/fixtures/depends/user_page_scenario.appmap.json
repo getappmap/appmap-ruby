@@ -68,7 +68,7 @@
       {
         "appmap_digest": "4a2f6e28befc256c3cdc3ad05f3e51156e0fb805300f095a74f7719cc2bcb650",
         "canonicalization_algorithm": "info",
-        "digest": "e09798c3872822cd6aee88e0de2b54d06e05bf1f4c1bb3c21ca5d422e1938980",
+        "digest": "19a3423b0e356861454bfe9f5d70663c65c26bc5cac2345bb87d4feef2db9e5b",
         "fingerprint_algorithm": "sha256"
       },
       {
@@ -104,7 +104,7 @@
       {
         "appmap_digest": "4a2f6e28befc256c3cdc3ad05f3e51156e0fb805300f095a74f7719cc2bcb650",
         "canonicalization_algorithm": "trace",
-        "digest": "5bccf2aaf6b511d84e297cd882d998927bfdcfb24b2baa63c897a87ab08878cd",
+        "digest": "e81230cac63d25a6dfbf24c113964a661044dd01ed661e3cffeb943b41cfc213",
         "fingerprint_algorithm": "sha256"
       },
       {

@@ -1,93 +1,105 @@
 # frozen_string_literal: true
 
+require 'open3'
+
 require 'spec_helper'
 require 'active_support'
 require 'active_support/core_ext'
-require 'open3'
 
-# The RUBY_VERSION global variable indicates the version of the
-# runtime. The RUBY_VERSION environment variable is the version we're
-# testing, so it needs to be used to pick a fixture directory.
 def testing_ruby_2?
-  ENV['RUBY_VERSION'].split('.')[0].to_i == 2
+  RUBY_VERSION.split('.')[0].to_i == 2
 end
 
-# docker compose v2 replaced the --filter flag with --status
-PS_CMD=`docker-compose --version` =~ /version v2/ ?
-         "docker-compose ps -q --status running" :
-         "docker-compose ps -q --filter health=healthy"
+class TestRailsApp
+  def initialize(fixture_dir)
+    @fixture_dir = fixture_dir
+  end
 
-def wait_for_container(app_name)
-  start_time = Time.now
-  until `#{PS_CMD} #{app_name}`.strip != ''
-    elapsed = Time.now - start_time
-    raise "Timeout waiting for container #{app_name} to be ready" if elapsed > 10
+  attr_reader :fixture_dir
 
-    $stderr.write '.' if elapsed > 3
-    sleep 0.25
+  def run_cmd(cmd, env = {})
+    run_process method(:system), cmd, env, exception: true
+  end
+
+  def spawn_cmd(cmd, env = {})
+    puts "Spawning `#{cmd}` in #{fixture_dir}..."
+    run_process Process.method(:spawn), cmd, env
+  end
+
+  def capture_cmd(cmd, env = {})
+    puts "Capturing `#{cmd}` in #{fixture_dir}..."
+    run_process(Open3.method(:capture2), cmd, env).first
+  end
+
+  def database_name
+    @database_name ||= "appland-rails-test-#{Random.bytes(2).unpack1('h*')}"
+  end
+
+  def bundle
+    return if @bundled
+
+    run_cmd 'bundle'
+    @bundled = true
+  end
+
+  def prepare_db
+    return if @db_prepared
+
+    bundle
+    run_cmd './bin/rake db:create db:schema:load'
+    @db_prepared = true
+    at_exit { drop_db }
+  end
+
+  def drop_db
+    return unless @db_prepared
+
+    run_cmd './bin/rake db:drop'
+    @db_prepared = false
+  end
+
+  def tmpdir
+    @tmpdir ||= File.join(fixture_dir, 'tmp')
+  end
+
+  def run_specs
+    return if @specs_ran or use_existing_data?
+
+    prepare_db
+    FileUtils.rm_rf tmpdir
+    run_cmd \
+      './bin/rspec spec/controllers/users_controller_spec.rb spec/controllers/users_controller_api_spec.rb',
+      'APPMAP' => 'true'
+    @specs_ran = true
+  end
+
+  def self.for_fixture(fixture_dir)
+    @apps ||= {}
+    @apps[fixture_dir] ||= TestRailsApp.new fixture_dir
+  end
+
+  protected
+
+  def run_process(method, cmd, env, options = {})
+    Bundler.with_clean_env do
+      method.call \
+        env.merge('TEST_DATABASE' => database_name),
+        cmd,
+        options.merge(chdir: fixture_dir)
+    end
   end
 end
 
-def run_cmd(*cmd, &failed)
-  out, status = Open3.capture2e(*cmd)
-  return [ out, status ] if status.success?
-
-  warn <<~WARNING
-    Command failed:
-    #{cmd}
-    <<< Output:
-    #{out}
-    >>> End of output
-  WARNING
-  failed&.call
-  raise 'Command failed'
-end
-
-shared_context 'Rails app pg database' do |fixture_dir|
-  define_method(:fixture_dir) { fixture_dir }
-
-  before(:all) do
-    print_pg_logs = lambda do
-      logs, = run_cmd 'docker-compose logs pg'
-      puts "docker-compose logs for pg:"
-      puts
-      puts logs
-    end
-
-    Dir.chdir fixture_dir do
-      run_cmd 'docker-compose down -v'
-      cmd = 'docker-compose up -d pg'
-      run_cmd cmd
-      wait_for_container 'pg'
-
-      cmd = 'docker-compose run --rm app ./create_app'
-      run_cmd cmd, &print_pg_logs
-    end
-  end
-
-  after(:all) do
-    if ENV['NOKILL'] != 'true'
-      cmd = 'docker-compose down -v'
-      run_cmd cmd, chdir: fixture_dir
-    end
-  end
+shared_context 'Rails app pg database' do |dir|
+  before(:all) { @app = TestRailsApp.for_fixture dir }
+  let(:app) { @app }
 end
 
 shared_context 'rails integration test setup' do
-  def tmpdir
-    'tmp/spec/AbstractControllerBase'
-  end
+  let(:tmpdir) { app.tmpdir }
 
-  unless use_existing_data?
-    before(:all) do
-      FileUtils.rm_rf tmpdir
-      FileUtils.mkdir_p tmpdir
-      run_spec 'spec/controllers/users_controller_spec.rb'
-      run_spec 'spec/controllers/users_controller_api_spec.rb'
-    end
-  end
+  before(:all) { @app.run_specs } unless use_existing_data?
 
-  let(:appmap) { JSON.parse File.read File.join tmpdir, 'appmap/rspec', appmap_json_file }
   let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
   let(:appmap) { JSON.parse File.read(appmap_json_path) }
   let(:events) { appmap['events'] }

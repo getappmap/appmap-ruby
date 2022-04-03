@@ -3,7 +3,7 @@
 require 'rails_spec_helper'
 require 'appmap/config'
 
-describe AppMap::Config, docker: false do
+describe AppMap::Config do
   it 'loads as expected' do
     config_data = {
       name: 'test',
