@@ -1,3 +1,10 @@
+## [0.77.4](https://github.com/applandinc/appmap-ruby/compare/v0.77.3...v0.77.4) (2022-04-04)
+
+
+### Bug Fixes
+
+* Update Rails request handler to the new hook architecture ([595b39a](https://github.com/applandinc/appmap-ruby/commit/595b39abb030c1dcf85c83e4717c25d4c5177d4d))
+
 ## [0.77.3](https://github.com/applandinc/appmap-ruby/compare/v0.77.2...v0.77.3) (2022-03-29)
 
 
