@@ -1,3 +1,10 @@
+# [0.78.0](https://github.com/applandinc/appmap-ruby/compare/v0.77.4...v0.78.0) (2022-04-04)
+
+
+### Features
+
+* Hook and label Kernel#eval ([e0c151d](https://github.com/applandinc/appmap-ruby/commit/e0c151d1371f5bed5597ffd0d3bfebb8bca247c2))
+
 ## [0.77.4](https://github.com/applandinc/appmap-ruby/compare/v0.77.3...v0.77.4) (2022-04-04)
 
 
