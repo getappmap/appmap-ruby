@@ -43,6 +43,20 @@ module AppMap
             def examine(payload, sql:)
               return unless (examiner = build_examiner)
 
+              if AppMap.explain_queries? && examiner.in_transaction? && examiner.database_type == :postgres
+                unless sql =~ /\A(SAVEPOINT|RELEASE|ROLLBACK|BEGIN|INSERT|COMMIT)/i
+                  examiner.execute_query 'SAVEPOINT appmap_sql_examiner'
+                  begin
+                    plan = examiner.execute_query(%(EXPLAIN #{sql}))
+                    payload[:query_plan] = plan.map { |line| line[:'QUERY PLAN'] }.join("\n")
+                    examiner.execute_query 'RELEASE SAVEPOINT appmap_sql_examiner'
+                  rescue
+                    warn "Exception occurred explaining query: #{$!}"
+                    examiner.execute_query 'ROLLBACK TO SAVEPOINT appmap_sql_examiner'
+                  end
+                end
+              end
+
               payload[:server_version] = examiner.server_version
               payload[:database_type] = examiner.database_type.to_s
             end
@@ -65,6 +79,10 @@ module AppMap
 
             def database_type
               Sequel::Model.db.database_type.to_sym
+            end
+
+            def in_transaction?
+              Sequel::Model.db.in_transaction?
             end
 
             def execute_query(sql)
@@ -93,8 +111,12 @@ module AppMap
               type
             end
 
+            def in_transaction?
+              ActiveRecord::Base.connection.open_transactions > 0
+            end
+
             def execute_query(sql)
-              ActiveRecord::Base.connection.execute(sql).inject([]) { |memo, r| memo << r; memo }
+              ActiveRecord::Base.connection.execute(sql).each_with_object([]) { |r, memo| memo << r }
             end
           end
         end

@@ -104,5 +104,9 @@ module AppMap
     def parameter_schema?
       ENV['APPMAP_PARAMETER_SCHEMA'] == 'true'
     end
+
+    def explain_queries?
+      ENV['APPMAP_EXPLAIN_QUERIES'] == 'true'
+    end
   end
 end
