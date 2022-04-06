@@ -1,3 +1,10 @@
+# [0.79.0](https://github.com/applandinc/appmap-ruby/compare/v0.78.0...v0.79.0) (2022-04-06)
+
+
+### Features
+
+* Use a more unique test database name ([0eed036](https://github.com/applandinc/appmap-ruby/commit/0eed036460f0384698ff91c1112a4a9c3214f7f4))
+
 # [0.78.0](https://github.com/applandinc/appmap-ruby/compare/v0.77.4...v0.78.0) (2022-04-04)
 
 
