@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'appmap/version'
 
 Gem::Specification.new do |spec|
-  # ability to parameterize gem name is added intentionally, 
+  # ability to parameterize gem name is added intentionally,
   # to support the possibility of unofficial releases, e.g. during CI tests
   spec.name          = (ENV['GEM_ALTERNATIVE_NAME'].to_s.empty? ? 'appmap' : ENV["GEM_ALTERNATIVE_NAME"] )
   spec.version       = AppMap::VERSION
@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'reverse_markdown'
 
   spec.add_development_dependency 'bundler', '>= 1.16'
-  spec.add_development_dependency 'minitest', '~> 5.14'
+  spec.add_development_dependency 'minitest', '~> 5.15'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'
@@ -48,5 +48,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'webdrivers', '~> 4.0'
   spec.add_development_dependency 'timecop'
   spec.add_development_dependency 'hashie'
+  spec.add_development_dependency 'random-port', '~> 0.5.1'
   spec.add_development_dependency 'webrick'
 end

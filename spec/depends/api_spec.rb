@@ -33,7 +33,7 @@ module AppMap
       end
     end
   end
-end 
+end
 
 describe 'Depends API' do
   let(:api) { AppMap::Depends::API.new(ENV['DEBUG'] == 'true') }
@@ -112,12 +112,12 @@ describe 'Depends API' do
       around do |test|
         @minitest_test_command_method = AppMap.configuration.depends_config.minitest_test_command_method
         AppMap.configuration.depends_config.minitest_test_command_method = 'AppMap::Depends::APISpec.minitest_test_command'
-  
+
         test.call
       ensure
         AppMap.configuration.depends_config.minitest_test_command_method = @minitest_test_command
       end
-  
+
       it 'passes a smoke test' do
         run_tests
       end
@@ -175,10 +175,18 @@ describe 'Depends API' do
         # At this point, we would run tests to bring the AppMaps up to date
         # Then once the tests have finished, remove any AppMaps that weren't refreshed
         removed = api.remove_out_of_date_appmaps(since, appmap_dir: DEPENDS_TEST_DIR, base_dir: DEPENDS_BASE_DIR)
-        expect(removed).to eq([ appmap_path.split('.')[0] ])  
+        expect(removed).to eq([ appmap_path.split('.')[0] ])
       ensure
-        File.write(appmap_path, appmap)        
+        File.write(appmap_path, appmap)
       end
     end
+  end
+
+  before do
+    Dir.glob("#{DEPENDS_TEST_DIR}/*.appmap.json").each { |fname| FileUtils.touch fname }
+    update_appmap_index
+
+    FileUtils.rm_rf 'spec/tmp'
+    FileUtils.mkdir_p 'spec/tmp'
   end
 end

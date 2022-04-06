@@ -1,0 +1,10 @@
+version: "3"
+services:
+  pg:
+    build:
+      context: .
+      dockerfile: Dockerfile.pg
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust

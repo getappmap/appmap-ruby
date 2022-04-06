@@ -13,6 +13,7 @@ require 'appmap'
 
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "tmp/rspec_failed_examples.txt"
+  config.profile_examples = true
 end
 
 # Re-run the Rails specs without re-generating the data. This is useful for efficiently enhancing and

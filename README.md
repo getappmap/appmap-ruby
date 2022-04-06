@@ -28,7 +28,7 @@ Visit the [AppMap for Ruby](https://appland.com/docs/reference/appmap-ruby.html)
 
 **Configuration**
 
-*appmap.yml* is loaded into an `AppMap::Config`. 
+*appmap.yml* is loaded into an `AppMap::Config`.
 
 **Hooking**
 
@@ -39,7 +39,7 @@ method with calls that record the parameters and return value.
 **Builtins**
 
 `Hook` begins by iterating over builtin classes and modules defined in the `Config`. Builtins include code
-like `openssl` and `net/http`. This code is not dependent on any external libraries being present, and 
+like `openssl` and `net/http`. This code is not dependent on any external libraries being present, and
 `appmap` cannot guarantee that it will be loaded before builtins. Therefore, it's necessary to require it and
 hook it by looking up the classes and modules as constants in the `Object` namespace.
 
@@ -81,50 +81,20 @@ The fixture apps in `test/fixtures` are plain Ruby projects that exercise the ba
 
 The fixture apps in `spec/fixtures` are simple Rack, Rails5, and Rails6 apps.
 You can use them to interactively develop and test the recording features of the `appmap` gem.
-These fixture apps are more sophisticated than `test/fixtures`, because they include additional 
-resources such as a PostgreSQL database.
+These fixture apps are more sophisticated than `test/fixtures`, because they include additional
+resources such as a PostgreSQL database. Still, you can simply enter the fixture directory and `bundle`.
 
-To build the fixture container images, first run:
+If you don't have PostgreSQL on the local (default) socket, you can export `DATABASE_URL` to
+point to the database server you want to use. 
 
-```sh-session
-$ bundle exec rake build:fixtures:all
+You can launch a database like this:
+
 ```
-
-This will build the `appmap.gem`, along with a Docker image for each fixture app.
-
-Then move to the directory of the fixture you want to use, and provision the environment.
-In this example, we use Ruby 2.6.
-
-```sh-session
-$ export RUBY_VERSION=2.6
-$ docker-compose up -d pg
-$ sleep 10s # Or some reasonable amount of time
-$ docker-compose run --rm app ./create_app
-```
-
-Now you can start a development container.
-
-```sh-session
-$ docker-compose run --rm -v $PWD:/app -v $PWD/../../..:/src/appmap-ruby app bash
-Starting rails_users_app_pg_1 ... done
-root@6fab5f89125f:/app# cd /src/appmap-ruby
-root@6fab5f89125f:/src/appmap-ruby# rm ext/appmap/*.so ext/appmap/*.o
-root@6fab5f89125f:/src/appmap-ruby# bundle
-root@6fab5f89125f:/src/appmap-ruby# bundle exec rake compile
-root@6fab5f89125f:/src/appmap-ruby# cd /src/app
-root@6fab5f89125f:/src/app# bundle config local.appmap /src/appmap-ruby
-root@6fab5f89125f:/src/app# bundle
-```
-
-At this point, the bundle is built with the `appmap` gem located  in `/src/appmap`, which is volume-mounted from the host.
-So you can edit the fixture code and the appmap code and run test commands such as `rspec` in the container.
-For example:
-
-```sh-session
-root@6fab5f89125f:/src/app# APPMAP=true bundle exec rspec
-Configuring AppMap from path appmap.yml
-....
-
-Finished in 0.07357 seconds (files took 2.1 seconds to load)
-4 examples, 0 failures
+➜ docker-compose -p appmap-ruby up -d
+... stuff
+➜ docker-compose ps pg  
+      Name                    Command                 State                Ports         
+-----------------------------------------------------------------------------------------
+appmap-ruby_pg_1   docker-entrypoint.sh postgres   Up (healthy)   0.0.0.0:59134->5432/tcp
+➜ export DATABASE_URL=postgres://postgres@localhost:59134
 ```

@@ -74,7 +74,7 @@
       {
         "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
         "canonicalization_algorithm": "info",
-        "digest": "bd63ed674a87494c9565d4bf7ecad797683528b8b83bbb66f27b334b6e303f67",
+        "digest": "2226ec6817a89e479e2c5c05a929b66325dce33ed58ce27f88be73269f6609c8",
         "fingerprint_algorithm": "sha256"
       },
       {
@@ -110,13 +110,13 @@
       {
         "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
         "canonicalization_algorithm": "trace",
-        "digest": "464056ee79400cf881d31e4db167cf12caadfffdc814bc89ed01b89f746dcbd1",
+        "digest": "77cea3a57ab3ec42453d3317fdab874cff7948c9eb5786a098d9a76a04ac38b0",
         "fingerprint_algorithm": "sha256"
       },
       {
         "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
         "canonicalization_algorithm": "update",
-        "digest": "a78760f0ae6eabb20403b812101d86c609294e36fff53be54dec71b1244076b0",
+        "digest": "7ee75bda36b126736c56f44209b03e949e7504fa78c3777582f537b2805a2bb6",
         "fingerprint_algorithm": "sha256"
       }
     ]

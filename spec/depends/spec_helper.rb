@@ -16,12 +16,3 @@ def update_appmap_index
   system cmd.join(' ') or raise "Failed to update AppMap index in #{DEPENDS_TEST_DIR}"
 end
 
-RSpec.configure do |rspec|
-  rspec.before do
-    Dir.glob("#{DEPENDS_TEST_DIR}/*.appmap.json").each { |fname| FileUtils.touch fname }
-    update_appmap_index
-
-    FileUtils.rm_rf 'spec/tmp'
-    FileUtils.mkdir_p 'spec/tmp'
-  end
-end

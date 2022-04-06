@@ -16,7 +16,7 @@ module ShowYamlNulls
 end
 Psych::Visitors::YAMLTree.prepend(ShowYamlNulls)
 
-describe 'AppMap class Hooking', docker: false do
+describe 'AppMap class Hooking' do
   include_context 'collect events'
 
   def invoke_test_file(file, setup: nil, packages: nil)

@@ -1,41 +1,27 @@
 require 'rails_spec_helper'
+
+require 'random-port'
+
 require 'net/http'
 require 'socket'
 
 describe 'remote recording', :order => :defined do
   include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' do
     before(:all) do
-      fixture_dir = 'spec/fixtures/rails6_users_app'
-      start_cmd = 'docker-compose up -d app'
-      run_cmd({ 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true' }, start_cmd, chdir: fixture_dir)
-      Dir.chdir fixture_dir do
-        wait_for_container 'app'
-      end
+      @service_port = RandomPort::Pool::SINGLETON.acquire
+      @app.prepare_db
+      @server = @app.spawn_cmd \
+        "./bin/rails server -p #{@service_port}",
+        'ORM_MODULE' => 'sequel',
+        'APPMAP' => 'true'
 
-      port_cmd = 'docker-compose port app 3000'
-      port_out, = run_cmd port_cmd, chdir: fixture_dir
-      @service_port = port_out.strip.split(':')[1]
-
-      service_running = false
-      retry_count = 0
       uri = URI("http://localhost:#{@service_port}/health")
 
-      until service_running
-        sleep(0.25)
-        begin
-          res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-            http.request(Net::HTTP::Get.new(uri))
-          end
-
-          status = res.response.code.to_i
-          service_running = true if status >= 200 && status < 300
-
-          # give up after a certain error threshold is met
-          # we don't want to wait forever if there's an unrecoverable issue
-          raise 'gave up waiting on fixture service' if (retry_count += 1) == 10
-        rescue Errno::ETIMEDOUT, Errno::ECONNRESET, EOFError
-          $stderr.print('.')
-        end
+      100.times do
+        Net::HTTP.get(uri)
+        break
+      rescue Errno::ECONNREFUSED
+        sleep 0.1
       end
     end
 
@@ -44,8 +30,10 @@ describe 'remote recording', :order => :defined do
     end
 
     after(:all) do
-      fixture_dir = 'spec/fixtures/rails6_users_app'
-      run_cmd 'docker-compose rm -fs app', chdir: fixture_dir
+      if @server
+        Process.kill 'INT', @server
+        Process.wait @server
+      end
     end
 
     let(:service_address) { URI("http://localhost:#{@service_port}") }

@@ -15,14 +15,6 @@ describe 'Rails' do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
       include_context 'rails integration test setup'
 
-      def run_spec(spec_name)
-        cmd = <<~CMD.gsub "\n", ' '
-          docker-compose run --rm -e RAILS_ENV=test -e APPMAP=true
-          -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}
-        CMD
-        run_cmd cmd, chdir: fixture_dir
-      end
-
       describe 'an API route' do
         describe 'creating an object' do
           let(:appmap_json_file) do
@@ -123,7 +115,7 @@ describe 'Rails' do
                     )
                   )
                 )
-              )    
+              )
             end
           end
         end
@@ -201,7 +193,7 @@ describe 'Rails' do
                   'path_info' => '/users/alice',
                   'normalized_path_info' => '/users/{id}',
                   'headers' => {
-                    'Host' => 'test.host', 
+                    'Host' => 'test.host',
                     'User-Agent' => 'Rails Testing'
                   }
                 }
@@ -236,7 +228,7 @@ describe 'Rails' do
               'defined_class' => 'inline_template',
               'method_id' => 'render'
             )
-  
+
             expect(appmap['classMap']).to include hash_including(
               'name' => 'actionview',
               'children' => include(hash_including(
@@ -251,7 +243,7 @@ describe 'Rails' do
                 ))
               ))
             )
-          end  
+          end
         end
       end
     end
@@ -260,14 +252,6 @@ describe 'Rails' do
   describe 'with default appmap.yml' do
     include_context 'Rails app pg database', "spec/fixtures/rails6_users_app" unless use_existing_data?
     include_context 'rails integration test setup'
-
-    def run_spec(spec_name)
-      cmd = <<~CMD.gsub "\n", ' '
-        docker-compose run --rm -e RAILS_ENV=test -e APPMAP=true -e APPMAP_CONFIG_FILE=no/such/file
-        -v #{File.absolute_path tmpdir}:/app/tmp app ./bin/rspec #{spec_name}
-      CMD
-      run_cmd cmd, chdir: fixture_dir
-    end
 
     let(:appmap_json_file) do
       'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'

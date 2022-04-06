@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'appmap/util'
 
-describe AppMap::Util, docker: false do
+describe AppMap::Util do
   describe 'scenario_filename' do
     let(:subject) { AppMap::Util.method(:scenario_filename) }
     it 'leaves short names alone' do
