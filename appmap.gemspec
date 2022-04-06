@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'reverse_markdown'
 
   spec.add_development_dependency 'bundler', '>= 1.16'
-  spec.add_development_dependency 'minitest', '~> 5.14'
+  spec.add_development_dependency 'minitest', '~> 5.15'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rdoc'
