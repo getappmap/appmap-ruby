@@ -32,7 +32,8 @@ class TestRailsApp
   end
 
   def database_name
-    @database_name ||= "appland-rails-test-#{Random.bytes(2).unpack1('h*')}"
+    # This is used locally too, so make the name nice and unique.
+    @database_name ||= "appland-rails-test-#{Random.bytes(8).unpack1('h*')}"
   end
 
   def bundle
