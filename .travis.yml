@@ -1,5 +1,8 @@
 language: ruby
 dist: bionic
+cache:
+- bundle
+- yarn
 
 # NB: if you update the ruby versions here, you also need to update
 # them in the Rakefile.
