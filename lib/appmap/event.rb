@@ -60,66 +60,19 @@ module AppMap
           final ? value_string : encode_display_string(value_string)
         end
 
-        def add_schema(param, value, always: false)
-          param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
-
-          return unless always || AppMap.parameter_schema?
-
-          if value.blank? || value.is_a?(String)
-            # pass
-          elsif value.is_a?(Enumerable)
-            if value.is_a?(Hash)
-              param[:properties] = object_properties(value)
-            elsif value.respond_to?(:first) && value.first
-              param[:properties] = object_properties(value.first)
-            end
-          else
-            json_value = try_as_json(value) || try_to_json(value) 
-            if value != json_value
-              add_schema param, json_value, always: always
-            end
-          end
-        end
-
-        def try_as_json(value)
-          value.respond_to?(:as_json) && value.as_json
-        end
-        private_instance_methods :try_as_json
-
-        def try_to_json(value)
-          value.respond_to?(:to_json) && JSON.parse(value.to_json)
-        end
-        private_instance_methods :try_to_json
-
-        def object_properties(hash)
-          hash = hash.attributes if hash.respond_to?(:attributes)
-
-          hash = try_to_h(hash)
-
-          return unless hash.respond_to?(:each_with_object)
-          
-          hash.map { |k, v| { name: k, class: v.class.name } }
-        rescue
-          warn $!
-        end
-
-        def try_to_h(value)
-          return value unless value.respond_to?(:to_h)
-
-          # Includes such bad actors as Psych::Nodes::Scalar.
-          # Also don't try and hashifiy list-ish things.
-          @unhashifiable_classes ||= Set.new([ Array, Set ])
-
-          return value if @unhashifiable_classes.include?(value.class)
-
+        def add_schema(param, value)
           begin
-            value.to_h
+            if value.respond_to?(:keys)
+              param[:properties] = value.keys.map { |key| { name: key, class: best_class_name(value[key]) } }
+            elsif value.respond_to?(:first) && value.first
+              if value.first != value
+                add_schema param, value.first
+              end
+            end
           rescue
-            # warn "#{value.class}#to_h failed: #{$!.message}"
-            @unhashifiable_classes << value.class
+            warn "Error in add_schema(#{value.class})", $!
           end
         end
-        private_instance_methods :try_to_h
 
         # Heuristic for dynamically defined class whose name can be nil
         def best_class_name(value)
@@ -271,7 +224,7 @@ module AppMap
                 value: display_string(value),
                 kind: param_type
               }.tap do |param|
-                add_schema param, value
+                param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
               end
             end
             event.receiver = {
@@ -337,7 +290,7 @@ module AppMap
                 object_id: return_value.__id__
               }.tap do |param|
                 param[:size] = return_value.size if return_value.respond_to?(:size) && return_value.is_a?(Enumerable)
-                add_schema param, return_value, always: parameter_schema
+                add_schema param, return_value if parameter_schema && !exception
               end
             end
             if exception
