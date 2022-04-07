@@ -44,7 +44,7 @@ module AppMap
               return unless (examiner = build_examiner)
 
               if AppMap.explain_queries? && examiner.in_transaction? && examiner.database_type == :postgres
-                unless sql =~ /\A(SAVEPOINT|RELEASE|ROLLBACK|BEGIN|INSERT|COMMIT)/i
+                if sql =~ /\A(SELECT|INSERT|DELETE|UPDATE|WITH)/i
                   examiner.execute_query 'SAVEPOINT appmap_sql_examiner'
                   begin
                     plan = examiner.execute_query(%(EXPLAIN #{sql}))
@@ -116,7 +116,7 @@ module AppMap
             end
 
             def execute_query(sql)
-              ActiveRecord::Base.connection.execute(sql).each_with_object([]) { |r, memo| memo << r }
+              ActiveRecord::Base.connection.execute(sql).to_a
             end
           end
         end

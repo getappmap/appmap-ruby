@@ -61,6 +61,8 @@ module AppMap
         end
 
         def add_schema(param, value, always: false)
+          param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
+
           return unless always || AppMap.parameter_schema?
 
           if value.blank? || value.is_a?(String)
@@ -71,27 +73,53 @@ module AppMap
             elsif value.respond_to?(:first) && value.first
               param[:properties] = object_properties(value.first)
             end
-          elsif value.respond_to?(:as_json)
-            add_schema param, JSON.parse(value.to_json), always: always
+          else
+            json_value = try_as_json(value) || try_to_json(value) 
+            if value != json_value
+              add_schema param, json_value, always: always
+            end
           end
         end
+
+        def try_as_json(value)
+          value.respond_to?(:as_json) && value.as_json
+        end
+        private_instance_methods :try_as_json
+
+        def try_to_json(value)
+          value.respond_to?(:to_json) && JSON.parse(value.to_json)
+        end
+        private_instance_methods :try_to_json
 
         def object_properties(hash)
           hash = hash.attributes if hash.respond_to?(:attributes)
-          hash = hash.to_h if hash.is_a?(Struct)
+
+          hash = try_to_h(hash)
 
           return unless hash.respond_to?(:each_with_object)
           
-          hash.each_with_object([]) do |entry, memo|
-            key, value = entry
-            memo << {
-              name: key,
-              class: value.class.name,
-            }
-          end
+          hash.map { |k, v| { name: k, class: v.class.name } }
         rescue
           warn $!
         end
+
+        def try_to_h(value)
+          return value unless value.respond_to?(:to_h)
+
+          # Includes such bad actors as Psych::Nodes::Scalar.
+          # Also don't try and hashifiy list-ish things.
+          @unhashifiable_classes ||= Set.new([ Array, Set ])
+
+          return value if @unhashifiable_classes.include?(value.class)
+
+          begin
+            value.to_h
+          rescue
+            # warn "#{value.class}#to_h failed: #{$!.message}"
+            @unhashifiable_classes << value.class
+          end
+        end
+        private_instance_methods :try_to_h
 
         # Heuristic for dynamically defined class whose name can be nil
         def best_class_name(value)
@@ -242,10 +270,9 @@ module AppMap
                 object_id: value.__id__,
                 value: display_string(value),
                 kind: param_type
-                }.tap do |param|
-                  param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
-                  add_schema param, value
-                end
+              }.tap do |param|
+                add_schema param, value
+              end
             end
             event.receiver = {
               class: best_class_name(receiver),
