@@ -55,7 +55,7 @@ describe 'Rails' do
                   'status_code' => 201,
                   'headers' => hash_including('Content-Type' => 'application/json; charset=utf-8'),
                 ),
-                'return_value' => hash_including('class' => 'User', 'object_id' => Integer, 'properties' => include({'name' => 'login', 'class' => 'String'})),
+                'return_value' => hash_including('class' => 'Hash', 'object_id' => Integer, 'properties' => include({'name' => 'login', 'class' => 'String'})),
               )
             )
           end

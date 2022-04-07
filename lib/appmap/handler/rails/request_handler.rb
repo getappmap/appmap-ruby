@@ -47,7 +47,7 @@ module AppMap
                     value: self.class.display_string(val),
                     object_id: val.__id__,
                   }.tap do |message|
-                    AppMap::Event::MethodEvent.add_schema message, val, always: true
+                    AppMap::Event::MethodEvent.add_schema message, val
                   end
                 end
               end
