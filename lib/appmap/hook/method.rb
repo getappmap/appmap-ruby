@@ -24,7 +24,6 @@ module AppMap
       attr_reader :hook_package, :hook_class, :hook_method, :parameters, :arity
 
       HOOK_DISABLE_KEY = 'AppMap::Hook.disable'
-      private_constant :HOOK_DISABLE_KEY
 
       def initialize(hook_package, hook_class, hook_method)
         @hook_package = hook_package
