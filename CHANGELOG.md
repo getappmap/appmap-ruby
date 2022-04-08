@@ -1,3 +1,10 @@
+## [0.80.1](https://github.com/applandinc/appmap-ruby/compare/v0.80.0...v0.80.1) (2022-04-08)
+
+
+### Bug Fixes
+
+* Don't call #size on complex objects ([3f19d1e](https://github.com/applandinc/appmap-ruby/commit/3f19d1e67288379570dfa14d8758a0624d2c6c34))
+
 # [0.80.0](https://github.com/applandinc/appmap-ruby/compare/v0.79.0...v0.80.0) (2022-04-08)
 
 
