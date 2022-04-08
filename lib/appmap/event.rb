@@ -60,6 +60,13 @@ module AppMap
           final ? value_string : encode_display_string(value_string)
         end
 
+        def add_size(param, value)
+          # Don't risk calling #size on things like data-access objects, which can and will issue queries for this information.
+          if value.is_a?(Array) || value.is_a?(Hash)
+            param[:size] = value.size
+          end
+        end
+
         def add_schema(param, value)
           begin
             if value.respond_to?(:keys)
@@ -224,7 +231,7 @@ module AppMap
                 value: display_string(value),
                 kind: param_type
               }.tap do |param|
-                param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
+                add_size param, value
               end
             end
             event.receiver = {
@@ -289,7 +296,7 @@ module AppMap
                 value: display_string(return_value),
                 object_id: return_value.__id__
               }.tap do |param|
-                param[:size] = return_value.size if return_value.respond_to?(:size) && return_value.is_a?(Enumerable)
+                add_size param, return_value
                 add_schema param, return_value if parameter_schema && !exception
               end
             end
