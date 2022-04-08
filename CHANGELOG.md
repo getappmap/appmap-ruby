@@ -1,3 +1,19 @@
+# [0.80.0](https://github.com/applandinc/appmap-ruby/compare/v0.79.0...v0.80.0) (2022-04-08)
+
+
+### Bug Fixes
+
+* Don't record SQL within an existing event ([ff37a69](https://github.com/applandinc/appmap-ruby/commit/ff37a69af1af02263df216e49aea0d0954b93925))
+
+
+### Features
+
+* Env var to EXPLAIN queries ([740be75](https://github.com/applandinc/appmap-ruby/commit/740be75c2bc59e343d67ecf86b7715e61cddadba))
+* Optionally record parameter schema ([b7f41b1](https://github.com/applandinc/appmap-ruby/commit/b7f41b15a4556a0ce78650a6a77301d365632bb8))
+* query_plan is available whether a current transaction exists or not ([6edf774](https://github.com/applandinc/appmap-ruby/commit/6edf774fea858d825c4b971be2c4c15db1652446))
+* Record parameter and return value size ([6e69754](https://github.com/applandinc/appmap-ruby/commit/6e697543cb421378832492e286f972dc4cb1e1aa))
+* Save render return value to a thread-local ([f9d1e3f](https://github.com/applandinc/appmap-ruby/commit/f9d1e3f0aa9972482ff77233d38220104515b1d6))
+
 # [0.79.0](https://github.com/applandinc/appmap-ruby/compare/v0.78.0...v0.79.0) (2022-04-06)
 
 
