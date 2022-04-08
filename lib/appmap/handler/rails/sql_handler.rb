@@ -45,15 +45,17 @@ module AppMap
             def examine(payload, sql:)
               return unless (examiner = build_examiner)
 
-              if AppMap.explain_queries? && examiner.in_transaction? && examiner.database_type == :postgres
+              in_transaction = examiner.in_transaction?
+
+              if AppMap.explain_queries? && examiner.database_type == :postgres
                 if sql =~ /\A(SELECT|INSERT|UPDATE|DELETE|WITH)/i
                   savepoint_established = \
                     begin
-                      examiner.execute_query 'SAVEPOINT appmap_sql_examiner'
+                      tx_query = in_transaction ? 'SAVEPOINT appmap_sql_examiner' : 'BEGIN TRANSACTION'
+                      examiner.execute_query tx_query
                       true
                     rescue
                       # Probably: Sequel::DatabaseError: PG::InFailedSqlTransaction
-                      byebug
                       warn $!
                       false
                     end
@@ -62,13 +64,12 @@ module AppMap
                     plan = nil
                     begin
                       plan = examiner.execute_query(%(EXPLAIN #{sql}))
-                    rescue
-                      warn "Exception occurred explaining query: #{$!}"
-                      examiner.execute_query 'ROLLBACK TO SAVEPOINT appmap_sql_examiner'
-                    end
-                    if plan
                       payload[:query_plan] = plan.map { |line| line[:'QUERY PLAN'] }.join("\n")
-                      examiner.execute_query 'RELEASE SAVEPOINT appmap_sql_examiner'
+                    rescue
+                      warn "(appmap) Error explaining query: #{$!}"
+                    ensure
+                      tx_query = in_transaction ? 'ROLLBACK TO SAVEPOINT appmap_sql_examiner' : 'ROLLBACK'
+                      examiner.execute_query tx_query
                     end
                   end
                 end
