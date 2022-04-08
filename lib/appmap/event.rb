@@ -60,16 +60,18 @@ module AppMap
           final ? value_string : encode_display_string(value_string)
         end
 
-        def object_properties(hash_like)
-          hash = hash_like.to_h
-          hash.keys.map do |key|
-            {
-              name: key,
-              class: hash[key].class.name,
-            }
+        def add_schema(param, value)
+          begin
+            if value.respond_to?(:keys)
+              param[:properties] = value.keys.map { |key| { name: key, class: best_class_name(value[key]) } }
+            elsif value.respond_to?(:first) && value.first
+              if value.first != value
+                add_schema param, value.first
+              end
+            end
+          rescue
+            warn "Error in add_schema(#{value.class})", $!
           end
-        rescue
-          nil
         end
 
         # Heuristic for dynamically defined class whose name can be nil
@@ -221,7 +223,9 @@ module AppMap
                 object_id: value.__id__,
                 value: display_string(value),
                 kind: param_type
-              }
+              }.tap do |param|
+                param[:size] = value.size if value.respond_to?(:size) && value.is_a?(Enumerable)
+              end
             end
             event.receiver = {
               class: best_class_name(receiver),
@@ -276,7 +280,7 @@ module AppMap
       attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new)
+        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new, parameter_schema: false)
           event ||= MethodReturn.new
           event.tap do |_|
             if return_value
@@ -284,7 +288,10 @@ module AppMap
                 class: best_class_name(return_value),
                 value: display_string(return_value),
                 object_id: return_value.__id__
-              }
+              }.tap do |param|
+                param[:size] = return_value.size if return_value.respond_to?(:size) && return_value.is_a?(Enumerable)
+                add_schema param, return_value if parameter_schema && !exception
+              end
             end
             if exception
               next_exception = exception

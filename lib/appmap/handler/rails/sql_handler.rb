@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'appmap/event'
+require 'appmap/hook/method'
 
 module AppMap
   module Handler
@@ -21,6 +22,7 @@ module AppMap
                 sql: payload[:sql],
                 database_type: payload[:database_type]
               }.tap do |sql_query|
+                sql_query[:query_plan] = payload[:query_plan] if payload[:query_plan]
                 %i[server_version].each do |attribute|
                   sql_query[attribute] = payload[attribute] if payload[attribute]
                 end
@@ -42,6 +44,36 @@ module AppMap
           class << self
             def examine(payload, sql:)
               return unless (examiner = build_examiner)
+
+              in_transaction = examiner.in_transaction?
+
+              if AppMap.explain_queries? && examiner.database_type == :postgres
+                if sql =~ /\A(SELECT|INSERT|UPDATE|DELETE|WITH)/i
+                  savepoint_established = \
+                    begin
+                      tx_query = in_transaction ? 'SAVEPOINT appmap_sql_examiner' : 'BEGIN TRANSACTION'
+                      examiner.execute_query tx_query
+                      true
+                    rescue
+                      # Probably: Sequel::DatabaseError: PG::InFailedSqlTransaction
+                      warn $!
+                      false
+                    end
+
+                  if savepoint_established
+                    plan = nil
+                    begin
+                      plan = examiner.execute_query(%(EXPLAIN #{sql}))
+                      payload[:query_plan] = plan.map { |line| line[:'QUERY PLAN'] }.join("\n")
+                    rescue
+                      warn "(appmap) Error explaining query: #{$!}"
+                    ensure
+                      tx_query = in_transaction ? 'ROLLBACK TO SAVEPOINT appmap_sql_examiner' : 'ROLLBACK'
+                      examiner.execute_query tx_query
+                    end
+                  end
+                end
+              end
 
               payload[:server_version] = examiner.server_version
               payload[:database_type] = examiner.database_type.to_s
@@ -65,6 +97,10 @@ module AppMap
 
             def database_type
               Sequel::Model.db.database_type.to_sym
+            end
+
+            def in_transaction?
+              Sequel::Model.db.in_transaction?
             end
 
             def execute_query(sql)
@@ -93,14 +129,20 @@ module AppMap
               type
             end
 
+            def in_transaction?
+              ActiveRecord::Base.connection.open_transactions > 0
+            end
+
             def execute_query(sql)
-              ActiveRecord::Base.connection.execute(sql).inject([]) { |memo, r| memo << r; memo }
+              ActiveRecord::Base.connection.execute(sql).to_a
             end
           end
         end
 
         def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
           return if AppMap.tracing.empty?
+
+          return if Thread.current[AppMap::Hook::Method::HOOK_DISABLE_KEY] == true
 
           reentry_key = "#{self.class.name}#call"
           return if Thread.current[reentry_key] == true

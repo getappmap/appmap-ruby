@@ -5,6 +5,9 @@ require 'active_support/inflector/methods'
 module AppMap
   # Specific hook handler classes and general related utilities.
   module Handler
+    TEMPLATE_RENDER_FORMAT = 'appmap.handler.template.return_value_format'
+    TEMPLATE_RENDER_VALUE = 'appmap.handler.template.return_value'
+
     # Try to find handler module with a given name.
     #
     # If the module is not loaded, tries to require the appropriate file
