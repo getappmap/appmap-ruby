@@ -4,9 +4,8 @@ cache:
 - bundle
 - yarn
 
-# NB: if you update the ruby versions here, you also need to update
-# them in the Rakefile.
 rbenv:
+- 2.5
 - 2.6
 - 2.7
 - 3.0
