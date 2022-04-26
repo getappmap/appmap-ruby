@@ -147,7 +147,7 @@ module AppMap
               else
                 path_obj.inspect
               end
-            path = path[Dir.pwd.length + 1..] if path.index(Dir.pwd) == 0
+            path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
             path
           end
         end
