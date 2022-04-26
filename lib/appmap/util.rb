@@ -122,7 +122,7 @@ module AppMap
         # Apparently, it's following the CGI spec in doing so.
         # https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.18
         matching_headers = env
-          .select { |k,v| k.start_with? 'HTTP_' }
+          .select { |k,v| k.to_s.start_with? 'HTTP_' }
           .merge(
             'CONTENT_TYPE' => env['CONTENT_TYPE'],
             'CONTENT_LENGTH' => env['CONTENT_LENGTH'],

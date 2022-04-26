@@ -10,8 +10,8 @@ module AppMap
       def perform
         clean_only = nil
         clean = lambda do |obj, properties = %w[description example]|
-          return obj.each(&clean_only.(properties)) if obj.is_a?(Array)
-          return unless obj.is_a?(Hash)
+          next obj.each(&clean_only.(properties)) if obj.is_a?(Array)
+          next unless obj.is_a?(Hash)
 
           properties.each { |property| obj.delete property }
 
