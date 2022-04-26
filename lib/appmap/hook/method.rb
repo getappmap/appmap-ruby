@@ -93,7 +93,7 @@ module AppMap
       def method_display_name
         return @method_display_name if @method_display_name
 
-        return @method_display_name = [defined_class, method_symbol, hook_method.name].join if defined_class
+        return @method_display_name = [defined_class, '#', hook_method.name].join if defined_class
 
         "#{hook_method.name} (class resolution deferred)"
       end
