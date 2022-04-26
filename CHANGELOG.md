@@ -1,3 +1,10 @@
+# [0.81.0](https://github.com/applandinc/appmap-ruby/compare/v0.80.2...v0.81.0) (2022-04-26)
+
+
+### Features
+
+* Add Ruby 2.5 to the version whitelist ([945f7da](https://github.com/applandinc/appmap-ruby/commit/945f7daaee9685a55f14e8714677661fa5cb4e82))
+
 ## [0.80.2](https://github.com/applandinc/appmap-ruby/compare/v0.80.1...v0.80.2) (2022-04-26)
 
 
