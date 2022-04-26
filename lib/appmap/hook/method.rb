@@ -18,6 +18,8 @@ module AppMap
       method
     end
 
+    RUBY_MAJOR_VERSION, RUBY_MINOR_VERSION, _ = RUBY_VERSION.split('.').map(&:to_i)
+
     # Single hooked method.
     # Call #activate to override the original.
     class Method
@@ -51,17 +53,30 @@ module AppMap
         if hook_class == Kernel
           hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
         else
-          hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }.tap do |cls|
-            if cls
-              cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-            else
-              warn "#{hook_method.name} not found on #{hook_class}"
-            end
+          cls = defining_class(hook_class)
+          if cls
+            cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
           end
         end
       end
 
       protected
+
+      def defining_class(hook_class)
+        cls = \
+          if RUBY_MAJOR_VERSION == 2 && RUBY_MINOR_VERSION <= 5
+            hook_class
+              .ancestors
+              .select { |cls| cls.method_defined?(hook_method.name) }
+              .find { |cls| cls.instance_method(hook_method.name).owner == cls }
+          else
+            hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }
+          end
+
+        return cls if cls
+
+        warn "#{hook_method.name} not found on #{hook_class}"
+      end
 
       def gettime
         Process.clock_gettime Process::CLOCK_MONOTONIC

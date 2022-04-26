@@ -78,7 +78,7 @@ module AppMap
         super
 
         webdriver_port = lambda do
-          return unless defined?(page) && page&.driver
+          next unless defined?(page) && page&.driver
 
           # This is the ugliest thing ever but I don't want to lose it.
           # All the WebDriver calls are getting app-mapped and it's really unclear

@@ -15,8 +15,8 @@ module AppMap
 
       def perform
         to_markdown = lambda do |obj|
-          return obj.each(&to_markdown) if obj.is_a?(Array)
-          return unless obj.is_a?(Hash)
+          next obj.each(&to_markdown) if obj.is_a?(Array)
+          next unless obj.is_a?(Hash)
 
           description = obj['description']
           obj['description'] = converter.(description) if description

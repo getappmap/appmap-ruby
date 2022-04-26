@@ -78,7 +78,7 @@ module AppMap
         end
 
         collapse_package = lambda do |package|
-          return unless package.type == 'package'
+          next unless package.type == 'package'
 
           while package.children.length == 1 && package.children.all? { |child| child.type == 'package' }
             child = package.children[0]
