@@ -1,3 +1,11 @@
+## [0.80.2](https://github.com/applandinc/appmap-ruby/compare/v0.80.1...v0.80.2) (2022-04-26)
+
+
+### Bug Fixes
+
+* Ensure that request env key is a string ([721baef](https://github.com/applandinc/appmap-ruby/commit/721baefbb3ba083bf6c5a1b46e6ddffa51feebec))
+* Fix method_display_name ([b05c7fe](https://github.com/applandinc/appmap-ruby/commit/b05c7fe027a981214b224852dc54c5e467e1f116))
+
 ## [0.80.1](https://github.com/applandinc/appmap-ruby/compare/v0.80.0...v0.80.1) (2022-04-08)
 
 
