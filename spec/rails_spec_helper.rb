@@ -18,7 +18,7 @@ class TestRailsApp
   attr_reader :fixture_dir
 
   def run_cmd(cmd, env = {})
-    run_process method(:system), cmd, env, exception: true
+    run_process method(:system), cmd, env
   end
 
   def spawn_cmd(cmd, env = {})
@@ -33,7 +33,7 @@ class TestRailsApp
 
   def database_name
     # This is used locally too, so make the name nice and unique.
-    @database_name ||= "appland-rails-test-#{Random.bytes(8).unpack1('h*')}"
+    @database_name ||= "appland-rails-test-#{Random.new.bytes(8).unpack1('h*')}"
   end
 
   def bundle
