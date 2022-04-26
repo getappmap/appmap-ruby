@@ -38,7 +38,7 @@ describe 'AppMap::Handler::Eval' do
   # a la Ruby 2.6.3 ruby-token.rb
   # token_c = eval("class #{token_n} < #{super_token}; end; #{token_n}")
   it 'can define a new class' do
-    num = (Random.random_number * 10_000).to_i
+    num = (Random.new.random_number * 10_000).to_i
     class_name = "Cls_#{num}"
     m = ClassMaker
     cls = nil
