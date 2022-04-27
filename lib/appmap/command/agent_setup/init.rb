@@ -13,7 +13,9 @@ module AppMap
         def perform
           config = {
             'name' => Service::Guesser.guess_name,
-            'packages' => Service::Guesser.guess_paths.map { |path| { 'path' => path } }
+            'packages' => Service::Guesser.guess_paths.map { |path| { 'path' => path } },
+            'language' => 'ruby',
+            'appmap_dir' => 'tmp/appmap'
           }
 
           result = {

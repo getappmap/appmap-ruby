@@ -1,0 +1,14 @@
+name: appmap
+packages:
+  - path: app/models
+    exclude: app/models/helpers
+  - gem: rack
+  - gem: activesupport
+    shallow: false
+functions:
+  - methods:
+    - OpenSSL::X509::Request#sign
+    - OpenSSL::X509::Request#verify
+    label: crypto.x509
+language: ruby
+appmap_dir: tmp/appmap

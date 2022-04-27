@@ -9,6 +9,8 @@ class AgentSetupInitTest < Minitest::Test
 name: appmap-ruby
 packages:
 - path: lib
+language: ruby
+appmap_dir: tmp/appmap
 )
 
   def test_init_when_config_exists
