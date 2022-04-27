@@ -1,3 +1,15 @@
+# [0.82.0](https://github.com/applandinc/appmap-ruby/compare/v0.81.1...v0.82.0) (2022-04-27)
+
+
+### Bug Fixes
+
+* Guess 'app' as the source path ([090f9f3](https://github.com/applandinc/appmap-ruby/commit/090f9f39616accd3bc1e9d3cc5f7991232fe5663))
+
+
+### Features
+
+* install command emits language, appmap_dir ([f780095](https://github.com/applandinc/appmap-ruby/commit/f780095269352e30637de3300dd76b2d6c051022))
+
 ## [0.81.1](https://github.com/applandinc/appmap-ruby/compare/v0.81.0...v0.81.1) (2022-04-27)
 
 
