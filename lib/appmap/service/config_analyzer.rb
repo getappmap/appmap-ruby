@@ -23,6 +23,11 @@ module AppMap
         config_validator.valid?
       end
 
+      def errors
+        valid?
+        config_validator.violations.map(&:message)
+      end
+
       private
 
       def config_validator

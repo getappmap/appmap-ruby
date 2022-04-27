@@ -19,6 +19,7 @@ module AppMap
         end
 
         def valid?
+          @violations = []
           validate_ruby_version
           validate_rails_presence
           validate_config_presence

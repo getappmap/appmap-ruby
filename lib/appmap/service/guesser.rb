@@ -7,6 +7,7 @@ module AppMap
       class << self
         def guess_name
           return Pathname.new(`git rev-parse --show-toplevel`.strip).basename.to_s if File.directory?('.git')
+
           Dir.pwd.split('/').last
         end
 
