@@ -38,7 +38,7 @@ module AppMap
       Thread.new do
         Rack::Handler::WEBrick.run(
           lambda do |env|
-            return [200, { 'Content-Type' => 'text/html' }, [page]]
+            [200, { 'Content-Type' => 'text/html' }, [page]]
           end,
           :Port => 0
         ) do |server|

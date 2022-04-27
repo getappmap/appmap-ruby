@@ -116,7 +116,7 @@ module AppMap
 
               hook_method = lambda do |entry|
                 cls, method = entry
-                return false if config.never_hook?(cls, method)
+                next if config.never_hook?(cls, method)
 
                 hook.package.handler_class.new(hook.package, cls, method).activate
               end
