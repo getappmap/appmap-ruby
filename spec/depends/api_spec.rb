@@ -110,12 +110,14 @@ describe 'Depends API' do
 
     describe 'smoke test' do
       around do |test|
-        @minitest_test_command_method = AppMap.configuration.depends_config.minitest_test_command_method
-        AppMap.configuration.depends_config.minitest_test_command_method = 'AppMap::Depends::APISpec.minitest_test_command'
+        begin
+          @minitest_test_command_method = AppMap.configuration.depends_config.minitest_test_command_method
+          AppMap.configuration.depends_config.minitest_test_command_method = 'AppMap::Depends::APISpec.minitest_test_command'
 
-        test.call
-      ensure
-        AppMap.configuration.depends_config.minitest_test_command_method = @minitest_test_command
+          test.call
+        ensure
+          AppMap.configuration.depends_config.minitest_test_command_method = @minitest_test_command
+        end
       end
 
       it 'passes a smoke test' do
@@ -125,20 +127,22 @@ describe 'Depends API' do
 
     describe 'configuration settings' do
       it 'can all be modified' do
-        defaults = {}
+        begin
+          defaults = {}
 
-        %i[rspec minitest].each do |framework|
-          %i[environment_method select_tests_method test_command_method].each do |setting|
-            full_setting = [ framework, setting ].join('_').to_sym
-            defaults[full_setting] = AppMap.configuration.depends_config.send(full_setting)
-            AppMap.configuration.depends_config.send("#{full_setting}=", "AppMap::Depends::APISpec.#{full_setting}")
+          %i[rspec minitest].each do |framework|
+            %i[environment_method select_tests_method test_command_method].each do |setting|
+              full_setting = [ framework, setting ].join('_').to_sym
+              defaults[full_setting] = AppMap.configuration.depends_config.send(full_setting)
+              AppMap.configuration.depends_config.send("#{full_setting}=", "AppMap::Depends::APISpec.#{full_setting}")
+            end
           end
-        end
 
-        run_tests
-      ensure
-        defaults.keys.each do |setting|
-          AppMap.configuration.depends_config.send("#{setting}=", defaults[setting])
+          run_tests
+        ensure
+          defaults.keys.each do |setting|
+            AppMap.configuration.depends_config.send("#{setting}=", defaults[setting])
+          end
         end
       end
     end

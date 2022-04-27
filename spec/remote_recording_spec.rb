@@ -18,10 +18,12 @@ describe 'remote recording', :order => :defined do
       uri = URI("http://localhost:#{@service_port}/health")
 
       100.times do
-        Net::HTTP.get(uri)
-        break
-      rescue Errno::ECONNREFUSED
-        sleep 0.1
+        begin
+          Net::HTTP.get(uri)
+          break
+        rescue Errno::ECONNREFUSED
+          sleep 0.1
+        end
       end
     end
 
