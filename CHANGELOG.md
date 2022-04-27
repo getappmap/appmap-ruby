@@ -1,3 +1,11 @@
+## [0.81.1](https://github.com/applandinc/appmap-ruby/compare/v0.81.0...v0.81.1) (2022-04-27)
+
+
+### Bug Fixes
+
+* AppMap format version is 1.7.0 ([53b3f04](https://github.com/applandinc/appmap-ruby/commit/53b3f04dc4f4a7867f28f5b196b2fadbe7cb6eeb))
+* Avoid return within a block (Ruby 2.5) ([85094fd](https://github.com/applandinc/appmap-ruby/commit/85094fd760b3ea08d343960cf586f4cce210fb07))
+
 # [0.81.0](https://github.com/applandinc/appmap-ruby/compare/v0.80.2...v0.81.0) (2022-04-26)
 
 
