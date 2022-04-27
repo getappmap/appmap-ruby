@@ -751,9 +751,11 @@ describe 'AppMap class Hooking' do
         :lineno: 9
     YAML
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
-      ExceptionMethod.new.raise_exception
-    rescue
-      # don't let the exception fail the test
+      begin
+        ExceptionMethod.new.raise_exception
+      rescue
+        # don't let the exception fail the test
+      end
     end
   end
 
@@ -781,9 +783,11 @@ describe 'AppMap class Hooking' do
         :lineno: 59
     YAML
     test_hook_behavior 'spec/fixtures/hook/exception_method.rb', events_yaml do
-      ExceptionMethod.new.raise_illegal_utf8_message
-    rescue
-      # don't let the exception fail the test
+      begin
+        ExceptionMethod.new.raise_illegal_utf8_message
+      rescue
+        # don't let the exception fail the test
+      end
     end
   end
 
