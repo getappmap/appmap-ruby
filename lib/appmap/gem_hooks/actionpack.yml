@@ -49,3 +49,7 @@
   label: mvc.render
   handler_class: AppMap::Handler::Rails::RenderHandler
   require_name: action_controller
+- method: ActionDispatch::Integration::Runner#before_setup
+  labels:
+  - deserialize.safe
+  - lang.eval.safe

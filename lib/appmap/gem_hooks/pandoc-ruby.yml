@@ -1,0 +1,3 @@
+- method: PandocRuby#convert
+  labels:
+  - system.exec.safe
