@@ -1,3 +1,11 @@
+# [0.83.0](https://github.com/applandinc/appmap-ruby/compare/v0.82.0...v0.83.0) (2022-04-29)
+
+
+### Features
+
+* #before_setup is lang.eval.safe and deserialize.safe ([cf03641](https://github.com/applandinc/appmap-ruby/commit/cf03641dacc1c50aa8ec9803e27936df06acf592))
+* pandoc-ruby is system.exec.safe ([2b3ec8e](https://github.com/applandinc/appmap-ruby/commit/2b3ec8ecc762b1209dc070bc5dc4ec5f33d7eec9))
+
 # [0.82.0](https://github.com/applandinc/appmap-ruby/compare/v0.81.1...v0.82.0) (2022-04-27)
 
 
