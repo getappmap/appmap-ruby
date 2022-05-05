@@ -1,3 +1,10 @@
+## [0.83.1](https://github.com/applandinc/appmap-ruby/compare/v0.83.0...v0.83.1) (2022-05-05)
+
+
+### Bug Fixes
+
+* Allow appmap_dir, language and additional properties ([a3bb87c](https://github.com/applandinc/appmap-ruby/commit/a3bb87cb4a87d00a7196f21c45dfcaaf6502e014))
+
 # [0.83.0](https://github.com/applandinc/appmap-ruby/compare/v0.82.0...v0.83.0) (2022-04-29)
 
 
