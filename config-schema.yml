@@ -1,9 +1,13 @@
 type: object
-additionalProperties: false
+additionalProperties: true
 required:
   - name
 properties:
   name:
+    type: string
+  language:
+    type: string
+  appmap_dir:
     type: string
   packages:
     type: array
