@@ -1,3 +1,10 @@
+## [0.83.2](https://github.com/applandinc/appmap-ruby/compare/v0.83.1...v0.83.2) (2022-05-11)
+
+
+### Bug Fixes
+
+* Only warn if Hook::LOG is true ([0ffd29e](https://github.com/applandinc/appmap-ruby/commit/0ffd29ea3a49d70af64193250c633668eb45c9ab))
+
 ## [0.83.1](https://github.com/applandinc/appmap-ruby/compare/v0.83.0...v0.83.1) (2022-05-05)
 
 
