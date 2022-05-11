@@ -75,7 +75,7 @@ module AppMap
 
         return cls if cls
 
-        warn "#{hook_method.name} not found on #{hook_class}"
+        warn "#{hook_method.name} not found on #{hook_class}" if Hook::LOG
       end
 
       def gettime
