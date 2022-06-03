@@ -1,3 +1,10 @@
+## [0.83.3](https://github.com/applandinc/appmap-ruby/compare/v0.83.2...v0.83.3) (2022-06-03)
+
+
+### Bug Fixes
+
+* Eval handler now works correctly even when not tracing ([4c9c40a](https://github.com/applandinc/appmap-ruby/commit/4c9c40abd8c930837ce6e040c72893f284ce0899))
+
 ## [0.83.2](https://github.com/applandinc/appmap-ruby/compare/v0.83.1...v0.83.2) (2022-05-11)
 
 
