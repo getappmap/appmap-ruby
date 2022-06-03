@@ -57,6 +57,11 @@ describe 'AppMap::Handler::Eval' do
     end
     expect(new_cls.const_get(class_name)).to eq(cls)
   end
+
+  it 'works correctly when loaded even when not tracing' do
+    load "#{__dir__}/class_with_eval.rb"
+    expect { AppMap::SpecClasses::WithEval.new.text }.to_not raise_error(NameError)
+  end
 end
 
 module ClassMaker
@@ -64,3 +69,5 @@ module ClassMaker
     eval "class #{class_name}; end; #{class_name}"
   end
 end
+
+# rubocop:enable Security/Eval, Style/EvalWithLocation

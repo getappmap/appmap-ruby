@@ -8,9 +8,9 @@ module AppMap
     # cf. https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     class Method
       ruby2_keywords def call(receiver, *args, &block)
-        return do_call(receiver, *args, &block) unless trace?
-
-        call_event = with_disabled_hook { before_hook receiver, *args }
+        call_event = trace? && with_disabled_hook { before_hook receiver, *args }
+        # note we can't short-circuit directly to do_call because then the call stack
+        # depth changes and eval handler doesn't work correctly
         trace_call call_event, receiver, *args, &block
       end
 
@@ -32,7 +32,10 @@ module AppMap
         hook_method.bind(receiver).call(*args, &block)
       end
 
+      # rubocop:disable Metrics/MethodLength
       ruby2_keywords def trace_call(call_event, receiver, *args, &block)
+        return do_call(receiver, *args, &block) unless call_event
+
         start_time = gettime
         begin
           return_value = do_call(receiver, *args, &block)
@@ -44,6 +47,7 @@ module AppMap
             if call_event
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
       def hook_method_def
         this = self
