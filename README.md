@@ -17,6 +17,12 @@
 SHA, labels, etc). It's more granular than a performance profile, but it's less
 granular than a full debug trace. It's designed to be optimal for understanding the design intent and structure of code and key data flows.
 
+# Requirements
+
+Supported Ruby versions: 2.6, 2.7, 3.0, 3.1
+
+Supported Rails versions: 5.x, 6.x, 7.x
+
 # Usage
 
 Visit the [AppMap for Ruby](https://appland.com/docs/reference/appmap-ruby.html) reference page on AppLand.com for a complete reference guide.
