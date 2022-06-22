@@ -1,3 +1,10 @@
+## [0.83.4](https://github.com/applandinc/appmap-ruby/compare/v0.83.3...v0.83.4) (2022-06-22)
+
+
+### Bug Fixes
+
+* Exclude AppMaps from the gem when packaging ([a0634f0](https://github.com/applandinc/appmap-ruby/commit/a0634f07db264daf51c6192b74ccbc08664ccac6))
+
 ## [0.83.3](https://github.com/applandinc/appmap-ruby/compare/v0.83.2...v0.83.3) (2022-06-03)
 
 
