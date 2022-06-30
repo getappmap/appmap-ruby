@@ -1,3 +1,10 @@
+## [0.83.5](https://github.com/applandinc/appmap-ruby/compare/v0.83.4...v0.83.5) (2022-06-30)
+
+
+### Bug Fixes
+
+* Remove spec and test from the gem ([ab2f6cb](https://github.com/applandinc/appmap-ruby/commit/ab2f6cbd99b2380cd3bc6fcea6a128c080bbcde0))
+
 ## [0.83.4](https://github.com/applandinc/appmap-ruby/compare/v0.83.3...v0.83.4) (2022-06-22)
 
 
