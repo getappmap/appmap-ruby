@@ -16,7 +16,7 @@ module AppMap
             super AppMap::Event.next_id_counter, :call, Thread.current.object_id
 
             self.request_method = request.request_method
-            self.normalized_path_info = normalized_path(request)
+            self.normalized_path_info = AppMap::Util.route_from_request(request)
             self.headers = AppMap::Util.select_rack_headers(request.env)
             self.path_info = request.path_info.split('?')[0]
             # ActionDispatch::Http::ParameterFilter is deprecated
@@ -51,18 +51,6 @@ module AppMap
                   end
                 end
               end
-            end
-          end
-
-          private
-
-          def normalized_path(request, router = ::Rails.application.routes.router)
-            router.recognize request do |route, _|
-              app = route.app
-              next unless app.matches? request
-              return normalized_path request, app.rack_app.routes.router if app.engine?
-
-              return AppMap::Util.swaggerize_path(route.path.spec.to_s)
             end
           end
         end

@@ -35,6 +35,8 @@ module AppMap
         def display_string(value)
           return nil if value.equal?(nil)
 
+          return value.to_s.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') if value.is_a?(String) || ( defined?(ActionView) && value.is_a?(ActionView::OutputBuffer) )
+
           # With setting APPMAP_PROFILE_DISPLAY_STRING, stringifying this class is shown to take 9 seconds(!) of a 17 second test run.
           return nil if best_class_name(value) == 'ActiveSupport::Callbacks::Filters::Environment'
 
@@ -91,7 +93,7 @@ module AppMap
         end
 
         def encode_display_string(value)
-          (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '?')
         end
 
         def custom_display_string(value)
@@ -101,7 +103,7 @@ module AppMap
           when Symbol
             [ ":#{value}", true ]
           when String
-            result = value[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result = value[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '?')
             result << " (...#{value.length - MAX_STRING_LENGTH} more characters)" if value.length > MAX_STRING_LENGTH
             [ result, true ]
           when Array

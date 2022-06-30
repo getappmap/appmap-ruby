@@ -100,7 +100,11 @@ module AppMap
         hooks_by_class.each do |class_name, hooks|
           Array(hooks).each do |hook|
             if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
-              require hook.package.require_name
+              begin
+                require hook.package.require_name
+              rescue
+                warn "AppMap: Could not require #{hook.package.require_name}: #{$!}"
+              end
             end
 
             Array(hook.method_names).each do |method_name|
@@ -111,6 +115,7 @@ module AppMap
               begin
                 base_cls = Object.const_get class_name
               rescue NameError
+                warn "AppMap: Could not find class #{class_name}: #{$!}"
                 next
               end
 

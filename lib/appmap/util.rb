@@ -145,6 +145,16 @@ module AppMap
         end
       end
 
+      def route_from_request(request, router = ::Rails.application.routes.router)
+        router.recognize request do |route, _|
+          app = route.app
+          next unless app.matches? request
+          return normalized_path request, app.rack_app.routes.router if app.engine?
+
+          return swaggerize_path(route.path.spec.to_s)
+        end
+      end
+
       # Convert a Rails-style path from /org/:org_id(.:format)
       # to Swagger-style paths like /org/{org_id}
       def swaggerize_path(path)
@@ -163,7 +173,7 @@ module AppMap
         mode = File::RDWR | File::CREAT | File::EXCL
         ::Dir::Tmpname.create([ 'appmap_', '.json' ]) do |tmpname|
           tempfile = File.open(tmpname, mode)
-          tempfile.write(JSON.generate(appmap))
+          tempfile.write(JSON.generate(appmap, invalid: :replace, undef: :replace, replace: '?'))
           tempfile.close
           # Atomically move the tempfile into place.
           FileUtils.mv tempfile.path, filename
