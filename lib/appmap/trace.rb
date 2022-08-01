@@ -22,7 +22,7 @@ module AppMap
 
       def comment
         @method.comment
-      rescue MethodSource::SourceNotFoundError
+      rescue MethodSource::SourceNotFoundError, Errno::EINVAL
         nil
       end
 
