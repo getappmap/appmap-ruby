@@ -1,3 +1,10 @@
+## [0.83.6](https://github.com/applandinc/appmap-ruby/compare/v0.83.5...v0.83.6) (2022-08-01)
+
+
+### Bug Fixes
+
+* Catch an uncaught EINVAL on Windows when attempting to parse source code ([9a152d8](https://github.com/applandinc/appmap-ruby/commit/9a152d8e48846b46572a3e7061bcdb35942b8993))
+
 ## [0.83.5](https://github.com/applandinc/appmap-ruby/compare/v0.83.4...v0.83.5) (2022-06-30)
 
 
