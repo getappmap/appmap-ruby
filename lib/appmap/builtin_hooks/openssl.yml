@@ -41,3 +41,10 @@
   - OpenSSL::Cipher#random_key
   - OpenSSL::Cipher#reset
   - OpenSSL::Cipher#update
+- methods:
+  - OpenSSL::Random.random_bytes
+  label: random.secure
+- methods:
+  - OpenSSL::Random#add
+  - OpenSSL::Random#seed
+  label: pseudorandom.seed
