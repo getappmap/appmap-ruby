@@ -57,6 +57,12 @@ module AppMap
       end
     end
 
+    def tracing_enabled?
+      return false unless @tracing
+
+      @tracing.enabled?
+    end
+
     # Used to start tracing, stop tracing, and record events.
     def tracing
       @tracing ||= Trace::Tracing.new
