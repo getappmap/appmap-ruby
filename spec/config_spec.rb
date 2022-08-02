@@ -52,8 +52,7 @@ describe AppMap::Config do
       "description" => "Generate Swagger from AppMaps"
     })
     expect(config.as_json['hook_paths']).to eq([
-      "pkg",
-      "#{Gem.loaded_specs['activesupport'].gem_dir}"
+      "pkg"
     ])
     expect(config.as_json['exclude']).to eq([])
     expect(config.as_json['functions'].map(&:deep_stringify_keys)).to eq([
@@ -99,8 +98,8 @@ describe AppMap::Config do
         ]
       }
     ])
-    expect(config.as_json['gem_hooks']).to have_key('ActiveSupport::Callbacks::CallbackSequence')
-    expect(config.as_json['gem_hooks']['ActiveSupport::Callbacks::CallbackSequence'].map(&:deep_stringify_keys)).to eq([
+    expect(config.as_json['builtin_hooks']).to have_key('ActiveSupport::Callbacks::CallbackSequence')
+    expect(config.as_json['builtin_hooks']['ActiveSupport::Callbacks::CallbackSequence'].map(&:deep_stringify_keys)).to eq([
       {
         "package" => "activesupport",
         "method_names" => [

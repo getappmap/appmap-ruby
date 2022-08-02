@@ -72,7 +72,7 @@ module AppMap
         # Builds a package for gem. Generally corresponds to a `gem:` entry in appmap.yml. Also used when mapping
         # a builtin.
         def build_from_gem(gem, shallow: true, require_name: nil, exclude: [], labels: [], optional: false, force: false)
-          if !force && %w[method_source activesupport].member?(gem)
+          if !force && %w[method_source].member?(gem)
             warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
             return
           end

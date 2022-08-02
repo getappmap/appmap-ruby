@@ -27,10 +27,11 @@ Gem::Specification.new do |spec|
   spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activesupport'
   spec.add_dependency 'method_source'
   spec.add_dependency 'rack'
   spec.add_dependency 'reverse_markdown'
+
+  spec.add_runtime_dependency 'activesupport'
 
   spec.add_development_dependency 'bundler', '>= 1.16'
   spec.add_development_dependency 'minitest', '~> 5.15'
