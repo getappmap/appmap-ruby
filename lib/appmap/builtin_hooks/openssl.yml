@@ -12,5 +12,32 @@
   label: crypto.pkcs5
 - method: OpenSSL::Cipher#encrypt
   label: crypto.encrypt
+  handler_class: AppMap::Handler::OpenSSL
 - method: OpenSSL::Cipher#decrypt
   label: crypto.decrypt
+  handler_class: AppMap::Handler::OpenSSL
+- method: OpenSSL::Cipher#auth_data=
+  label: crypto.set_auth_data
+- method: OpenSSL::Cipher#auth_tag=
+  label: crypto.set_auth_tag
+- method: OpenSSL::Cipher#auth_tag_len=
+  label: crypto.set_auth_tag_len
+- method: OpenSSL::Cipher#ccm_data_len=
+  label: crypto.set_ccm_data_len
+- method: OpenSSL::Cipher#iv=
+  label: crypto.set_iv
+- method: OpenSSL::Cipher#iv_len=
+  label: crypto.set_iv_len
+- method: OpenSSL::Cipher#key=
+  label: crypto.set_key
+- method: OpenSSL::Cipher#key_len=
+  label: crypto.set_key_len
+- method: OpenSSL::Cipher#padding=
+  label: crypto.set_padding
+- method: OpenSSL::Cipher#final
+  label: crypto.final
+- methods:
+  - OpenSSL::Cipher#random_iv
+  - OpenSSL::Cipher#random_key
+  - OpenSSL::Cipher#reset
+  - OpenSSL::Cipher#update
