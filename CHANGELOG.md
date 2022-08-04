@@ -1,3 +1,22 @@
+# [0.84.0](https://github.com/applandinc/appmap-ruby/compare/v0.83.6...v0.84.0) (2022-08-04)
+
+
+### Bug Fixes
+
+* Address stack overflow error with tracing? ([f426210](https://github.com/applandinc/appmap-ruby/commit/f426210b8dfb48987f2b6c1b5e57e80e3a2c921d))
+* Handle nil class names ([263f2fc](https://github.com/applandinc/appmap-ruby/commit/263f2fc97b716f1a8205a3e85292c59ee19bc6bc))
+
+
+### Features
+
+* Label ActiveSupport::MessageEncryptor ([38a7aeb](https://github.com/applandinc/appmap-ruby/commit/38a7aeb446a2baa63f6724eea8dcf36276d336c9))
+* Label crypto function with algorithm name ([a7a9c61](https://github.com/applandinc/appmap-ruby/commit/a7a9c6145790fc5bc425e413d56984ef777f9fd1))
+* Label EncryptedKeyRotatingCookieJar.commit ([8e1d015](https://github.com/applandinc/appmap-ruby/commit/8e1d0158d25f2cc386c32ba899085fd21fadafcb))
+* Label OpenSSL::Random ([5c947a9](https://github.com/applandinc/appmap-ruby/commit/5c947a90037300639a94ab89d9e1a4dca26265bc))
+* Label Random ([7572803](https://github.com/applandinc/appmap-ruby/commit/7572803991693ad80f8526c44056133cca13d4b8))
+* Label the rest of OpenSSL::Cipher ([7863b7b](https://github.com/applandinc/appmap-ruby/commit/7863b7b3fcf2ecccda16b80e637e216c06a95108))
+* Make activesupport a runtime dependency ([140a674](https://github.com/applandinc/appmap-ruby/commit/140a6744be2abf47d01e880a98f1dd06c8a505b1))
+
 ## [0.83.6](https://github.com/applandinc/appmap-ruby/compare/v0.83.5...v0.83.6) (2022-08-01)
 
 
