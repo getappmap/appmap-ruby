@@ -1,0 +1,12 @@
+- methods:
+  - Random.new_seed
+  - Random.rand
+  - Random.raw_seed
+  - Random.srand
+  - Random#bytes
+  - Random#rand
+  labels:
+    - pseudorandom
+    - random.insecure
+- method: Random#seed
+  label: pseudorandom.seed

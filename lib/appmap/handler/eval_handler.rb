@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/handler/function'
+require 'appmap/handler/function_handler'
 
 module AppMap
   module Handler
@@ -14,15 +14,15 @@ module AppMap
     #
     # If the binding is not provided, by default eval will run in the
     # current frame. Since we call it here, this will mean the #do_call
-    # frame, which would make AppMap::Handler::Eval the lexical scope
+    # frame, which would make AppMap::Handler::EvalHandler the lexical scope
     # for constant lookup and definition; as a consequence
     # eg. `eval "class Foo; end"` would define
-    # AppMap::Handler::Eval::Foo instead of defining it in
+    # AppMap::Handler::EvalHandler::Foo instead of defining it in
     # the module where the original call was made.
     #
     # To avoid this, we explicitly substitute the correct execution
     # context, up several stack frames.
-    class Eval < Function
+    class EvalHandler < FunctionHandler
       # The depth of the frame we need to pluck out:
       # 1. Hook::Method#do_call
       # 2. Hook::Method#trace_call

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/handler/function'
+require 'appmap/handler/function_handler'
 require 'appmap/event'
 
 module AppMap
@@ -110,7 +110,7 @@ module AppMap
         # Hooks the ActionView::Resolver methods +find_all+, +find_all_anywhere+. The resolver is used
         # during template rendering to lookup the template file path from parameters such as the
         # template name, prefix, and partial (boolean).
-        class ResolverHandler < AppMap::Handler::Function
+        class ResolverHandler < AppMap::Handler::FunctionHandler
           def handle_call(receiver, args)
             name, prefix, partial = args
             warn "Resolver: #{{ name: name, prefix: prefix, partial: partial }}" if LOG

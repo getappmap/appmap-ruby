@@ -84,10 +84,10 @@ module AppMap
         # Heuristic for dynamically defined class whose name can be nil
         def best_class_name(value)
           value_cls = value.class
-          while value_cls.name.nil?
+          while value_cls && value_cls.name.nil?
             value_cls = value_cls.superclass
           end
-          value_cls.name
+          value_cls&.name || 'unknown'
         end
 
         def encode_display_string(value)

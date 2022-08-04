@@ -115,7 +115,7 @@ describe 'AppMap class Hooking' do
     require 'appmap/hook/method'
     package = config.lookup_package(hook_cls, method)
     expect(package).to be
-    hook_method = AppMap::Handler::Function.new(package, hook_cls, method)
+    hook_method = AppMap::Handler::FunctionHandler.new(package, hook_cls, method)
     hook_method.activate
 
     tracer = AppMap.tracing.trace
@@ -890,100 +890,6 @@ describe 'AppMap class Hooking' do
 
   context 'ActiveSupport::SecurityUtils.secure_compare' do
     it 'is hooked' do
-      events_yaml = <<~YAML
-      ---
-      - :id: 1
-        :event: :call
-        :defined_class: Compare
-        :method_id: compare
-        :path: spec/fixtures/hook/compare.rb
-        :lineno: 4
-        :static: true
-        :parameters:
-        - :name: :s1
-          :class: String
-          :value: string
-          :kind: :req
-        - :name: :s2
-          :class: String
-          :value: string
-          :kind: :req
-        :receiver:
-          :class: Class
-          :value: Compare
-      - :id: 2
-        :event: :call
-        :defined_class: ActiveSupport::SecurityUtils
-        :method_id: secure_compare
-        :path: lib/active_support/security_utils.rb
-        :lineno: 26
-        :static: true
-        :parameters:
-        - :name: :a
-          :class: String
-          :value: string
-          :kind: :req
-        - :name: :b
-          :class: String
-          :value: string
-          :kind: :req
-        :receiver:
-          :class: Module
-          :value: ActiveSupport::SecurityUtils
-      - :id: 3
-        :event: :call
-        :defined_class: Digest::Instance
-        :method_id: digest
-        :path: Digest::Instance#digest
-        :static: false
-        :parameters:
-        - :name: arg
-          :class: Array
-          :value: '["string"]'
-          :kind: :rest
-        :receiver:
-          :class: Digest::SHA256
-          :value: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      - :id: 4
-        :event: :return
-        :parent_id: 3
-        :return_value:
-          :class: String
-          :value: "G2__)__qc____X____3_].\\x02y__.___/_"
-      - :id: 5
-        :event: :call
-        :defined_class: Digest::Instance
-        :method_id: digest
-        :path: Digest::Instance#digest
-        :static: false
-        :parameters:
-        - :name: arg
-          :class: Array
-          :value: '["string"]'
-          :kind: :rest
-        :receiver:
-          :class: Digest::SHA256
-          :value: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      - :id: 6
-        :event: :return
-        :parent_id: 5
-        :return_value:
-          :class: String
-          :value: "G2__)__qc____X____3_].\\x02y__.___/_"
-      - :id: 7
-        :event: :return
-        :parent_id: 2
-        :return_value:
-          :class: TrueClass
-          :value: 'true'
-      - :id: 8
-        :event: :return
-        :parent_id: 1
-        :return_value:
-          :class: TrueClass
-          :value: 'true'
-      YAML
-
       _, _, events = test_hook_behavior 'spec/fixtures/hook/compare.rb', nil do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
@@ -1078,6 +984,7 @@ describe 'AppMap class Hooking' do
       _, tracer = invoke_test_file 'spec/fixtures/hook/compare.rb' do
         expect(Compare.compare('string', 'string')).to be_truthy
       end
+
       cm = AppMap::Util.sanitize_paths(AppMap::ClassMap.build_from_methods(tracer.event_methods))
       entry = cm[1][:children][0][:children][0][:children][0]
       # Sanity check, make sure we got the right one
@@ -1197,7 +1104,7 @@ describe 'AppMap class Hooking' do
       require 'appmap/hook/method'
 
       pkg = AppMap::Config::Package.new('fixtures/hook/prependend_override')
-      AppMap::Handler::Function.new(pkg, PrependedClass, PrependedClass.public_instance_method(:say_hello)).activate
+      AppMap::Handler::FunctionHandler.new(pkg, PrependedClass, PrependedClass.public_instance_method(:say_hello)).activate
 
       tracer = AppMap.tracing.trace
       AppMap::Event.reset_id_counter

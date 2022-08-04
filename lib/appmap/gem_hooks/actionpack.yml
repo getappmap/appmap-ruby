@@ -53,3 +53,5 @@
   labels:
   - deserialize.safe
   - lang.eval.safe
+- methods: ActionDispatch::Cookies::EncryptedKeyRotatingCookieJar.commit
+  require_name: action_dispatch

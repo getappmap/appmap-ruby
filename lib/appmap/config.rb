@@ -32,8 +32,8 @@ module AppMap
       attr_writer :handler_class
 
       def handler_class
-        require 'appmap/handler/function'
-        @handler_class || AppMap::Handler::Function
+        require 'appmap/handler/function_handler'
+        @handler_class || AppMap::Handler::FunctionHandler
       end
 
       # Indicates that only the entry points to a package will be recorded.
@@ -72,7 +72,7 @@ module AppMap
         # Builds a package for gem. Generally corresponds to a `gem:` entry in appmap.yml. Also used when mapping
         # a builtin.
         def build_from_gem(gem, shallow: true, require_name: nil, exclude: [], labels: [], optional: false, force: false)
-          if !force && %w[method_source activesupport].member?(gem)
+          if !force && %w[method_source].member?(gem)
             warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
             return
           end

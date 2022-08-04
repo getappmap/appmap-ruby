@@ -14,3 +14,9 @@
   label: deserialize.safe
   require_name: active_support/lazy_load_hooks
   force: true
+- method: ActiveSupport::MessageEncryptor#encrypt_and_sign
+  require_name: active_support/message_encryptor
+  force: true
+- method: ActiveSupport::MessageEncryptor#decrypt_and_verifdy
+  require_name: active_support/message_encryptor
+  force: true

@@ -29,7 +29,7 @@ module AppMap
 
         self.request_method = request.method
         self.url = url
-        self.headers = NetHTTP.copy_headers(request)
+        self.headers = NetHTTPHandler.copy_headers(request)
         self.params = Rack::Utils.parse_nested_query(query)
       end
 
@@ -64,7 +64,7 @@ module AppMap
 
         if response
           self.status = response.code.to_i
-          self.headers = NetHTTP.copy_headers(response)
+          self.headers = NetHTTPHandler.copy_headers(response)
         else
           self.headers = {}
         end
@@ -84,7 +84,7 @@ module AppMap
 
     # Handler class for HTTP requests.
     # Emits HTTP request events instead of method calls.
-    class NetHTTP < Hook::Method
+    class NetHTTPHandler < Hook::Method
       def self.copy_headers(obj)
         {}.tap do |headers|
           obj.each_header do |key, value|
