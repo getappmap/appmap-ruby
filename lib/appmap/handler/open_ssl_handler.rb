@@ -1,8 +1,8 @@
-require 'appmap/handler/function'
+require 'appmap/handler/function_handler'
 
 module AppMap
   module Handler
-    class OpenSSL < Function
+    class OpenSSLHandler < FunctionHandler
       def handle_call(receiver, args)
         super.tap do |event|
           algorithm = receiver.name

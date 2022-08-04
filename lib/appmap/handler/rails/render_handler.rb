@@ -1,9 +1,9 @@
-require 'appmap/handler/function'
+require 'appmap/handler/function_handler'
 
 module AppMap
   module Handler
     module Rails
-      class RenderHandler < AppMap::Handler::Function
+      class RenderHandler < AppMap::Handler::FunctionHandler
         def handle_call(receiver, args)
           options, _ = args
           # TODO: :file, :xml

@@ -32,8 +32,8 @@ module AppMap
       attr_writer :handler_class
 
       def handler_class
-        require 'appmap/handler/function'
-        @handler_class || AppMap::Handler::Function
+        require 'appmap/handler/function_handler'
+        @handler_class || AppMap::Handler::FunctionHandler
       end
 
       # Indicates that only the entry points to a package will be recorded.

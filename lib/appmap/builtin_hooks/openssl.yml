@@ -12,10 +12,10 @@
   label: crypto.pkcs5
 - method: OpenSSL::Cipher#encrypt
   label: crypto.encrypt
-  handler_class: AppMap::Handler::OpenSSL
+  handler_class: AppMap::Handler::OpenSSLHandler
 - method: OpenSSL::Cipher#decrypt
   label: crypto.decrypt
-  handler_class: AppMap::Handler::OpenSSL
+  handler_class: AppMap::Handler::OpenSSLHandler
 - method: OpenSSL::Cipher#auth_data=
   label: crypto.set_auth_data
 - method: OpenSSL::Cipher#auth_tag=

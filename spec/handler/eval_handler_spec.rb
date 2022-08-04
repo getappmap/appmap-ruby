@@ -5,7 +5,7 @@
 require 'spec_helper'
 require 'appmap/config'
 
-describe 'AppMap::Handler::Eval' do
+describe 'AppMap::Handler::EvalHandler' do
   include_context 'collect events'
   let!(:config) { AppMap::Config.new('hook_spec') }
   before { AppMap.configuration = config }
@@ -47,8 +47,8 @@ describe 'AppMap::Handler::Eval' do
     end
     expect(cls).to be_instance_of(Class)
     # If execution context wasn't substituted, the class would be defined as
-    # eg. AppMap::Handler::Eval::Cls_7566
-    expect { AppMap::Handler::Eval.const_get(class_name) }.to raise_error(NameError)
+    # eg. AppMap::Handler::EvalHandler::Cls_7566
+    expect { AppMap::Handler::EvalHandler.const_get(class_name) }.to raise_error(NameError)
     # This would be the right behavior
     expect(m.const_get(class_name)).to be_instance_of(Class)
     expect(m.const_get(class_name)).to eq(cls)

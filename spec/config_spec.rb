@@ -143,7 +143,7 @@ describe AppMap::Config do
       :packages:
       - :name: lib
         :path: lib
-        :handler_class: AppMap::Handler::Function
+        :handler_class: AppMap::Handler::FunctionHandler
         :shallow: false
       :functions: []
       :exclude: []
