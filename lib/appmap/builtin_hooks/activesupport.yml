@@ -14,6 +14,18 @@
   label: deserialize.safe
   require_name: active_support/lazy_load_hooks
   force: true
+- method: String.html_safe
+  label: html.unsafe
+  require_name: active_support/core_ext/string/output_safety
+  force: true
+- methods:
+  - ERB::Util.html_escape
+  - ERB::Util.html_escape_once
+  - ERB::Util#html_escape
+  - ERB::Util#html_escape_once
+  label: html.sanitize
+  require_name: active_support/core_ext/string/output_safety
+  force: true
 - method: ActiveSupport::MessageEncryptor#encrypt_and_sign
   require_name: active_support/message_encryptor
   force: true

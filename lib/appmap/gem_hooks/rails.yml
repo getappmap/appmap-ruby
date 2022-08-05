@@ -1,2 +1,6 @@
 - method: Rails::Application#config_for
 #  label: deserialize.safe
+- methods:
+  - Sprockets::Rails::Helper#stylesheet_link_tag
+  - Sprockets::Rails::Helper#javascript_include_tag
+  label: html.safe

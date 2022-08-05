@@ -13,5 +13,25 @@
   require_name: action_view
 - methods:
   - ActionView::Helpers::SanitizeHelper#sanitize
-  label: string.html_safe
+  label: html.safe
+  require_name: action_view
+- methods:
+  - ActionView::Helpers::TagHelper#tag
+  - ActionView::Helpers::TagHelper#content_tag
+  - ActionView::Helpers::TagHelper#cdata_section
+  - ActionView::Helpers::TagHelper#escape_once
+  - ActionView::Helpers::TagHelper#form_tag
+  - ActionView::Helpers::AssetTagHelper#javascript_include_tag
+  - ActionView::Helpers::AssetTagHelper#stylesheet_link_tag
+  - ActionView::Context#_layout_for
+  - ActionView::Helpers::ActiveModelInstanceTag#content_tag
+  - ActionView::Helpers::ActiveModelInstanceTag#tag
+  label: html.safe
+  require_name: action_view
+- methods:
+  - ActionView::Helpers::JavaScriptHelper#escape_javascript
+  - ActionView::Helpers::JavaScriptHelper#javascript_tag
+  labels:
+  - html.safe
+  - javascript.safe
   require_name: action_view

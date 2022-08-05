@@ -1,0 +1,2 @@
+- method: WillPaginate::ActionView#will_paginate
+  label: html.safe
