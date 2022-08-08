@@ -193,7 +193,7 @@ module AppMap
 
         public
 
-        def build_from_invocation(defined_class, method, receiver, arguments, event: MethodCall.new)
+        def build_from_invocation(defined_class, method, receiver, arguments, parameters: method.parameters, event: MethodCall.new)
           event ||= MethodCall.new
           defined_class ||= 'Class'
 
@@ -208,10 +208,10 @@ module AppMap
 
             # Check if the method has key parameters. If there are any they'll always be last.
             # If yes, then extract it from arguments.
-            has_key = [[:dummy], *method.parameters].last.first.to_s.start_with?('key') && arguments[-1].is_a?(Hash)
+            has_key = [[:dummy], *parameters].last.first.to_s.start_with?('key') && arguments[-1].is_a?(Hash)
             kwargs = has_key && arguments[-1].dup || {}
 
-            event.parameters = method.parameters.map.with_index do |method_param, idx|
+            event.parameters = parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
               param_name ||= 'arg'
               value = case param_type

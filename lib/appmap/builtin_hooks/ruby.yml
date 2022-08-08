@@ -2,6 +2,7 @@
   - Marshal#load
   - Marshal#restore
   require_name: ruby
+  handler_class: AppMap::Handler::MarshalLoadHandler
   label: deserialize.unsafe
 - method: Marshal#dump
   require_name: ruby
@@ -29,3 +30,6 @@
   - Process#spawn
   require_name: ruby
   label: system.exec
+- methods:
+  - ERB#result
+  require_name: ruby

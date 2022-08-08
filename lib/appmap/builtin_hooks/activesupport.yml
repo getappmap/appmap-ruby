@@ -11,7 +11,9 @@
   require_name: active_support/security_utils
   force: true
 - method: ActiveSupport.run_load_hooks
-  label: deserialize.safe
+  labels:
+  - deserialize.safe
+  - lang.eval.safe
   require_name: active_support/lazy_load_hooks
   force: true
 - method: ActiveSupport::MessageEncryptor#encrypt_and_sign

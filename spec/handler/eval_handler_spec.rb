@@ -32,7 +32,10 @@ describe 'AppMap::Handler::EvalHandler' do
     expect(events[0]).to match hash_including \
       defined_class: 'Kernel',
       method_id: 'eval',
-      parameters: [{ class: 'Array', kind: :rest, name: 'arg', size: 1, value: '[12]' }]
+      parameters: [
+        { class: 'String', kind: :req,  name: :string, value: '12' },
+        { class: 'Array',  kind: :rest, name: 'arg', size: 0, value: '[]' },
+      ]
   end
 
   # a la Ruby 2.6.3 ruby-token.rb
