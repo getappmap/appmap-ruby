@@ -1,3 +1,10 @@
+# [0.85.0](https://github.com/applandinc/appmap-ruby/compare/v0.84.0...v0.85.0) (2022-08-08)
+
+
+### Features
+
+* Tune method parameters ([4a7b575](https://github.com/applandinc/appmap-ruby/commit/4a7b575e6f9684adaac4b592adc1ad2c832e900d))
+
 # [0.84.0](https://github.com/applandinc/appmap-ruby/compare/v0.83.6...v0.84.0) (2022-08-04)
 
 
