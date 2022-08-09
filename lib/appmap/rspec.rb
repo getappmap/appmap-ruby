@@ -157,14 +157,20 @@ module AppMap
         AppMap.info 'Configuring AppMap recorder for RSpec' if first_recording?
         @recording_count += 1
 
-        @recordings_by_example[example.object_id] = Recording.new(example)
+        recording = if example.metadata[:appmap] != false
+          Recording.new(example)
+        else
+          :false
+        end
+
+        @recordings_by_example[example.object_id] = recording
       end
 
       def end_spec(example, exception:)
         recording = @recordings_by_example.delete(example.object_id)
         return warn "No recording found for #{example}" unless recording
 
-        recording.finish exception
+        recording.finish exception unless recording == :false
       end
 
       def config
