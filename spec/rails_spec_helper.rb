@@ -98,7 +98,6 @@ end
 
 shared_context 'rails integration test setup' do
   let(:tmpdir) { app.tmpdir }
-
   before(:all) { @app.run_specs } unless use_existing_data?
 
   let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }

@@ -15,6 +15,18 @@ describe 'Rails' do
       include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
       include_context 'rails integration test setup'
 
+      describe 'rspec metadata' do
+        let(:appmap_json_files) { Dir.glob("#{tmpdir}/appmap/rspec/*.appmap.json") }
+
+        it 'appmap: false disables recording' do
+          test_names = appmap_json_files.map(&File.method(:read)).map(&JSON.method(:parse)).map do |json|
+            json['metadata']['name']
+          end
+          expect(test_names).to include('UsersController GET /users/:login shows the user')
+          expect(test_names).to_not include('UsersController GET /users/:login performance test')
+        end
+      end
+
       describe 'an API route' do
         describe 'creating an object' do
           let(:appmap_json_file) do

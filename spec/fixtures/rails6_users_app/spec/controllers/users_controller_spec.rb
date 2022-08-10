@@ -23,5 +23,7 @@ RSpec.describe UsersController, type: :controller do
       get :show, params: { id: 'alice' }
       expect(response).to be_ok
     end
+    it 'performance test', appmap: false do
+    end
   end
 end
