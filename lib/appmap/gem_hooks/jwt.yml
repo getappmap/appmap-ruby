@@ -1,0 +1,8 @@
+- method: JWT#decode
+  label: jwt.decode
+
+- method: JWT#encode
+  label: jwt.encode
+
+- method: JWT::Signature#verify
+  label: jwt.signature.verify
