@@ -1,3 +1,10 @@
+# [0.86.0](https://github.com/applandinc/appmap-ruby/compare/v0.85.0...v0.86.0) (2022-08-10)
+
+
+### Features
+
+* Don't record rspec test when appmap: false ([09c4a24](https://github.com/applandinc/appmap-ruby/commit/09c4a249c7446c6aebcc1d462d3d7b35817334fc))
+
 # [0.85.0](https://github.com/applandinc/appmap-ruby/compare/v0.84.0...v0.85.0) (2022-08-08)
 
 
