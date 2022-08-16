@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'English'
+require 'appmap/ccustomtracepoint'
+include CCustomTracepoint
 
 module AppMap
   class Hook
