@@ -8,10 +8,6 @@ make clean
 make
 #make install
 
-# there should be a better way to copy this, and without hardcoding version numbers
-cp ccustomtracepoint.so \
-   $HOME/.rbenv/versions/3.0.1/lib/ruby/site_ruby/3.0.0/appmap/.
-
 # cleanup
 rm -rf Makefile extconf.h usr .sitearchdir.time > /dev/null 2>&1
 rm -f bench_file > /dev/null 2>&1
