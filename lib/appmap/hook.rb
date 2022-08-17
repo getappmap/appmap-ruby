@@ -183,12 +183,6 @@ module AppMap
 
       hook = lambda do |hook_cls|
         lambda do |method_id|
-          # Don't try and trace the AppMap methods or there will be
-          # a stack overflow in the defined hook method.
-          next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
-
-          next if method_id == :call
-
           method = \
             begin
               hook_cls.instance_method(method_id)
@@ -196,6 +190,16 @@ module AppMap
               warn "AppMap: Method #{hook_cls} #{fn} is not accessible: #{$!}" if LOG
               next
             end
+
+          package = config.lookup_package(hook_cls, method)
+          # doing this check first returned early in 98.7% of cases in sample_app_6th_ed
+          next unless package
+
+          # Don't try and trace the AppMap methods or there will be
+          # a stack overflow in the defined hook method.
+          next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
+
+          next if method_id == :call
 
           next if self.class.already_hooked?(method)
 
@@ -205,9 +209,6 @@ module AppMap
           # Skip methods that have no instruction sequence, as they are either have no body or they are or native.
           # TODO: Figure out how to tell the difference?
           next unless disasm
-
-          package = config.lookup_package(hook_cls, method)
-          next unless package
 
           package.handler_class.new(package, hook_cls, method).activate
         end
