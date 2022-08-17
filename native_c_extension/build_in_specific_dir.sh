@@ -19,10 +19,10 @@ TARGET_DIR=$HOME/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/a
 #TARGET_DIR=$HOME/devel/gems/gems/appmap-0.86.0/lib/appmap/
 #mkdir -p $TARGET_DIR
 
-FILES="c_custom_to_s.c c_tracepoint_module.rb build_c_tracepoint_module.sh"
+FILES="c_custom_to_s.c c_custom_to_s_module.rb build_c_custom_to_s_module.sh"
 for file in $FILES; do
     cp $file $TARGET_DIR/.
 done
 
 cd $TARGET_DIR
-./build_c_tracepoint_module.sh
+./build_c_custom_to_s_module.sh
