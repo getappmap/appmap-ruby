@@ -98,16 +98,16 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     // printed by the indeterminate %d
     char buffer_small[128];
     sprintf(&buffer_small[0], " (...%d more items)", remaining_elements);
-    int buffer_small_len = strlen(buffer_small) + 1; // + 1 for NULL by sprintf
+    int buffer_small_len = strlen(buffer_small); // + 1 for NULL by sprintf
 
-    // 2: for "]" and \0
+    // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
-    snprintf(&buffer[offset], buffer_small_len, "%s", buffer_small);
+    snprintf(&buffer[offset], buffer_small_len + 1, "%s", buffer_small);
     offset += buffer_small_len;
     snprintf(&buffer[offset], 1 + 1, "%s", "]");
     offset += 1;
   } else {
-    // 2: for "]" and \0
+    // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
     snprintf(&buffer[offset], 1 + 1, "%s", "]");
     offset += 1;    
@@ -258,13 +258,14 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     if (remaining_characters > 0) {
       char buffer_small[128];
       sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
-      int buffer_small_len = strlen(buffer_small) + 1; // +1 for NULL by sprintf
+      int buffer_small_len = strlen(buffer_small); // +1 for NULL by sprintf
 
       // -1 to write the first byte over the NULL added by snprintf
       int offset = max_len - 1;
 
-      method_c_custom_to_s_check_buffer_size(offset, buffer_small_len, buffer_max);
-      snprintf(&buffer[offset], buffer_small_len, "%s", buffer_small);
+      // +1 for NULL
+      method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
+      snprintf(&buffer[offset], buffer_small_len + 1, "%s", buffer_small);
       offset += buffer_small_len;
     }
 
