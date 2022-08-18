@@ -98,7 +98,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     // printed by the indeterminate %d
     char buffer_small[128];
     sprintf(&buffer_small[0], " (...%d more items)", remaining_elements);
-    int buffer_small_len = strlen(buffer_small); // + 1 for NULL by sprintf
+    int buffer_small_len = strlen(buffer_small);
 
     // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
@@ -138,26 +138,26 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       sprintf(&buffer_small[0], " (...%d more items)", state->remaining_elements);
       int buffer_small_len = strlen(buffer_small);
 
-      // +1 for \0
+      // +1 for NULL
       method_c_custom_to_s_check_buffer_size(*state->offset, buffer_small_len + 1, state->buffer_max);
-      sprintf(&state->buffer[*state->offset], buffer_small, buffer_small_len);
+      snprintf(&state->buffer[*state->offset], buffer_small_len + 1, "%s", buffer_small);
       *state->offset += buffer_small_len;
 
       *state->remaining_elements_shown = 1;
     }
   } else {
     if (*state->counter > 0) {
-      // 3: ", " and \0
+      // 3: ", " and NULL
       method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
-      sprintf(&state->buffer[*state->offset], "%s", ", ");
+      snprintf(&state->buffer[*state->offset], 3, "%s", ", ");
       *state->offset += 2;
     }
   
     method_c_custom_to_s_element(state->self, state->buffer, state->offset, key, state->buffer_max);
 
-    // 3: "=>" and \0
+    // 3: "=>" and NULL
     method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
-    sprintf(&state->buffer[*state->offset], "=>");
+    snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
     *state->offset += 2;
 
     method_c_custom_to_s_element(state->self, state->buffer, state->offset, val, state->buffer_max);
@@ -184,7 +184,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
     max_len = MAX_HASH_ENUMERATION;
   }
 
-  sprintf(&buffer[offset], "{");
+  snprintf(&buffer[offset], 1, "%s", "{");
   offset += 1;
 
 
@@ -203,7 +203,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
 
   // 2: "}" and \0
   method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
-  sprintf(&buffer[offset], "}");
+  snprintf(&buffer[offset], 1, "%s", "}");
   offset += 1;
   
   ret = rb_str_new_cstr(buffer);
@@ -258,7 +258,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     if (remaining_characters > 0) {
       char buffer_small[128];
       sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
-      int buffer_small_len = strlen(buffer_small); // +1 for NULL by sprintf
+      int buffer_small_len = strlen(buffer_small);
 
       // -1 to write the first byte over the NULL added by snprintf
       int offset = max_len - 1;
