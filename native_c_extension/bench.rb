@@ -31,6 +31,9 @@ data_str_16  = "1234567890123456"
 data_str_32  = "12345678901234567890123456789012"
 data_str_64  = "1234567890123456789012345678901234567890123456789012345678901234"
 data_str_128 = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
+data_file = File.new("bench_file", "w")
+data_net_http = Net::HTTP.new('example.com')
+data_net_httpgenericrequest = Net::HTTPGenericRequest.new('m', 'request_body', 'response_body', 'example.com')
 data_hash = {
   1 => "one",
   2 => "two",
@@ -46,9 +49,7 @@ data_array_str8_more_than_max = generate_many_times( data_str_8, 15)
 data_array_mix = [10, 2.5, nil, "some string", true, false ]
 data_array_hash = [ data_hash, data_hash, data_hash, data_hash ]
 data_array_hash_more_than_max = generate_many_times(data_hash, 15)
-data_file = File.new("bench_file", "w")
-data_net_http = Net::HTTP.new('example.com')
-data_net_httpgenericrequest = Net::HTTPGenericRequest.new('m', 'request_body', 'response_body', 'example.com')
+data_array_file = [ data_file, data_file, data_file, data_file ]
 
 # number of benchmark iterations
 n = 100000
@@ -97,6 +98,9 @@ symbols = [
   :data_str_32,
   :data_str_64,
   :data_str_128,
+  # :data_file,
+  # :data_net_http,
+  # :data_net_httpgenericrequest,
   :data_hash,
   :data_array_int,
   :data_array_int_more_than_max,
@@ -107,9 +111,7 @@ symbols = [
   :data_array_mix,
   :data_array_hash,
   :data_array_hash_more_than_max,
-  # :data_file,
-  # :data_net_http,
-  # :data_net_httpgenericrequest,
+  # :data_array_file,
 ]
 
 
