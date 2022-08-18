@@ -97,17 +97,17 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     // printed by the indeterminate %d
     char buffer_small[128];
     sprintf(&buffer_small[0], " (...%d more items)", remaining_elements);
-    int buffer_small_len = strlen(buffer_small);
+    int buffer_small_len = strlen(buffer_small) + 1; // + 1 for NULL by sprintf
 
     // 2: for "]" and \0
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
-    sprintf(&buffer[offset], buffer_small, buffer_small_len);
+    snprintf(&buffer[offset], buffer_small_len, "%s", buffer_small);
     offset += buffer_small_len;
     strcat(buffer, "]");
   } else {
     // 2: for "]" and \0
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-    sprintf(&buffer[offset], "]");
+    snprintf(&buffer[offset], 2, "%s", "]");
     offset += 1;    
   }
 
@@ -245,8 +245,9 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     int remaining_characters = 0;
     if (max_len > MAX_STRING_LENGTH) {
       remaining_characters = max_len - MAX_STRING_LENGTH;
-      max_len = MAX_STRING_LENGTH + 1; // +1 for NULL written by snprintf
+      max_len = MAX_STRING_LENGTH;
     }
+    max_len += 1; // +1 for NULL written by snprintf
     method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
     // something's strange with StringValueCStr and StringValuePtr,
     // because sprintf causes a buffer overflow but snprintf doesn't.
