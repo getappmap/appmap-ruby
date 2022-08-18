@@ -253,9 +253,19 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     // because sprintf causes a buffer overflow but snprintf doesn't.
     snprintf(buffer, max_len, "%s", StringValueCStr(first));
 
-    /* if (remaining_characters > 0) */
-    /*   sprintf(&buffer[max_len], " (...%d more characters)", remaining_characters);
- */
+    if (remaining_characters > 0) {
+      char buffer_small[128];
+      sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
+      int buffer_small_len = strlen(buffer_small);
+
+      // -1 to write the first byte over the NULL added by snprintf
+      int offset = max_len - 1;
+
+      // +1 for \0
+      method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
+      sprintf(&buffer[offset], buffer_small, buffer_small_len);
+      offset += buffer_small_len;
+    }
 
     VALUE string_unencoded = rb_str_new_cstr(buffer);
     ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
