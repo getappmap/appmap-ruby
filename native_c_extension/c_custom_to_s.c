@@ -26,10 +26,9 @@ void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buff
   }
 }
 
-int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE element, int buffer_max) {
-  VALUE element_to_s = method_c_custom_to_s(self, element);
+int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE element, int buffer_max, char quoted) {
 
-  switch (TYPE(element_to_s)) {
+  switch (TYPE(element)) {
   case T_NIL: {
     int string_len = 3; // +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 1, buffer_max);
@@ -42,17 +41,22 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     int string_len = RSTRING_LEN(element_to_s);
     // +2 for the two "s. +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
-    snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
-    *offset += 1;
+    if (quoted) {
+      snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
+      *offset += 1;
+    }
     // +1 for NULL
     snprintf(&buffer[*offset], string_len + 1, "%s", StringValueCStr(element_to_s));
     *offset += string_len;
-    snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
-    *offset += 1;
+    if (quoted) {
+      snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
+      *offset += 1;
+    }
     break;
   }
   default: {
-    // should never get here
+    VALUE element_to_s = method_c_custom_to_s(self, element);
+    method_c_custom_to_s_element(self, buffer, offset, element_to_s, buffer_max, 0);
     break;
   }
   }
@@ -89,7 +93,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     }
 
     VALUE array_element = rb_ary_entry(value, counter);
-    method_c_custom_to_s_element(self, buffer, &offset, array_element, buffer_max);
+    method_c_custom_to_s_element(self, buffer, &offset, array_element, buffer_max, 1);
     counter += 1;
   }
 
@@ -153,14 +157,14 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       *state->offset += 2;
     }
   
-    method_c_custom_to_s_element(state->self, state->buffer, state->offset, key, state->buffer_max);
+    method_c_custom_to_s_element(state->self, state->buffer, state->offset, key, state->buffer_max, 1);
 
     // 3: "=>" and NULL
     method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
     snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
     *state->offset += 2;
 
-    method_c_custom_to_s_element(state->self, state->buffer, state->offset, val, state->buffer_max);
+    method_c_custom_to_s_element(state->self, state->buffer, state->offset, val, state->buffer_max, 1);
   }
 
   *state->counter += 1;
@@ -184,7 +188,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
     max_len = MAX_HASH_ENUMERATION;
   }
 
-  snprintf(&buffer[offset], 1, "%s", "{");
+  snprintf(&buffer[offset], 1 + 1, "%s", "{");
   offset += 1;
 
 
@@ -203,7 +207,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
 
   // 2: "}" and \0
   method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
-  snprintf(&buffer[offset], 1, "%s", "}");
+  snprintf(&buffer[offset], 1 + 1, "%s", "}");
   offset += 1;
   
   ret = rb_str_new_cstr(buffer);
