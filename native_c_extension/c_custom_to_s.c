@@ -242,10 +242,16 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     ret = rb_str_new_cstr(buffer);
     break;
   }
-  case T_SYMBOL:
-    sprintf(buffer, ":%s", rb_id2name(SYM2ID(first)));
+  case T_SYMBOL: {
+    char *name = (char *) rb_id2name(SYM2ID(first));
+    int max_len = strlen(name);
+    int offset = 0;
+    // +1 for : +1 for NULL
+    method_c_custom_to_s_check_buffer_size(offset, max_len + 2, buffer_max);
+    snprintf(buffer, max_len + 2, ":%s", name);
     ret = rb_str_new_cstr(buffer);
     break;
+  }
   case T_STRING: {
     int max_len = RSTRING_LEN(first);
     int remaining_characters = 0;
