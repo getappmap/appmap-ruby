@@ -255,14 +255,13 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     if (remaining_characters > 0) {
       char buffer_small[128];
       sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
-      int buffer_small_len = strlen(buffer_small);
+      int buffer_small_len = strlen(buffer_small) + 1; // + 1 for NULL by sprintf
 
       // -1 to write the first byte over the NULL added by snprintf
       int offset = max_len - 1;
 
-      // +1 for \0
-      method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
-      sprintf(&buffer[offset], buffer_small, buffer_small_len);
+      method_c_custom_to_s_check_buffer_size(offset, buffer_small_len, buffer_max);
+      snprintf(&buffer[offset], buffer_small_len, "%s", buffer_small);
       offset += buffer_small_len;
     }
 
