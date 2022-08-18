@@ -22,7 +22,7 @@ const int MAX_STRING_LENGTH = 100;
 void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
     // don't corrupt the buffer; throw exception
-    rb_raise(rb_eRuntimeError, "method_c_custom_t_s_element would write %d bytes outside the buffer", buffer_max - offset - string_len);
+    rb_raise(rb_eRuntimeError, "method_c_custom_t_s_element would write %d bytes outside the buffer", offset + string_len - buffer_max);
   }
 }
 
