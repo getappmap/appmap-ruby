@@ -213,7 +213,8 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
 // from https://silverhammermba.github.io/emberb/c/
 VALUE method_c_custom_to_s(VALUE self, VALUE first) {
   VALUE ret;
-  char buffer[MAX_STRING_LENGTH * 2];
+  int buffer_max = MAX_STRING_LENGTH * 2;
+  char buffer[buffer_max];
   
   switch (TYPE(first)) {
   case T_NIL:
@@ -240,18 +241,24 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     ret = rb_str_new_cstr(buffer);
     break;
   case T_STRING: {
-    int len = RSTRING_LEN(first);
-    int max_len = len;
+    int max_len = RSTRING_LEN(first);
     int remaining_characters = 0;
     if (max_len > MAX_STRING_LENGTH) {
       remaining_characters = max_len - MAX_STRING_LENGTH;
-      max_len = MAX_STRING_LENGTH;
+      max_len = MAX_STRING_LENGTH + 1; // to allow for NULL writting by snprintf
     }
     // max_len + 1 because it adds the NULL at the end too
-    snprintf(buffer, max_len + 1, "%s", StringValueCStr(first));
-    if (remaining_characters > 0)
-      sprintf(&buffer[max_len], " (...%d more characters)", remaining_characters);
-    ret = rb_str_new_cstr(buffer);
+    method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
+    // something's strange with StringValueCStr and StringValuePtr,
+    // because sprintf causes a buffer overflow but snprintf doesn't.
+    snprintf(buffer, max_len, "%s", StringValueCStr(first));
+
+    /* if (remaining_characters > 0) */
+    /*   sprintf(&buffer[max_len], " (...%d more characters)", remaining_characters);
+ */
+
+    VALUE string_unencoded = rb_str_new_cstr(buffer);
+    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
     break;
   }
   case T_ARRAY: {

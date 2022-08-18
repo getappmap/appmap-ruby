@@ -44,3 +44,7 @@ def custom_display_string_c_not_implemented(value)
 rescue StandardError
   nil
 end
+
+def custom_display_string_c_encode_utf8(value)
+  value.encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+end
