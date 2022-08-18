@@ -74,11 +74,15 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     max_len = MAX_ARRAY_ENUMERATION;
   }
 
+  // 2: for "[" and \0
+  method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
   sprintf(&buffer[offset], "[");
   offset += 1;
   int counter = 0;
   while (counter < max_len) {
     if (counter > 0) {
+      // 3: ", " and \0
+      method_c_custom_to_s_check_buffer_size(offset, 3, buffer_max);
       sprintf(&buffer[offset], "%s", ", ");
       offset += 2;
     }
@@ -94,11 +98,15 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     char buffer_small[128];
     sprintf(&buffer_small[0], " (...%d more items)", remaining_elements);
     int buffer_small_len = strlen(buffer_small);
-    
+
+    // 2: for "]" and \0
+    method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
     sprintf(&buffer[offset], buffer_small, buffer_small_len);
     offset += buffer_small_len;
     strcat(buffer, "]");
   } else {
+    // 2: for "]" and \0
+    method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
     sprintf(&buffer[offset], "]");
     offset += 1;    
   }
