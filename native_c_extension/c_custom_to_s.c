@@ -19,7 +19,7 @@ const int MAX_ARRAY_ENUMERATION = 10;
 const int MAX_HASH_ENUMERATION = 10;
 const int MAX_STRING_LENGTH = 100;
 
-void method_c_custom_to_s_element_check_buffer_size(int offset, int string_len, int buffer_max) {
+void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
     // don't corrupt the buffer; throw exception
     rb_raise(rb_eRuntimeError, "method_c_custom_t_s_element would write %d bytes outside the buffer", buffer_max - offset - string_len);
@@ -31,8 +31,8 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
 
   switch (TYPE(element_to_s)) {
   case T_NIL: {
-    int string_len = 4; // len of "nil" + 1 for \0
-    method_c_custom_to_s_element_check_buffer_size(*offset, string_len, buffer_max);
+    int string_len = 3; // + 1 for \0
+    method_c_custom_to_s_check_buffer_size(*offset, string_len + 1, buffer_max);
     sprintf(&buffer[*offset], "nil");
     *offset += string_len;
     break;
@@ -40,8 +40,8 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
   case T_STRING: {
     VALUE element_to_s = method_c_custom_to_s(self, element);
     int string_len = RSTRING_LEN(element_to_s);
-    // +3: 2 for the two "s + 1 for \0
-    method_c_custom_to_s_element_check_buffer_size(*offset, string_len + 3, buffer_max);
+    // +2 for the two "s. + 1 for \0.
+    method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
     sprintf(&buffer[*offset], "\"");
     *offset += 1;
     sprintf(&buffer[*offset], "%s", StringValueCStr(element_to_s));
