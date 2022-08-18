@@ -28,3 +28,19 @@ def ruby_custom_to_s(value)
     "#{value.class}[#{value.method} #{value.path}]"
   end
 end
+
+# called by the C module
+def custom_display_string_c_not_implemented(value)
+  case value
+  when Time, Date
+    value.to_s
+  when File
+    "#{value.class}[path=#{value.path}]"
+  when Net::HTTP
+    "#{value.class}[#{value.address}:#{value.port}]"
+  when Net::HTTPGenericRequest
+    "#{value.class}[#{value.method} #{value.path}]"
+  end
+rescue StandardError
+  nil
+end
