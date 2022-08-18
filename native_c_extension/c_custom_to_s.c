@@ -245,9 +245,8 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     int remaining_characters = 0;
     if (max_len > MAX_STRING_LENGTH) {
       remaining_characters = max_len - MAX_STRING_LENGTH;
-      max_len = MAX_STRING_LENGTH + 1; // to allow for NULL writting by snprintf
+      max_len = MAX_STRING_LENGTH + 1; // +1 for NULL written by snprintf
     }
-    // max_len + 1 because it adds the NULL at the end too
     method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
     // something's strange with StringValueCStr and StringValuePtr,
     // because sprintf causes a buffer overflow but snprintf doesn't.
