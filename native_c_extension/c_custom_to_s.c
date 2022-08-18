@@ -31,22 +31,23 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
 
   switch (TYPE(element_to_s)) {
   case T_NIL: {
-    int string_len = 3; // + 1 for \0
+    int string_len = 3; // +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 1, buffer_max);
-    sprintf(&buffer[*offset], "nil");
+    snprintf(&buffer[*offset], string_len + 1, "%s", "nil");
     *offset += string_len;
     break;
   }
   case T_STRING: {
     VALUE element_to_s = method_c_custom_to_s(self, element);
     int string_len = RSTRING_LEN(element_to_s);
-    // +2 for the two "s. + 1 for \0.
+    // +2 for the two "s. +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
-    sprintf(&buffer[*offset], "\"");
+    snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
     *offset += 1;
-    sprintf(&buffer[*offset], "%s", StringValueCStr(element_to_s));
+    // +1 for NULL
+    snprintf(&buffer[*offset], string_len + 1, "%s", StringValueCStr(element_to_s));
     *offset += string_len;
-    sprintf(&buffer[*offset], "\"");
+    snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
     *offset += 1;
     break;
   }
@@ -76,14 +77,14 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
 
   // 2: for "[" and \0
   method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-  sprintf(&buffer[offset], "[");
+  snprintf(&buffer[offset], 1 + 1, "%s", "[");
   offset += 1;
   int counter = 0;
   while (counter < max_len) {
     if (counter > 0) {
       // 3: ", " and \0
       method_c_custom_to_s_check_buffer_size(offset, 3, buffer_max);
-      sprintf(&buffer[offset], "%s", ", ");
+      snprintf(&buffer[offset], 2 + 1, "%s", ", ");
       offset += 2;
     }
 
@@ -103,11 +104,12 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
     snprintf(&buffer[offset], buffer_small_len, "%s", buffer_small);
     offset += buffer_small_len;
-    strcat(buffer, "]");
+    snprintf(&buffer[offset], 1 + 1, "%s", "]");
+    offset += 1;
   } else {
     // 2: for "]" and \0
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-    snprintf(&buffer[offset], 2, "%s", "]");
+    snprintf(&buffer[offset], 1 + 1, "%s", "]");
     offset += 1;    
   }
 
@@ -256,7 +258,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     if (remaining_characters > 0) {
       char buffer_small[128];
       sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
-      int buffer_small_len = strlen(buffer_small) + 1; // + 1 for NULL by sprintf
+      int buffer_small_len = strlen(buffer_small) + 1; // +1 for NULL by sprintf
 
       // -1 to write the first byte over the NULL added by snprintf
       int offset = max_len - 1;
