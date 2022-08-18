@@ -18,6 +18,14 @@ def generate_many_times(value, num_times)
   return ret
 end
 
+def generate_hash_many_times(num_times)
+  ret = {}
+  num_times.times { |index|
+    ret[index] = index
+  }
+  return ret
+end
+
 data_nil = nil
 data_true = true
 data_false = false
@@ -41,6 +49,7 @@ data_hash = {
   3 => "three",
   4 => "four"
 }
+data_hash_more_than_max = generate_hash_many_times(50)
 data_array_int = [ 10, 20, 30, 40 ]
 data_array_int_more_than_max = generate_many_times(1, 15)
 data_array_float = [ 1.5, 2.5, 3.5, 4.5 ]
@@ -104,6 +113,7 @@ symbols = [
   # :data_net_http,
   # :data_net_httpgenericrequest,
   :data_hash,
+  :data_hash_more_than_max,
   :data_array_int,
   :data_array_int_more_than_max,
   :data_array_float,
