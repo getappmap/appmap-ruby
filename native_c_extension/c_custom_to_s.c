@@ -46,7 +46,7 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
       *offset += 1;
     }
     // +1 for NULL
-    snprintf(&buffer[*offset], string_len + 1, "%s", StringValueCStr(element_to_s));
+    snprintf(&buffer[*offset], string_len + 1, "%s", StringValuePtr(element_to_s));
     *offset += string_len;
     if (quoted) {
       snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
@@ -257,7 +257,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
     // something's strange with StringValueCStr and StringValuePtr,
     // because sprintf causes a buffer overflow but snprintf doesn't.
-    snprintf(buffer, max_len, "%s", StringValueCStr(first));
+    snprintf(buffer, max_len, "%s", StringValuePtr(first));
 
     if (remaining_characters > 0) {
       char buffer_small[128];
