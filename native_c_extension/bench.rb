@@ -31,7 +31,7 @@ data_str_16  = "1234567890123456"
 data_str_32  = "12345678901234567890123456789012"
 data_str_64  = "1234567890123456789012345678901234567890123456789012345678901234"
 data_str_128 = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
-data_str_16376 = "1" * 16376 # stringifying this used to crash
+data_str_above_max_string_length = "1" * 16376 # stringifying this used to crash
 data_file = File.new("bench_file", "w")
 data_net_http = Net::HTTP.new('example.com')
 data_net_httpgenericrequest = Net::HTTPGenericRequest.new('m', 'request_body', 'response_body', 'example.com')
@@ -99,7 +99,7 @@ symbols = [
   :data_str_32,
   :data_str_64,
   :data_str_128,
-  :data_str_16376,
+  :data_str_above_max_string_length,
   # :data_file,
   # :data_net_http,
   # :data_net_httpgenericrequest,
@@ -107,7 +107,7 @@ symbols = [
   :data_array_int,
   :data_array_int_more_than_max,
   :data_array_float,
-  :data_array_float_more_than_max,  
+  :data_array_float_more_than_max,
   :data_array_str8,
   :data_array_str8_more_than_max,
   :data_array_mix,
