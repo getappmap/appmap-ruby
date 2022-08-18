@@ -136,6 +136,8 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       sprintf(&buffer_small[0], " (...%d more items)", state->remaining_elements);
       int buffer_small_len = strlen(buffer_small);
 
+      // +1 for \0
+      method_c_custom_to_s_check_buffer_size(*state->offset, buffer_small_len + 1, state->buffer_max);
       sprintf(&state->buffer[*state->offset], buffer_small, buffer_small_len);
       *state->offset += buffer_small_len;
 
@@ -143,12 +145,16 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
     }
   } else {
     if (*state->counter > 0) {
+      // 3: ", " and \0
+      method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
       sprintf(&state->buffer[*state->offset], "%s", ", ");
       *state->offset += 2;
     }
   
     method_c_custom_to_s_element(state->self, state->buffer, state->offset, key, state->buffer_max);
 
+    // 3: "=>" and \0
+    method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
     sprintf(&state->buffer[*state->offset], "=>");
     *state->offset += 2;
 
@@ -193,6 +199,8 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   state.remaining_elements = remaining_elements;
   rb_hash_foreach(value, &method_c_custom_to_s_hash_iterator, (VALUE) &state);
 
+  // 2: "}" and \0
+  method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
   sprintf(&buffer[offset], "}");
   offset += 1;
   
@@ -257,14 +265,13 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
   case T_DATA:
     // captures Time, Date
   case T_FILE:
-  case T_OBJECT: {
+  case T_OBJECT:
     // Net::HTTP
     // Net::HTTPGenericRequest
+  default: {
     ret = rb_funcall(self, rb_intern("custom_display_string_c_not_implemented"), 1, first);
     break;
   }
-  default:
-    break;
   }
 
   return ret;
