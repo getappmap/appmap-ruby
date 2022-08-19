@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# used for debugging
+# used to debug
 
 # TARGET_DIR=$1
 
@@ -10,14 +10,9 @@
 #     exit 0
 # fi
 
-
-# TARGET_DIR=$HOME/devel/sample_app_6th_ed/vendor/bundle/ruby/2.7.0/gems/appmap-0.86.0/lib/appmap/
-
-# TARGET_DIR=$HOME/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/appmap-0.86.0/lib/appmap/
-
 TARGET_DIR=$HOME/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/
-#TARGET_DIR=$HOME/devel/gems/gems/appmap-0.86.0/lib/appmap/
-#mkdir -p $TARGET_DIR
+TARGET_DIR=$HOME/devel/sample_app_6th_ed/gems/gems/appmap-0.86.0/lib/appmap/
+TARGET_DIR=$HOME/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/appmap-0.86.0/lib/appmap
 
 FILES="c_custom_to_s.c c_custom_to_s_module.rb build_c_custom_to_s_module.sh"
 for file in $FILES; do
