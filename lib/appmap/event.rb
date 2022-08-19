@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'weakref'
+require 'appmap/ccustomtos'
+include CCustomToS
 
 module AppMap
   module Event
