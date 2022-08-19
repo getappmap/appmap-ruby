@@ -94,7 +94,47 @@ module AppMap
           (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
 
+        # possibly used by the C module
+        def custom_display_string_c_encode_utf8(value)
+          value.encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+        end
+
+        def custom_display_string_c_not_implemented(value)
+          case value
+          when Time, Date
+            value.to_s
+          when Hash
+            result = value.keys[0...MAX_HASH_ENUMERATION].map{|key| "#{display_string(key)}=>#{display_string(value[key])}"}.join(', ')
+            result << " (...#{value.size - MAX_HASH_ENUMERATION} more entries)" if value.size > MAX_HASH_ENUMERATION
+            [ '{', result, '}' ].join
+          when File
+            "#{value.class}[path=#{value.path}]"
+          when Net::HTTP
+            "#{value.class}[#{value.address}:#{value.port}]"
+          when Net::HTTPGenericRequest
+            "#{value.class}[#{value.method} #{value.path}]"
+          end
+        rescue StandardError
+          nil
+        end
+
+        # faster version of custom_display_string_ruby
         def custom_display_string(value)
+          data = c_custom_to_s(value)
+          if data
+            [ data, true ]
+          else
+            # The C module doesn't support T_DATA objects and returns nil
+            data = custom_display_string_c_not_implemented(value)
+            if data
+              [ data, true ]
+            else
+              nil
+            end
+          end
+        end
+
+        def custom_display_string_ruby(value)
           case value
           when NilClass, TrueClass, FalseClass, Numeric, Time, Date
             [ value.to_s, true ]
