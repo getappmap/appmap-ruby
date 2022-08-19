@@ -34,6 +34,10 @@ def custom_display_string_c_not_implemented(value)
   case value
   when Time, Date
     value.to_s
+  when Hash
+    result = value.keys[0...MAX_HASH_ENUMERATION].map{|key| "#{ruby_custom_to_s(key)}=>#{ruby_custom_to_s(value[key])}"}.join(', ')
+    result << " (...#{value.size - MAX_HASH_ENUMERATION} more entries)" if value.size > MAX_HASH_ENUMERATION
+    [ '{', result, '}' ].join
   when File
     "#{value.class}[path=#{value.path}]"
   when Net::HTTP

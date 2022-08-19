@@ -281,13 +281,13 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     // because sprintf causes a buffer overflow but snprintf doesn't.
     snprintf(buffer, max_len, "%s", StringValuePtr(first));
 
+    // -1 to write the first byte over the NULL added by snprintf
+    int offset = max_len - 1;
+
     if (remaining_characters > 0) {
       char buffer_small[128];
       sprintf(&buffer_small[0], " (...%d more characters)", remaining_characters);
       int buffer_small_len = strlen(buffer_small);
-
-      // -1 to write the first byte over the NULL added by snprintf
-      int offset = max_len - 1;
 
       // +1 for NULL
       method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
@@ -295,18 +295,22 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
       offset += buffer_small_len;
     }
 
-    VALUE string_unencoded = rb_str_new_cstr(buffer);
-    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
+    ret = rb_utf8_str_new(buffer, offset);
+
+    // call Ruby function to utf8 encode instead of encode in C
+    /* VALUE string_unencoded = rb_str_new_cstr(buffer); */
+    /* ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded); */
     break;
   }
   case T_ARRAY: {
     ret = method_c_custom_to_s_array(self, first);
     break;
   }
-  case T_HASH: {
-    ret = method_c_custom_to_s_hash(self, first);
-    break;
-  }
+  /* case T_HASH: { */
+  /*   ret = method_c_custom_to_s_hash(self, first); */
+  /*   break; */
+  /* } */
+  case T_HASH:
   case T_DATA:
     // captures Time, Date
   case T_FILE:
