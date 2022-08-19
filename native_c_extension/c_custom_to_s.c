@@ -27,7 +27,6 @@ void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buff
 }
 
 int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE element, int buffer_max, char quoted) {
-
   switch (TYPE(element)) {
   case T_NIL: {
     int string_len = 3; // +1 for NULL
@@ -130,16 +129,48 @@ struct method_c_custom_to_s_hash_iterator_state_s {
   int *counter;
   int max_len;
   int remaining_elements;
-  char *remaining_elements_shown;
+  char remaining_elements_shown;
 };
 
 int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
   struct method_c_custom_to_s_hash_iterator_state_s *state = (void *) arg;
 
-  if (state->remaining_elements > 0) {
+  if (*state->counter < state->max_len) {
+    if (*state->counter > 0) {
+      // 3: ", " and NULL
+      method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
+      snprintf(&state->buffer[*state->offset], 3, "%s", ", ");
+        *state->offset += 2;
+    }
+    int buffer_key_max = MAX_STRING_LENGTH;
+    char buffer_key[buffer_key_max];
+    int offset_key = 0;
+    int buffer_value_max = MAX_STRING_LENGTH;
+    char buffer_value[buffer_value_max];
+    int offset_value = 0;
+
+    // build the key and the value separately, and either add them
+    // together in a single step or stop adding if it would overflow
+    // the buffer
+    method_c_custom_to_s_element(state->self, buffer_key, &offset_key, key, buffer_key_max, 1);
+    method_c_custom_to_s_element(state->self, buffer_value, &offset_value, val, buffer_value_max, 1);
+
+    // +3 for "=>" and NULL
+    if (*state->offset + offset_key + offset_value + 3 > state->buffer_max) {
+      // stop adding: it would overflow the buffer
+    } else {
+      //printf("will add for offset_key %d\n", offset_key);
+      snprintf(&state->buffer[*state->offset], offset_key + 1, "%s", buffer_key);
+      *state->offset += offset_key;
+      snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
+      *state->offset += 2;
+      snprintf(&state->buffer[*state->offset], offset_value + 1, "%s", buffer_value);
+      *state->offset += offset_value;
+    }
+  } else if (state->remaining_elements > 0) {
     if (state->remaining_elements_shown == 0) {
       char buffer_small[128];
-      sprintf(&buffer_small[0], " (...%d more items)", state->remaining_elements);
+      sprintf(&buffer_small[0], " (...%d more entries)", state->remaining_elements);
       int buffer_small_len = strlen(buffer_small);
 
       // +1 for NULL
@@ -147,24 +178,8 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       snprintf(&state->buffer[*state->offset], buffer_small_len + 1, "%s", buffer_small);
       *state->offset += buffer_small_len;
 
-      *state->remaining_elements_shown = 1;
+      state->remaining_elements_shown = 1;
     }
-  } else {
-    if (*state->counter > 0) {
-      // 3: ", " and NULL
-      method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
-      snprintf(&state->buffer[*state->offset], 3, "%s", ", ");
-      *state->offset += 2;
-    }
-  
-    method_c_custom_to_s_element(state->self, state->buffer, state->offset, key, state->buffer_max, 1);
-
-    // 3: "=>" and NULL
-    method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
-    snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
-    *state->offset += 2;
-
-    method_c_custom_to_s_element(state->self, state->buffer, state->offset, val, state->buffer_max, 1);
   }
 
   *state->counter += 1;
@@ -203,6 +218,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   state.counter = &counter;
   state.max_len = max_len;
   state.remaining_elements = remaining_elements;
+  state.remaining_elements_shown = 0;
   rb_hash_foreach(value, &method_c_custom_to_s_hash_iterator, (VALUE) &state);
 
   // 2: "}" and \0
