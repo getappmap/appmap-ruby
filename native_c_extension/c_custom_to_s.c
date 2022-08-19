@@ -18,6 +18,7 @@ void Init_ccustomtos() {
 const int MAX_ARRAY_ENUMERATION = 10;
 const int MAX_HASH_ENUMERATION = 10;
 const int MAX_STRING_LENGTH = 100;
+const int MAX_EXPECTED_NESTED_LEVELS = 4;
 
 void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
@@ -66,7 +67,7 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
 VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
   VALUE ret;
   // the buffer max size should be "big enough" and it's indeterminate
-  int buffer_max = MAX_STRING_LENGTH * MAX_ARRAY_ENUMERATION;
+  int buffer_max = MAX_STRING_LENGTH * MAX_ARRAY_ENUMERATION * MAX_EXPECTED_NESTED_LEVELS;
   char buffer[buffer_max];
   
   int array_len = RARRAY_LEN(value);
@@ -113,7 +114,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
     snprintf(&buffer[offset], 1 + 1, "%s", "]");
-    offset += 1;    
+    offset += 1;
   }
 
   ret = rb_str_new_cstr(buffer);
@@ -142,10 +143,11 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       snprintf(&state->buffer[*state->offset], 3, "%s", ", ");
         *state->offset += 2;
     }
-    int buffer_key_max = MAX_STRING_LENGTH;
+    int buffer_key_max = MAX_STRING_LENGTH * 2;
     char buffer_key[buffer_key_max];
     int offset_key = 0;
-    int buffer_value_max = MAX_STRING_LENGTH;
+    // hash values can be hashes themselves, so leave enough space for them
+    int buffer_value_max = MAX_STRING_LENGTH * MAX_HASH_ENUMERATION * MAX_EXPECTED_NESTED_LEVELS;
     char buffer_value[buffer_value_max];
     int offset_value = 0;
 
@@ -191,7 +193,7 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
 VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   VALUE ret;
   // the buffer max size should be "big enough" and it's indeterminate
-  int buffer_max = MAX_STRING_LENGTH * MAX_HASH_ENUMERATION;
+  int buffer_max = MAX_STRING_LENGTH * MAX_HASH_ENUMERATION * MAX_EXPECTED_NESTED_LEVELS;
   char buffer[buffer_max];
 
   int hash_len = RHASH_SIZE(value);
@@ -308,11 +310,11 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     ret = method_c_custom_to_s_array(self, first);
     break;
   }
-  /* case T_HASH: { */
-  /*   ret = method_c_custom_to_s_hash(self, first); */
-  /*   break; */
-  /* } */
-  case T_HASH:
+  case T_HASH: {
+    ret = method_c_custom_to_s_hash(self, first);
+    break;
+  }
+  /* case T_HASH: */
   case T_DATA:
     // captures Time, Date
   case T_FILE:
