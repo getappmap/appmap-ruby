@@ -1,3 +1,10 @@
+# [0.87.0](https://github.com/applandinc/appmap-ruby/compare/v0.86.0...v0.87.0) (2022-08-19)
+
+
+### Features
+
+* Improve performance of initial hooking ([901e262](https://github.com/applandinc/appmap-ruby/commit/901e26237027920ede6b0f9d4bc3d175c861b23a))
+
 # [0.86.0](https://github.com/applandinc/appmap-ruby/compare/v0.85.0...v0.86.0) (2022-08-10)
 
 
