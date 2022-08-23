@@ -452,21 +452,21 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
 
     // this reports the error:
     // in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
-    char buffer_utf8_encoded[offset * 4];
-    int counter = 0;
-    while (counter < offset) {
-      unsigned int character = buffer[counter];
-      counter += utf8_encode(character, (unsigned char *) &buffer_utf8_encoded[counter]);
-    }
-    ret = rb_utf8_str_new(buffer_utf8_encoded, counter);
+    /* char buffer_utf8_encoded[offset * 4]; */
+    /* int counter = 0; */
+    /* while (counter < offset) { */
+    /*   unsigned int character = buffer[counter]; */
+    /*   counter += utf8_encode(character, (unsigned char *) &buffer_utf8_encoded[counter]); */
+    /* } */
+    /* ret = rb_utf8_str_new(buffer_utf8_encoded, counter); */
 
     // this is 600%-900%x faster than calling Ruby but reports the error:
     // in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
     // ret = rb_utf8_str_new(buffer, offset);
 
     // call Ruby function to utf8 encode instead of encode in C
-    /* VALUE string_unencoded = rb_str_new_cstr(buffer); */
-    /* ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded); */
+    VALUE string_unencoded = rb_str_new_cstr(buffer);
+    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
     break;
   }
   case T_ARRAY: {
