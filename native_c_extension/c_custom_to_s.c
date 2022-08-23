@@ -450,7 +450,8 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
       offset += buffer_small_len;
     }
 
-    // convert to unicode
+    // this reports the error:
+    // in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
     char buffer_utf8_encoded[offset * 4];
     int counter = 0;
     while (counter < offset) {
