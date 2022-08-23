@@ -473,11 +473,11 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     ret = method_c_custom_to_s_array(self, first);
     break;
   }
-  case T_HASH: {
-    ret = method_c_custom_to_s_hash(self, first);
-    break;
-  }
-  /* case T_HASH: */
+  /* case T_HASH: { */
+  /*   ret = method_c_custom_to_s_hash(self, first); */
+  /*   break; */
+  /* } */
+  case T_HASH:
   case T_DATA:
     // captures Time, Date
   case T_FILE:
