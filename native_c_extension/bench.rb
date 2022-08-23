@@ -59,6 +59,7 @@ data_array_str8_more_than_max = generate_many_times( data_str_8, 15)
 data_array_mix = [10, 2.5, nil, "some string", true, false ]
 data_array_hash = [ data_hash, data_hash, data_hash, data_hash ]
 data_array_hash_more_than_max = generate_many_times(data_hash, 15)
+data_array_hash_hash_more_than_max = generate_many_times(data_hash_more_than_max, 15)
 data_array_file = [ data_file, data_file, data_file, data_file ]
 
 # number of benchmark iterations
@@ -123,6 +124,7 @@ symbols = [
   :data_array_mix,
   :data_array_hash,
   :data_array_hash_more_than_max,
+  :data_array_hash_hash_more_than_max,
   # :data_array_file,
 ]
 
