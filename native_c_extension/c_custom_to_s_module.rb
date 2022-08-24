@@ -12,10 +12,9 @@ def ruby_version
   version[0..2]
 end
 
-ruby_version
-
+p "ruby_version: " + ruby_version
 $LDFLAGS += " -L" + `rbenv prefix`.strip + "/lib -lruby" + ruby_version + " "
-p "LDFLAGS: " + $LDFLAGS
+p "LDFLAGS:      " + $LDFLAGS
 
 # Do the work
 create_header
