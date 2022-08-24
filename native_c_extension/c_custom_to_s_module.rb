@@ -14,7 +14,7 @@ end
 
 ruby_version
 
-$LDFLAGS += "-L" + `rbenv prefix`.strip + "/lib -lruby" + ruby_version
+$LDFLAGS += " -L" + `rbenv prefix`.strip + "/lib -lruby" + ruby_version + " "
 p "LDFLAGS: " + $LDFLAGS
 
 # Do the work
