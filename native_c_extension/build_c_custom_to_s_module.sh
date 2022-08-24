@@ -8,7 +8,7 @@ make clean
 LDFLAGS=`pkg-config --libs ruby`
 echo LDFLAGS is $LDFLAGS
 # force the Makefile to have these LDFLAGS
-sed -ie "s/ldflags\(.*\)/ldflags\1AA $LDFLAGS/g" Makefile
+sed -ie "s/ldflags\(.*\)/ldflags\1 $LDFLAGS/g" Makefile
 make
 #make install
 
