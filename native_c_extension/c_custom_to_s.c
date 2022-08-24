@@ -129,7 +129,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     ADD_CHAR_AND_NULL(buffer, offset, ']');
   }
 
-  ret = rb_str_new_cstr(buffer);
+  ret = rb_str_new(buffer, offset);
 
   return ret;
 }
@@ -245,7 +245,7 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
   ADD_CHAR_AND_NULL(buffer, offset, '}');
   
-  ret = rb_str_new_cstr(buffer);
+  ret = rb_str_new(buffer, offset);
 
   return ret;
 }
@@ -441,7 +441,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     memcpy(&buffer[offset], name, max_len);
     offset += max_len;
     buffer[offset] = '\0';
-    ret = rb_str_new_cstr(buffer);
+    ret = rb_str_new(buffer, offset);
     break;
   }
   case T_STRING: {
@@ -485,7 +485,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     // ret = rb_utf8_str_new(buffer, offset);
 
     // call Ruby function to utf8 encode instead of encode in C
-    VALUE string_unencoded = rb_str_new_cstr(buffer);
+    VALUE string_unencoded = rb_str_new(buffer, offset);
     ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
     break;
   }
