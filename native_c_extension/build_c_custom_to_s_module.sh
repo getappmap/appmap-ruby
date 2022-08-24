@@ -5,8 +5,10 @@
 ruby c_custom_to_s_module.rb
 export DESTDIR=`pwd`
 make clean
-pkg-config --cflags ruby --libs ruby
-cat Makefile
+LDFLAGS=`pkg-config --libs ruby`
+echo LDFLAGS is $LDFLAGS
+# force the Makefile to have these LDFLAGS
+sed -ie "s/ldflags\(.*\)/ldflags\1AA $LDFLAGS/g" Makefile
 make
 #make install
 
