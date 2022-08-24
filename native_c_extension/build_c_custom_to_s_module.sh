@@ -6,6 +6,7 @@ ruby c_custom_to_s_module.rb
 export DESTDIR=`pwd`
 make clean
 pkg-config --cflags ruby --libs ruby
+cat Makefile
 make
 #make install
 
