@@ -35,8 +35,9 @@ module AppMap
         def display_string(value)
           return nil if value.equal?(nil)
 
+          bcn = best_class_name(value)
           # With setting APPMAP_PROFILE_DISPLAY_STRING, stringifying this class is shown to take 9 seconds(!) of a 17 second test run.
-          return nil if best_class_name(value) == 'ActiveSupport::Callbacks::Filters::Environment'
+          return nil if bcn == 'ActiveSupport::Callbacks::Filters::Environment'
 
           if @times.nil? && ENV['APPMAP_PROFILE_DISPLAY_STRING'] == 'true'
             @times = Hash.new {|memo,key| memo[key] = 0}
@@ -54,7 +55,7 @@ module AppMap
 
           if @times
             elapsed = Time.now - start
-            @times[best_class_name(value)] += elapsed
+            @times[bcn] += elapsed
           end
 
           final ? value_string : encode_display_string(value_string)
