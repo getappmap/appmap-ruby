@@ -7,8 +7,14 @@ extension_name = 'ccustomtos'
 # The destination
 dir_config(extension_name)
 
-pkg_config('ruby')
-$LDFLAGS += " -lruby2.5"
+def ruby_version
+  version = `rbenv prefix`.strip.split('/')[-1]
+  version[0..2]
+end
+
+ruby_version
+
+$LDFLAGS += "-L" + `rbenv prefix`.strip + "/lib -lruby" + ruby_version
 p "LDFLAGS: " + $LDFLAGS
 
 # Do the work
