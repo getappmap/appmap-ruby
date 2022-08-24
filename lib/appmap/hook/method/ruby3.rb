@@ -5,7 +5,20 @@ module AppMap
     # Delegation methods for Ruby 3.
     class Method
       def call(receiver, *args, **kwargs, &block)
-        call_event = trace? && with_disabled_hook { before_hook receiver, *args, **kwargs }
+        if trace?
+          begin
+            # Don't record functions, such as to_s and inspect, that
+            # might be called by the fn. Otherwise there can be a
+            # stack overflow.
+            Thread.current[HOOK_DISABLE_KEY] = true
+            call_event = before_hook(receiver, *args, **kwargs)
+          ensure
+            Thread.current[HOOK_DISABLE_KEY] = false
+          end
+        else
+          call_event = false
+        end
+
         # note we can't short-circuit directly to do_call because then the call stack
         # depth changes and eval handler doesn't work correctly
         trace_call call_event, receiver, *args, **kwargs, &block
@@ -45,8 +58,14 @@ module AppMap
           exception = $ERROR_INFO
           raise
         ensure
-          with_disabled_hook { after_hook receiver, call_event, gettime - start_time, return_value, exception } \
-            if call_event
+          if call_event
+            begin
+              Thread.current[HOOK_DISABLE_KEY] = true
+              after_hook(receiver, call_event, gettime - start_time, return_value, exception)
+            ensure
+              Thread.current[HOOK_DISABLE_KEY] = false
+            end
+          end
         end
       end
       # rubocop:enable Metrics/MethodLength

@@ -8,7 +8,16 @@ module AppMap
     # cf. https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     class Method
       ruby2_keywords def call(receiver, *args, &block)
-        call_event = trace? && with_disabled_hook { before_hook receiver, *args }
+        if trace?
+          begin
+            Thread.current[HOOK_DISABLE_KEY] = true
+            call_event = before_hook(receiver, *args)
+          ensure
+            Thread.current[HOOK_DISABLE_KEY] = false
+          end
+        else
+          call_event = false
+        end
         # note we can't short-circuit directly to do_call because then the call stack
         # depth changes and eval handler doesn't work correctly
         trace_call call_event, receiver, *args, &block
@@ -43,8 +52,14 @@ module AppMap
           exception = $ERROR_INFO
           raise
         ensure
-          with_disabled_hook { after_hook receiver, call_event, gettime - start_time, return_value, exception } \
-            if call_event
+          if call_event
+            begin
+              Thread.current[HOOK_DISABLE_KEY] = true
+              after_hook receiver(call_event, gettime - start_time, return_value, exception)
+            ensure
+              Thread.current[HOOK_DISABLE_KEY] = false
+            end
+          end
         end
       end
       # rubocop:enable Metrics/MethodLength

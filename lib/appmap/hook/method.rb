@@ -107,14 +107,6 @@ module AppMap
         AppMap.tracing.record_event(return_event) if return_event
       end
 
-      def with_disabled_hook
-        # Don't record functions, such as to_s and inspect, that might be called
-        # by the fn. Otherwise there can be a stack overflow.
-        Thread.current[HOOK_DISABLE_KEY] = true
-        yield
-      ensure
-        Thread.current[HOOK_DISABLE_KEY] = false
-      end
     end
   end
 
