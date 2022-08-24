@@ -5,10 +5,8 @@
 ruby c_custom_to_s_module.rb
 export DESTDIR=`pwd`
 make clean
-LDFLAGS=`pkg-config --libs ruby`
-echo LDFLAGS is $LDFLAGS
-# force the Makefile to have these LDFLAGS
-sed -ie "s/ldflags\(.*\)/ldflags\1 $LDFLAGS/g" Makefile
+RUBY_VERSION_DIR=`rbenv prefix`
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUBY_VERSION_DIR/lib
 make
 #make install
 
