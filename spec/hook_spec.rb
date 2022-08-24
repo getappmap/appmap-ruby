@@ -1050,7 +1050,7 @@ describe 'AppMap class Hooking' do
       :parameters:
       - :name: :args
         :class: Array
-        :value: "[foo]"
+        :value: '["foo"]'
         :kind: :rest
         :size: 1
       - :name: :kw1
