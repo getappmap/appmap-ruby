@@ -21,9 +21,11 @@ const int MAX_STRING_LENGTH = 100;
 const int MAX_EXPECTED_NESTED_LEVELS = 4;
 
 #define ADD_CHAR_AND_NULL(buffer, offset, value) \
-  buffer[offset] = value;                           \
-  offset += 1;                                      \
-  buffer[offset] = '\0';                            \
+{                                                \
+  buffer[offset] = value;                        \
+  offset += 1;                                   \
+  buffer[offset] = '\0';                         \
+}                                                \
 
 void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
@@ -46,15 +48,13 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     int string_len = RSTRING_LEN(element_to_s);
     // +2 for the two "s. +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
-    if (quoted) {
+    if (quoted)
       ADD_CHAR_AND_NULL(buffer, *offset, '"');
-    }
     // +1 for NULL
     snprintf(&buffer[*offset], string_len + 1, "%s", StringValuePtr(element_to_s));
     *offset += string_len;
-    if (quoted) {
+    if (quoted)
       ADD_CHAR_AND_NULL(buffer, *offset, '"');
-    }
     break;
   }
   default: {
