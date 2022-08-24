@@ -39,8 +39,13 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
   case T_NIL: {
     int string_len = 3; // +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 1, buffer_max);
-    snprintf(&buffer[*offset], string_len + 1, "%s", "nil");
-    *offset += string_len;
+    buffer[*offset] = 'n';
+    *offset += 1;
+    buffer[*offset] = 'i';
+    *offset += 1;
+    buffer[*offset] = 'l';
+    *offset += 1;
+    buffer[*offset] = '\0';
     break;
   }
   case T_STRING: {
@@ -92,8 +97,11 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     if (counter > 0) {
       // 3: ", " and \0
       method_c_custom_to_s_check_buffer_size(offset, 3, buffer_max);
-      snprintf(&buffer[offset], 2 + 1, "%s", ", ");
-      offset += 2;
+      buffer[offset] = ',';
+      offset += 1;
+      buffer[offset] = ' ';
+      offset += 1;
+      buffer[offset] = '\0';
     }
 
     VALUE array_element = rb_ary_entry(value, counter);
@@ -144,8 +152,11 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
     if (*state->counter > 0) {
       // 3: ", " and NULL
       method_c_custom_to_s_check_buffer_size(*state->offset, 3, state->buffer_max);
-      snprintf(&state->buffer[*state->offset], 3, "%s", ", ");
-        *state->offset += 2;
+      state->buffer[*state->offset] = ',';
+      *state->offset += 1;
+      state->buffer[*state->offset] = ' ';
+      *state->offset += 1;
+      state->buffer[*state->offset] = '\0';
     }
     int buffer_key_max = MAX_STRING_LENGTH * 2;
     char buffer_key[buffer_key_max];
@@ -168,8 +179,11 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       //printf("will add for offset_key %d\n", offset_key);
       memcpy(&state->buffer[*state->offset], buffer_key, offset_key);
       *state->offset += offset_key;
-      snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
-      *state->offset += 2;
+      state->buffer[*state->offset] = '=';
+      *state->offset += 1;
+      state->buffer[*state->offset] = '>';
+      *state->offset += 1;
+      state->buffer[*state->offset] = '\0';
       memcpy(&state->buffer[*state->offset], buffer_value, offset_value);
       *state->offset += offset_value;
       state->buffer[*state->offset] = '\0';
