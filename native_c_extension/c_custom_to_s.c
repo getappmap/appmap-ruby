@@ -20,6 +20,11 @@ const int MAX_HASH_ENUMERATION = 10;
 const int MAX_STRING_LENGTH = 100;
 const int MAX_EXPECTED_NESTED_LEVELS = 4;
 
+#define ADD_CHAR_AND_NULL(buffer, offset, value) \
+  buffer[offset] = value;                           \
+  offset += 1;                                      \
+  buffer[offset] = '\0';                            \
+
 void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
     // don't corrupt the buffer; throw exception
@@ -42,15 +47,13 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     // +2 for the two "s. +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
     if (quoted) {
-      snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
-      *offset += 1;
+      ADD_CHAR_AND_NULL(buffer, *offset, '"');
     }
     // +1 for NULL
     snprintf(&buffer[*offset], string_len + 1, "%s", StringValuePtr(element_to_s));
     *offset += string_len;
     if (quoted) {
-      snprintf(&buffer[*offset], 1 + 1, "%s", "\"");
-      *offset += 1;
+      ADD_CHAR_AND_NULL(buffer, *offset, '"');
     }
     break;
   }
@@ -81,8 +84,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
 
   // 2: for "[" and \0
   method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-  snprintf(&buffer[offset], 1 + 1, "%s", "[");
-  offset += 1;
+  ADD_CHAR_AND_NULL(buffer, offset, '[');
   int counter = 0;
   while (counter < max_len) {
     if (counter > 0) {
@@ -108,13 +110,11 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
     snprintf(&buffer[offset], buffer_small_len + 1, "%s", buffer_small);
     offset += buffer_small_len;
-    snprintf(&buffer[offset], 1 + 1, "%s", "]");
-    offset += 1;
+    ADD_CHAR_AND_NULL(buffer, offset, ']');
   } else {
     // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-    snprintf(&buffer[offset], 1 + 1, "%s", "]");
-    offset += 1;
+    ADD_CHAR_AND_NULL(buffer, offset, ']');
   }
 
   ret = rb_str_new_cstr(buffer);
@@ -205,10 +205,6 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
     max_len = MAX_HASH_ENUMERATION;
   }
 
-  snprintf(&buffer[offset], 1 + 1, "%s", "{");
-  offset += 1;
-
-
   int counter = 0;
   // pass state from this function into the callback function that
   // executes during each hash iteration
@@ -221,12 +217,13 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   state.max_len = max_len;
   state.remaining_elements = remaining_elements;
   state.remaining_elements_shown = 0;
+
+  ADD_CHAR_AND_NULL(buffer, offset, '{');
   rb_hash_foreach(value, &method_c_custom_to_s_hash_iterator, (VALUE) &state);
 
   // 2: "}" and \0
   method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
-  snprintf(&buffer[offset], 1 + 1, "%s", "}");
-  offset += 1;
+  ADD_CHAR_AND_NULL(buffer, offset, '}');
   
   ret = rb_str_new_cstr(buffer);
 
