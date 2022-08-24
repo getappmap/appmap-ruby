@@ -18,7 +18,8 @@ before_install:
   - |
     nvm install --lts \
       && nvm use --lts \
-      && npm i -g yarn
+      && npm i -g yarn \
+      && (cd native_c_extension; ./build_in_specific_dir.sh ../lib/appmap)
 
 before_deploy:
   - |
