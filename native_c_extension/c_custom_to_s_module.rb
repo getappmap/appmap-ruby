@@ -8,14 +8,7 @@ extension_name = 'ccustomtos'
 dir_config(extension_name)
 
 def ruby_version
-  version = `rbenv prefix`.strip.split('/')[-1]
-  if version[0..3] == 'ruby'
-    # ie: ruby-2.5.8
-    version.split('-')[-1][0..2]
-  else
-    # ie: 3.0.1
-    version[0..2]
-  end
+  version = `rbenv version`.strip.split(' ')[0][0..2]
 end
 
 p "rbenv_prefix: " + `rbenv prefix`.strip
