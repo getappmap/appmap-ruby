@@ -50,9 +50,11 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
     if (quoted)
       ADD_CHAR_AND_NULL(buffer, *offset, '"');
-    // +1 for NULL
-    snprintf(&buffer[*offset], string_len + 1, "%s", StringValuePtr(element_to_s));
+
+    memcpy(&buffer[*offset], StringValuePtr(element_to_s), string_len);
     *offset += string_len;
+    buffer[*offset] = '\0';
+
     if (quoted)
       ADD_CHAR_AND_NULL(buffer, *offset, '"');
     break;
@@ -108,8 +110,10 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
 
     // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
-    snprintf(&buffer[offset], buffer_small_len + 1, "%s", buffer_small);
+    memcpy(&buffer[offset], buffer_small, buffer_small_len);
     offset += buffer_small_len;
+    buffer[offset] = '\0';
+
     ADD_CHAR_AND_NULL(buffer, offset, ']');
   } else {
     // 2: for "]" and NULL
@@ -162,12 +166,13 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       // stop adding: it would overflow the buffer
     } else {
       //printf("will add for offset_key %d\n", offset_key);
-      snprintf(&state->buffer[*state->offset], offset_key + 1, "%s", buffer_key);
+      memcpy(&state->buffer[*state->offset], buffer_key, offset_key);
       *state->offset += offset_key;
       snprintf(&state->buffer[*state->offset], 3, "%s", "=>");
       *state->offset += 2;
-      snprintf(&state->buffer[*state->offset], offset_value + 1, "%s", buffer_value);
+      memcpy(&state->buffer[*state->offset], buffer_value, offset_value);
       *state->offset += offset_value;
+      state->buffer[*state->offset] = '\0';
     }
   } else if (state->remaining_elements > 0) {
     if (state->remaining_elements_shown == 0) {
@@ -177,8 +182,9 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
 
       // +1 for NULL
       method_c_custom_to_s_check_buffer_size(*state->offset, buffer_small_len + 1, state->buffer_max);
-      snprintf(&state->buffer[*state->offset], buffer_small_len + 1, "%s", buffer_small);
+      memcpy(&state->buffer[*state->offset], buffer_small, buffer_small_len);
       *state->offset += buffer_small_len;
+      state->buffer[*state->offset] = '\0';
 
       state->remaining_elements_shown = 1;
     }
@@ -416,7 +422,11 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     int offset = 0;
     // +1 for : +1 for NULL
     method_c_custom_to_s_check_buffer_size(offset, max_len + 2, buffer_max);
-    snprintf(buffer, max_len + 2, ":%s", name);
+    buffer[offset] = ':';
+    offset += 1;
+    memcpy(&buffer[offset], name, max_len);
+    offset += max_len;
+    buffer[offset] = '\0';
     ret = rb_str_new_cstr(buffer);
     break;
   }
