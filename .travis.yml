@@ -16,8 +16,7 @@ services:
 
 before_install:
   - |
-    sudo apt-get -y install ruby-dev \
-      && (cd native_c_extension; ./build_in_specific_dir.sh ../lib/appmap) \
+    (cd native_c_extension; ./build_in_specific_dir.sh ../lib/appmap) \
       && nvm install --lts \
       && nvm use --lts \
       && npm i -g yarn
