@@ -55,7 +55,7 @@ module AppMap
           if call_event
             begin
               Thread.current[HOOK_DISABLE_KEY] = true
-              after_hook receiver(call_event, gettime - start_time, return_value, exception)
+              after_hook(receiver, call_event, gettime - start_time, return_value, exception)
             ensure
               Thread.current[HOOK_DISABLE_KEY] = false
             end
