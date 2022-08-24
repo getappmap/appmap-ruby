@@ -7,6 +7,8 @@ extension_name = 'ccustomtos'
 # The destination
 dir_config(extension_name)
 
+pkg_config('ruby')
+
 # Do the work
 create_header
 create_makefile(extension_name)
