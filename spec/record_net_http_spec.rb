@@ -127,7 +127,7 @@ describe 'Net::HTTP handler' do
         :message:
         - :name: ary
           :class: Array
-          :value: "[1, 2]"
+          :value: '["1", "2"]'
         EVENT
       end
 
