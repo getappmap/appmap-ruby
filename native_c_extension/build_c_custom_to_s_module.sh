@@ -5,8 +5,13 @@
 ruby c_custom_to_s_module.rb
 export DESTDIR=`pwd`
 make clean
+RUBY_VERSION_DIR=`rbenv prefix`
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUBY_VERSION_DIR/lib
 make
 #make install
+echo --------------------------- makefile ldflags
+grep -i ldflags Makefile
+echo ---------------------------
 
 # cleanup
 rm -rf Makefile extconf.h usr .sitearchdir.time > /dev/null 2>&1

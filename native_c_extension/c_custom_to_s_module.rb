@@ -7,6 +7,9 @@ extension_name = 'ccustomtos'
 # The destination
 dir_config(extension_name)
 
+$LDFLAGS += " -L" + `rbenv prefix`.strip + "/lib "
+p "LDFLAGS:      " + $LDFLAGS
+
 # Do the work
 create_header
 create_makefile(extension_name)
