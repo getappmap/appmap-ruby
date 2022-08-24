@@ -441,10 +441,11 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
     // something's strange with StringValueCStr and StringValuePtr,
     // because sprintf causes a buffer overflow but snprintf doesn't.
-    snprintf(buffer, max_len, "%s", StringValuePtr(first));
-
-    // -1 to write the first byte over the NULL added by snprintf
-    int offset = max_len - 1;
+    int offset = 0;
+    memcpy(buffer, StringValuePtr(first), max_len);
+    // -1 because the string in first seems to have NULL at the end
+    offset += max_len - 1;
+    buffer[offset] = '\0';
 
     if (remaining_characters > 0) {
       char buffer_small[128];
@@ -453,8 +454,9 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
 
       // +1 for NULL
       method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
-      snprintf(&buffer[offset], buffer_small_len + 1, "%s", buffer_small);
+      memcpy(&buffer[offset], buffer_small, buffer_small_len);
       offset += buffer_small_len;
+      buffer[offset] = '\0';
     }
 
     // this reports the error:
