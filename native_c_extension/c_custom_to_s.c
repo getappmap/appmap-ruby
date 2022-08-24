@@ -451,14 +451,11 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
       remaining_characters = max_len - MAX_STRING_LENGTH;
       max_len = MAX_STRING_LENGTH;
     }
-    max_len += 1; // +1 for NULL written by snprintf
-    method_c_custom_to_s_check_buffer_size(0, max_len, buffer_max);
-    // something's strange with StringValueCStr and StringValuePtr,
-    // because sprintf causes a buffer overflow but snprintf doesn't.
+    // +1 for NULL
+    method_c_custom_to_s_check_buffer_size(0, max_len + 1, buffer_max);
     int offset = 0;
     memcpy(buffer, StringValuePtr(first), max_len);
-    // -1 because the string in first seems to have NULL at the end
-    offset += max_len - 1;
+    offset += max_len;
     buffer[offset] = '\0';
 
     if (remaining_characters > 0) {
