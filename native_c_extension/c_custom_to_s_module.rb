@@ -8,7 +8,7 @@ extension_name = 'ccustomtos'
 dir_config(extension_name)
 
 pkg_config('ruby')
-$LDFLAGS += " -lruby"
+$LDFLAGS += " -lruby2.5"
 p "LDFLAGS: " + $LDFLAGS
 
 # Do the work
