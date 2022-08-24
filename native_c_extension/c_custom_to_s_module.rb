@@ -8,6 +8,8 @@ extension_name = 'ccustomtos'
 dir_config(extension_name)
 
 pkg_config('ruby')
+$LDFLAGS += " -lruby"
+p "LDFLAGS: " + $LDFLAGS
 
 # Do the work
 create_header
