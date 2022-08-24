@@ -11,8 +11,9 @@ def ruby_version
   version = `rbenv version`.strip.split(' ')[0][0..2]
 end
 
-p "rbenv_prefix: " + `rbenv prefix`.strip
-p "ruby_version: " + ruby_version
+p "rbenv_version: " + `rbenv version`.strip
+p "rbenv_prefix:  " + `rbenv prefix`.strip
+p "ruby_version:  " + ruby_version
 $LDFLAGS += " -L" + `rbenv prefix`.strip + "/lib -lruby" + ruby_version + " "
 p "LDFLAGS:      " + $LDFLAGS
 
