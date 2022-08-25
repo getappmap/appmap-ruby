@@ -146,7 +146,7 @@ struct method_c_custom_to_s_hash_iterator_state_s {
 };
 
 int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
-  struct method_c_custom_to_s_hash_iterator_state_s *state = (void *) arg;
+  struct method_c_custom_to_s_hash_iterator_state_s *state = (struct method_c_custom_to_s_hash_iterator_state_s *) arg;
 
   if (*state->counter < state->max_len) {
     if (*state->counter > 0) {
