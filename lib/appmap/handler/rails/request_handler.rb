@@ -73,8 +73,8 @@ module AppMap
           class << self
             def build_from_invocation(parent_id, return_value, elapsed, response, event: HTTPServerResponse.new)
               event ||= HTTPServerResponse.new
-              event.status = response.status
-              event.headers = response.headers.dup
+              event.status = response[:status] || response.status
+              event.headers = (response[:headers] || response.headers).dup
               AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event, parameter_schema: true
             end
           end
@@ -147,7 +147,7 @@ module AppMap
               @call_event.id,
               return_value,
               finished - started,
-              payload[:response]
+              payload[:response] || payload
             )
 
             AppMap.tracing.record_event return_event
