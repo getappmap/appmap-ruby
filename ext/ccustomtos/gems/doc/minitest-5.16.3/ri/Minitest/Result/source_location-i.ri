@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"source_location:ETI"%Minitest::Result#source_location;TI"RW;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"%The location of the test method.;T:
+@fileI"lib/minitest.rb;T:0@omit_headings_from_table_of_contents_below0F@I"Minitest::Result;TcRDoc::NormalClass0

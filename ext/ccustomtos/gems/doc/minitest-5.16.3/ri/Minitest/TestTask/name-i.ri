@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"	name:ETI"Minitest::TestTask#name;TI"RW;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"FThe name of the task and base name for the other tasks generated.;T:
+@fileI"lib/minitest/test_task.rb;T:0@omit_headings_from_table_of_contents_below0F@I"Minitest::TestTask;TcRDoc::NormalClass0

@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"	code:ETI"*TZInfo::DataSources::CountryInfo#code;TI"R;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I":@return [String] the ISO 3166-1 alpha-2 country code.;T:
+@fileI",lib/tzinfo/data_sources/country_info.rb;T:0@omit_headings_from_table_of_contents_below0F@I"%TZInfo::DataSources::CountryInfo;TcRDoc::NormalClass0

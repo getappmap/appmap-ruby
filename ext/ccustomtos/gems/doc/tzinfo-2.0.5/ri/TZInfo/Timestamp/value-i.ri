@@ -1,0 +1,4 @@
+U:RDoc::Attr[iI"
+value:ETI"TZInfo::Timestamp#value;TI"R;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"J@return [Integer] the number of seconds since 1970-01-01 00:00:00 UTC;To:RDoc::Markup::Verbatim;	[I"Jignoring leap seconds (i.e. each day is treated as if it were 86,400
+;TI"seconds long).;T:@format0:
+@fileI"lib/tzinfo/timestamp.rb;T:0@omit_headings_from_table_of_contents_below0F@I"TZInfo::Timestamp;TcRDoc::NormalClass0

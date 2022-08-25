@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"test_globs:ETI""Minitest::TestTask#test_globs;TI"RW;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"FFile globs to find test files. Defaults to something sensible to ;TI".find test files under the test directory.;T:
+@fileI"lib/minitest/test_task.rb;T:0@omit_headings_from_table_of_contents_below0F@I"Minitest::TestTask;TcRDoc::NormalClass0

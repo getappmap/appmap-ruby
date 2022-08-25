@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"verbose:ETI"Minitest::TestTask#verbose;TI"RW;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"DPrint out commands as they run. Defaults to Rake's +trace+ (-t ;TI"flag) option.;T:
+@fileI"lib/minitest/test_task.rb;T:0@omit_headings_from_table_of_contents_below0F@I"Minitest::TestTask;TcRDoc::NormalClass0

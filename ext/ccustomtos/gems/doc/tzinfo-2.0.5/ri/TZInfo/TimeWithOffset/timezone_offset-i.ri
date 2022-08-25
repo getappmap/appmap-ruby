@@ -1,0 +1,2 @@
+U:RDoc::Attr[iI"timezone_offset:ETI"+TZInfo::TimeWithOffset#timezone_offset;TI"R;T:publico:RDoc::Markup::Document:@parts[o:RDoc::Markup::Paragraph;	[I"G@return [TimezoneOffset] the {TimezoneOffset} associated with this;To:RDoc::Markup::Verbatim;	[I"instance.;T:@format0:
+@fileI"#lib/tzinfo/time_with_offset.rb;T:0@omit_headings_from_table_of_contents_below0F@I"TZInfo::TimeWithOffset;TcRDoc::NormalClass0

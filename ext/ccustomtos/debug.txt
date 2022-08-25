@@ -1,0 +1,235 @@
+method_c_custom_to_s IN  processing type 7
+method_c_custom_to_s_array will call to_s_element with offset 1 and buffer_max 1000
+to_s_element type      is 5
+method_c_custom_to_s IN  processing type 5
+method_c_custom_to_s OUT
+to_s_element_to_s type is 5
+to_s_element_to_s string_len is 126
+method_c_custom_to_s_array did  call to_s_element
+method_c_custom_to_s_array will call to_s_element with offset 131 and buffer_max 1000
+to_s_element type      is 12
+method_c_custom_to_s IN  processing type 12
+"custom_display_string_c_not_implemented for #<Binding:0x000055c9aab36b08>"
+method_c_custom_to_s OUT
+to_s_element_to_s type is 17
+
+
+
+"ruby3.rb:do_call for receiver #<JSON::Ext::Generator::State:0x000056248d8ec580>"
+"ruby3.rb:do_call for *args    [{:version=>\"1.7.0\", :metadata=>{"
+"ruby3.rb:do_call for **kwards {}"
+"ruby3.rb:do_call for &block   "
+/home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `generate': "\\xEC" from ASCII-8BIT to UTF-8 (Encoding::UndefinedConversionError)
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `bind_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `do_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:45:in `trace_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:11:in `call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:62:in `block in hook_method_def'
+	from /home/appland/.rbenv/versions/3.0.2/lib/ruby/3.0.0/json/common.rb:312:in `generate'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/util.rb:166:in `block in write_appmap'
+	from /home/appland/.rbenv/versions/3.0.2/lib/ruby/3.0.0/tmpdir.rb:144:in `create'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/util.rb:164:in `write_appmap'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:123:in `save'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:49:in `finish'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:82:in `end_test'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:149:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-reporters-1.3.8/lib/minitest/reporters.rb:48:in `run_with_hooks'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:960:in `run_one_method'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:334:in `run_one_method'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:321:in `block (2 levels) in run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:320:in `each'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:320:in `block in run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:360:in `on_signal'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:347:in `with_info_handler'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:319:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/railties-6.0.4.1/lib/rails/test_unit/line_filtering.rb:10:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `block in __run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `map'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `__run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:136:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:63:in `block in autorun'
+
+
+
+/home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `bind_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:38:in `do_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:45:in `trace_call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:11:in `call'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/hook/method/ruby3.rb:62:in `block in hook_method_def'
+	from /home/appland/.rbenv/versions/3.0.2/lib/ruby/3.0.0/json/common.rb:312:in `generate'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/util.rb:166:in `block in write_appmap'
+	from /home/appland/.rbenv/versions/3.0.2/lib/ruby/3.0.0/tmpdir.rb:144:in `create'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/util.rb:164:in `write_appmap'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:123:in `save'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:49:in `finish'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:82:in `end_test'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/bundler/gems/appmap-ruby-61177cc3accd/lib/appmap/minitest.rb:149:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-reporters-1.3.8/lib/minitest/reporters.rb:48:in `run_with_hooks'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:960:in `run_one_method'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:334:in `run_one_method'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:321:in `block (2 levels) in run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:320:in `each'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:320:in `block in run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:360:in `on_signal'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:347:in `with_info_handler'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:319:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/railties-6.0.4.1/lib/rails/test_unit/line_filtering.rb:10:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `block in __run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `map'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:159:in `__run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:136:in `run'
+	from /home/appland/devel/sample_app_6th_ed/vendor/bundle/ruby/3.0.0/gems/minitest-5.11.3/lib/minitest.rb:63:in `block in autorun'
+
+
+
+"custom_display_string for   \e[1m\e[35m (0.0ms)\e[0m  \e[1m\e[34mSELECT sqlite_version(*)\e[0m\n of size 63"                               ] 11% Time: 00:00:00,  ETA: 00:00:03
+"custom_display_string for Could not log \"sql.active_record\" event. NoMethodError: undefined of size 16376"
+*** buffer overflow detected ***: terminated
+
+
+
+    
+ /*    // run this: ret = ret.encode('utf-8', invalid: :replace, undef: :replace, replace: '_') */
+ /*    VALUE kwargs = rb_hash_new(); */
+ /*    rb_hash_aset(kwargs, ID2SYM(rb_intern("invalid")), ID2SYM(rb_intern("replace"))); */
+ /*    rb_hash_aset(kwargs, ID2SYM(rb_intern("undef")), ID2SYM(rb_intern("replace"))); */
+ /*    rb_hash_aset(kwargs, ID2SYM(rb_intern("replace")), rb_str_new_cstr("_")); */
+
+ /*    //printf("will funcall for encode utf-8\n"); */
+ /*    //ret = rb_funcall(ret, rb_intern("encode"), 0); */
+ /*    ret = rb_funcall(ret, rb_intern("encode"), 1, rb_str_new_cstr("utf-8")); */
+ /*    //ret = rb_funcall(ret, rb_intern("encode"), 2, rb_str_new_cstr("utf-8"), kwargs); */
+ /*    //printf("did funcall for encode utf-8\n"); */
+
+ /*    /\* if (remaining_characters > 0) *\/ */
+ /*    /\*   sprintf(&buffer[max_len], " (...%d more characters)", remaining_characters); */
+ /* *\/ */
+
+    //ret = rb_str_new_cstr(buffer);
+
+    //int string_len = strlen(buffer);
+    //ret = rb_utf8_str_new(buffer, string_len);
+    //ret = rb_utf8_str_new_cstr(buffer);
+
+
+
+// from https://gist.github.com/MightyPork/52eda3e5677b4b03524e40c9f0ab1da5 (MIT license)
+int utf8_encode(char *out, uint32_t utf)
+{
+  if (utf <= 0x7F) {
+    // Plain ASCII
+    out[0] = (char) utf;
+    out[1] = 0;
+    return 1;
+  }
+  else if (utf <= 0x07FF) {
+    // 2-byte unicode
+    out[0] = (char) (((utf >> 6) & 0x1F) | 0xC0);
+    out[1] = (char) (((utf >> 0) & 0x3F) | 0x80);
+    out[2] = 0;
+    return 2;
+  }
+  else if (utf <= 0xFFFF) {
+    // 3-byte unicode
+    out[0] = (char) (((utf >> 12) & 0x0F) | 0xE0);
+    out[1] = (char) (((utf >>  6) & 0x3F) | 0x80);
+    out[2] = (char) (((utf >>  0) & 0x3F) | 0x80);
+    out[3] = 0;
+    return 3;
+  }
+  else if (utf <= 0x10FFFF) {
+    // 4-byte unicode
+    out[0] = (char) (((utf >> 18) & 0x07) | 0xF0);
+    out[1] = (char) (((utf >> 12) & 0x3F) | 0x80);
+    out[2] = (char) (((utf >>  6) & 0x3F) | 0x80);
+    out[3] = (char) (((utf >>  0) & 0x3F) | 0x80);
+    out[4] = 0;
+    return 4;
+  }
+  else {
+    // error - use replacement character
+    out[0] = (char) 0xEF;
+    out[1] = (char) 0xBF;
+    out[2] = (char) 0xBD;
+    out[3] = 0;
+    return 0;
+  }
+}
+
+
+
+
+[{1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four},
+ {1=>one, 2=>two, 3=>three, 4=>four} (...5 more items)]
+[{1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"},
+ {1=>"one", 2=>"two", 3=>"three", 4=>"four"} (...5 more items)]
+
+
+"build_from_methods will print children"
+"[#<struct AppMap::ClassMap::Types::Package name=\"activesupport\">,
+  #<struct AppMap::ClassMap::Types::Package name=\"logger\">,
+  #<struct AppMap::ClassMap::Types::Package name=\"activerecord\">]"
+"build_from_methods produced: [
+  {:name=>\"activesupport\",
+   :type=>\"package\",
+   :children=>[{:name=>\"ActiveSupport\",
+                :type=>\"class\",
+                :children=>[{:name=>\"Callbacks\",
+                             :type=>\"class\",
+                             :children=>[{:name=>\"CallbackSequence\",
+                             :type=>\"class\",
+                             :children=>[{:name=>\"invoke_before\",
+                                          :type=>\"function\",
+                                          :location=>\"vendor/bundle/ruby/3.0.0/gems/activesupport-6.0.5.1/lib/active_support/callbacks.rb:512\",
+                                          :static=>false,
+                                          :labels=>[\"mvc.before_action\"]},
+                                          {:name=>\"invoke_after\",
+                                           :type=>\"function\",
+                                           :location=>\"vendor/bundle/ruby/3.0.0/gems/activesupport-6.0.5.1/lib/active_support/callbacks.rb:516\",
+                                           :static=>false,
+                                           :labels=>[\"mvc.after_action\"]}]}]}]}]},
+   {:name=>\"logger\",
+    :type=>\"package\",
+    :children=>[{:name=>\"Logger\",
+                 :type=>\"class\",
+                 :children=>[{:name=>\"LogDevice\",
+                              :type=>\"class\",
+                              :children=>[{:name=>\"write\",
+                                           :type=>\"function\",
+                                           :location=>\"/home/appland/.rbenv/versions/3.0.2/lib/ruby/3.0.0/logger/log_device.rb:31\",
+                                           :static=>false,
+                                           :labels=>[\"log\"]}]}]}]},
+   {:name=>\"activerecord\",
+    :type=>\"package\",
+    :children=>[{:name=>\"ActiveRecord\",
+                 :type=>\"class\",
+                 :children=>[{:name=>\"Relation\",
+                              :type=>\"class\",
+                              :children=>[{:name=>\"records\",
+                                           :type=>\"function\",
+                                           :location=>\"vendor/bundle/ruby/3.0.0/gems/activerecord-6.0.5.1/lib/active_record/relation.rb:249\",
+                                           :static=>false,
+                                           :labels=>[\"dao.materialize\"]}]}]}]}]"
+
+$ grep -i infos times.txt  | sort | uniq -c
+    102 "number of object_infos 3"
+   1223 "number of object_infos 4"
+    444 "number of object_infos 5"
+     34 "number of object_infos 6"
