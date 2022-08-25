@@ -10,6 +10,11 @@ Rake::ExtensionTask.new("appmap") do |ext|
   ext.lib_dir = "lib/appmap"
 end
 
+desc 'build the native extension for stringification'
+Rake::ExtensionTask.new("ccustomtos") do |ext|
+  ext.lib_dir = "lib/appmap"
+end
+
 desc 'Install non-Ruby dependencies'
 task :install do
   system 'yarn install' or raise 'yarn install failed'
