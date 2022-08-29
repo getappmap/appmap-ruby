@@ -16,4 +16,5 @@ gcc c_custom_to_s_test.c -L /home/test/.rbenv/versions/3.0.1/lib -I/home/test/.r
 
 #gcc c_custom_to_s_test.c -I/usr/include/x86_64-linux-gnu/ruby-2.7.0 -I/usr/include/ruby-2.7.0 -lruby-2.7 -lm
 rm -f c_custom_to_s_test.c
+#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./a.out
 ./a.out
