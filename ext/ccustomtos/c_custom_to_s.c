@@ -20,12 +20,11 @@ const int MAX_HASH_ENUMERATION = 10;
 const int MAX_STRING_LENGTH = 100;
 const int MAX_EXPECTED_NESTED_LEVELS = 4;
 
-#define ADD_CHAR_AND_NULL(buffer, offset, value) \
-{                                                \
-  buffer[offset] = value;                        \
-  offset += 1;                                   \
-  buffer[offset] = '\0';                         \
-}                                                \
+#define ADD_CHAR(buffer, offset, value) \
+{                                       \
+  buffer[offset] = value;               \
+  offset += 1;                          \
+}                                       \
 
 void method_c_custom_to_s_check_buffer_size(int offset, int string_len, int buffer_max) {
   if (offset + string_len > buffer_max) {
@@ -45,7 +44,6 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     *offset += 1;
     buffer[*offset] = 'l';
     *offset += 1;
-    buffer[*offset] = '\0';
     break;
   }
   case T_STRING: {
@@ -54,14 +52,13 @@ int method_c_custom_to_s_element(VALUE self, char *buffer, int *offset, VALUE el
     // +2 for the two "s. +1 for NULL
     method_c_custom_to_s_check_buffer_size(*offset, string_len + 3, buffer_max);
     if (quoted)
-      ADD_CHAR_AND_NULL(buffer, *offset, '"');
+      ADD_CHAR(buffer, *offset, '"');
 
     memcpy(&buffer[*offset], StringValuePtr(element_to_s), string_len);
     *offset += string_len;
-    buffer[*offset] = '\0';
 
     if (quoted)
-      ADD_CHAR_AND_NULL(buffer, *offset, '"');
+      ADD_CHAR(buffer, *offset, '"');
     break;
   }
   default: {
@@ -91,7 +88,7 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
 
   // 2: for "[" and \0
   method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-  ADD_CHAR_AND_NULL(buffer, offset, '[');
+  ADD_CHAR(buffer, offset, '[');
   int counter = 0;
   while (counter < max_len) {
     if (counter > 0) {
@@ -101,7 +98,6 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
       offset += 1;
       buffer[offset] = ' ';
       offset += 1;
-      buffer[offset] = '\0';
     }
 
     VALUE array_element = rb_ary_entry(value, counter);
@@ -120,15 +116,15 @@ VALUE method_c_custom_to_s_array(VALUE self, VALUE value) {
     method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 2, buffer_max);
     memcpy(&buffer[offset], buffer_small, buffer_small_len);
     offset += buffer_small_len;
-    buffer[offset] = '\0';
 
-    ADD_CHAR_AND_NULL(buffer, offset, ']');
+    ADD_CHAR(buffer, offset, ']');
   } else {
     // 2: for "]" and NULL
     method_c_custom_to_s_check_buffer_size(offset, 2, buffer_max);
-    ADD_CHAR_AND_NULL(buffer, offset, ']');
+    ADD_CHAR(buffer, offset, ']');
   }
 
+  buffer[offset] = '\0';
   ret = rb_str_new(buffer, offset);
 
   return ret;
@@ -156,7 +152,6 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       *state->offset += 1;
       state->buffer[*state->offset] = ' ';
       *state->offset += 1;
-      state->buffer[*state->offset] = '\0';
     }
     int buffer_key_max = MAX_STRING_LENGTH * 2;
     char buffer_key[buffer_key_max];
@@ -183,10 +178,8 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       *state->offset += 1;
       state->buffer[*state->offset] = '>';
       *state->offset += 1;
-      state->buffer[*state->offset] = '\0';
       memcpy(&state->buffer[*state->offset], buffer_value, offset_value);
       *state->offset += offset_value;
-      state->buffer[*state->offset] = '\0';
     }
   } else if (state->remaining_elements > 0) {
     if (state->remaining_elements_shown == 0) {
@@ -198,7 +191,6 @@ int method_c_custom_to_s_hash_iterator(VALUE key, VALUE val, VALUE arg) {
       method_c_custom_to_s_check_buffer_size(*state->offset, buffer_small_len + 1, state->buffer_max);
       memcpy(&state->buffer[*state->offset], buffer_small, buffer_small_len);
       *state->offset += buffer_small_len;
-      state->buffer[*state->offset] = '\0';
 
       state->remaining_elements_shown = 1;
     }
@@ -238,13 +230,14 @@ VALUE method_c_custom_to_s_hash(VALUE self, VALUE value) {
   state.remaining_elements = remaining_elements;
   state.remaining_elements_shown = 0;
 
-  ADD_CHAR_AND_NULL(buffer, offset, '{');
+  ADD_CHAR(buffer, offset, '{');
   rb_hash_foreach(value, &method_c_custom_to_s_hash_iterator, (VALUE) &state);
 
   // 2: "}" and \0
   method_c_custom_to_s_check_buffer_size(*state.offset, 2, state.buffer_max);
-  ADD_CHAR_AND_NULL(buffer, offset, '}');
-  
+  ADD_CHAR(buffer, offset, '}');
+
+  buffer[offset] = '\0';
   ret = rb_str_new(buffer, offset);
 
   return ret;
@@ -456,7 +449,6 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     int offset = 0;
     memcpy(buffer, StringValuePtr(first), max_len);
     offset += max_len;
-    buffer[offset] = '\0';
 
     if (remaining_characters > 0) {
       char buffer_small[128];
@@ -467,8 +459,9 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
       method_c_custom_to_s_check_buffer_size(offset, buffer_small_len + 1, buffer_max);
       memcpy(&buffer[offset], buffer_small, buffer_small_len);
       offset += buffer_small_len;
-      buffer[offset] = '\0';
     }
+
+    buffer[offset] = '\0';
 
     // this reports the error:
     // in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
