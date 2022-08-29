@@ -309,16 +309,19 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     }
 
     buffer[offset] = '\0';
+    VALUE string_unencoded = rb_str_new(buffer, offset);
 
     // this is 600%-900%x faster than calling Ruby but reports the error:
     // in `generate': source sequence is illegal/malformed utf-8 (JSON::GeneratorError)
     // ret = rb_utf8_str_new(buffer, offset);
 
-    // call Ruby function to utf8 encode instead of encode in C
-    VALUE string_unencoded = rb_str_new(buffer, offset);
-    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
+    // reusing the string encoding of the input string produces the error:
+    // in `generate': "\\xEF" from ASCII-8BIT to UTF-8 (Encoding::UndefinedConversionError)
     /* VALUE input_string_encoding = rb_funcall(first, rb_intern("encoding"), 0); */
     /* ret = rb_funcall(string_unencoded, rb_intern("force_encoding"), 1, input_string_encoding); */
+
+    // call Ruby function to utf8 encode instead of encode in C
+    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
 
     break;
   }
