@@ -1,6 +1,6 @@
-// 1) This file has the extension .cpp so that the makefile for the
-// native extension doesn't automatically compile it and include it in
-// the final .so.
+// 1) This file doesn't have a .c extension so that the makefile for
+// the native extension doesn't automatically compile it and include
+// it in the final .so.
 
 // 2) The .so file wasn't getting loaded dynamically with
 // 'require', so I included the C source code directly.
@@ -12,7 +12,7 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first);
 int main() {
   printf("it started\n");
   ruby_init();
-  ruby_init_loadpath();
+  ruby_init_loadpath(); // without this the require and include don't work
 
   VALUE self;
   VALUE data_str_8 = rb_str_new_cstr("12345678");
@@ -26,7 +26,8 @@ int main() {
     "require filename\n"
     //"require Dir.getwd + '/ccustomtos'\n"
     "include CCustomToS\n"
-    //"c_custom_to_s"
+    "data_str_8 = \"12345678\"\n"
+    //"c_custom_to_s(data_str_8)\n"
     "p 'Hello, world!'\n"
     "p 'more'\n"
     , &state);
