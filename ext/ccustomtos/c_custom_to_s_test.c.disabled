@@ -10,7 +10,7 @@
 VALUE method_c_custom_to_s(VALUE self, VALUE first);
   
 int main() {
-  printf("it started\n");
+  printf("The C program started\n");
   ruby_init();
   ruby_init_loadpath(); // without this the require and include don't work
 
@@ -21,6 +21,7 @@ int main() {
   int state;
   rb_eval_string_protect(
     "\n"
+    "puts 'The VM started'\n"
     "filename = Dir.getwd + '/ccustomtos'\n"
     "p filename\n"
     "require filename\n"
@@ -28,12 +29,13 @@ int main() {
     "include CCustomToS\n"
     "data_str_8 = \"12345678\"\n"
     //"c_custom_to_s(data_str_8)\n"
-    "p 'Hello, world!'\n"
-    "p 'more'\n"
+    "puts 'The VM ended'\n"
     , &state);
 
-  printf("out here\n");
+  printf("rb_eval_string_protect ended\n");
   //VALUE ret = method_c_custom_to_s(self, data_str_8);
 
-  return ruby_cleanup(0);
+  int ret = ruby_cleanup(0);
+  printf("The C program ended\n");
+  return ret;
 }
