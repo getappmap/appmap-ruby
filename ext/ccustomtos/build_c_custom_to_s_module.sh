@@ -5,6 +5,9 @@
 ruby extconf.rb
 export DESTDIR=`pwd`
 make clean
+# NOTE using `rbenv prefix` is unreliable if the project is using a
+# specific ruby version defined in a .ruby-version file: `rbenv
+# prefix` picks up the global ruby version instead.
 RUBY_VERSION_DIR=`rbenv prefix`
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUBY_VERSION_DIR/lib
 make
