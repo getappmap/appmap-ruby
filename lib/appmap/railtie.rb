@@ -18,7 +18,15 @@ module AppMap
       ActiveSupport::Notifications.subscribe 'sql.sequel', AppMap::Handler::Rails::SQLHandler.new
       ActiveSupport::Notifications.subscribe 'sql.active_record', AppMap::Handler::Rails::SQLHandler.new
 
-      AppMap::Handler::Rails::RequestHandler::HookMethod.new.activate
+      http_hook_available = ActionController::Instrumentation.public_instance_methods.include?(:process_action)
+      if http_hook_available
+        AppMap::Handler::Rails::RequestHandler::HookMethod.new.activate
+      else
+        ActiveSupport::Notifications.subscribe(
+          'start_processing.action_controller',
+          AppMap::Handler::Rails::RequestHandler::RequestListener.method(:begin_request)
+        )
+      end
     end
   end
 end if ENV['APPMAP'] == 'true'

@@ -73,8 +73,8 @@ module AppMap
           class << self
             def build_from_invocation(parent_id, return_value, elapsed, response, event: HTTPServerResponse.new)
               event ||= HTTPServerResponse.new
-              event.status = response.status
-              event.headers = response.headers.dup
+              event.status = response[:status] || response.status
+              event.headers = (response[:headers] || response.headers).dup
               AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event, parameter_schema: true
             end
           end
@@ -112,6 +112,46 @@ module AppMap
             Thread.current[TEMPLATE_RENDER_VALUE] = nil
             return_event = HTTPServerResponse.build_from_invocation call_event.id, return_value, elapsed, receiver.response
             AppMap.tracing.record_event return_event
+          end
+        end
+
+        # RequestListener listens to the 'start_processing.action_controller' notification as a
+        # source of HTTP server request events. A strategy other than HookMethod is required for
+        # Rails >= 7 due to the hooked methods visibility dropping to private.
+        class RequestListener
+          def self.begin_request(_name, _started, _finished, _unique_id, payload)
+            RequestListener.new(payload)
+          end
+
+          protected
+
+          def initialize(payload)
+            @request_id = payload[:request].request_id
+            @subscriber = self.class.instance_method(:after_hook).bind(self)
+
+            ActiveSupport::Notifications.subscribe 'process_action.action_controller', @subscriber
+            before_hook payload
+          end
+
+          def before_hook(payload)
+            @call_event = HTTPServerRequest.new payload[:request]
+            AppMap.tracing.record_event @call_event
+          end
+
+          def after_hook(_name, started, finished, _unique_id, payload)
+            return unless @request_id == payload[:request].request_id
+
+            return_value = Thread.current[TEMPLATE_RENDER_VALUE]
+            Thread.current[TEMPLATE_RENDER_VALUE] = nil
+            return_event = HTTPServerResponse.build_from_invocation(
+              @call_event.id,
+              return_value,
+              finished - started,
+              payload[:response] || payload
+            )
+
+            AppMap.tracing.record_event return_event
+            ActiveSupport::Notifications.unsubscribe(@subscriber)
           end
         end
       end
