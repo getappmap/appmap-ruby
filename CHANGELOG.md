@@ -1,3 +1,15 @@
+# [0.88.0](https://github.com/applandinc/appmap-ruby/compare/v0.87.0...v0.88.0) (2022-08-31)
+
+
+### Bug Fixes
+
+* Allow recording of error responses ([e538556](https://github.com/applandinc/appmap-ruby/commit/e5385560cbbab2d27ce6c0a1620d5c7539e0d985))
+
+
+### Features
+
+* Add HTTP server request support for Rails 7 ([bd7f6c9](https://github.com/applandinc/appmap-ruby/commit/bd7f6c9109ee6c850250016276c8fbb6a8a66a2e))
+
 # [0.87.0](https://github.com/applandinc/appmap-ruby/compare/v0.86.0...v0.87.0) (2022-08-19)
 
 
