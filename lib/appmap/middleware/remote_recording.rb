@@ -2,7 +2,8 @@
 
 module AppMap
   module Middleware
-    # RemoteRecording adds `/_appmap/record` routes to control recordings via HTTP requests
+    # RemoteRecording adds `/_appmap/record` routes to control recordings via HTTP requests.
+    # It can also be enabled to emit an AppMap for each request.
     class RemoteRecording
       def initialize(app)
         require 'json'
@@ -21,7 +22,7 @@ module AppMap
         end
       end
 
-      def start_recording
+      def ws_start_recording
         return [ 409, 'Recording is already in progress' ] if @tracer
 
         @events = []
@@ -32,7 +33,7 @@ module AppMap
         [ 200 ]
       end
 
-      def stop_recording(req)
+      def ws_stop_recording(req)
         return [ 404, 'No recording is in progress' ] unless @tracer
 
         tracer = @tracer
@@ -75,10 +76,50 @@ module AppMap
       end
 
       def call(env)
+        # Note: Puma config is avaliable here. For example:
+        # $ env['puma.config'].final_options[:workers]
+        # 0
+
         req = Rack::Request.new(env)
         return handle_record_request(req) if req.path == '/_appmap/record'
 
-        @app.call(env)
+        start_time = Time.now
+        # Support multi-threaded web server such as Puma by recording each thread
+        # into a separate Tracer.
+        tracer = AppMap.tracing.trace(thread: Thread.current) if record_all_requests?
+
+        @app.call(env).tap do |status, headers|
+          if tracer
+            AppMap.tracing.delete(tracer)
+
+            events = tracer.events.dup.map(&:to_h)
+
+            appmap_name = "#{req.request_method} #{req.path} (#{status}) - #{start_time.strftime('%T.%L')}"
+            appmap_file_name = AppMap::Util.scenario_filename([ start_time.to_f, req.url ].join('_'))
+            output_dir = File.join(AppMap::DEFAULT_APPMAP_DIR, 'requests')
+            appmap_file_path = File.join(output_dir, appmap_file_name)
+
+            metadata = AppMap.detect_metadata
+            metadata[:name] = appmap_name
+            metadata[:timestamp] = start_time.to_f
+            metadata[:recorder] = {
+              name: 'record_requests'
+            }
+    
+            appmap = {
+              version: AppMap::APPMAP_FORMAT_VERSION,
+              classMap: AppMap.class_map(tracer.event_methods),
+              metadata: metadata,
+              events: events
+            }
+
+            FileUtils.mkdir_p(output_dir)
+            File.write(appmap_file_path, JSON.generate(appmap))
+
+            headers['AppMap-Name'] = File.expand_path(appmap_name)
+            headers['AppMap-File-Name'] = File.expand_path(appmap_file_path)
+          end
+        end
       end
 
       def recording_state
@@ -92,9 +133,9 @@ module AppMap
           if method.eql?('GET')
             recording_state
           elsif method.eql?('POST')
-            start_recording
+            ws_start_recording
           elsif method.eql?('DELETE')
-            stop_recording(req)
+            ws_stop_recording(req)
           else
             [ 404, '' ]
           end
@@ -104,6 +145,10 @@ module AppMap
 
       def html_response?(headers)
         headers['Content-Type'] && headers['Content-Type'] =~ /html/
+      end
+
+      def record_all_requests?
+        ENV['APPMAP_RECORD_REQUESTS'] == 'true'
       end
 
       def recording?
