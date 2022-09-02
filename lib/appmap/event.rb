@@ -93,6 +93,10 @@ module AppMap
         end
 
         def encode_display_string(value)
+          c_custom_encode_display_string(value)
+        end
+
+        def encode_display_string_ruby(value)
           (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
         end
 

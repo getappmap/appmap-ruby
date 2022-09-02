@@ -8,11 +8,13 @@ void Init_ccustomtos();
 
 // Prototype for our methods, to be used by Init_ccustomtos
 VALUE method_c_custom_to_s(VALUE, VALUE);
+VALUE method_c_custom_encode_display_string(VALUE, VALUE);
 
 // The initialization method for this module
 void Init_ccustomtos() {
   CCustomToS = rb_define_module("CCustomToS");
   rb_define_method(CCustomToS, "c_custom_to_s", method_c_custom_to_s, 1);
+  rb_define_method(CCustomToS, "c_custom_encode_display_string", method_c_custom_encode_display_string, 1);
 }
 
 const int MAX_ARRAY_ENUMERATION = 10;
@@ -343,6 +345,32 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     ret = rb_funcall(self, rb_intern("custom_display_string_c_not_implemented"), 1, first);
     break;
   }
+  }
+
+  return ret;
+}
+
+VALUE method_c_custom_encode_display_string(VALUE self, VALUE first) {
+  VALUE ret;
+  int buffer_max = MAX_STRING_LENGTH * 2;
+  char buffer[buffer_max];
+
+  switch (TYPE(first)) {
+  case T_STRING: {
+    int max_len = RSTRING_LEN(first);
+    if (max_len > MAX_STRING_LENGTH)
+      max_len = MAX_STRING_LENGTH;
+
+    memcpy(buffer, StringValuePtr(first), max_len);
+    buffer[max_len] = '\0';
+    VALUE string_unencoded = rb_str_new(buffer, max_len);
+    // call Ruby function to utf8 encode instead of encode in C
+    ret = rb_funcall(self, rb_intern("custom_display_string_c_encode_utf8"), 1, string_unencoded);
+    break;
+  }
+  default:
+    ret = rb_str_new_cstr("");
+    break;
   }
 
   return ret;
