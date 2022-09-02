@@ -92,9 +92,7 @@ You can launch a database like this:
 ```
 ➜ docker-compose -p appmap-ruby up -d
 ... stuff
-➜ docker-compose ps pg  
-      Name                    Command                 State                Ports         
------------------------------------------------------------------------------------------
-appmap-ruby_pg_1   docker-entrypoint.sh postgres   Up (healthy)   0.0.0.0:59134->5432/tcp
-➜ export DATABASE_URL=postgres://postgres@localhost:59134
+➜ docker-compose port pg 5432
+0.0.0.0:64479
+➜ export DATABASE_URL=postgres://postgres@localhost:64479
 ```
