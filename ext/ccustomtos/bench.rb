@@ -62,6 +62,12 @@ data_array_hash_more_than_max = generate_many_times(data_hash, 15)
 data_array_hash_hash_more_than_max = generate_many_times(data_hash_more_than_max, 15)
 data_array_file = [ data_file, data_file, data_file, data_file ]
 
+data_str_multiline = "12345678
+# some comment goes here
+"
+data_str_multiline2 = "# @labels one two
+# @labels three four"
+
 # number of benchmark iterations
 n = 100000
 
@@ -130,6 +136,27 @@ symbols = [
 
 
 puts "======================================================================="
+puts "Verifying encode_display_string"
+filename = 'readlines'
+[
+  :data_str_8,
+].each do |symbol|
+  puts "---------------------------------------------------------------------"
+  data = eval(symbol.to_s)
+  ruby = encode_display_string(data)
+  c_custom = c_custom_encode_display_string(data)
+  if ruby == c_custom
+    puts "PASS verifying #{symbol}"
+  else
+    puts "FAIL verifying #{symbol}"
+    puts ".." + ruby.to_s + ".."
+    puts ".." + c_custom.to_s + ".."
+  end
+end
+puts "======================================================================="
+exit 0
+
+puts "======================================================================="
 puts "Verifying all implementations are functionally equivalent"
 symbols.each do |symbol|
   puts "---------------------------------------------------------------------"
@@ -150,7 +177,6 @@ symbols.each do |symbol|
     puts c_custom
   end
 end
-
 puts "======================================================================="
 
 times = {
