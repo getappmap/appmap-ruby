@@ -92,7 +92,7 @@ module AppMap
           if tracer
             AppMap.tracing.delete(tracer)
 
-            events = tracer.events.dup.map(&:to_h)
+            events = tracer.events.map(&:to_h)
 
             appmap_name = "#{req.request_method} #{req.path} (#{status}) - #{start_time.strftime('%T.%L')}"
             appmap_file_name = AppMap::Util.scenario_filename([ start_time.to_f, req.url ].join('_'))

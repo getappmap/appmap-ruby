@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'open3'
+require 'random-port'
+require 'socket'
 
 require 'spec_helper'
 require 'active_support'
@@ -115,6 +117,40 @@ end
 shared_context 'Rails app pg database' do |dir|
   before(:all) { @app = TestRailsApp.for_fixture dir }
   let(:app) { @app }
+  let(:users_path) { '/users' }
+end
+
+shared_context 'Rails app service running' do
+  def start_server(rails_app_environment: { 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true' })
+    service_port = RandomPort::Pool::SINGLETON.acquire
+    @app.prepare_db
+    server = @app.spawn_cmd \
+      "./bin/rails server -p #{service_port}", rails_app_environment
+
+    uri = URI("http://localhost:#{service_port}/health")
+
+    100.times do
+      begin
+        Net::HTTP.get(uri)
+        break
+      rescue Errno::ECONNREFUSED
+        sleep 0.1
+      end
+    end
+
+    [ service_port, server ]
+  end
+
+  def json_body(res)
+    JSON.parse(res.body).deep_symbolize_keys
+  end
+
+  def stop_server(server)
+    if server
+      Process.kill 'INT', server
+      Process.wait server
+    end
+  end
 end
 
 shared_context 'rails integration test setup' do
