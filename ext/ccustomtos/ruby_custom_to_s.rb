@@ -29,6 +29,10 @@ def ruby_custom_to_s(value)
   end
 end
 
+def encode_display_string(value)
+  (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+end
+
 # called by the C module
 def custom_display_string_c_not_implemented(value)
   case value
