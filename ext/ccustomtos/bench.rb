@@ -62,6 +62,12 @@ data_array_hash_more_than_max = generate_many_times(data_hash, 15)
 data_array_hash_hash_more_than_max = generate_many_times(data_hash_more_than_max, 15)
 data_array_file = [ data_file, data_file, data_file, data_file ]
 
+data_str_multiline = "12345678
+# some comment goes here
+"
+data_str_multiline2 = "# @labels one two
+# @labels three four"
+
 # number of benchmark iterations
 n = 100000
 
@@ -130,6 +136,30 @@ symbols = [
 
 
 puts "======================================================================="
+puts "Verifying readlines are functionally equivalent"
+filename = 'readlines'
+[
+  :data_str_multiline,
+  :data_str_multiline2,
+].each do |symbol|
+  puts "---------------------------------------------------------------------"
+  data = eval(symbol.to_s)
+  File.open(filename, 'w') { |file| file.write(data) }
+  ruby_readlines = File.readlines(filename)
+  c_readlines = c_custom_readlines(filename)
+  if ruby_readlines == c_readlines
+    puts "PASS verifying #{symbol}"
+  else
+    puts "FAIL verifying #{symbol}"
+    puts ".." + ruby_readlines.to_s + ".."
+    puts ".." + c_readlines.to_s + ".."
+  end
+  #File.delete(filename)
+end
+puts "======================================================================="
+exit 0
+
+puts "======================================================================="
 puts "Verifying all implementations are functionally equivalent"
 symbols.each do |symbol|
   puts "---------------------------------------------------------------------"
@@ -150,7 +180,6 @@ symbols.each do |symbol|
     puts c_custom
   end
 end
-
 puts "======================================================================="
 
 times = {

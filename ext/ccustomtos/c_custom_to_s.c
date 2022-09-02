@@ -1,4 +1,6 @@
 #include "ruby.h"
+#include <fcntl.h>
+#include <sys/stat.h>
 
 // Defining a space for information and references about the module to be stored internally
 VALUE CCustomToS = Qnil;
@@ -8,11 +10,13 @@ void Init_ccustomtos();
 
 // Prototype for our methods, to be used by Init_ccustomtos
 VALUE method_c_custom_to_s(VALUE, VALUE);
+VALUE method_c_custom_readlines(VALUE, VALUE);
 
 // The initialization method for this module
 void Init_ccustomtos() {
   CCustomToS = rb_define_module("CCustomToS");
   rb_define_method(CCustomToS, "c_custom_to_s", method_c_custom_to_s, 1);
+  rb_define_method(CCustomToS, "c_custom_readlines", method_c_custom_readlines, 1);
 }
 
 const int MAX_ARRAY_ENUMERATION = 10;
@@ -344,6 +348,89 @@ VALUE method_c_custom_to_s(VALUE self, VALUE first) {
     break;
   }
   }
+
+  return ret;
+}
+
+VALUE method_c_custom_readlines(VALUE self, VALUE first) {
+  VALUE ret = rb_ary_new();
+
+  long buffer_size = 1024*1024;
+  unsigned char *buffer_ptr = NULL;
+
+  char *filename = StringValuePtr(first);
+  int fd = open(filename, O_RDONLY);
+  if (fd < 0) {
+    goto out;
+  }
+
+  struct stat st;
+  st.st_size = 0;
+  stat(filename, &st);
+  {
+    // must add this { here so the compiler will know where to add
+    // code that cleans up the stack without conflicting with the out
+    // label, else we get the error:
+    //
+    // c_custom_to_s.c:363:5: error: jump into scope of identifier with variably modified type
+    // 363 |     goto out;
+    unsigned char buffer[buffer_size];
+
+    if (st.st_size > buffer_size) {
+      // allocate on heap; the stack size is often 4-8MB
+      buffer_ptr = (unsigned char *) malloc(st.st_size);
+      if (buffer_ptr == NULL)
+        goto out;
+    } else
+      buffer_ptr = buffer;
+
+    long bytes_read = read(fd, buffer_ptr, st.st_size);
+    if (bytes_read != st.st_size) {
+      // something went wrong (read interrupted by signal?), might need
+      // to re-read.
+      goto out;
+    }
+
+    /* // create a Ruby string from this, and check its encoding. */
+    /* VALUE ruby_string = rb_str_new((char *) buffer_ptr, bytes_read); */
+    /* VALUE ruby_string_encoding = rb_funcall(ruby_string, rb_intern("encoding"), 0); */
+    /* VALUE ruby_string_encoding_name = rb_funcall(ruby_string_encoding, rb_intern("name"), 0); */
+    /* //int ruby_string_encoding_name_len = RSTRING_LEN(ruby_string_encoding_name); */
+    /* //printf("ruby_string_encoding_name is ..%s..\n", StringValuePtr(ruby_string_encoding_name)); */
+
+    VALUE ruby_string_utf8 = rb_funcall(ruby_string, rb_intern("encode"), 0);
+
+    // implement readlines
+    long counter = 0;
+    long prev_start = 0;
+    while (counter < bytes_read) {
+      if (buffer_ptr[counter] == '\n') {
+        VALUE array_element;
+        // + 1 to include the '\n'
+        long array_element_len = counter - prev_start + 1;
+        array_element = rb_str_new((char *) &buffer_ptr[prev_start], array_element_len);
+        rb_ary_push(ret, array_element);
+        prev_start = counter + 1;
+      }
+      counter += 1;
+    }
+
+    // if the last line didn't contain a newline still add it
+    if (buffer_ptr[counter - 1] != '\n') {
+      VALUE array_element;
+      // no + 1 now because there was no '\n'
+      long array_element_len = counter - prev_start;
+      array_element = rb_str_new((char *) &buffer_ptr[prev_start], array_element_len);
+      rb_ary_push(ret, array_element);
+    }
+
+  }
+
+ out:
+  close(fd);
+
+  if (st.st_size > buffer_size && buffer_ptr != NULL)
+    free(buffer_ptr);
 
   return ret;
 }
