@@ -1,9 +1,6 @@
 require 'rails_spec_helper'
 
-require 'random-port'
-
 require 'net/http'
-require 'socket'
 
 describe 'remote recording', :order => :defined do
   def json_body(res)
@@ -13,34 +10,16 @@ describe 'remote recording', :order => :defined do
   rails_versions.each do |rails_version|
     context "with rails #{rails_version}" do
       include_context 'rails app', rails_version
+      include_context 'Rails app service running'
 
-      before(:context) do
-        @service_port = RandomPort::Pool::SINGLETON.acquire
-        @app.prepare_db
-        @server = @app.spawn_cmd \
-          "./bin/rails server -p #{@service_port}",
-          'ORM_MODULE' => 'sequel',
-          'APPMAP' => 'true'
-
-        uri = URI("http://localhost:#{@service_port}/health")
-
-        100.times do
-          Net::HTTP.get(uri)
-          break
-        rescue Errno::ECONNREFUSED
-          sleep 0.1
-        end
+      before(:all) do
+        @service_port, @server = start_server
       end
-
-      after(:context) do
-        if @server
-          Process.kill 'INT', @server
-          Process.wait @server
-        end
+      after(:all) do
+        stop_server(@server)
       end
 
       let(:service_address) { URI("http://localhost:#{@service_port}") }
-      let(:users_path) { '/users' }
       let(:record_path) { '/_appmap/record' }
 
       it 'returns the recording status' do
@@ -80,10 +59,11 @@ describe 'remote recording', :order => :defined do
       end
 
       it 'stops recording' do
-        # Generate some events
-        Net::HTTP.start(service_address.hostname, service_address.port) { |http|
+        users_res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
           http.request(Net::HTTP::Get.new(users_path) )
         }
+        # Request recording is not enabled by environment variable
+        expect(users_res).to_not include('appmap-file-name')
 
         res = Net::HTTP.start(service_address.hostname, service_address.port) { |http|
           http.request(Net::HTTP::Delete.new(record_path))

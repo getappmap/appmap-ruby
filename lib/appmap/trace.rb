@@ -48,8 +48,8 @@ module AppMap
         @tracers.empty?
       end
 
-      def trace(enable: true)
-        Tracer.new.tap do |tracer|
+      def trace(enable: true, thread: nil)
+        Tracer.new(thread_id: thread&.object_id).tap do |tracer|
           @tracers << tracer
           tracer.enable if enable
         end
@@ -64,7 +64,7 @@ module AppMap
       end
 
       def record_event(event, package: nil, defined_class: nil, method: nil)
-        @tracers.each do |tracer|
+        @tracers.select { |tracer| tracer.thread_id.nil? || tracer.thread_id === event.thread_id }.each do |tracer|
           tracer.record_event(event, package: package, defined_class: defined_class, method: method)
         end
       end
@@ -114,14 +114,16 @@ module AppMap
 
   class Tracer
     attr_accessor :stacks
+    attr_reader   :thread_id, :events
 
     # Records the events which happen in a program.
-    def initialize
+    def initialize(thread_id: nil)
       @events = []
       @last_package_for_thread = {}
       @methods = Set.new
       @stack_printer = StackPrinter.new if StackPrinter.enabled?
       @enabled = false
+      @thread_id = thread_id
     end
 
     def enable
@@ -142,6 +144,8 @@ module AppMap
     # The event should be one of the MethodEvent subclasses.
     def record_event(event, package: nil, defined_class: nil, method: nil)
       return unless @enabled
+
+      raise "Expected event in thread #{@thread_id}, got #{event.thread_id}" if @thread_id && @thread_id != event.thread_id 
 
       @stack_printer.record(event) if @stack_printer
       @last_package_for_thread[Thread.current.object_id] = package if package
