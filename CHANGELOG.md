@@ -1,3 +1,16 @@
+# [0.89.0](https://github.com/applandinc/appmap-ruby/compare/v0.88.0...v0.89.0) (2022-09-07)
+
+
+### Bug Fixes
+
+* Make Rack a runtime dependency ([3f2924d](https://github.com/applandinc/appmap-ruby/commit/3f2924d41af291bfe771829c2ea7978332ff1d44))
+
+
+### Features
+
+* Add builtin labels for JWT ([3569333](https://github.com/applandinc/appmap-ruby/commit/3569333e99f82e03fff892001f2b65eb9e8aa52a))
+* Write an AppMap for each observed HTTP request ([2e89eaf](https://github.com/applandinc/appmap-ruby/commit/2e89eaf1b1f327771d1f4f0642fa6c202e0f3afb))
+
 # [0.88.0](https://github.com/applandinc/appmap-ruby/compare/v0.87.0...v0.88.0) (2022-08-31)
 
 
