@@ -9,7 +9,6 @@ module AppMap
     class Method
       ruby2_keywords def call(receiver, *args, &block)
         call_event = false
-        elapsed_before = 0
         if trace?
           call_event, elapsed_before = with_disabled_hook { before_hook receiver, *args }
         end
