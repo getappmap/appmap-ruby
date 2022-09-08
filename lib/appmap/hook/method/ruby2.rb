@@ -49,7 +49,7 @@ module AppMap
           raise
         ensure
           after_start_time = gettime
-          with_disabled_hook { after_hook receiver, call_event, elapsed_before, gettime - start_time, after_start_time, return_value, exception } \
+          with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
             if call_event
         end
       end
