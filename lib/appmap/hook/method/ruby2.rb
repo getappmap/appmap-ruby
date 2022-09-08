@@ -8,15 +8,19 @@ module AppMap
     # cf. https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     class Method
       ruby2_keywords def call(receiver, *args, &block)
-        call_event = trace? && with_disabled_hook { before_hook receiver, *args }
+        call_event = false
+        if trace?
+          call_event, elapsed_before = with_disabled_hook { before_hook receiver, *args }
+        end
         # note we can't short-circuit directly to do_call because then the call stack
         # depth changes and eval handler doesn't work correctly
-        trace_call call_event, receiver, *args, &block
+        trace_call call_event, elapsed_before, receiver, *args, &block
       end
 
       protected
 
       def before_hook(receiver, *args)
+        before_hook_start_time = gettime
         call_event = handle_call(receiver, args)
         if call_event
           AppMap.tracing.record_event \
@@ -25,7 +29,7 @@ module AppMap
             defined_class: defined_class,
             method: hook_method
         end
-        call_event
+        [call_event, gettime - before_hook_start_time]
       end
 
       ruby2_keywords def do_call(receiver, *args, &block)
@@ -33,7 +37,7 @@ module AppMap
       end
 
       # rubocop:disable Metrics/MethodLength
-      ruby2_keywords def trace_call(call_event, receiver, *args, &block)
+      ruby2_keywords def trace_call(call_event, elapsed_before, receiver, *args, &block)
         return do_call(receiver, *args, &block) unless call_event
 
         start_time = gettime
@@ -43,7 +47,8 @@ module AppMap
           exception = $ERROR_INFO
           raise
         ensure
-          with_disabled_hook { after_hook receiver, call_event, gettime - start_time, return_value, exception } \
+          after_start_time = gettime
+          with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
             if call_event
         end
       end
