@@ -102,8 +102,9 @@ module AppMap
         @defined_class ||= Hook.qualify_method_name(hook_method)&.first
       end
 
-      def after_hook(_receiver, call_event, elapsed, return_value, exception)
+      def after_hook(_receiver, call_event, elapsed_before, elapsed, after_start_time, return_value, exception)
         return_event = handle_return(call_event.id, elapsed, return_value, exception)
+        return_event.elapsed_instrumentation = elapsed_before + (gettime - after_start_time)
         AppMap.tracing.record_event(return_event) if return_event
       end
 

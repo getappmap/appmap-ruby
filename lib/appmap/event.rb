@@ -262,7 +262,7 @@ module AppMap
     end
 
     class MethodReturnIgnoreValue < MethodEvent
-      attr_accessor :parent_id, :elapsed
+      attr_accessor :parent_id, :elapsed, :elapsed_instrumentation
 
       class << self
         def build_from_invocation(parent_id, elapsed: nil, event: MethodReturnIgnoreValue.new)
@@ -279,6 +279,7 @@ module AppMap
         super.tap do |h|
           h[:parent_id] = parent_id
           h[:elapsed] = elapsed if elapsed
+          h[:elapsed_instrumentation] = elapsed_instrumentation if elapsed_instrumentation
         end
       end
     end
