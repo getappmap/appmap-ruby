@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
   spec.extensions << "ext/appmap/extconf.rb"
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'method_source'
   spec.add_dependency 'reverse_markdown'
 
   spec.add_runtime_dependency 'activesupport'
