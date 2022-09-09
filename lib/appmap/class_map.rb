@@ -50,7 +50,7 @@ module AppMap
         end
       end
       Function = Struct.new(:name) do
-        attr_accessor :static, :location, :labels, :comment, :source
+        attr_accessor :static, :location, :labels
 
         def type
           'function'
@@ -63,8 +63,6 @@ module AppMap
             location: location,
             static: static,
             labels: labels,
-            comment: comment,
-            source: source
           }.delete_if { |_, v| v.nil? || v == [] }
         end
       end
@@ -126,7 +124,6 @@ module AppMap
           end
 
         comment = method.comment
-        function_info[:comment] = comment unless Util.blank?(comment)
 
         function_info[:labels] = parse_labels(comment) + (method.labels || [])
         object_infos << function_info

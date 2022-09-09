@@ -4,13 +4,14 @@ require 'spec_helper'
 
 describe 'AppMap::ClassMap' do
   describe '.build_from_methods' do
-    it 'includes method comment' do
+    it 'includes method labels' do
       map = AppMap.class_map([ruby_method((method :test_method))])
       function = dig_map(map, 5)[0]
-      expect(function).to include(:comment)
+      expect(function).to include(:labels)
     end
 
     # test method comment
+    # @labels test.method
     def test_method
       'test method body'
     end
