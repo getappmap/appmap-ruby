@@ -20,11 +20,89 @@ module AppMap
         @method.source_location
       end
 
+      # =======================================================================
+      # The following appmap_ functions were copied from
+      # https://github.com/banister/method_source under the license:
+      #
+      #       MIT License
+
+      # Copyright (c) 2011 John Mair (banisterfiend)
+
+      # Permission is hereby granted, free of charge, to any person obtaining
+      # a copy of this software and associated documentation files (the
+      # 'Software'), to deal in the Software without restriction, including
+      # without limitation the rights to use, copy, modify, merge, publish,
+      # distribute, sublicense, and/or sell copies of the Software, and to
+      # permit persons to whom the Software is furnished to do so, subject to
+      # the following conditions:
+
+      # The above copyright notice and this permission notice shall be
+      # included in all copies or substantial portions of the Software.
+
+      # THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+      # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+      # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+      # IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+      # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+      # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+      # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+      class SourceNotFoundError < StandardError; end
+
+      def appmap_extract_last_comment(lines)
+        buffer = []
+
+        lines.reverse_each do |line|
+          # Add any line that is a valid ruby comment, and stop as
+          # soon as we hit a non comment line.
+          if (line =~ /^\s*#/) || (line =~ /^\s*$/)
+            buffer.append(line.lstrip)
+          else
+            break
+          end
+        end
+
+        buffer.reverse.join()
+      end
+
+      def appmap_comment_describing(file, line_number)
+        lines = file.is_a?(Array) ? file : file.each_line.to_a
+
+        appmap_extract_last_comment(lines[0..(line_number - 2)])
+      end
+
+      def appmap_lines_for(file_name, name=nil)
+        @lines_for_file ||= {}
+        @lines_for_file[file_name] ||= File.readlines(file_name)
+      rescue Errno::ENOENT => e
+        raise AppMap::Trace::RubyMethod::SourceNotFoundError, "Could not load source for #{name}: #{e.message}"
+      end
+
+      def appmap_comment_helper(source_location, name=nil)
+        raise AppMap::Trace::RubyMethod::SourceNotFoundError, "Could not locate source for #{name}!" unless source_location
+        file, line = *source_location
+
+        appmap_comment_describing(appmap_lines_for(file), line)
+      end
+
       def comment
-        @method.comment
-      rescue MethodSource::SourceNotFoundError, Errno::EINVAL
+        # use AppMap's optimization in appmap_extract_last_comment to
+        # extract comments...
+        appmap_comment_helper(source_location, defined?(name) ? name : inspect)
+        # ... instead of use MethodSource which hasn't merged
+        # https://github.com/banister/method_source/pull/78.  When/if
+        # this pr gets merged, AppMap's optimization can be removed
+        # and the previous implementation of "def comment" can be uncommented:
+      rescue AppMap::Trace::RubyMethod::SourceNotFoundError, Errno::EINVAL
         nil
       end
+      # =======================================================================
+
+      # def comment
+      #   @method.comment
+      # rescue MethodSource::SourceNotFoundError, Errno::EINVAL
+      #   nil
+      # end
 
       def package
         @package.name
