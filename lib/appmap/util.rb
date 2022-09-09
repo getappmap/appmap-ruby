@@ -86,6 +86,7 @@ module AppMap
       def sanitize_event(event, &block)
         event.delete(:thread_id)
         event.delete(:elapsed)
+        event.delete(:elapsed_instrumentation)
         delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
         delete_object_id.call(event[:receiver])
         delete_object_id.call(event[:return_value])
