@@ -272,9 +272,7 @@ module AppMap
             event.parent_id = parent_id
             event.elapsed = elapsed
             ret = MethodEvent.build_from_invocation(:return, event: event)
-            if elapsed_before > 0
-              event.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
-            end
+            event.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
             ret
           end
         end

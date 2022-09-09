@@ -70,9 +70,7 @@ module AppMap
         end
         self.parent_id = parent_id
         self.elapsed = elapsed
-        if elapsed_before > 0
-          self.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
-        end
+        self.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
       end
 
       def to_h
