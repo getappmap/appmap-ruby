@@ -1,3 +1,4 @@
+module AppMap
 module MethodSource
   module ReeSourceLocation
     # Ruby enterprise edition provides all the information that's
@@ -135,4 +136,5 @@ module MethodSource
       end
     end
   end
+end
 end

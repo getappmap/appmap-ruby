@@ -1,3 +1,4 @@
+module AppMap
 module MethodSource
 
   module CodeHelpers
@@ -151,4 +152,5 @@ module MethodSource
       end
     end
   end
+end
 end

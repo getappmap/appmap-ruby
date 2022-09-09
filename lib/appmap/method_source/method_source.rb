@@ -1,3 +1,4 @@
+# coding: utf-8
 # (C) John Mair (banisterfiend) 2011
 # MIT License
 
@@ -7,6 +8,7 @@ require "#{direc}/method_source/version"
 require "#{direc}/method_source/source_location"
 require "#{direc}/method_source/code_helpers"
 
+module AppMap
 module MethodSource
   extend MethodSource::CodeHelpers
 
@@ -112,7 +114,7 @@ module MethodSource
     #       self
     #     end
     def source
-      MethodSource.source_helper(source_location, defined?(name) ? name : inspect)
+      AppMap::MethodSource.source_helper(source_location, defined?(name) ? name : inspect)
     end
 
     # Return the comments associated with the method as a string.
@@ -124,7 +126,7 @@ module MethodSource
     #  =>
     #     # Removes all elements and returns self.
     def comment
-      MethodSource.comment_helper(source_location, defined?(name) ? name : inspect)
+      AppMap::MethodSource.comment_helper(source_location, defined?(name) ? name : inspect)
     end
 
     # Return the comments associated with the method class/module.
@@ -154,24 +156,25 @@ module MethodSource
 
       location = class_inst_or_module.const_source_location(const_name)
 
-      MethodSource.comment_helper(location, defined?(name) ? name : inspect)
+      AppMap::MethodSource.comment_helper(location, defined?(name) ? name : inspect)
     end
     alias module_comment class_comment
   end
 end
+end
 
 class Method
-  include MethodSource::SourceLocation::MethodExtensions
-  include MethodSource::MethodExtensions
+  include AppMap::MethodSource::SourceLocation::MethodExtensions
+  include AppMap::MethodSource::MethodExtensions
 end
 
 class UnboundMethod
-  include MethodSource::SourceLocation::UnboundMethodExtensions
-  include MethodSource::MethodExtensions
+  include AppMap::MethodSource::SourceLocation::UnboundMethodExtensions
+  include AppMap::MethodSource::MethodExtensions
 end
 
 class Proc
-  include MethodSource::SourceLocation::ProcExtensions
-  include MethodSource::MethodExtensions
+  include AppMap::MethodSource::SourceLocation::ProcExtensions
+  include AppMap::MethodSource::MethodExtensions
 end
 

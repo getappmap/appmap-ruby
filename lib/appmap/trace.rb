@@ -2,6 +2,8 @@
 
 require 'delegate'
 
+require 'appmap/method_source/method_source'
+
 module AppMap
   module Trace
     class RubyMethod < SimpleDelegator
@@ -22,7 +24,7 @@ module AppMap
 
       def comment
         @method.comment
-      rescue MethodSource::SourceNotFoundError, Errno::EINVAL
+      rescue AppMap::MethodSource::SourceNotFoundError, Errno::EINVAL
         nil
       end
 
