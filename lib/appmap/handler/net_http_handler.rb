@@ -59,7 +59,7 @@ module AppMap
     class HTTPClientResponse < AppMap::Event::MethodReturnIgnoreValue
       attr_accessor :status, :headers
 
-      def initialize(response, parent_id, elapsed)
+      def initialize(response, parent_id, elapsed_before, elapsed, after_start_time)
         super AppMap::Event.next_id_counter, :return, Thread.current.object_id
 
         if response
@@ -70,6 +70,9 @@ module AppMap
         end
         self.parent_id = parent_id
         self.elapsed = elapsed
+        if elapsed_before > 0
+          self.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
+        end
       end
 
       def to_h
@@ -103,8 +106,8 @@ module AppMap
         HTTPClientRequest.new(http, request)
       end
 
-      def handle_return(call_event_id, elapsed, return_value, exception)
-        HTTPClientResponse.new(return_value, call_event_id, elapsed)
+      def handle_return(call_event_id, elapsed_before, elapsed, after_start_time, return_value, exception)
+        HTTPClientResponse.new(return_value, call_event_id, elapsed_before, elapsed, after_start_time)
       end
     end
   end

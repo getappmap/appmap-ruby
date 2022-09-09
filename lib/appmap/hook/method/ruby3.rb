@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'appmap/util'
+
 module AppMap
   class Hook
     # Delegation methods for Ruby 3.
@@ -17,7 +19,7 @@ module AppMap
       protected
 
       def before_hook(receiver, *args, **kwargs)
-        before_hook_start_time = gettime
+        before_hook_start_time = AppMap::Util.gettime()
         args = [*args, kwargs] if !kwargs.empty? || keyrest?
         call_event = handle_call(receiver, args)
         if call_event
@@ -27,7 +29,7 @@ module AppMap
             defined_class: defined_class,
             method: hook_method
         end
-        [call_event, gettime - before_hook_start_time]
+        [call_event, AppMap::Util.gettime() - before_hook_start_time]
       end
 
       def keyrest?
@@ -42,14 +44,14 @@ module AppMap
       def trace_call(call_event, elapsed_before, receiver, *args, **kwargs, &block)
         return do_call(receiver, *args, **kwargs, &block) unless call_event
 
-        start_time = gettime
+        start_time = AppMap::Util.gettime()
         begin
           return_value = do_call(receiver, *args, **kwargs, &block)
         rescue # rubocop:disable Style/RescueStandardError
           exception = $ERROR_INFO
           raise
         ensure
-          after_start_time = gettime
+          after_start_time = AppMap::Util.gettime()
           with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
             if call_event
         end

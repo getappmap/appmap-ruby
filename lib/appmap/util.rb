@@ -231,6 +231,10 @@ module AppMap
       def ruby_minor_version
         @ruby_minor_version ||= RUBY_VERSION.split('.')[0..1].join('.').to_f
       end
+
+      def gettime
+        Process.clock_gettime Process::CLOCK_MONOTONIC
+      end
     end
   end
 end

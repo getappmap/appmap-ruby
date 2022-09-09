@@ -121,7 +121,7 @@ module AppMap
           # When the resolver returns, look to see if there is template rendering underway.
           # If so, populate the template path. In all cases, add a TemplateMethod so that the
           # template will be recorded in the classMap.
-          def handle_return(call_event_id, elapsed, return_value, exception)
+          def handle_return(call_event_id, elapsed_before, elapsed, after_start_time, return_value, exception)
             renderer = Array(Thread.current[TEMPLATE_RENDERER]).last
             path_obj = Array(return_value).first
 
@@ -168,11 +168,11 @@ module AppMap
             end
           end
 
-          def handle_return(call_event_id, elapsed, _return_value, _exception)
+          def handle_return(call_event_id, elapsed_before, elapsed, after_start_time, _return_value, _exception)
             template_call = Array(Thread.current[TEMPLATE_RENDERER]).pop
             template_call.ready = true
 
-            AppMap::Event::MethodReturnIgnoreValue.build_from_invocation(call_event_id, elapsed: elapsed)
+            AppMap::Event::MethodReturnIgnoreValue.build_from_invocation(call_event_id, elapsed_before: elapsed_before, elapsed: elapsed, after_start_time: after_start_time)
           end
         end
       end

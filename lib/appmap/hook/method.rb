@@ -78,10 +78,6 @@ module AppMap
         warn "#{hook_method.name} not found on #{hook_class}" if Hook::LOG
       end
 
-      def gettime
-        Process.clock_gettime Process::CLOCK_MONOTONIC
-      end
-
       def trace?
         return false unless AppMap.tracing_enabled?
         return false if Thread.current[HOOK_DISABLE_KEY]
@@ -103,8 +99,7 @@ module AppMap
       end
 
       def after_hook(_receiver, call_event, elapsed_before, elapsed, after_start_time, return_value, exception)
-        return_event = handle_return(call_event.id, elapsed, return_value, exception)
-        return_event.elapsed_instrumentation = elapsed_before + (gettime - after_start_time)
+        return_event = handle_return(call_event.id, elapsed_before, elapsed, after_start_time, return_value, exception)
         AppMap.tracing.record_event(return_event) if return_event
       end
 

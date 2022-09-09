@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'weakref'
+require 'appmap/util'
 
 module AppMap
   module Event
@@ -265,12 +266,16 @@ module AppMap
       attr_accessor :parent_id, :elapsed, :elapsed_instrumentation
 
       class << self
-        def build_from_invocation(parent_id, elapsed: nil, event: MethodReturnIgnoreValue.new)
+        def build_from_invocation(parent_id, elapsed_before: 0, elapsed: nil, after_start_time: 0, event: MethodReturnIgnoreValue.new)
           event ||= MethodReturnIgnoreValue.new
           event.tap do |_|
             event.parent_id = parent_id
             event.elapsed = elapsed
-            MethodEvent.build_from_invocation(:return, event: event)
+            ret = MethodEvent.build_from_invocation(:return, event: event)
+            if elapsed_before > 0
+              event.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
+            end
+            ret
           end
         end
       end
@@ -288,7 +293,7 @@ module AppMap
       attr_accessor :return_value, :exceptions
 
       class << self
-        def build_from_invocation(parent_id, return_value, exception, elapsed: nil, event: MethodReturn.new, parameter_schema: false)
+        def build_from_invocation(parent_id, return_value, exception, elapsed_before: 0, elapsed: nil, after_start_time: 0, event: MethodReturn.new, parameter_schema: false)
           event ||= MethodReturn.new
           event.tap do |_|
             if return_value
@@ -318,7 +323,7 @@ module AppMap
 
               event.exceptions = exceptions
             end
-            MethodReturnIgnoreValue.build_from_invocation(parent_id, elapsed: elapsed, event: event)
+            MethodReturnIgnoreValue.build_from_invocation(parent_id, elapsed_before: 0, elapsed: elapsed, after_start_time: 0, event: event)
           end
         end
       end

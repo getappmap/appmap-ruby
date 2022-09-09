@@ -15,7 +15,7 @@ module AppMap
           super
         end
 
-        def handle_return(call_event_id, elapsed, return_value, exception)
+        def handle_return(call_event_id, elapsed_before, elapsed, after_start_time, return_value, exception)
           if Thread.current[TEMPLATE_RENDER_FORMAT] == :json
             Thread.current[TEMPLATE_RENDER_VALUE] = JSON.parse(return_value) rescue nil
           end
