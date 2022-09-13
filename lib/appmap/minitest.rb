@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'appmap'
 require 'appmap/util'
 require 'fileutils'
 require 'active_support'
@@ -125,7 +126,7 @@ module AppMap
       end
 
       def enabled?
-        ENV['APPMAP'] == 'true'
+        AppMap.recording_enabled?(:minitest)
       end
 
       def run

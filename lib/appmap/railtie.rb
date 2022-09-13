@@ -4,6 +4,11 @@ module AppMap
   # Railtie connects the AppMap recorder to Rails-specific features.
   class Railtie < ::Rails::Railtie
     initializer 'appmap.remote_recording' do
+      # Indicate early in the log when these methods are enabled.
+      %i[remote requests].each do |recording_method|
+        AppMap.recording_enabled?(recording_method)
+      end
+
       require 'appmap/middleware/remote_recording'
       Rails.application.config.middleware.insert_before \
         ActionDispatch::Executor,
@@ -29,4 +34,4 @@ module AppMap
       end
     end
   end
-end if ENV['APPMAP'] == 'true'
+end if AppMap.recording_enabled?

@@ -88,8 +88,7 @@ class TestRailsApp
     prepare_db
     FileUtils.rm_rf tmpdir
     run_cmd \
-      './bin/rspec spec/controllers/users_controller_spec.rb spec/controllers/users_controller_api_spec.rb',
-      'APPMAP' => 'true'
+      './bin/rspec spec/controllers/users_controller_spec.rb spec/controllers/users_controller_api_spec.rb'
     @specs_ran = true
   end
 
@@ -121,11 +120,11 @@ shared_context 'Rails app pg database' do |dir|
 end
 
 shared_context 'Rails app service running' do
-  def start_server(rails_app_environment: { 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true' })
+  def start_server(rails_app_environment: { })
     service_port = RandomPort::Pool::SINGLETON.acquire
     @app.prepare_db
     server = @app.spawn_cmd \
-      "./bin/rails server -p #{service_port}", rails_app_environment
+      "./bin/rails server -p #{service_port}", { 'RAILS_ENV' => 'development', 'ORM_MODULE' => 'sequel', 'DISABLE_SPRING' => 'true' }.merge(rails_app_environment)
 
     uri = URI("http://localhost:#{service_port}/health")
 

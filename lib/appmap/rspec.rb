@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
+require 'appmap'
 require 'appmap/util'
 require 'set'
 require 'fileutils'
 
 module AppMap
-  # Integration of AppMap with RSpec. When enabled with APPMAP=true, the AppMap tracer will
-  # be activated around each scenario which has the metadata key `:appmap`.
   module RSpec
     APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
     LOG = false
@@ -216,7 +215,7 @@ module AppMap
       end
 
       def enabled?
-        ENV['APPMAP'] == 'true'
+        AppMap.recording_enabled?(:rspec)
       end
 
       def run
@@ -227,7 +226,6 @@ module AppMap
 end
 
 if AppMap::RSpec.enabled?
-  require 'appmap'
   require 'active_support/inflector/transliterate'
   require 'rspec/core'
   require 'rspec/core/example'

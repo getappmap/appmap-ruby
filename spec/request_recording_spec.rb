@@ -7,7 +7,7 @@ describe 'request recording', :order => :defined do
   include_context 'Rails app service running'
 
   before(:all) do
-    @service_port, @server = start_server(rails_app_environment: { 'ORM_MODULE' => 'sequel', 'APPMAP' => 'true', 'APPMAP_RECORD_REQUESTS' => 'true' })
+    @service_port, @server = start_server(rails_app_environment: { 'ORM_MODULE' => 'sequel', 'APPMAP_RECORD_REMOTE' => 'false' })
   end
   after(:all) do
     stop_server(@server)

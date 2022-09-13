@@ -10,7 +10,7 @@ class MockCompatibilityTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system(env.merge({ 'APPMAP' => 'true' }), %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
+        system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield
       end

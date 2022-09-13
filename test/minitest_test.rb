@@ -11,7 +11,7 @@ class MinitestTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
+        system({ 'APPMAP_RECORD_MINITEST' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield
       end

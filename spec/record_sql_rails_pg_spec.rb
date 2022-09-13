@@ -46,8 +46,7 @@ describe 'SQL events' do
         @app.run_cmd \
           './bin/rspec spec/controllers/users_controller_api_spec.rb:8 spec/controllers/users_controller_api_spec.rb:29',
           'ORM_MODULE' => orm_module,
-          'RAILS_ENV' => 'test',
-          'APPMAP' => 'true'
+          'RAILS_ENV' => 'test'
       end
 
       let(:appmap_json) { File.join tmpdir, "appmap/rspec/#{test_case}.appmap.json" }
