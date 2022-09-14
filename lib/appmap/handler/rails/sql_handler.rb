@@ -2,6 +2,7 @@
 
 require 'appmap/event'
 require 'appmap/hook/method'
+require 'appmap/util'
 
 module AppMap
   module Handler
@@ -147,6 +148,8 @@ module AppMap
           reentry_key = "#{self.class.name}#call"
           return if Thread.current[reentry_key] == true
 
+          after_start_time = AppMap::Util.gettime()
+
           Thread.current[reentry_key] = true
           begin
             sql = payload[:sql].strip
@@ -155,7 +158,9 @@ module AppMap
 
             call = SQLCall.new(payload)
             AppMap.tracing.record_event(call)
-            AppMap.tracing.record_event(SQLReturn.new(call.id, finished - started))
+            sql_return_event = SQLReturn.new(call.id, finished - started)
+            sql_return_event.elapsed_instrumentation = AppMap::Util.gettime() - after_start_time
+            AppMap.tracing.record_event(sql_return_event)
           ensure
             Thread.current[reentry_key] = nil
           end

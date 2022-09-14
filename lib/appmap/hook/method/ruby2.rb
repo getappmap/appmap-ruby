@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'appmap/util'
+
 def ruby2_keywords(*); end unless respond_to?(:ruby2_keywords, true)
 
 module AppMap
@@ -20,7 +22,7 @@ module AppMap
       protected
 
       def before_hook(receiver, *args)
-        before_hook_start_time = gettime
+        before_hook_start_time = AppMap::Util.gettime()
         call_event = handle_call(receiver, args)
         if call_event
           AppMap.tracing.record_event \
@@ -29,7 +31,7 @@ module AppMap
             defined_class: defined_class,
             method: hook_method
         end
-        [call_event, gettime - before_hook_start_time]
+        [call_event, AppMap::Util.gettime() - before_hook_start_time]
       end
 
       ruby2_keywords def do_call(receiver, *args, &block)
@@ -40,14 +42,14 @@ module AppMap
       ruby2_keywords def trace_call(call_event, elapsed_before, receiver, *args, &block)
         return do_call(receiver, *args, &block) unless call_event
 
-        start_time = gettime
+        start_time = AppMap::Util.gettime()
         begin
           return_value = do_call(receiver, *args, &block)
         rescue # rubocop:disable Style/RescueStandardError
           exception = $ERROR_INFO
           raise
         ensure
-          after_start_time = gettime
+          after_start_time = AppMap::Util.gettime()
           with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
             if call_event
         end
