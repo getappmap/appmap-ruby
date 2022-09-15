@@ -18,7 +18,7 @@ describe AppMap::DetectEnabled do
   end
 
   describe 'recording_method' do
-    describe 'undefined' do
+    describe 'nil' do
       let(:recording_method) { nil }
       it_should_behave_like 'disabled'
 
@@ -98,7 +98,7 @@ describe AppMap::DetectEnabled do
       end
     end
 
-    %w[rspec minitest].each do |test_framework|
+    %w[rspec minitest cucumber].each do |test_framework|
       describe test_framework do
         let(:recording_method) { test_framework.to_sym }
         it_should_behave_like 'disabled'

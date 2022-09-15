@@ -30,9 +30,8 @@ module AppMap
       @@detected_for_method[@recording_method] = enabled
 
       if @recording_method
-        if enabled
+        if enabled && enabled_by_app_env?
           warn AppMap::Util.color("AppMap #{@recording_method.nil? ? '' : "#{@recording_method} "}recording is enabled because #{message}", :magenta)
-          # Inform the user that legacy APPMAP=true isn't required any more
         end
       end
 
@@ -40,7 +39,7 @@ module AppMap
     end
 
     def detect_enabled
-      detection_functions = %i[globally_disabled? recording_method_disabled? globally_enabled? recording_method_enabled? enabled_by_app_env?]
+      detection_functions = %i[globally_disabled? recording_method_disabled? enabled_by_app_env? recording_method_enabled? globally_enabled?]
 
       message, enabled = []
       while enabled.nil? && !detection_functions.empty?
@@ -57,7 +56,7 @@ module AppMap
 
     def enabled_by_app_env?
       env_name, app_env = detect_app_env
-      if %i[rspec minitest].member?(@recording_method)
+      if %i[rspec minitest cucumber].member?(@recording_method)
         return [ "#{env_name} is '#{app_env}'", true ] if app_env == 'test'
       end
 
@@ -79,7 +78,10 @@ module AppMap
     end
 
     def globally_enabled?
-      [ 'APPMAP=true', true ] if @recording_method.nil? && ['APPMAP'] == 'true'
+      # Don't auto-enable request recording in the 'test' environment, because users probably don't want
+      # AppMaps of both test cases and requests. Requests recording can always be enabled by APPMAP_RECORD_REQUESTS=true.
+      requests_recording_in_test = -> () { [ :requests ].member?(@recording_method) && detect_app_env == 'test' }
+      [ 'APPMAP=true', true ] if ENV['APPMAP'] == 'true' && !requests_recording_in_test.()
     end
 
     def globally_disabled?
