@@ -33,9 +33,6 @@ module AppMap
         if enabled
           warn AppMap::Util.color("AppMap #{@recording_method.nil? ? '' : "#{@recording_method} "}recording is enabled because #{message}", :magenta)
           # Inform the user that legacy APPMAP=true isn't required any more
-          if enabled_by_env && ENV['APPMAP'] == 'true'
-            warn AppMap::Util.color("Note: Setting envirnoment variable APPMAP=true is no longer necessary to enable #{@recording_method} recording in this environment.", :yellow)
-          end
         end
       end
 
@@ -82,7 +79,7 @@ module AppMap
     end
 
     def globally_enabled?
-      [ 'APPMAP=true', true ] if ENV['APPMAP'] == 'true'
+      [ 'APPMAP=true', true ] if @recording_method.nil? && ['APPMAP'] == 'true'
     end
 
     def globally_disabled?
