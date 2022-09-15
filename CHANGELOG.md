@@ -1,3 +1,11 @@
+# [0.90.0](https://github.com/applandinc/appmap-ruby/compare/v0.89.0...v0.90.0) (2022-09-15)
+
+
+### Features
+
+* Include required_ruby_version in the gemspec ([a5d7c6b](https://github.com/applandinc/appmap-ruby/commit/a5d7c6b7b255f817f3ceec5924cd799d2565daa4))
+* Save default appmap.yml ([77a08d5](https://github.com/applandinc/appmap-ruby/commit/77a08d5ebbe2f49f19237242a62d05aadcc84228))
+
 # [0.89.0](https://github.com/applandinc/appmap-ruby/compare/v0.88.0...v0.89.0) (2022-09-07)
 
 
