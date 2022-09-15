@@ -338,28 +338,34 @@ module AppMap
           AppMap uses this file to customize its behavior. For example, you can use
           the 'packages' setting to indicate which local file paths and dependency
           gems you want to include in the AppMap. Since you haven't provided specific
-          settings, the appmap gem will try and guess some reasonable defaults.
-          To suppress this message, create the file:
-          
-          #{Pathname.new(config_file_name).expand_path}
-          
-          Here are the default settings that will be used in the meantime. You can
-          copy and paste this example to start your appmap.yml.
+          settings, the appmap gem will use these default options:
           MISSING_FILE_MSG
           {}
         end
 
         load(config_data).tap do |config|
-          config_yaml = {
+          {
             'name' => config.name,
             'packages' => config.packages.select{|p| p.path}.map do |pkg|
               { 'path' => pkg.path }
             end,
             'exclude' => []
-          }.compact
-          unless config_present
-            warn Util.color(YAML.dump(config_yaml), :magenta)
-            warn logo.()
+          }.compact.tap do |config_yaml|
+            unless config_present
+              warn Util.color(YAML.dump(config_yaml), :magenta)
+              dirname = Pathname.new(config_file_name).dirname.expand_path
+              if Dir.exists?(dirname) && File.writable?(dirname)
+                warn Util.color(<<~CONFIG_FILE_MSG, :magenta)
+                This file will be saved to #{Pathname.new(config_file_name).expand_path},
+                where you can customize it.
+                CONFIG_FILE_MSG
+                File.write(config_file_name, YAML.dump(config_yaml))
+              end
+              warn Util.color(<<~CONFIG_FILE_MSG, :magenta)
+              For more information, see https://appmap.io/docs/reference/appmap-ruby.html#configuration
+              CONFIG_FILE_MSG
+              warn logo.()
+            end
           end
         end
       end

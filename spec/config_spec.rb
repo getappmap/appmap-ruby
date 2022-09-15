@@ -130,13 +130,13 @@ describe AppMap::Config do
     end
   end
 
-  context do
+  context 'missing config file' do
+    before { FileUtils.mkdir_p 'tmp' }
     let(:warnings) { @warnings ||= [] }
     let(:warning) { warnings.join }
-    before do
-      expect(AppMap::Config).to receive(:warn).at_least(1) { |msg| warnings << msg }
-    end
     it 'prints a warning and uses a default config' do
+      expect(AppMap::Config).to receive(:warn).at_least(1) { |msg| warnings << msg }
+
       config = AppMap::Config.load_from_file 'no/such/file'
       expect(config.to_h).to eq(YAML.load(<<~CONFIG))
       :name: appmap-ruby
@@ -149,6 +149,20 @@ describe AppMap::Config do
       :exclude: []
       CONFIG
       expect(warning).to include('NOTICE: The AppMap config file no/such/file was not found!')
+    end
+    describe 'writeable dir' do
+      it 'saves the guessed config' do
+        expect(File).to receive(:write).with("tmp/appmap.yml", instance_of(String))
+
+        AppMap::Config.load_from_file 'tmp/appmap.yml'
+      end
+    end
+    describe 'non-writeable dir' do
+      it 'does not save the guessed config' do
+        File.stub(:write).and_raise "Unexpected File.write"
+
+        config = AppMap::Config.load_from_file '/no/such/appmap.yml'
+      end
     end
   end
 end
