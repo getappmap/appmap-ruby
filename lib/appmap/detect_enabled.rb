@@ -104,7 +104,7 @@ module AppMap
     end
 
     def rails_env
-      return Rails.env if defined?(Rails)
+      return Rails.env if defined?(::Rails::Railtie)
       
       return ENV['RAILS_ENV']
     end

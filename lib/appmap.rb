@@ -57,7 +57,7 @@ lambda do
     end
   end.enable
 
-  if defined?(::Rails)
+  if defined?(::Rails::Railtie)
     require 'appmap/railtie'
   end
 
