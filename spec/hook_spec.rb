@@ -166,7 +166,6 @@ describe 'AppMap class Hooking' do
           :static: false
           :labels:
           - has-fn-label
-          :comment: "# @label has-fn-label\\n"
     YAML
   end
 
