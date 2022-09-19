@@ -101,7 +101,8 @@ module AppMap
             version: Gem.loaded_specs['minitest']&.version&.to_s
           }
           m[:recorder] = {
-            name: 'minitest'
+            name: 'minitest',
+            type: 'tests'
           }
           m[:test_status] = test_status
           if exception

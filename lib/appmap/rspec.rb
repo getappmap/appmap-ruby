@@ -192,7 +192,8 @@ module AppMap
             version: Gem.loaded_specs['rspec-core']&.version&.to_s
           }
           m[:recorder] = {
-            name: 'rspec'
+            name: 'rspec',
+            type: 'tests'
           }
           m[:test_status] = test_status
           if exception
