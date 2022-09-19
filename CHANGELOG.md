@@ -1,3 +1,10 @@
+# [0.91.0](https://github.com/applandinc/appmap-ruby/compare/v0.90.1...v0.91.0) (2022-09-19)
+
+
+### Features
+
+* Emit metadata.recorder.type ([6358669](https://github.com/applandinc/appmap-ruby/commit/6358669d5dc5123a613b18301519dac709614406))
+
 ## [0.90.1](https://github.com/applandinc/appmap-ruby/compare/v0.90.0...v0.90.1) (2022-09-19)
 
 
