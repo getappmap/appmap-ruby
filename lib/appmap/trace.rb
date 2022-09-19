@@ -21,8 +21,11 @@ module AppMap
       end
 
       def comment
-        @method.comment
-      rescue MethodSource::SourceNotFoundError, Errno::EINVAL
+        return nil if source_location.nil? || source_location.first.start_with?('<')
+
+        # Do not use method_source's comment method because it's slow
+        @comment ||= RubyMethod.last_comment *source_location
+      rescue Errno::EINVAL, Errno::ENOENT
         nil
       end
 
@@ -36,6 +39,21 @@ module AppMap
 
       def labels
         @package.labels
+      end
+
+      private
+
+      # Read file and get last comment before line.
+      def self.last_comment(file, line_number)
+        File.open(file) do |f|
+          buffer = []
+          f.each_line.lazy.take(line_number - 1).reverse_each do |line|
+            break unless (line =~ /^\s*#/) || (line =~ /^\s*$/)
+
+            buffer << line.lstrip
+          end
+          buffer.reverse.join
+        end
       end
     end
 
