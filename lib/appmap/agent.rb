@@ -9,6 +9,7 @@ require_relative 'open'
 
 # load extension
 require_relative 'appmap'
+require_relative './detect_enabled'
 
 module AppMap
   class << self
@@ -113,6 +114,10 @@ module AppMap
 
     def explain_queries?
       ENV['APPMAP_EXPLAIN_QUERIES'] == 'true'
+    end
+
+    def recording_enabled?(recording_method = nil)
+      DetectEnabled.new(recording_method).enabled?
     end
   end
 end

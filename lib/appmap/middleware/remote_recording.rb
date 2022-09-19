@@ -82,7 +82,7 @@ module AppMap
         # 0
 
         req = Rack::Request.new(env)
-        return handle_record_request(req) if req.path == '/_appmap/record'
+        return handle_record_request(req) if AppMap.recording_enabled?(:remote) && req.path == '/_appmap/record'
 
         start_time = Time.now
         # Support multi-threaded web server such as Puma by recording each thread
@@ -150,7 +150,7 @@ module AppMap
       end
 
       def record_all_requests?
-        ENV['APPMAP_RECORD_REQUESTS'] == 'true'
+        AppMap.recording_enabled?(:requests)
       end
 
       def recording?

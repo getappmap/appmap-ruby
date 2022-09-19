@@ -15,8 +15,8 @@ describe 'AppMap tracer via Railtie' do
         expect(command_output).to eq('true')
       end
     end
-    describe 'with APPMAP=true' do
-      let(:env) { { 'APPMAP' => 'true' } }
+    describe 'without APPMAP=false' do
+      let(:env) { { } }
       it 'is enabled' do
         expect(command_output).to eq('false')
       end

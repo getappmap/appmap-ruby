@@ -7,13 +7,13 @@ describe 'remote recording', :order => :defined do
     JSON.parse(res.body).deep_symbolize_keys
   end
 
-  rails_versions.each do |rails_version|
-    context "with rails #{rails_version}" do
+    rails_versions.each do |rails_version|
+      context "with rails #{rails_version}" do
       include_context 'rails app', rails_version
       include_context 'Rails app service running'
 
       before(:all) do
-        @service_port, @server = start_server
+        @service_port, @server = start_server(rails_app_environment: { 'ORM_MODULE' => 'sequel', 'APPMAP_RECORD_REQUESTS' => 'false' })
       end
       after(:all) do
         stop_server(@server)

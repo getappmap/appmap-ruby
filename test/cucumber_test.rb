@@ -11,7 +11,7 @@ class CucumberTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system({ 'APPMAP' => 'true' }, %(bundle exec cucumber))
+        system({ 'APPMAP_RECORD_CUCUMBER' => 'true' }, %(bundle exec cucumber))
 
         yield
       end

@@ -8,6 +8,8 @@ require 'webdrivers/chromedriver'
 
 # Disable default initialization of AppMap
 ENV['APPMAP_INITIALIZE'] = 'false'
+ENV.delete('RAILS_ENV')
+ENV.delete('APP_ENV')
 
 require 'appmap'
 

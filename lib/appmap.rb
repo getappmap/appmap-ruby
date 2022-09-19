@@ -57,7 +57,7 @@ lambda do
     end
   end.enable
 
-  if defined?(::Rails)
+  if defined?(::Rails::Railtie)
     require 'appmap/railtie'
   end
 
@@ -76,4 +76,4 @@ lambda do
 
 end.call unless ENV['APPMAP_AUTOREQUIRE'] == 'false'
 
-AppMap.initialize_configuration if ENV['APPMAP'] == 'true' && ENV['APPMAP_INITIALIZE'] != 'false'
+AppMap.initialize_configuration if AppMap.recording_enabled? && ENV['APPMAP_INITIALIZE'] != 'false'
