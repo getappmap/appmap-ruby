@@ -1,3 +1,15 @@
+## [0.90.1](https://github.com/applandinc/appmap-ruby/compare/v0.90.0...v0.90.1) (2022-09-19)
+
+
+### Bug Fixes
+
+* Faster comment extraction ([f6199a6](https://github.com/applandinc/appmap-ruby/commit/f6199a607fadd58500d9cdc9394b39413e6b2930))
+
+
+### Performance Improvements
+
+* Don't save comment and source in classmap. ([c3c8e75](https://github.com/applandinc/appmap-ruby/commit/c3c8e755677d169610bfa7e55c12f0d418120eb7))
+
 # [0.90.0](https://github.com/applandinc/appmap-ruby/compare/v0.89.0...v0.90.0) (2022-09-15)
 
 
