@@ -1,3 +1,17 @@
+# [0.92.0](https://github.com/applandinc/appmap-ruby/compare/v0.91.0...v0.92.0) (2022-09-19)
+
+
+### Bug Fixes
+
+* Detect Rails via Rails::Railtie ([cf83f00](https://github.com/applandinc/appmap-ruby/commit/cf83f005e0a85d016f864c0ad2f1dfa1af2fe6b9))
+
+
+### Features
+
+* Don't auto-enable requests recording in 'test' ([30413cd](https://github.com/applandinc/appmap-ruby/commit/30413cdc23b3851e8e1272d30063e463b4b23aba))
+* Enable recording for known environments ([6c59c8a](https://github.com/applandinc/appmap-ruby/commit/6c59c8a5a0b61c19cec185d7406b148846ac5c24))
+* Use APPMAP=true to flag library loading ([9900631](https://github.com/applandinc/appmap-ruby/commit/9900631c07165a877704b7d7fd73857ccf9e32b3))
+
 # [0.91.0](https://github.com/applandinc/appmap-ruby/compare/v0.90.1...v0.91.0) (2022-09-19)
 
 
