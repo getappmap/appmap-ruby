@@ -14,7 +14,8 @@ at_exit do
 
   metadata = AppMap.detect_metadata
   metadata[:recorder] = {
-    name: 'record_process'
+    name: 'record_process',
+    type: 'process'
   }
 
   appmap = {

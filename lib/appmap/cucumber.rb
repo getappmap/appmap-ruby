@@ -92,7 +92,8 @@ module AppMap
             'version' => Gem.loaded_specs['cucumber']&.version&.to_s
           }
           m['recorder'] = {
-            'name' => 'cucumber'
+            'name' => 'cucumber',
+            'type' => 'tests'
           }
         end
       end

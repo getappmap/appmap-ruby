@@ -63,7 +63,8 @@ module AppMap
 
         metadata = AppMap.detect_metadata
         metadata[:recorder] = {
-          name: 'remote_recording'
+          name: 'remote_recording',
+          type: 'remote'
         }
 
         response = JSON.generate \
@@ -103,7 +104,8 @@ module AppMap
             metadata[:name] = appmap_name
             metadata[:timestamp] = start_time.to_f
             metadata[:recorder] = {
-              name: 'record_requests'
+              name: 'rack',
+              type: 'requests'
             }
     
             appmap = {

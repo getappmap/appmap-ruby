@@ -32,7 +32,7 @@ class RSpecTest < Minitest::Test
       assert_includes metadata.keys, 'client'
       assert_equal({ name: 'appmap', url: AppMap::URL, version: AppMap::VERSION }.stringify_keys, metadata['client'])
       assert_includes metadata.keys, 'recorder'
-      assert_equal({ name: 'rspec' }.stringify_keys, metadata['recorder'])
+      assert_equal({ name: 'rspec', type: 'tests' }.stringify_keys, metadata['recorder'])
 
       assert_includes metadata.keys, 'frameworks'
       rspec = metadata['frameworks'].select {|f| f['name'] == 'rspec'}
