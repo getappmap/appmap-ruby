@@ -1,3 +1,10 @@
+## [0.92.1](https://github.com/getappmap/appmap-ruby/compare/v0.92.0...v0.92.1) (2022-09-21)
+
+
+### Bug Fixes
+
+* Drop database server version ([e52f210](https://github.com/getappmap/appmap-ruby/commit/e52f210baa26be49232003c224e4ffee19be823d))
+
 # [0.92.0](https://github.com/applandinc/appmap-ruby/compare/v0.91.0...v0.92.0) (2022-09-19)
 
 
