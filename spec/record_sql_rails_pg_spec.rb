@@ -56,7 +56,7 @@ describe 'SQL events' do
 
       RSpec::Matchers.define_negated_matcher :not_include, :include
       def sql_query(query)
-        (include('sql_query' => (include 'sql' => query)))
+        (include('sql_query' => (include 'sql' => query, 'database_type' => 'postgres')))
           .and(not_include('defined_class'))
           .and(not_include('method_id'))
           .and(not_include('path'))
