@@ -75,7 +75,6 @@ module AppMap
                 end
               end
 
-              payload[:server_version] = examiner.server_version
               payload[:database_type] = examiner.database_type.to_s
             end
 
@@ -92,6 +91,8 @@ module AppMap
 
           class SequelExaminer
             def server_version
+              # Queries the database, therefore this is pretty unsafe to do inside of a hook.
+              # As a result, this is not being used at the moment.
               Sequel::Model.db.server_version
             end
 
