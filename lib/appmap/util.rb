@@ -86,6 +86,7 @@ module AppMap
       def sanitize_event(event, &block)
         event.delete(:thread_id)
         event.delete(:elapsed)
+        event.delete(:elapsed_instrumentation)
         delete_object_id = ->(obj) { (obj || {}).delete(:object_id) }
         delete_object_id.call(event[:receiver])
         delete_object_id.call(event[:return_value])
@@ -230,6 +231,10 @@ module AppMap
 
       def ruby_minor_version
         @ruby_minor_version ||= RUBY_VERSION.split('.')[0..1].join('.').to_f
+      end
+
+      def gettime
+        Process.clock_gettime Process::CLOCK_MONOTONIC
       end
     end
   end

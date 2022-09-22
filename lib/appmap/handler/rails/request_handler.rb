@@ -10,7 +10,7 @@ module AppMap
 
       module RequestHandler
         class HTTPServerRequest < AppMap::Event::MethodEvent
-          attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers
+          attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers, :call_elapsed_instrumentation
 
           def initialize(request)
             super AppMap::Event.next_id_counter, :call, Thread.current.object_id
@@ -101,16 +101,21 @@ module AppMap
           protected
 
           def before_hook(receiver, *)
+            before_hook_start_time = AppMap::Util.gettime()
             call_event = HTTPServerRequest.new(receiver.request)
+            call_event.call_elapsed_instrumentation = (AppMap::Util.gettime() - before_hook_start_time)
             # http_server_request events are i/o and do not require a package name.
             AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
             call_event
           end
 
           def after_hook(receiver, call_event, elapsed, *)
+            after_hook_start_time = AppMap::Util.gettime()
             return_value = Thread.current[TEMPLATE_RENDER_VALUE]
             Thread.current[TEMPLATE_RENDER_VALUE] = nil
             return_event = HTTPServerResponse.build_from_invocation call_event.id, return_value, elapsed, receiver.response
+            return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + call_event.call_elapsed_instrumentation
+            call_event.call_elapsed_instrumentation = nil # to stay consistent with elapsed_instrumentation only being stored in return
             AppMap.tracing.record_event return_event
           end
         end
@@ -134,13 +139,16 @@ module AppMap
           end
 
           def before_hook(payload)
+            before_hook_start_time = AppMap::Util.gettime()
             @call_event = HTTPServerRequest.new payload[:request]
+            @call_event.call_elapsed_instrumentation = (AppMap::Util.gettime() - before_hook_start_time)
             AppMap.tracing.record_event @call_event
           end
 
           def after_hook(_name, started, finished, _unique_id, payload)
             return unless @request_id == payload[:request].request_id
 
+            after_hook_start_time = AppMap::Util.gettime()
             return_value = Thread.current[TEMPLATE_RENDER_VALUE]
             Thread.current[TEMPLATE_RENDER_VALUE] = nil
             return_event = HTTPServerResponse.build_from_invocation(
@@ -149,6 +157,7 @@ module AppMap
               finished - started,
               payload[:response] || payload
             )
+            return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + @call_event.call_elapsed_instrumentation
 
             AppMap.tracing.record_event return_event
             ActiveSupport::Notifications.unsubscribe(@subscriber)
