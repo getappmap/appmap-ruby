@@ -1,3 +1,13 @@
+# [0.93.0](https://github.com/getappmap/appmap-ruby/compare/v0.92.1...v0.93.0) (2022-09-22)
+
+
+### Features
+
+* Record the time spent instrumentating a function, as opposed to only the time spend executing a function ([0941b4d](https://github.com/getappmap/appmap-ruby/commit/0941b4d343b1ea2964268d3a47d8f762de00deea))
+* save elapsed_instrumentation for HTTP requests ([a32fb52](https://github.com/getappmap/appmap-ruby/commit/a32fb526a6f7b47ddc859e86a68b53b50b052061))
+* save elapsed_instrumentation for RequestListener ([5a081cc](https://github.com/getappmap/appmap-ruby/commit/5a081ccf558a4591035acc81b1717b2ccef880ee))
+* Save elapsed_instrumentation for sql_query ([40a851e](https://github.com/getappmap/appmap-ruby/commit/40a851e5d40cc5ada36ea52e32d5222da4c67d10))
+
 ## [0.92.1](https://github.com/getappmap/appmap-ruby/compare/v0.92.0...v0.92.1) (2022-09-21)
 
 
