@@ -89,39 +89,46 @@ module AppMap
         # into a separate Tracer.
         tracer = AppMap.tracing.trace(thread: Thread.current) if record_all_requests?
 
-        @app.call(env).tap do |status, headers|
-          if tracer
-            AppMap.tracing.delete(tracer)
+        record_request = lambda do |args|
+          return unless tracer
 
-            events = tracer.events.map(&:to_h)
+          AppMap.tracing.delete(tracer)
 
-            appmap_name = "#{req.request_method} #{req.path} (#{status}) - #{start_time.strftime('%T.%L')}"
-            appmap_file_name = AppMap::Util.scenario_filename([ start_time.to_f, req.url ].join('_'))
-            output_dir = File.join(AppMap::DEFAULT_APPMAP_DIR, 'requests')
-            appmap_file_path = File.join(output_dir, appmap_file_name)
+          status, headers = args
+          events = tracer.events.map(&:to_h)
 
-            metadata = AppMap.detect_metadata
-            metadata[:name] = appmap_name
-            metadata[:timestamp] = start_time.to_f
-            metadata[:recorder] = {
-              name: 'rack',
-              type: 'requests'
-            }
-    
-            appmap = {
-              version: AppMap::APPMAP_FORMAT_VERSION,
-              classMap: AppMap.class_map(tracer.event_methods),
-              metadata: metadata,
-              events: events
-            }
+          event_fields = events.map(&:keys).flatten.map(&:to_sym).uniq.sort
+          return unless %i[http_server_request http_server_response].all? { |field| event_fields.include?(field) }
 
-            FileUtils.mkdir_p(output_dir)
-            File.write(appmap_file_path, JSON.generate(appmap))
+          path = req.path.gsub(/\/{2,}/, '/') # Double slashes have been observed
+          appmap_name = "#{req.request_method} #{path} (#{status}) - #{start_time.strftime('%T.%L')}"
+          appmap_file_name = AppMap::Util.scenario_filename([ start_time.to_f, req.url ].join('_'))
+          output_dir = File.join(AppMap::DEFAULT_APPMAP_DIR, 'requests')
+          appmap_file_path = File.join(output_dir, appmap_file_name)
 
-            headers['AppMap-Name'] = File.expand_path(appmap_name)
-            headers['AppMap-File-Name'] = File.expand_path(appmap_file_path)
-          end
+          metadata = AppMap.detect_metadata
+          metadata[:name] = appmap_name
+          metadata[:timestamp] = start_time.to_f
+          metadata[:recorder] = {
+            name: 'rack',
+            type: 'requests'
+          }
+  
+          appmap = {
+            version: AppMap::APPMAP_FORMAT_VERSION,
+            classMap: AppMap.class_map(tracer.event_methods),
+            metadata: metadata,
+            events: events
+          }
+
+          FileUtils.mkdir_p(output_dir)
+          File.write(appmap_file_path, JSON.generate(appmap))
+
+          headers['AppMap-Name'] = File.expand_path(appmap_name)
+          headers['AppMap-File-Name'] = File.expand_path(appmap_file_path)
         end
+
+        @app.call(env).tap(&record_request)
       end
 
       def recording_state
