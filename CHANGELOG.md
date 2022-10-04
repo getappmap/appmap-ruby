@@ -1,3 +1,10 @@
+## [0.93.1](https://github.com/getappmap/appmap-ruby/compare/v0.93.0...v0.93.1) (2022-10-04)
+
+
+### Bug Fixes
+
+* Unyield static asset requests ([4041e4b](https://github.com/getappmap/appmap-ruby/commit/4041e4bbfb44612c5ade2cba334e1ab36a7929e5))
+
 # [0.93.0](https://github.com/getappmap/appmap-ruby/compare/v0.92.1...v0.93.0) (2022-09-22)
 
 
