@@ -346,6 +346,8 @@ module AppMap
         load(config_data).tap do |config|
           {
             'name' => config.name,
+            'language' => 'ruby',
+            'appmap_dir' => AppMap::DEFAULT_APPMAP_DIR,
             'packages' => config.packages.select{|p| p.path}.map do |pkg|
               { 'path' => pkg.path }
             end,
