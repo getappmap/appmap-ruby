@@ -1,3 +1,10 @@
+## [0.93.2](https://github.com/getappmap/appmap-ruby/compare/v0.93.1...v0.93.2) (2022-10-07)
+
+
+### Bug Fixes
+
+* Add language, appmap_dir to generated appmap.yml ([9b5e590](https://github.com/getappmap/appmap-ruby/commit/9b5e590cd9d3d5e5b1115917766a2be6c20f3015))
+
 ## [0.93.1](https://github.com/getappmap/appmap-ruby/compare/v0.93.0...v0.93.1) (2022-10-04)
 
 
