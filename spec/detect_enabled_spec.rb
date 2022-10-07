@@ -119,7 +119,7 @@ describe AppMap::DetectEnabled do
           before(:each) do
             stub_const('ENV', ENV.to_hash.merge('RAILS_ENV' => 'development'))
           end
-          it_should_behave_like 'disabled'
+          it_should_behave_like 'enabled'
         end
         describe 'RAILS_ENV=test' do
           before(:each) do
