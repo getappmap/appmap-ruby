@@ -5,6 +5,9 @@ AllCops:
 Gemspec/RequireMFA:
   Enabled: false
 
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
+
 Layout/CaseIndentation:
   EnforcedStyle: end
 
