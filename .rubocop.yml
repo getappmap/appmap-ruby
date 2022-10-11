@@ -1,6 +1,13 @@
 AllCops:
   NewCops: enable
 
+# The gem is automatically pushed by CI
+Gemspec/RequireMFA:
+  Enabled: false
+
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
+
 Layout/CaseIndentation:
   EnforcedStyle: end
 

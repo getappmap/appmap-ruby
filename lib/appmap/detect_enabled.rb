@@ -39,7 +39,14 @@ module AppMap
     end
 
     def detect_enabled
-      detection_functions = %i[globally_disabled? recording_method_disabled? enabled_by_app_env? recording_method_enabled? globally_enabled?]
+      detection_functions = %i[
+        globally_disabled?
+        recording_method_disabled?
+        enabled_by_testing?
+        enabled_by_app_env?
+        recording_method_enabled?
+        globally_enabled?
+      ]
 
       message, enabled = []
       while enabled.nil? && !detection_functions.empty?
@@ -54,12 +61,14 @@ module AppMap
       end
     end
 
+    def enabled_by_testing?
+      if %i[rspec minitest cucumber].member?(@recording_method)
+        [ "running tests with #{@recording_method}", true ]
+      end
+    end
+
     def enabled_by_app_env?
       env_name, app_env = detect_app_env
-      if %i[rspec minitest cucumber].member?(@recording_method)
-        return [ "#{env_name} is '#{app_env}'", true ] if app_env == 'test'
-      end
-
       if @recording_method.nil?
         return [ "#{env_name} is '#{app_env}'", true ] if %w[test development].member?(app_env)
       end
@@ -104,7 +113,7 @@ module AppMap
 
     def rails_env
       return Rails.env if defined?(::Rails::Railtie)
-      
+
       return ENV['RAILS_ENV']
     end
   end
