@@ -16,8 +16,8 @@ describe AppMap::DetectEnabled do
   }
 
   test_scenarios = {
-    disabled: [[], %w[RAILS_ENV=development], %w[APPMAP=false RAILS_ENV=development]],
-    enabled: [%w[APPMAP=true], %w[APPMAP_RECORD_@=true], %w[RAILS_ENV=test], %w[APP_ENV=test]]
+    disabled: [%w[APPMAP_RECORD_@=false], %w[APPMAP=true APPMAP_RECORD_@=false]],
+    enabled: [[], %w[APPMAP=true], %w[APPMAP_RECORD_@=true], %w[RAILS_ENV=test], %w[APP_ENV=development]]
   }
 
   before(:each) { AppMap::DetectEnabled.clear_cache }

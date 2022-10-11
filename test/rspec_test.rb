@@ -11,7 +11,7 @@ class RSpecTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
-        system({ 'APPMAP_RECORD_RSPEC' => 'true'}, %(bundle exec rspec spec/#{test_name}.rb))
+        system(%(bundle exec rspec spec/#{test_name}.rb))
 
         yield
       end
