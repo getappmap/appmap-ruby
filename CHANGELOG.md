@@ -1,3 +1,10 @@
+## [0.93.3](https://github.com/getappmap/appmap-ruby/compare/v0.93.2...v0.93.3) (2022-10-11)
+
+
+### Bug Fixes
+
+* Record all tests by default ([9d52997](https://github.com/getappmap/appmap-ruby/commit/9d529974c474eaac79bf5b83bbae7a6f7909dcc6)), closes [#288](https://github.com/getappmap/appmap-ruby/issues/288)
+
 ## [0.93.2](https://github.com/getappmap/appmap-ruby/compare/v0.93.1...v0.93.2) (2022-10-07)
 
 
