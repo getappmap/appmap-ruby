@@ -28,7 +28,7 @@ describe AppMap::Service::ConfigAnalyzer do
     end
   end
 
-  context 'with valid but non rails config' do
+  context 'with valid config' do
     let(:config_file) { 'spec/fixtures/config/valid_config.yml'}
 
     describe '.app_name' do
@@ -37,8 +37,10 @@ describe AppMap::Service::ConfigAnalyzer do
       end
     end
 
-    it 'is valid' do
-      expect(subject.errors).to eq(['AppMap auto-configuration is currently not available for non Rails projects'])
+    describe '.is_valid?' do
+      it 'returns true' do
+        expect(subject.valid?).to be_truthy
+      end
     end
 
     describe '.is_present?' do
@@ -51,8 +53,8 @@ describe AppMap::Service::ConfigAnalyzer do
   context 'with maximal valid config' do
     let(:config_file) { 'spec/fixtures/config/maximal_config.yml'}
 
-    it 'is valid' do
-      expect(subject.errors).to eq(['AppMap auto-configuration is currently not available for non Rails projects'])
+    example do
+      expect(subject).to be_valid
     end
   end
 
@@ -89,7 +91,7 @@ describe AppMap::Service::ConfigAnalyzer do
 
     describe '.is_valid?' do
       it 'guesses paths and returns true ' do
-        expect(subject.valid?).to be_falsey
+        expect(subject.valid?).to be_truthy
       end
     end
 
