@@ -14,6 +14,9 @@ Layout/CaseIndentation:
 Layout/FirstArgumentIndentation:
   EnforcedStyle: consistent
 
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: consistent
+
 Layout/SpaceInsideArrayLiteralBrackets:
   Enabled: false
 

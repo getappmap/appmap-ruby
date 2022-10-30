@@ -14,7 +14,7 @@ module AppMap
           schema = YAML.safe_load(File.read(schema_path))
           result = {
             version: 2,
-            errors: config_validator.valid? ? [] : config_validator.violations.map(&:to_h),
+            errors: config_validator.violations.map(&:to_h),
             schema: schema
           }
           puts JSON.pretty_generate(result)

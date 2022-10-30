@@ -13,7 +13,7 @@ class AgentSetupInitTest < Minitest::Test
         config: {
           app: 'AppMap Rubygem',
           present: true,
-          valid: false
+          valid: true
         },
         project: {
           agentVersion: AppMap::VERSION,

@@ -7,8 +7,6 @@ module AppMap
   module Service
     module Validator
       class ConfigValidator
-        attr_reader :violations
-
         def initialize(config_file)
           @config_file = config_file
           @violations = []
@@ -19,16 +17,28 @@ module AppMap
         end
 
         def valid?
+          validate
+          @violations.none?(&:error?)
+        end
+
+        def violations
+          validate
+          @violations
+        end
+
+        private
+
+        def validate
+          return if @validated
+
           @violations = []
           validate_ruby_version
           validate_rails_presence
           validate_config_presence
           parse_config
           validate_config_load
-          @violations.empty?
+          @validated = true
         end
-
-        private
 
         def present?
           File.exist?(@config_file)
@@ -71,8 +81,10 @@ module AppMap
 
         def validate_rails_presence
           unless Gem.loaded_specs.has_key?('rails')
-            @violations << Violation.error(
-              message: 'AppMap auto-configuration is currently not available for non Rails projects'
+            @violations << Violation.warning(
+              message: "This is not a Rails project. AppMap won't be automatically loaded.",
+              detailed_message: "Please ensure you `require 'appmap'` in your test environment.",
+              help_urls: [ 'https://appmap.io/docs/reference/appmap-ruby#tests-recording' ]
             )
           end
         end

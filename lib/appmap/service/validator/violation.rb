@@ -44,6 +44,14 @@ module AppMap
             hash[var.to_s.delete("@")] = self.instance_variable_get(var)
           end.compact
         end
+
+        def error?
+          @level == :error
+        end
+
+        def warning?
+          @level == :warning
+        end
       end
     end
   end
