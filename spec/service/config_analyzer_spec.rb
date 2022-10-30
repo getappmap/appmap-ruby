@@ -22,8 +22,9 @@ describe AppMap::Service::ConfigAnalyzer do
     example do
       expect(subject).to be_present
       expect(subject.app_name).to eq 'appmap'
-      expect(subject.errors).to eq ['AppMap auto-configuration is currently not available for non Rails projects']
-      expect(subject).to_not be_valid
+      expect(subject.errors).to be_empty
+      expect(subject.warnings).to include include 'Rails'
+      expect(subject).to be_valid
     end
   end
 
@@ -31,7 +32,7 @@ describe AppMap::Service::ConfigAnalyzer do
     let(:config_file) { 'spec/fixtures/config/maximal_config.yml' }
 
     example do
-      expect(subject.errors).to eq(['AppMap auto-configuration is currently not available for non Rails projects'])
+      expect(subject).to be_valid
     end
   end
 
@@ -51,7 +52,7 @@ describe AppMap::Service::ConfigAnalyzer do
     example do
       expect(subject).to be_present
       expect(subject.app_name).to eq('app')
-      expect(subject).to_not be_valid
+      expect(subject).to be_valid
     end
   end
 end

@@ -10,6 +10,13 @@ class AgentSetupValidateTest < Minitest::Test
   INVALID_CONFIG_FILENAME = 'spec/fixtures/config/invalid_config.yml'
   MISSING_PATH_OR_GEM_CONFIG_FILENAME = 'spec/fixtures/config/missing_path_or_gem.yml'
 
+  RAILS_WARNING = {
+    level: :warning,
+    message: "This is not a Rails project. AppMap won't be automatically loaded.",
+    detailed_message: "Please ensure you `require 'appmap'` in your test environment.",
+    help_urls: [ 'https://appmap.io/docs/reference/appmap-ruby#tests-recording' ]
+  }.freeze
+
   def check_output(output, expected_errors)
     expected = JSON.pretty_generate(
       {
@@ -20,26 +27,18 @@ class AgentSetupValidateTest < Minitest::Test
     )
     assert_equal(expected, output.strip)
   end
-    
+
   def test_init_when_config_exists
     output = `./exe/appmap-agent-validate`
     assert_equal 0, $CHILD_STATUS.exitstatus
-    check_output(output, [
-      {
-        level: :error,
-        message: 'AppMap auto-configuration is currently not available for non Rails projects'
-      }
-    ])
+    check_output(output, [RAILS_WARNING])
   end
 
   def test_init_with_non_existing_config_file
     output = `./exe/appmap-agent-validate -c #{NON_EXISTING_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     check_output(output, [
-      {
-        level: :error,
-        message: 'AppMap auto-configuration is currently not available for non Rails projects'
-      },
+      RAILS_WARNING,
       {
         level: :error,
         filename: NON_EXISTING_CONFIG_FILENAME,
@@ -52,10 +51,7 @@ class AgentSetupValidateTest < Minitest::Test
     output = `./exe/appmap-agent-validate -c #{INVALID_YAML_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     check_output(output, [
-      {
-        level: :error,
-        message: 'AppMap auto-configuration is currently not available for non Rails projects'
-      },
+      RAILS_WARNING,
       {
         level: :error,
         filename: INVALID_YAML_CONFIG_FILENAME,
@@ -70,10 +66,7 @@ class AgentSetupValidateTest < Minitest::Test
     output = `./exe/appmap-agent-validate -c #{INVALID_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     check_output(output, [
-      {
-        level: :error,
-        message: 'AppMap auto-configuration is currently not available for non Rails projects'
-      },
+      RAILS_WARNING,
       {
         level: :error,
         filename: INVALID_CONFIG_FILENAME,
@@ -87,10 +80,7 @@ class AgentSetupValidateTest < Minitest::Test
     output = `./exe/appmap-agent-validate -c #{MISSING_PATH_OR_GEM_CONFIG_FILENAME}`
     assert_equal 0, $CHILD_STATUS.exitstatus
     check_output(output, [
-      {
-        level: :error,
-        message: 'AppMap auto-configuration is currently not available for non Rails projects'
-      },
+      RAILS_WARNING,
       {
         level: :error,
         filename: MISSING_PATH_OR_GEM_CONFIG_FILENAME,

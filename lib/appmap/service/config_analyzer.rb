@@ -25,7 +25,11 @@ module AppMap
 
       def errors
         valid?
-        config_validator.violations.map(&:message)
+        config_validator.violations.filter(&:error?).map(&:message)
+      end
+
+      def warnings
+        config_validator.violations.filter(&:warning?).map(&:message)
       end
 
       private
