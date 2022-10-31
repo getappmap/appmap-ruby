@@ -10,14 +10,10 @@ rbenv:
 - 3.0
 - 3.1
 
+node_js: lts/*
+
 services:
 - postgresql
-
-before_install:
-  - |
-    nvm install --lts \
-      && nvm use --lts \
-      && npm i -g yarn
 
 before_deploy:
   - |
