@@ -101,7 +101,7 @@ am_previous_bindings(VALUE self, VALUE level)
   return rb_debug_inspector_open(bindings_callback, (void *) level);
 }
 
-void Init_appmap() {
+void Init_appmap(void) {
   VALUE appmap = rb_define_module("AppMap");
   am_AppMapHook = rb_define_class_under(appmap, "Hook", rb_cObject);
 
