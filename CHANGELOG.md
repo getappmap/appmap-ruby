@@ -1,3 +1,10 @@
+## [0.93.4](https://github.com/getappmap/appmap-ruby/compare/v0.93.3...v0.93.4) (2022-11-04)
+
+
+### Bug Fixes
+
+* Use correct signature for Init_appmap() in appmap.c ([1157085](https://github.com/getappmap/appmap-ruby/commit/11570859a1fedd2e1cc7004d291ae8fecd23714a))
+
 ## [0.93.3](https://github.com/getappmap/appmap-ruby/compare/v0.93.2...v0.93.3) (2022-10-11)
 
 
