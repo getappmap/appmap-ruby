@@ -1,3 +1,10 @@
+## [0.93.5](https://github.com/getappmap/appmap-ruby/compare/v0.93.4...v0.93.5) (2022-11-08)
+
+
+### Bug Fixes
+
+* Only show a warning in non-Rails projects ([4ed86c7](https://github.com/getappmap/appmap-ruby/commit/4ed86c705ea0183940714af47bdda81917ad3f92)), closes [#292](https://github.com/getappmap/appmap-ruby/issues/292)
+
 ## [0.93.4](https://github.com/getappmap/appmap-ruby/compare/v0.93.3...v0.93.4) (2022-11-04)
 
 
