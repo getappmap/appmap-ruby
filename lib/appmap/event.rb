@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'weakref'
+require_relative './value_inspector'
 
 module AppMap
   module Event
@@ -20,6 +21,8 @@ module AppMap
     MethodEventStruct = Struct.new(:id, :event, :thread_id)
 
     class MethodEvent < MethodEventStruct
+      extend ValueInspector
+
       MAX_ARRAY_ENUMERATION = 10
       MAX_HASH_ENUMERATION = 10
       MAX_STRING_LENGTH = 100
@@ -61,33 +64,12 @@ module AppMap
         end
 
         def add_size(param, value)
-          # Don't risk calling #size on things like data-access objects, which can and will issue queries for this information.
-          if value.is_a?(Array) || value.is_a?(Hash)
-            param[:size] = value.size
-          end
+          size = ValueInspector.detect_size(value)
+          param[:size] = size if size
         end
 
         def add_schema(param, value)
-          begin
-            if value.respond_to?(:keys)
-              param[:properties] = value.keys.map { |key| { name: key, class: best_class_name(value[key]) } }
-            elsif value.respond_to?(:first) && value.first
-              if value.first != value
-                add_schema param, value.first
-              end
-            end
-          rescue
-            warn "Error in add_schema(#{value.class})", $!
-          end
-        end
-
-        # Heuristic for dynamically defined class whose name can be nil
-        def best_class_name(value)
-          value_cls = value.class
-          while value_cls && value_cls.name.nil?
-            value_cls = value_cls.superclass
-          end
-          value_cls&.name || 'unknown'
+          ValueInspector.detect_schema(value, type_info: param)
         end
 
         def encode_display_string(value)
