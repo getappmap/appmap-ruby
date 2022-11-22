@@ -1,3 +1,10 @@
+# [0.94.0](https://github.com/getappmap/appmap-ruby/compare/v0.93.5...v0.94.0) (2022-11-22)
+
+
+### Features
+
+* Emit nested return_value.properties ([2c74c68](https://github.com/getappmap/appmap-ruby/commit/2c74c68f9e2a5bcb3f095850c9d520422b63e25f))
+
 ## [0.93.5](https://github.com/getappmap/appmap-ruby/compare/v0.93.4...v0.93.5) (2022-11-08)
 
 
