@@ -1,196 +1,4 @@
 {
-  "version": "1.3",
-  "metadata": {
-    "app": "appland/AppLand",
-    "language": {
-      "name": "ruby",
-      "engine": "ruby",
-      "version": "2.6.6"
-    },
-    "client": {
-      "name": "appmap",
-      "url": "https://github.com/applandinc/appmap-ruby",
-      "version": "0.38.1"
-    },
-    "frameworks": [
-      {
-        "name": "rails",
-        "version": "5.2.4.2"
-      },
-      {
-        "name": "rspec",
-        "version": "3.9.1"
-      }
-    ],
-    "git": {
-      "repository": "git@github.com:applandinc/appland.git",
-      "branch": "feature/show-sql-in-source-code-tab",
-      "commit": "d52bd55d5a08f0e9b27760780bf2737829f5f25f",
-      "status_code": [
-        "M Gemfile.lock"
-      ],
-      "git_last_annotated_tag": null,
-      "git_last_tag": "v0.17.1",
-      "git_commits_since_last_annotated_tag": null,
-      "git_commits_since_last_tag": 0
-    },
-    "name": "API::APIKeysController revoke an existing api key",
-    "feature": "API::APIKeysController revoke",
-    "feature_group": "API API keys",
-    "labels": [
-      "api key",
-      "api"
-    ],
-    "recorder": {
-      "name": "rspec"
-    },
-    "source_location": "spec/fixtures/spec/api_spec.rb",
-    "test_status": "succeeded",
-    "fingerprints": [
-      {
-        "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
-        "canonicalization_algorithm": "info_v1",
-        "digest": "76ef6fcddad314962606f8161f73901beb9d6fa06468aee3a96eabb2b65132cb",
-        "fingerprint_algorithm": "sha256"
-      },
-      {
-        "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
-        "canonicalization_algorithm": "trace_v1",
-        "digest": "18301be60081a8dbf2574f4226c095b395dd4c060e69da94c5ac20d2f002b23a",
-        "fingerprint_algorithm": "sha256"
-      },
-      {
-        "appmap_digest": "7fecdd763d47626364364da02387f1fcbfe805123e806f08bacde96636cfc91d",
-        "canonicalization_algorithm": "update_v1",
-        "digest": "9be5419782f4189c7fba3eb4eff7a4027bc6655b9ac43c45544ede554c7c5c82",
-        "fingerprint_algorithm": "sha256"
-      }
-    ]
-  },
-  "classMap": [
-    {
-      "name": "app/models",
-      "type": "package",
-      "children": [
-        {
-          "name": "ApiKey",
-          "type": "class",
-          "children": [
-            {
-              "name": "issue",
-              "type": "function",
-              "location": "app/models/api_key.rb:28",
-              "static": true,
-              "labels": [
-                "security"
-              ]
-            },
-            {
-              "name": "encode",
-              "type": "function",
-              "location": "app/models/api_key.rb:20",
-              "static": true
-            },
-            {
-              "name": "authenticate",
-              "type": "function",
-              "location": "app/models/api_key.rb:51",
-              "static": true,
-              "labels": [
-                "security",
-                "provider.authenticate"
-              ]
-            },
-            {
-              "name": "decode",
-              "type": "function",
-              "location": "app/models/api_key.rb:24",
-              "static": true
-            },
-            {
-              "name": "touch",
-              "type": "function",
-              "location": "app/models/api_key.rb:11",
-              "static": true
-            },
-            {
-              "name": "revoke",
-              "type": "function",
-              "location": "app/models/api_key.rb:40",
-              "static": true,
-              "labels": [
-                "security"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "app/controllers",
-      "type": "package",
-      "children": [
-        {
-          "name": "API",
-          "type": "class",
-          "children": [
-            {
-              "name": "APIKeysController",
-              "type": "class",
-              "children": [
-                {
-                  "name": "destroy",
-                  "type": "function",
-                  "location": "app/controllers/api/api_keys_controller.rb:15",
-                  "static": false
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "json",
-      "type": "package",
-      "children": [
-        {
-          "name": "JSON",
-          "type": "class",
-          "children": [
-            {
-              "name": "Ext",
-              "type": "class",
-              "children": [
-                {
-                  "name": "Generator",
-                  "type": "class",
-                  "children": [
-                    {
-                      "name": "State",
-                      "type": "class",
-                      "children": [
-                        {
-                          "name": "generate",
-                          "type": "function",
-                          "location": "JSON::Ext::Generator::State#generate",
-                          "static": false,
-                          "labels": [
-                            "serialization",
-                            "json"
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ],
   "events": [
     {
       "id": 1,
@@ -554,7 +362,6 @@
       "path": "app/controllers/api/api_keys_controller.rb",
       "lineno": 15,
       "static": false,
-      "parameters": [],
       "receiver": {
         "class": "API::APIKeysController",
         "object_id": 70143625216500,
@@ -842,6 +649,304 @@
         "mime_type": "application/json; charset=utf-8",
         "status": 401
       }
+    }
+  ],
+  "version": "1.3",
+  "metadata": {
+    "app": "appland/AppLand",
+    "language": {
+      "name": "ruby",
+      "engine": "ruby",
+      "version": "2.6.6"
+    },
+    "client": {
+      "name": "appmap",
+      "url": "https://github.com/applandinc/appmap-ruby",
+      "version": "0.38.1"
+    },
+    "frameworks": [
+      {
+        "name": "rails",
+        "version": "5.2.4.2"
+      },
+      {
+        "name": "rspec",
+        "version": "3.9.1"
+      }
+    ],
+    "git": {
+      "repository": "git@github.com:applandinc/appland.git",
+      "branch": "feature/show-sql-in-source-code-tab",
+      "commit": "d52bd55d5a08f0e9b27760780bf2737829f5f25f",
+      "status_code": [
+        "M Gemfile.lock"
+      ],
+      "git_last_annotated_tag": null,
+      "git_last_tag": "v0.17.1",
+      "git_commits_since_last_annotated_tag": null,
+      "git_commits_since_last_tag": 0
+    },
+    "name": "API::APIKeysController revoke an existing api key",
+    "feature": "API::APIKeysController revoke",
+    "feature_group": "API API keys",
+    "labels": [
+      "api key",
+      "api"
+    ],
+    "recorder": {
+      "name": "rspec"
+    },
+    "source_location": "spec/fixtures/spec/api_spec.rb",
+    "test_status": "succeeded",
+    "fingerprints": [
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "classDependencies",
+        "digest": "b03b42964920b123b5c5f1ae158a01b3bbbaad44c4bcb23ff12c7dc50b89f63e",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "classes",
+        "digest": "9717f0de0c287764b0504895124418e6360e6114c62ea49cef434943127325b1",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "httpClientRequests",
+        "digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "httpServerRequests",
+        "digest": "39d2d586f3afb6c6cc5da0e6c99b07c38561c76cff17badc9fa092d1f3d5e0f5",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "info",
+        "digest": "2226ec6817a89e479e2c5c05a929b66325dce33ed58ce27f88be73269f6609c8",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "labels",
+        "digest": "e95576d7e3b78f79946291943fd30ae46cdeea011c1ee0fe4f880d80e514e282",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "packageDependencies",
+        "digest": "3f108b0a9ca874a5bc90a30f48da9b068269e0a91d01d3eb4d2af3fe25cb09f3",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "packages",
+        "digest": "174dff39ae750e61f0eac4933a745eb8059c7e2a98a1c94c34f722037c80a468",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "sqlNormalized",
+        "digest": "bcb13a826aa404fa0afbaeae8cea134cf674e599619f14e3864173dd52987ee4",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "sqlTables",
+        "digest": "a7daba4152bc0c118de3840f9b02cd3eed9ab4922c96ed5edd33dbdcd71c43e6",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "trace",
+        "digest": "77cea3a57ab3ec42453d3317fdab874cff7948c9eb5786a098d9a76a04ac38b0",
+        "fingerprint_algorithm": "sha256"
+      },
+      {
+        "appmap_digest": "a2d8e52aff208d9b278ed19fcbbf4f3266c629be9cca8cf69f82c9fd6c8fa8a5",
+        "canonicalization_algorithm": "update",
+        "digest": "7ee75bda36b126736c56f44209b03e949e7504fa78c3777582f537b2805a2bb6",
+        "fingerprint_algorithm": "sha256"
+      }
+    ]
+  },
+  "classMap": [
+    {
+      "name": "app/models",
+      "type": "package",
+      "children": [
+        {
+          "name": "ApiKey",
+          "type": "class",
+          "children": [
+            {
+              "name": "issue",
+              "type": "function",
+              "labels": [
+                "security"
+              ],
+              "static": true,
+              "location": "app/models/api_key.rb:28"
+            },
+            {
+              "name": "encode",
+              "type": "function",
+              "static": true,
+              "location": "app/models/api_key.rb:20"
+            },
+            {
+              "name": "authenticate",
+              "type": "function",
+              "labels": [
+                "security",
+                "provider.authenticate"
+              ],
+              "static": true,
+              "location": "app/models/api_key.rb:51"
+            },
+            {
+              "name": "decode",
+              "type": "function",
+              "static": true,
+              "location": "app/models/api_key.rb:24"
+            },
+            {
+              "name": "touch",
+              "type": "function",
+              "static": true,
+              "location": "app/models/api_key.rb:11"
+            },
+            {
+              "name": "revoke",
+              "type": "function",
+              "labels": [
+                "security"
+              ],
+              "static": true,
+              "location": "app/models/api_key.rb:40"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "app/controllers",
+      "type": "package",
+      "children": [
+        {
+          "name": "API",
+          "type": "class",
+          "children": [
+            {
+              "name": "APIKeysController",
+              "type": "class",
+              "children": [
+                {
+                  "name": "destroy",
+                  "type": "function",
+                  "static": false,
+                  "location": "app/controllers/api/api_keys_controller.rb:15"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "json",
+      "type": "package",
+      "children": [
+        {
+          "name": "JSON",
+          "type": "class",
+          "children": [
+            {
+              "name": "Ext",
+              "type": "class",
+              "children": [
+                {
+                  "name": "Generator",
+                  "type": "class",
+                  "children": [
+                    {
+                      "name": "State",
+                      "type": "class",
+                      "children": [
+                        {
+                          "name": "generate",
+                          "type": "function",
+                          "labels": [
+                            "serialization",
+                            "json"
+                          ],
+                          "static": false,
+                          "location": "JSON::Ext::Generator::State#generate"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "database",
+      "name": "Database",
+      "children": [
+        {
+          "type": "query",
+          "name": "INSERT INTO \"api_keys\" (\"login\", \"description\") VALUES ('admin', 'example api key') RETURNING *"
+        },
+        {
+          "type": "query",
+          "name": "SELECT * FROM \"api_keys\" WHERE (\"login\" = 'admin')"
+        },
+        {
+          "type": "query",
+          "name": "UPDATE \"api_keys\" SET \"last_used\" = '2021-01-12 18:48:00.281150+0000' WHERE (\"id\" = 9)"
+        },
+        {
+          "type": "query",
+          "name": "SELECT * FROM \"users\" WHERE (\"users\".\"login\" = 'admin') LIMIT 1"
+        },
+        {
+          "type": "query",
+          "name": "SELECT \"pg_type\".\"oid\", \"typrelid\", \"typarray\" FROM \"pg_type\" WHERE ((\"typtype\" = 'c') AND (\"typname\" = 'q_class')) LIMIT 1"
+        },
+        {
+          "type": "query",
+          "name": "SELECT \"attname\", (CASE \"pg_type\".\"typbasetype\" WHEN 0 THEN \"atttypid\" ELSE \"pg_type\".\"typbasetype\" END) AS \"atttypid\" FROM \"pg_attribute\" INNER JOIN \"pg_type\" ON (\"pg_type\".\"oid\" = \"pg_attribute\".\"atttypid\") WHERE ((\"attrelid\" = 223731) AND (\"attnum\" > 0) AND NOT \"attisdropped\") ORDER BY \"attnum\""
+        },
+        {
+          "type": "query",
+          "name": "SELECT \"pg_type\".\"oid\", \"typrelid\", \"typarray\" FROM \"pg_type\" WHERE ((\"typtype\" = 'c') AND (\"typname\" = 'fn_call')) LIMIT 1"
+        },
+        {
+          "type": "query",
+          "name": "SELECT \"attname\", (CASE \"pg_type\".\"typbasetype\" WHEN 0 THEN \"atttypid\" ELSE \"pg_type\".\"typbasetype\" END) AS \"atttypid\" FROM \"pg_attribute\" INNER JOIN \"pg_type\" ON (\"pg_type\".\"oid\" = \"pg_attribute\".\"atttypid\") WHERE ((\"attrelid\" = 223734) AND (\"attnum\" > 0) AND NOT \"attisdropped\") ORDER BY \"attnum\""
+        },
+        {
+          "type": "query",
+          "name": "DELETE FROM \"api_keys\" WHERE \"id\" = 9"
+        }
+      ]
+    },
+    {
+      "type": "http",
+      "name": "HTTP server requests",
+      "children": [
+        {
+          "type": "route",
+          "name": "DELETE /api/api_keys"
+        }
+      ]
     }
   ]
 }

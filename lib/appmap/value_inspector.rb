@@ -14,25 +14,26 @@ module AppMap
     def detect_schema(value, max_depth: MAX_DEPTH, type_info: {}, observed_values: Set.new(), depth: 0)
       return type_info if depth == max_depth
 
-      begin
-        if value.respond_to?(:keys)
-          properties = value.keys.select { |key| key != '' && !key.nil? }.map do |key|
-            next_value = value[key]
-            next if observed_values.include?(next_value)
+      if value.respond_to?(:keys)
+        return if observed_values.include?(value.object_id)
 
-            observed_values << next_value
-            { name: key, class: best_class_name(next_value) }.tap do |schema|
-              detect_schema(next_value, **{ max_depth: max_depth, type_info: schema, observed_values: observed_values, depth: depth + 1 })
+        observed_values << value.object_id
+
+        properties = value.keys.select { |key| key != "" && !key.nil? }.map do |key|
+          next_value = value[key]
+
+          value_schema = begin
+              { name: key, class: best_class_name(next_value) }
+            rescue
+              warn "Error in add_schema(#{next_value.class})", $!
+              raise
             end
-          end.compact
-          type_info[:properties] = properties unless properties.empty?
-        elsif value.respond_to?(:first) && !observed_values.include?(value.first)
-          observed_values << value.first
-          detect_schema(value.first, **{ max_depth: max_depth, type_info: type_info, observed_values: observed_values, depth: depth + 1 })
-        end
-      rescue
-        warn "Error in add_schema(#{value.class})", $!
-        raise
+
+          detect_schema(next_value, **{ max_depth: max_depth, type_info: value_schema, observed_values: observed_values, depth: depth + 1 })
+        end.compact
+        type_info[:properties] = properties unless properties.empty?
+      elsif value.respond_to?(:first)
+        detect_schema(value.first, **{ max_depth: max_depth, type_info: type_info, observed_values: observed_values, depth: depth + 1 })
       end
       type_info
     end
@@ -43,7 +44,7 @@ module AppMap
       while value_cls && value_cls.name.nil?
         value_cls = value_cls.superclass
       end
-      value_cls&.name || 'unknown'
+      value_cls&.name || "unknown"
     end
   end
 end
