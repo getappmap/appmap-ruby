@@ -1,3 +1,10 @@
+## [0.94.1](https://github.com/getappmap/appmap-ruby/compare/v0.94.0...v0.94.1) (2022-11-23)
+
+
+### Bug Fixes
+
+* Handle properties of mixed content and repeated values ([4e14eb8](https://github.com/getappmap/appmap-ruby/commit/4e14eb8f4650368b3fdcb3f30be2969df3998e05))
+
 # [0.94.0](https://github.com/getappmap/appmap-ruby/compare/v0.93.5...v0.94.0) (2022-11-22)
 
 
