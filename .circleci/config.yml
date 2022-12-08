@@ -12,7 +12,7 @@ orbs:
 jobs:
   test:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7-node
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_HOST_AUTH_METHOD: trust
