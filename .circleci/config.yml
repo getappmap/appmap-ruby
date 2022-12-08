@@ -13,6 +13,8 @@ jobs:
   test:
     docker:
       - image: cimg/ruby:2.7-node
+        environment:
+          DATABASE_URL: postgres://postgres@localhost:5432
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_HOST_AUTH_METHOD: trust
