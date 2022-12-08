@@ -16,7 +16,7 @@ jobs:
   test:
     working_directory: /home/circleci/appmap-ruby
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7-browsers
         environment:
           DATABASE_URL: postgres://postgres@localhost:5432
       - image: cimg/postgres:14.0
