@@ -11,6 +11,7 @@ orbs:
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   test:
+    working_directory: ~/appmap-ruby
     docker:
       - image: cimg/ruby:2.7-node
         environment:
@@ -28,7 +29,7 @@ jobs:
           command: 'dockerize -wait tcp://localhost:5432 -timeout 1m'
           name: Wait for DB
       - run:
-          command: 'bundle exec rake test'
+          command: 'bundle exec rspec --backtrace spec/*_spec.rb'
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -36,3 +37,4 @@ workflows:
   test:
     jobs:
       - test
+        
