@@ -16,7 +16,7 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps:
-          bundler_version: 1.17.2
+          bundler-version: 1.17.2
 
   test:
     docker:
@@ -26,7 +26,8 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - checkout
-      - ruby/install-deps
+      - ruby/install-deps:
+          bundler-version: 1.17.2
       - run:
           command: 'dockerize -wait tcp://localhost:5432 -timeout 1m'
           name: Wait for DB
