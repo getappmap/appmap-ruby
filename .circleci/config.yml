@@ -12,17 +12,14 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:3.1.0
+      - image: cimg/ruby:2.7
     steps:
       - checkout
-      - run:
-          name: Which bundler?
-          command: bundle -v
       - ruby/install-deps
 
   test:
     docker:
-      - image: cimg/ruby:3.1.0
+      - image: cimg/ruby:2.7
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_HOST_AUTH_METHOD: trust
@@ -38,8 +35,7 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  test: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  test:
     jobs:
       - build
       - test:
