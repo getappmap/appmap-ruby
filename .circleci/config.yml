@@ -15,7 +15,8 @@ jobs:
       - image: cimg/ruby:2.7
     steps:
       - checkout
-      - ruby/install-deps
+      - ruby/install-deps:
+          bundler_version: 1.17.2
 
   test:
     docker:
