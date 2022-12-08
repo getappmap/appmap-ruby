@@ -27,7 +27,7 @@ jobs:
       - run:
           command: 'gem install bundler -v 1.17.2'
       - run:
-          command: 'bundle'
+          command: 'bundle && bundle exec rake compile'
       - run:
           command: 'dockerize -wait tcp://localhost:5432 -timeout 1m'
           name: Wait for DB
