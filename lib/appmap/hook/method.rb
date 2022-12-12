@@ -38,13 +38,13 @@ module AppMap
       end
 
       def activate
-        if Hook::LOG
+        if HookLog.enabled?
           msg = if method_display_name
-                  "#{method_display_name}"
-                else
-                  "#{hook_method.name} (class resolution deferred)"
-                end
-          warn "AppMap: Hooking #{msg} at line #{(hook_method.source_location || []).join(':')}"
+              "#{method_display_name}"
+            else
+              "#{hook_method.name} (class resolution deferred)"
+            end
+          HookLog.log "Hooking #{msg} at line #{(hook_method.source_location || []).join(':')}"
         end
 
         hook_method_parameters = hook_method.parameters.dup.freeze
@@ -65,8 +65,7 @@ module AppMap
       protected
 
       def defining_class(hook_class)
-        cls = \
-          if RUBY_MAJOR_VERSION == 2 && RUBY_MINOR_VERSION <= 5
+        cls = if RUBY_MAJOR_VERSION == 2 && RUBY_MINOR_VERSION <= 5
             hook_class
               .ancestors
               .select { |cls| cls.method_defined?(hook_method.name) }

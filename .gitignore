@@ -8,6 +8,7 @@
 /pkg/
 /spec/reports/
 tmp/
+appmap_hook.log
 vendor
 node_modules
 Gemfile.lock
