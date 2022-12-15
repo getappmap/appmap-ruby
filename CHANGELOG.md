@@ -1,3 +1,20 @@
+# [0.95.0](https://github.com/getappmap/appmap-ruby/compare/v0.94.1...v0.95.0) (2022-12-15)
+
+
+### Bug Fixes
+
+* Disable active_record hooks ([239986d](https://github.com/getappmap/appmap-ruby/commit/239986deded12e65384b441033180c30a3ffe698))
+* Fix Array#pack hook ([2a8b2ed](https://github.com/getappmap/appmap-ruby/commit/2a8b2ed4d9fb047213e6a3fd427d846c5d312e2f))
+* Fix name of rails7 test database ([6581b65](https://github.com/getappmap/appmap-ruby/commit/6581b65c088ee8415fd150d11c4ab6793173f0e2))
+* Typo in label configuration ([999b25b](https://github.com/getappmap/appmap-ruby/commit/999b25b75057a7f6061cfbc9cdc04616f5aeb998))
+
+
+### Features
+
+* Enable deserialize.safe labels ([62be78a](https://github.com/getappmap/appmap-ruby/commit/62be78a0502d83c9b5a2b7d97abd17d144bd41c5))
+* Enhance the hook log a lot ([c93d91c](https://github.com/getappmap/appmap-ruby/commit/c93d91c5be86b9195e14ef40741600c633638b40))
+* Enhancing hook logging and profiling ([01dbe4b](https://github.com/getappmap/appmap-ruby/commit/01dbe4bb973b71fea0885f55d17b80d6b6b8fb6e))
+
 ## [0.94.1](https://github.com/getappmap/appmap-ruby/compare/v0.94.0...v0.94.1) (2022-11-23)
 
 
