@@ -19,11 +19,17 @@ module AppMap
     end
 
     def start_time(timer)
-      @elapsed[timer] << [Time.now.to_f]
+      @elapsed[timer] << [Util.gettime]
     end
 
     def end_time(timer)
-      @elapsed[timer][-1] = Time.now.to_f - @elapsed[timer].last[0]
+      unless @elapsed[timer].last.is_a?(Array)
+        warn "AppMap: Unbalanced timing data in hook log"
+        @elapsed[timer].pop
+        return
+      end
+
+      @elapsed[timer][-1] = Util.gettime - @elapsed[timer].last[0]
     end
 
     class << self
@@ -31,27 +37,44 @@ module AppMap
         LOG || LOG_HOOK
       end
 
-      def builtin_begin(class_name, method_name)
-        log "builtin\tbegin\tInitiating hook for builtin #{class_name} #{method_name}"
-        @hook_log.start_time :builtin
+      def builtin(class_name, &block)
+        return yield unless enabled?
+
+        begin
+          log "eager\tbegin\tInitiating eager hook for #{class_name}"
+          @hook_log.start_time :eager
+
+          yield
+        ensure
+          @hook_log.end_time :eager
+          log "eager\tend\tCompleted eager hook for #{class_name}"
+        end
       end
 
-      def builtin_end(class_name, method_name)
-        @hook_log.end_time :builtin
-        log "builtin\tend\tCompleted hook for builtin #{class_name} #{method_name}"
+      def on_load(location, &block)
+        return yield unless enabled?
+
+        begin
+          log "on-load\tbegin\tInitiating on-load hook for class or module defined at location #{location}"
+          @hook_log.start_time :on_load
+
+          yield
+        ensure
+          @hook_log.end_time :on_load
+          log "on-load\tend\tCompleted on-load hook for location #{location}"
+        end
       end
 
-      def usercode_begin(location)
-        log "usercode\tbegin\tClass or module defined at location #{location}"
-        @hook_log.start_time :usercode
-      end
-
-      def usercode_end(location)
-        @hook_log.end_time :usercode
-        log "usercode\tend\tCompleted location #{location}"
+      def load_error(name, msg)
+        log "load_error\t#{name}\t#{msg}"
       end
 
       def log(msg)
+        unless HookLog.enabled?
+          warn "AppMap: HookLog is not enabled. Disregarding message #{msg}"
+          return
+        end
+
         @hook_log ||= HookLog.new
         @hook_log.log msg
       end
@@ -69,7 +92,7 @@ module AppMap
       if LOG_HOOK_FILE == 'stderr'
         msg = "AppMap: #{msg}"
       end
-      msg = "#{Time.new.to_f}\t#{msg}"
+      msg = "#{Util.gettime}\t#{msg}"
       @file_handle.puts(msg)
     end
   end

@@ -19,7 +19,7 @@ module AppMap
         Mutex.new.synchronize do
           @hook_builtins = true if @hook_builtins.nil?
 
-          return false unless @hook_builtins
+          next false unless @hook_builtins
 
           @hook_builtins = false
           true
@@ -101,48 +101,52 @@ module AppMap
       hook_loaded_code = lambda do |hooks_by_class, builtin|
         hooks_by_class.each do |class_name, hooks|
           Array(hooks).each do |hook|
-            if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
-              require hook.package.require_name
-            end
-
-            Array(hook.method_names).each do |method_name|
-              method_name = method_name.to_sym
-
+            HookLog.builtin class_name do
+              if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
+                begin
+                  require hook.package.require_name
+                rescue
+                  HookLog.load_error hook.package.require_name, "Unable to require #{hook.package.require_name}: #{$!}" if HookLog.enabled?
+                  next
+                end
+              end
+  
               begin
                 base_cls = Object.const_get class_name
               rescue NameError
+                HookLog.load_error class_name, "Class #{class_name} not found in global scope" if HookLog.enabled?
                 next
               end
-
-              HookLog.builtin_begin class_name, method_name if HookLog.enabled?
-
-              hook_method = lambda do |entry|
-                cls, method = entry
-                next if config.never_hook?(cls, method)
-
-                hook.package.handler_class.new(hook.package, cls, method).activate
+  
+              Array(hook.method_names).each do |method_name|
+                method_name = method_name.to_sym
+  
+                hook_method = lambda do |entry|
+                  cls, method = entry
+                  next if config.never_hook?(cls, method)
+  
+                  hook.package.handler_class.new(hook.package, cls, method).activate
+                end
+  
+                methods = []
+                # irb(main):001:0> Kernel.public_instance_method(:system)
+                # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)
+                if base_cls == Kernel
+                  methods << [base_cls, base_cls.instance_method(method_name)] rescue nil
+                end
+                methods << [base_cls, base_cls.public_instance_method(method_name)] rescue nil
+                methods << [base_cls, base_cls.protected_instance_method(method_name)] rescue nil
+                if base_cls.respond_to?(:singleton_class)
+                  methods << [base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name)] rescue nil
+                  methods << [base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name)] rescue nil
+                end
+                methods.compact!
+                if methods.empty?
+                  HookLog.load_error [ base_cls.name, method_name ].join('[#.]'), "Method #{method_name} not found on #{base_cls.name}" if HookLog.enabled?
+                else
+                  methods.each(&hook_method)
+                end
               end
-
-              methods = []
-              # irb(main):001:0> Kernel.public_instance_method(:system)
-              # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)
-              if base_cls == Kernel
-                methods << [base_cls, base_cls.instance_method(method_name)] rescue nil
-              end
-              methods << [base_cls, base_cls.public_instance_method(method_name)] rescue nil
-              methods << [base_cls, base_cls.protected_instance_method(method_name)] rescue nil
-              if base_cls.respond_to?(:singleton_class)
-                methods << [base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name)] rescue nil
-                methods << [base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name)] rescue nil
-              end
-              methods.compact!
-              if methods.empty?
-                HookLog.log "Method #{method_name} not found on #{base_cls.name}" if HookLog.enabled?
-              else
-                methods.each(&hook_method)
-              end
-
-              HookLog.builtin_end class_name, method_name if HookLog.enabled?
             end
           end
         end
@@ -159,17 +163,14 @@ module AppMap
 
     def trace_end(trace_point)
       location = trace_location(trace_point)
-      begin
-        HookLog.usercode_begin location if HookLog.enabled?
-
-        return unless @trace_locations.add?(location)
-
+      return unless @trace_locations.add?(location)
+      HookLog.on_load location do
         path = trace_point.path
         enabled = !@notrace_paths.member?(path) && config.path_enabled?(path)
         unless enabled
           HookLog.log 'Not hooking - path is not enabled' if HookLog.enabled?
           @notrace_paths << path
-          return
+          next
         end
 
         cls = trace_point.self
@@ -191,7 +192,7 @@ module AppMap
             method = begin
                 hook_cls.instance_method(method_id)
               rescue NameError
-                HookLog.log "Method #{hook_cls} #{fn} is not accessible: #{$!}" if HookLog.enabled?
+                HookLog.load_error [ hook_cls, method_id ].join('[#.]'), "Method #{hook_cls} #{method_id} is not accessible: #{$!}" if HookLog.enabled?
                 next
               end
 
@@ -239,8 +240,6 @@ module AppMap
             @module_load_times[location] += elapsed
           end
         end
-      ensure
-        HookLog.usercode_end(location) if HookLog.enabled?
       end
     end
   end
