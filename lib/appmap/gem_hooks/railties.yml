@@ -1,2 +1,2 @@
 - method: Rails::Application::Configuration#database_configuration
-#  label: deserialize.safe
+  label: deserialize.safe

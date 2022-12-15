@@ -6,7 +6,8 @@ describe 'AppMap tracer via Railtie' do
 
     let(:command_output) do
       app.prepare_db
-      app.capture_cmd(%{./bin/rails r "puts AppMap.instance_variable_get('@configuration').nil?"}, env).strip
+      stdout, stderr, = app.capture_cmd(%{./bin/rails r "puts AppMap.instance_variable_get('@configuration').nil?"}, env)
+      stdout.strip
     end
 
     describe 'with APPMAP=false' do
@@ -16,7 +17,7 @@ describe 'AppMap tracer via Railtie' do
       end
     end
     describe 'without APPMAP=false' do
-      let(:env) { { } }
+      let(:env) { {} }
       it 'is enabled' do
         expect(command_output).to eq('false')
       end

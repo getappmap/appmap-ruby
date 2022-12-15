@@ -2,12 +2,14 @@
 /html/
 .bundle
 /.yardoc
+/.yarn
 /_yardoc/
 /coverage/
 /doc/
 /pkg/
 /spec/reports/
 tmp/
+appmap_hook.log
 vendor
 node_modules
 Gemfile.lock

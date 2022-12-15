@@ -8,6 +8,7 @@ require 'appmap/handler'
 require 'appmap/service/guesser'
 require 'appmap/swagger/configuration'
 require 'appmap/depends/configuration'
+require_relative './hook_log'
 
 module AppMap
   class Config
@@ -499,7 +500,11 @@ module AppMap
 
     def never_hook?(cls, method)
       _, separator, = ::AppMap::Hook.qualify_method_name(method)
-      return true if exclude.member?(cls.name) || exclude.member?([ cls.name, separator, method.name ].join)
+      if exclude.member?(cls.name) || exclude.member?([ cls.name, separator, method.name ].join)
+        HookLog.log "Hooking of #{method} disabled by configuration" if HookLog.enabled?
+        return true
+      end
+      false
     end
   end
 end

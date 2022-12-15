@@ -47,7 +47,7 @@ class TestRailsApp
 
   def capture_cmd(cmd, env = {})
     puts "Capturing `#{cmd}` in #{fixture_dir}..."
-    run_process(Open3.method(:capture2), cmd, env).first
+    run_process(Open3.method(:capture3), cmd, env)
   end
 
   def database_name
@@ -120,7 +120,7 @@ shared_context 'Rails app pg database' do |dir|
 end
 
 shared_context 'Rails app service running' do
-  def start_server(rails_app_environment: { })
+  def start_server(rails_app_environment: {})
     service_port = RandomPort::Pool::SINGLETON.acquire
     @app.prepare_db
     server = @app.spawn_cmd \

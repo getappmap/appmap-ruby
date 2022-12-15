@@ -19,6 +19,6 @@
 - method: ActiveSupport::MessageEncryptor#encrypt_and_sign
   require_name: active_support/message_encryptor
   force: true
-- method: ActiveSupport::MessageEncryptor#decrypt_and_verifdy
+- method: ActiveSupport::MessageEncryptor#decrypt_and_verify
   require_name: active_support/message_encryptor
   force: true

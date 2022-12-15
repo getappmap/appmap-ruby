@@ -7,9 +7,9 @@
 - method: Marshal#dump
   require_name: ruby
   label: serialize
-- method: String#pack
+- method: Array#pack
   require_name: ruby
-  label: string.pack
+  label: array.pack
 - methods:
   - String#unpack
   - String#unpack1
