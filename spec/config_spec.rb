@@ -101,13 +101,13 @@ describe AppMap::Config do
     expect(config.as_json['builtin_hooks']).to have_key('ActiveSupport::Callbacks::CallbackSequence')
     expect(config.as_json['builtin_hooks']['ActiveSupport::Callbacks::CallbackSequence'].map(&:deep_stringify_keys)).to eq([
       {
-        "package" => "activesupport",
+        "package" => "active_support",
         "method_names" => [
           :invoke_before
         ]
       },
       {
-        "package" => "activesupport",
+        "package" => "active_support",
         "method_names" => [
           :invoke_after
         ]
