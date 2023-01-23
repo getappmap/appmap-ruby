@@ -34,5 +34,9 @@ describe AppMap::Util do
     it 'ignores already swaggerized paths' do
       expect(AppMap::Util.swaggerize_path('/org/{org_id}')).to eq('/org/{org_id}')
     end
+
+    it 'ignores ending ) to not create malformed ({)} paths' do
+      expect(AppMap::Util.swaggerize_path('(/locale/:locale)/api/users/:id(.:format)')).to eq('(/locale/{locale})/api/users/{id}')
+    end
   end
 end
