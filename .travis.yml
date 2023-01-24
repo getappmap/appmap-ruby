@@ -1,5 +1,5 @@
 language: ruby
-dist: bionic
+dist: focal
 cache:
 - bundle
 - yarn
@@ -16,6 +16,7 @@ services:
 - postgresql
 
 before_deploy:
+  - node -v
   - |
     npm i -g \
       semantic-release \
