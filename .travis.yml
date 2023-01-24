@@ -10,13 +10,11 @@ rbenv:
 - 3.0
 - 3.1
 
-node_js: lts/*
-
 services:
 - postgresql
 
 before_deploy:
-  - node -v
+  - nvm install lts/*
   - |
     npm i -g \
       semantic-release \
