@@ -152,7 +152,8 @@ module AppMap
         path = path.split('(.')[0]
         tokens = path.split('/')
         tokens.map do |token|
-          token.gsub(/^:(.*)/, '{\1}')
+          # stop matching if an ending ) is found
+          token.gsub(/^:(.*[^\)])/, '{\1}')
         end.join('/')
       end
 
