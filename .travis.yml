@@ -11,7 +11,7 @@ cache:
 rvm:
 - 2.6.9
 - 2.7.6
-- 3.0.1 # this one doesn't show in the pre-installed list
+- 3.0.1 # doesn't show in pre-installed list
 - 3.1.2
 
 addons:
@@ -35,4 +35,4 @@ deploy:
     script: ./release.sh
     on:
       branch: master
-      condition: "$TRAVIS_RUBY_VERSION = 3.0"
+      condition: "$TRAVIS_RUBY_VERSION =~ ^3.0"
