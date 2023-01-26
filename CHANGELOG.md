@@ -1,3 +1,10 @@
+## [0.95.1](https://github.com/getappmap/appmap-ruby/compare/v0.95.0...v0.95.1) (2023-01-26)
+
+
+### Bug Fixes
+
+* Don't match ending ) in swaggerize_path ([4bba178](https://github.com/getappmap/appmap-ruby/commit/4bba178e13b95274f590f07a9df8e529c0d1f836))
+
 # [0.95.0](https://github.com/getappmap/appmap-ruby/compare/v0.94.1...v0.95.0) (2022-12-15)
 
 
