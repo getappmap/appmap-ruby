@@ -4,19 +4,25 @@ cache:
 - bundle
 - yarn
 
-rbenv:
-- 2.6
-- 2.7
-- 3.0
-- 3.1
+# Travis pre-installs some Ruby versions. You can see the current list
+# by clicking on "Build system information" on line 7 which reveals a
+# section called "Pre-installed Ruby versions".  Use versions from
+# that list to not install rvm and ruby each time.
+rvm:
+- 2.6.9
+- 2.7.6
+- 3.0.1 # this one doesn't show in the pre-installed list
+- 3.1.2
 
-node_js: lts/*
-
-services:
-- postgresql
+addons:
+  postgresql: "13"
+  apt:
+    packages:
+    - postgresql-13
+    - postgresql-client-13
 
 before_deploy:
-  - node -v
+  - nvm install lts/*
   - |
     npm i -g \
       semantic-release \
