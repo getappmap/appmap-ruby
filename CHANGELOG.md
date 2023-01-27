@@ -1,3 +1,10 @@
+## [0.95.2](https://github.com/getappmap/appmap-ruby/compare/v0.95.1...v0.95.2) (2023-01-27)
+
+
+### Bug Fixes
+
+* wrap_example_block passes example ([810f603](https://github.com/getappmap/appmap-ruby/commit/810f6036535348f27a9e084df99c86af50087b0d))
+
 ## [0.95.1](https://github.com/getappmap/appmap-ruby/compare/v0.95.0...v0.95.1) (2023-01-26)
 
 
