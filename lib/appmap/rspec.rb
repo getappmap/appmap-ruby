@@ -238,7 +238,7 @@ if AppMap::RSpec.enabled?
             proc do
               AppMap::RSpec.begin_spec example
               begin
-                instance_exec(&fn)
+                instance_exec(example, &fn)
               ensure
                 AppMap::RSpec.end_spec example, exception: $!
               end

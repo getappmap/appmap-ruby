@@ -35,7 +35,7 @@ class AgentSetupInitTest < Minitest::Test
           framework: :rspec,
           command: {
             program: 'bundle',
-            args: %w[exec rspec ./spec/controllers],
+            args: %w[exec rspec ./spec/controllers ./spec/requests],
             environment: { }
           }
         },

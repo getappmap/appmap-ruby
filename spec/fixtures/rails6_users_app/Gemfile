@@ -15,6 +15,7 @@ group :development, :test do
   gem 'appmap', path: '../../..'
   gem 'cucumber-rails', require: false
   gem 'rspec-rails'
+  gem "rswag-specs", "~> 2.8.0" # RSwag - Swagger-based DSL for rspec & accompanying rake task for generating Swagger files
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'pry-byebug'
 end
