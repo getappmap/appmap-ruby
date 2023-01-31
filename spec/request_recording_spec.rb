@@ -30,7 +30,7 @@ describe 'request recording', :order => :defined do
     expect(res).to be_a(Net::HTTPOK)
     expect(res).to include('appmap-file-name')
     appmap_file_name = res['AppMap-File-Name']
-    expect(File.exists?(appmap_file_name)).to be(true)
+    expect(File.exist?(appmap_file_name)).to be(true)
     appmap = JSON.parse(File.read(appmap_file_name))
     # Every event should come from the same thread
     expect(appmap['events'].map {|evt| evt['thread_id']}.uniq.length).to eq(1)
