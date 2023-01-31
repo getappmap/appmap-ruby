@@ -13,6 +13,7 @@ rvm:
 - 2.7.6
 - 3.0.1 # doesn't show in pre-installed list
 - 3.1.2
+- 3.2.0
 
 addons:
   postgresql: "13"
