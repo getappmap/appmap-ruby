@@ -357,7 +357,7 @@ module AppMap
             unless config_present
               warn Util.color(YAML.dump(config_yaml), :magenta)
               dirname = Pathname.new(config_file_name).dirname.expand_path
-              if Dir.exists?(dirname) && File.writable?(dirname)
+              if Dir.exist?(dirname) && File.writable?(dirname)
                 warn Util.color(<<~CONFIG_FILE_MSG, :magenta)
                 This file will be saved to #{Pathname.new(config_file_name).expand_path},
                 where you can customize it.
