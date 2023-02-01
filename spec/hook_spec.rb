@@ -1035,7 +1035,7 @@ describe 'AppMap class Hooking' do
     end
   end
 
-  it 'preserves the sighnature of hooked methods' do
+  it 'preserves the signature of hooked methods' do
     parameters = []
     events = <<~YAML
     ---
@@ -1089,6 +1089,47 @@ describe 'AppMap class Hooking' do
       it 'empty hash for **kwrest can be proxied as a regular function argument', github_issue: 153 do
         invoke_test_file 'spec/fixtures/hook/kwargs.rb' do
           expect(Kwargs.has_kwrest_calls_no_kwargs(nil, {})).to eq({})
+        end
+      end
+    end
+
+    if ruby_3_2_or_higher?
+      # https://www.ruby-lang.org/en/news/2022/12/25/ruby-3-2-0-released/
+      #
+      # Anonymous rest and keyword rest arguments can now be passed as
+      # arguments, instead of just used in method parameters.
+      it 'anonymous rest arguments passed as arguments' do
+        invoke_test_file 'spec/fixtures/hook/anonargs_passed.rb' do
+          expect(AnonArgsPassed.has_anon_rest_calls_anon_rest('param1', 'param2')).to eq('anon')
+          expect(AnonArgsPassed.has_anon_rest_calls_non_anon_rest_first('dummy1', 'param1', 'param2')).to eq(['param1', 'param2'])
+          expect(AnonArgsPassed.has_anon_rest_calls_non_anon_rest_last('param1', 'param2', 'dummy3')).to eq(['param1', 'param2'])
+        end
+      end
+
+      it 'anonymous keyword rest arguments passed as arguments' do
+        invoke_test_file 'spec/fixtures/hook/anonkwargs_passed.rb' do
+          expect(AnonKwargsPassed.has_kw_rest_calls_kw_rest({'param1': 1, 'param2': 2})).to eq('kwargs')
+          expect(AnonKwargsPassed.has_kw_rest_calls_kw_rest_last('arg1', 'arg2', 'kwarg1': 1, 'kwarg2': 2)).to eq({'kwarg1': 1, 'kwarg2': 2})
+        end
+      end
+
+      # Methods taking a rest parameter (like *args) and wishing to
+      # delegate keyword arguments through foo(*args) must now be
+      # marked with ruby2_keywords (if not already the case). In other
+      # words, all methods wishing to delegate keyword arguments
+      # through *args must now be marked with ruby2_keywords, with no
+      # exception.
+      it 'rest arguments passed to keyword arguments' do
+        invoke_test_file 'spec/fixtures/hook/args_to_kwargs.rb' do
+          expect(ArgsToKwArgs.has_args_calls_kwargs('kwarg1': 1, 'kwarg2': 2)).to eq({'kwarg1': 1, 'kwarg2': 2})
+        end
+      end
+
+      # A proc that accepts a single positional argument and keywords
+      # will no longer autosplat.
+      it 'proc no longer autosplat' do
+        invoke_test_file 'spec/fixtures/hook/proc_no_autosplat.rb' do
+          expect(ProcNoAutosplat.proc_no_autosplat([1, 2])).to eq([1, 2])
         end
       end
     end
