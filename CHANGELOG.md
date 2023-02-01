@@ -1,3 +1,15 @@
+# [0.96.0](https://github.com/getappmap/appmap-ruby/compare/v0.95.2...v0.96.0) (2023-02-01)
+
+
+### Bug Fixes
+
+* Dir.exists? and File.exists? don't exist in Ruby 3.2 ([2879b06](https://github.com/getappmap/appmap-ruby/commit/2879b06a0bfe68e178afc0f2ba1d9320100b7b7a))
+
+
+### Features
+
+* Accept ruby 3.2 ([2326a88](https://github.com/getappmap/appmap-ruby/commit/2326a8876ad093b699eb909f43dc885ada98bab9))
+
 ## [0.95.2](https://github.com/getappmap/appmap-ruby/compare/v0.95.1...v0.95.2) (2023-01-27)
 
 
