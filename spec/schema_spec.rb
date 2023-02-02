@@ -60,12 +60,24 @@ describe 'Schema example' do
   describe 'Array of Hashes' do
     let(:value) { [ { id: 1, contents: 'some text' }, { id: 2 } ] }
     it 'is an array containing the schema' do
-      expect(schema).to match(hash_including(
-          properties: [ 
-            { name: :id, class: 'Integer' },
-            { name: :contents, class: 'String' }
+      expect(schema).to match(
+        hash_including(
+          class: 'Array',
+          items: [
+            {
+              class: 'Hash',
+              properties: [
+                { name: :id, class: 'Integer' },
+                { name: :contents, class: 'String' }
+              ]
+            },
+            {
+              class: 'Hash',
+              properties: [ { name: :id, class: 'Integer' } ]
+            }
           ]
-        ))
+        )
+      )
     end
   end
 end
