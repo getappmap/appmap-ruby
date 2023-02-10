@@ -1,3 +1,10 @@
+# [0.97.0](https://github.com/getappmap/appmap-ruby/compare/v0.96.0...v0.97.0) (2023-02-10)
+
+
+### Features
+
+* Implement `items` Parameter object format (AppMap v1.10.0) ([9a28773](https://github.com/getappmap/appmap-ruby/commit/9a2877396187393adfe6e4379f0d6a735d5678b4))
+
 # [0.96.0](https://github.com/getappmap/appmap-ruby/compare/v0.95.2...v0.96.0) (2023-02-01)
 
 
