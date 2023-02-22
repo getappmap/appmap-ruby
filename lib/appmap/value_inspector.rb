@@ -2,8 +2,8 @@ module AppMap
   module ValueInspector
     extend self
 
-    MAX_DEPTH = 3
-    MAX_ARRAY_ELEMENTS = 5
+    MAX_DEPTH = ENV.fetch('APPMAP_PROPERTY_MAX_DEPTH', 3).to_i
+    MAX_ARRAY_ELEMENTS = ENV.fetch('APPMAP_PROPERTY_MAX_ARRAY_ELEMENTS', 5).to_i
 
     def detect_size(value)
       # Don't risk calling #size on things like data-access objects, which can and will issue queries for this information.
