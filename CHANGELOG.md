@@ -1,3 +1,10 @@
+# [0.98.0](https://github.com/getappmap/appmap-ruby/compare/v0.97.0...v0.98.0) (2023-02-22)
+
+
+### Features
+
+* Allow environment configuration of property value inspection ([20579d3](https://github.com/getappmap/appmap-ruby/commit/20579d3b481e08b6949c9c593c3cb44d1fec37e3))
+
 # [0.97.0](https://github.com/getappmap/appmap-ruby/compare/v0.96.0...v0.97.0) (2023-02-10)
 
 
