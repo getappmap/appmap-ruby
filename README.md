@@ -22,7 +22,7 @@ granular than a full debug trace. It's designed to be optimal for understanding 
 Visit the [AppMap for Ruby](https://appland.com/docs/reference/appmap-ruby.html) reference page on AppLand.com for a complete reference guide.
 
 # Development
-[![Build Status](https://travis-ci.com/applandinc/appmap-ruby.svg?branch=master)](https://travis-ci.com/applandinc/appmap-ruby)
+[![Build Status](https://travis-ci.com/getappmap/appmap-ruby.svg?branch=master)](https://travis-ci.com/getappmap/appmap-ruby)
 
 ## Internal architecture
 
