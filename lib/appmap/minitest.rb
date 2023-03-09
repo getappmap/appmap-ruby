@@ -11,7 +11,7 @@ module AppMap
   # be activated around each test.
   module Minitest
     APPMAP_OUTPUT_DIR = 'tmp/appmap/minitest'
-    LOG = ( ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true' )
+    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
 
     def self.metadata
       AppMap.detect_metadata
@@ -29,9 +29,8 @@ module AppMap
         test.method(test_name).source_location.join(':')
       end
 
-
-      def finish(exception)
-        warn "Finishing recording of test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
+      def finish(failed, exception)
+        warn "Finishing recording of #{failed || exception ? 'failed ' : ''} test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
         warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
 
         events = []
@@ -45,12 +44,12 @@ module AppMap
 
         feature_group = test.class.name.underscore.split('_')[0...-1].join('_').capitalize
         feature_name = test.name.split('_')[1..-1].join(' ')
-        scenario_name = [ feature_group, feature_name ].join(' ')
+        scenario_name = [feature_group, feature_name].join(' ')
 
         AppMap::Minitest.save name: scenario_name,
                               class_map: class_map,
                               source_location: source_location,
-                              test_status: exception ? 'failed' : 'succeeded',
+                              test_status: failed || exception ? 'failed' : 'succeeded',
                               exception: exception,
                               events: events
       end
@@ -80,11 +79,11 @@ module AppMap
         recording = @recordings_by_test.delete(test.object_id)
         return warn "No recording found for #{test}" unless recording
 
-        recording.finish exception
+        recording.finish (test.failures || []).any?, exception
       end
 
       def config
-        @config or raise "AppMap is not configured"
+        @config or raise 'AppMap is not configured'
       end
 
       def add_event_methods(event_methods)
@@ -99,17 +98,17 @@ module AppMap
           m[:frameworks] ||= []
           m[:frameworks] << {
             name: 'minitest',
-            version: Gem.loaded_specs['minitest']&.version&.to_s
+            version: Gem.loaded_specs['minitest']&.version&.to_s,
           }
           m[:recorder] = {
             name: 'minitest',
-            type: 'tests'
+            type: 'tests',
           }
           m[:test_status] = test_status
           if exception
             m[:exception] = {
               class: exception.class.name,
-              message: AppMap::Event::MethodEvent.display_string(exception.to_s)
+              message: AppMap::Event::MethodEvent.display_string(exception.to_s),
             }
           end
         end
@@ -118,7 +117,7 @@ module AppMap
           version: AppMap::APPMAP_FORMAT_VERSION,
           metadata: metadata,
           classMap: class_map,
-          events: events
+          events: events,
         }.compact
         fname = AppMap::Util.scenario_filename(name)
 
