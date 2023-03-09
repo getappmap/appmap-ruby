@@ -1,3 +1,11 @@
+## [0.98.1](https://github.com/getappmap/appmap-ruby/compare/v0.98.0...v0.98.1) (2023-03-09)
+
+
+### Bug Fixes
+
+* Prevent AppMaps from being constantly re-indexed ([0311ab4](https://github.com/getappmap/appmap-ruby/commit/0311ab4c2f759e8c471982d47e6038e3aaa9f908))
+* Report test_status from minitest ([659f89a](https://github.com/getappmap/appmap-ruby/commit/659f89aa5a11280eb886abe14ec0c70790cb07a7))
+
 # [0.98.0](https://github.com/getappmap/appmap-ruby/compare/v0.97.0...v0.98.0) (2023-02-22)
 
 
