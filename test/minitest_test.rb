@@ -8,7 +8,6 @@ class MinitestTest < Minitest::Test
   def perform_minitest_test(test_name)
     Bundler.with_clean_env do
       Dir.chdir 'test/fixtures/minitest_recorder' do
-        FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'
         system({ 'APPMAP_RECORD_MINITEST' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
@@ -18,7 +17,7 @@ class MinitestTest < Minitest::Test
     end
   end
 
-  def test_hello
+  def test_succeeded
     perform_minitest_test 'hello' do
       appmap_file = 'tmp/appmap/minitest/Hello_hello.appmap.json'
 
@@ -32,7 +31,19 @@ class MinitestTest < Minitest::Test
       assert_equal 'tests', metadata['recorder']['type']
       assert_equal 'ruby', metadata['language']['name']
       assert_equal 'Hello hello', metadata['name']
+      assert_equal 'succeeded', metadata['test_status']
       assert_equal 'test/hello_test.rb:9', metadata['source_location']
+    end
+  end
+
+  def test_failed
+    perform_minitest_test 'hello_failed' do
+      appmap_file = 'tmp/appmap/minitest/Hello_failed_failed.appmap.json'
+
+      assert File.file?(appmap_file), 'appmap output file does not exist'
+      appmap = JSON.parse(File.read(appmap_file))
+      metadata = appmap['metadata']
+      assert_equal 'failed', metadata['test_status']
     end
   end
 end
