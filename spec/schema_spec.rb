@@ -12,12 +12,12 @@ describe 'Schema example' do
     options[:max_depth] = max_depth if max_depth
     AppMap::ValueInspector.detect_schema value, **options
   }
-  
+
   describe 'Hash value' do
     let(:value) { { id: 1, contents: 'some text' } }
     it 'is a one level schema' do
       expect(schema).to match(hash_including(
-        properties: [ 
+        properties: [
           { name: :id, class: 'Integer' },
           { name: :contents, class: 'String' }
         ]
@@ -33,7 +33,7 @@ describe 'Schema example' do
             {
               name: :page,
               class: 'Hash',
-              properties: [ 
+              properties: [
                 { name: :page_number, class: 'Integer' },
                 { name: :page_size, class: 'Integer' },
                 { name: :total, class: 'Integer' }
@@ -44,7 +44,7 @@ describe 'Schema example' do
     end
     describe 'max depth' do
       let(:max_depth) { 1 }
-      it 'respects max depth' do
+      it 'respects max depth for dicts' do
         expect(schema).to match(hash_including(
             properties: [
               {
@@ -57,27 +57,53 @@ describe 'Schema example' do
     end
   end
 
-  describe 'Array of Hashes' do
-    let(:value) { [ { id: 1, contents: 'some text' }, { id: 2 } ] }
-    it 'is an array containing the schema' do
-      expect(schema).to match(
-        hash_including(
+  describe 'Arrays' do
+    describe 'of Hashes' do
+      let(:value) { [ { id: 1, contents: 'some text' }, { id: 2 } ] }
+      it 'is an array containing the schema' do
+        expect(schema).to match(
+          hash_including(
+            class: 'Array',
+            items: [
+              {
+                class: 'Hash',
+                properties: [
+                  { name: :id, class: 'Integer' },
+                  { name: :contents, class: 'String' }
+                ]
+              },
+              {
+                class: 'Hash',
+                properties: [ { name: :id, class: 'Integer' } ]
+              }
+            ]
+          )
+        )
+      end
+    end
+    describe 'of Arrays' do
+      let(:value) { [[['foo']]] }
+      let(:max_depth) { 1 }
+      it 'is an array containing the schema' do
+        expect(schema).to match(
           class: 'Array',
           items: [
             {
-              class: 'Hash',
-              properties: [
-                { name: :id, class: 'Integer' },
-                { name: :contents, class: 'String' }
+              class: 'Array',
+              items: [
+                {
+                  class: 'Array',
+                  items: [
+                    {
+                      class: 'String'
+                    }
+                  ]
+                }
               ]
-            },
-            {
-              class: 'Hash',
-              properties: [ { name: :id, class: 'Integer' } ]
             }
           ]
         )
-      )
+      end
     end
   end
 end
