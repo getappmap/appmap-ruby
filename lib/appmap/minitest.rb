@@ -39,7 +39,7 @@ module AppMap
           failure_exception = failures.first || exception
           warn "Failure exception: #{failure_exception}" if AppMap::Minitest::LOG
 
-          first_location = failure_exception.backtrace_locations.find { |location| location.absolute_path.index(Dir.pwd) == 0 }
+          first_location = failure_exception.backtrace_locations.find { |location| !Pathname.new(Util.normalize_path(location.absolute_path)).absolute? }
           failure_location = [ Util.normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
 
           test_failure = {
