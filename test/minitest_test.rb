@@ -44,6 +44,11 @@ class MinitestTest < Minitest::Test
       appmap = JSON.parse(File.read(appmap_file))
       metadata = appmap['metadata']
       assert_equal 'failed', metadata['test_status']
+      test_failure = metadata['test_failure']
+      assert_equal test_failure['message'], <<~MESSAGE.strip
+      Expected: \"Bye!\"\n  Actual: \"Hello!\"
+      MESSAGE
+      assert_equal test_failure['location'], 'test/hello_failed_test.rb:10'
     end
   end
 end

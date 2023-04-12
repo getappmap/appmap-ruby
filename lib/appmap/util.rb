@@ -146,6 +146,13 @@ module AppMap
         end
       end
 
+      def format_exception(exception)
+        {
+          class: exception.class.name,
+          message: AppMap::Event::MethodEvent.display_string(exception.to_s),
+        }
+      end
+
       # Convert a Rails-style path from /org/:org_id(.:format)
       # to Swagger-style paths like /org/{org_id}
       def swaggerize_path(path)

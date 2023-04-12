@@ -60,4 +60,19 @@ class RSpecTest < Minitest::Test
       metadata = appmap['metadata']
     end
   end
+
+  def test_failed_rspec
+    perform_test 'failed_spec' do
+      appmap_file = 'tmp/appmap/rspec/Hello_expectation_fails.appmap.json'
+      assert File.file?(appmap_file), 'appmap output file does not exist'
+      appmap = JSON.parse(File.read(appmap_file))
+      assert_includes appmap.keys, 'metadata'
+      metadata = appmap['metadata']
+      test_failure = metadata['test_failure']
+      assert_equal test_failure['message'], <<~MESSAGE.strip
+      expected: \"Hello\"\n     got: \"Hello!\"\n\n(compared using ==)
+      MESSAGE
+      assert_equal test_failure['location'], 'spec/failed_spec.rb:7'
+    end
+  end
 end
