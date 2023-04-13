@@ -5,7 +5,7 @@ module AppMap
 
   VERSION = '0.98.1'
 
-  APPMAP_FORMAT_VERSION = '1.10.0'
+  APPMAP_FORMAT_VERSION = '1.12.0'
 
   SUPPORTED_RUBY_VERSIONS = %w[2.5 2.6 2.7 3.0 3.1 3.2].freeze
 

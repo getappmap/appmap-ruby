@@ -139,11 +139,22 @@ module AppMap
       end
 
       def normalize_path(path)
-        if path.index(Dir.pwd) == 0 && !path.index(Bundler.bundle_path.to_s)
+        is_local_path    = -> { path.index(Dir.pwd) == 0 }
+        is_bundled_path  = -> { path.index(Bundler.bundle_path.to_s) == 0 }
+        is_vendored_path = -> { path.index(File.join(Dir.pwd, 'vendor/bundle')) == 0 }
+
+        if is_local_path.() && !is_bundled_path.() && !is_vendored_path.()
           path[Dir.pwd.length + 1..-1]
         else
           path
         end
+      end
+
+      def format_exception(exception)
+        {
+          class: exception.class.name,
+          message: AppMap::Event::MethodEvent.display_string(exception.to_s),
+        }
       end
 
       # Convert a Rails-style path from /org/:org_id(.:format)

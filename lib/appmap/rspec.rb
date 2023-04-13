@@ -8,7 +8,7 @@ require 'fileutils'
 module AppMap
   module RSpec
     APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
-    LOG = false
+    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
 
     def self.metadata
       AppMap.detect_metadata
@@ -96,9 +96,23 @@ module AppMap
         result
       end
 
-      def finish(exception)
-        warn "Finishing recording of example #{example}" if AppMap::RSpec::LOG
+      def finish(failure, exception)
+        failed = true if failure || exception
+        warn "Finishing recording of #{failed ? 'failed ' : ''} example #{example}" if AppMap::RSpec::LOG
         warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
+
+        if failed
+          failure_exception = failure || exception
+          warn "Failure exception: #{failure_exception}" if AppMap::RSpec::LOG
+
+          first_location = failure_exception.backtrace_locations.find { |location| !Pathname.new(Util.normalize_path(location.absolute_path)).absolute? }
+          failure_location = [ Util.normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
+
+          test_failure = {
+            message: failure_exception.message.strip,
+            location: failure_location,
+          }
+        end
 
         events = []
         AppMap.tracing.delete @trace
@@ -134,6 +148,7 @@ module AppMap
                            class_map: class_map,
                            source_location: source_location,
                            test_status: exception ? 'failed' : 'succeeded',
+                           test_failure: test_failure,
                            exception: exception,
                            events: events
       end
@@ -169,7 +184,7 @@ module AppMap
         recording = @recordings_by_example.delete(example.object_id)
         return warn "No recording found for #{example}" unless recording
 
-        recording.finish exception unless recording == :false
+        recording.finish example.execution_result.exception || exception, exception unless recording == :false
       end
 
       def config
@@ -180,7 +195,7 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
+      def save(name:, class_map:, source_location:, test_status:, test_failure:, exception:, events:)
         metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = name
           m[:source_location] = source_location
@@ -195,8 +210,10 @@ module AppMap
             type: 'tests'
           }
           m[:test_status] = test_status
+          m[:test_failure] = test_failure if test_failure
           if exception
-            m[:exception] = {
+            m[:exception] = Util.format_exception(exception)
+            {
               class: exception.class.name,
               message: AppMap::Event::MethodEvent.display_string(exception.to_s)
             }

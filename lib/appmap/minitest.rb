@@ -26,12 +26,27 @@ module AppMap
       end
 
       def source_location
-        test.method(test_name).source_location.join(':')
+        location = test.method(test_name).source_location
+        [ Util.normalize_path(location.first), location.last ].join(':')
       end
 
-      def finish(failed, exception)
-        warn "Finishing recording of #{failed || exception ? 'failed ' : ''} test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
+      def finish(failures, exception)
+        failed = failures.any? || exception
+        warn "Finishing recording of #{failed ? 'failed ' : ''} test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
         warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
+
+        if failed
+          failure_exception = failures.first || exception
+          warn "Failure exception: #{failure_exception}" if AppMap::Minitest::LOG
+
+          first_location = failure_exception.backtrace_locations.find { |location| !Pathname.new(Util.normalize_path(location.absolute_path)).absolute? }
+          failure_location = [ Util.normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
+
+          test_failure = {
+            message: failure_exception.message,
+            location: failure_location,
+          }
+        end
 
         events = []
         AppMap.tracing.delete @trace
@@ -49,7 +64,8 @@ module AppMap
         AppMap::Minitest.save name: scenario_name,
                               class_map: class_map,
                               source_location: source_location,
-                              test_status: failed || exception ? 'failed' : 'succeeded',
+                              test_status: failed ? 'failed' : 'succeeded',
+                              test_failure: test_failure,
                               exception: exception,
                               events: events
       end
@@ -79,7 +95,7 @@ module AppMap
         recording = @recordings_by_test.delete(test.object_id)
         return warn "No recording found for #{test}" unless recording
 
-        recording.finish (test.failures || []).any?, exception
+        recording.finish test.failures || [], exception
       end
 
       def config
@@ -90,7 +106,7 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(name:, class_map:, source_location:, test_status:, exception:, events:)
+      def save(name:, class_map:, source_location:, test_status:, test_failure:, exception:, events:)
         metadata = AppMap::Minitest.metadata.tap do |m|
           m[:name] = name
           m[:source_location] = source_location
@@ -105,11 +121,9 @@ module AppMap
             type: 'tests',
           }
           m[:test_status] = test_status
+          m[:test_failure] = test_failure if test_failure
           if exception
-            m[:exception] = {
-              class: exception.class.name,
-              message: AppMap::Event::MethodEvent.display_string(exception.to_s),
-            }
+            m[:exception] = Util.format_exception(exception)
           end
         end
 
