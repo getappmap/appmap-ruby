@@ -1,3 +1,16 @@
+# [0.99.0](https://github.com/getappmap/appmap-ruby/compare/v0.98.1...v0.99.0) (2023-04-13)
+
+
+### Bug Fixes
+
+* Don't report vendored paths as local ([e09cb4f](https://github.com/getappmap/appmap-ruby/commit/e09cb4f9764d275c7ba0858f16b545c2d287b473))
+* Report the first relative path in the backtrace ([f81b346](https://github.com/getappmap/appmap-ruby/commit/f81b346ebc66a4f60ca26ad384d72672893d1333))
+
+
+### Features
+
+* Report metadata.test_failure ([82c87d2](https://github.com/getappmap/appmap-ruby/commit/82c87d2453ce7c040bce138bf55d94d47aca58fc))
+
 ## [0.98.1](https://github.com/getappmap/appmap-ruby/compare/v0.98.0...v0.98.1) (2023-03-09)
 
 
