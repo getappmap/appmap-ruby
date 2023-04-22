@@ -5,7 +5,7 @@ require 'delegate'
 module AppMap
   module Trace
     class RubyMethod < SimpleDelegator
-      attr_reader :class_name, :static
+      attr_reader :class_name, :static, :stack
 
       def initialize(package, class_name, method, static)
         super(method)
@@ -180,6 +180,7 @@ module AppMap
     # * static
     # * comment
     # * labels
+    # * stack
     # * source_location
     def record_method(method)
       @methods << method

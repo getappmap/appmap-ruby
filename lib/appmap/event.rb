@@ -145,7 +145,7 @@ module AppMap
     end
 
     class MethodCall < MethodEvent
-      attr_accessor :defined_class, :method_id, :path, :lineno, :parameters, :receiver, :static
+      attr_accessor :defined_class, :method_id, :path, :lineno, :parameters, :receiver, :static, :stack
 
       MethodMetadata = Struct.new(:defined_class, :method_id, :path, :lineno, :static)
 
@@ -236,6 +236,7 @@ module AppMap
           h[:static] = static
           h[:parameters] = parameters
           h[:receiver] = receiver
+          h[:stack] = stack
           h.delete_if { |_, v| v.nil? }
         end
       end

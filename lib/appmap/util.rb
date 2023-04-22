@@ -206,6 +206,7 @@ module AppMap
       end
 
       def deep_dup(hash)
+        require 'active_support'
         require 'active_support/core_ext'
         hash.deep_dup
       end

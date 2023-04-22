@@ -25,7 +25,7 @@ module AppMap
     # * +labels+ is used to apply labels to matching code. This is really only useful when the package will be applied to
     #   specific functions, via TargetMethods.
     # * +shallow+ indicates shallow mapping, in which only the entrypoint to a gem is recorded.
-    Package = Struct.new(:name, :path, :gem, :require_name, :exclude, :labels, :shallow, :builtin) do
+    Package = Struct.new(:name, :path, :gem, :require_name, :exclude, :labels, :shallow, :report_stack, :builtin) do
       # This is for internal use only.
       private_methods :gem
 
@@ -62,24 +62,24 @@ module AppMap
       class << self
         # Builds a package for a path, such as `app/models` in a Rails app. Generally corresponds to a `path:` entry
         # in appmap.yml. Also used for mapping specific methods via TargetMethods.
-        def build_from_path(path, shallow: false, require_name: nil, exclude: [], labels: [])
-          Package.new(path, path, nil, require_name, exclude, labels, shallow)
+        def build_from_path(path, shallow: false, require_name: nil, exclude: [], labels: [], report_stack: nil)
+          Package.new(path, path, nil, require_name, exclude, labels, shallow, report_stack)
         end
 
-        def build_from_builtin(path, shallow: false, require_name: nil, exclude: [], labels: [])
-          Package.new(path, path, nil, require_name, exclude, labels, shallow, true)
+        def build_from_builtin(path, shallow: false, require_name: nil, exclude: [], labels: [], report_stack: nil)
+          Package.new(path, path, nil, require_name, exclude, labels, shallow, report_stack, true)
         end
 
         # Builds a package for gem. Generally corresponds to a `gem:` entry in appmap.yml. Also used when mapping
         # a builtin.
-        def build_from_gem(gem, shallow: true, require_name: nil, exclude: [], labels: [], optional: false, force: false)
+        def build_from_gem(gem, shallow: true, require_name: nil, exclude: [], labels: [], optional: false, force: false, report_stack: nil)
           if !force && %w[method_source].member?(gem)
             warn "WARNING: #{gem} cannot be AppMapped because it is a dependency of the appmap gem"
             return
           end
           path = gem_path(gem, optional)
           if path
-            Package.new(gem, path, gem, require_name, exclude, labels, shallow)
+            Package.new(gem, path, gem, require_name, exclude, labels, shallow, report_stack)
           else
             AppMap::Util.startup_message "#{gem} is not available in the bundle"
           end
@@ -107,6 +107,7 @@ module AppMap
           exclude: Util.blank?(exclude) ? nil : exclude,
           labels: Util.blank?(labels) ? nil : labels,
           shallow: shallow.nil? ? nil : shallow,
+          report_stack: report_stack.nil? ? nil : report_stack,
         }.compact
       end
     end
@@ -160,14 +161,14 @@ module AppMap
     private_constant :MethodHook
     
     class << self
-      def package_hooks(methods, path: nil, gem: nil, force: false, builtin: false, handler_class: nil, require_name: nil)
+      def package_hooks(methods, path: nil, gem: nil, force: false, builtin: false, handler_class: nil, require_name: nil, report_stack: false)
         Array(methods).map do |method|
           package = if builtin
-            Package.build_from_builtin(path || require_name, require_name: require_name, labels: method.labels, shallow: false)
+            Package.build_from_builtin(path || require_name, require_name: require_name, labels: method.labels, report_stack: report_stack, shallow: false)
           elsif gem
-            Package.build_from_gem(gem, require_name: require_name, labels: method.labels, shallow: false, force: force, optional: true)
+            Package.build_from_gem(gem, require_name: require_name, labels: method.labels, report_stack: report_stack, shallow: false, force: force, optional: true)
           elsif path
-            Package.build_from_path(path, require_name: require_name, labels: method.labels, shallow: false)
+            Package.build_from_path(path, require_name: require_name, labels: method.labels, report_stack: report_stack, shallow: false)
           end
           next unless package
 
@@ -186,6 +187,7 @@ module AppMap
         methods_decl = hook_decl['methods'] || hook_decl['method']
         methods_decl = Array(methods_decl) unless methods_decl.is_a?(Hash)
         labels_decl = Array(hook_decl['labels'] || hook_decl['label'])
+        report_stack = hook_decl['report_stack']
 
         methods = methods_decl.map do |name|
           class_name, method_name, static = name.include?('.') ? name.split('.', 2) + [ true ] : name.split('#', 2) + [ false ]
@@ -202,7 +204,8 @@ module AppMap
           gem: gem_name,
           path: path,
           require_name: require_name || gem_name || path,
-          force: hook_decl['force']
+          force: hook_decl['force'],
+          report_stack: report_stack
         }.compact
 
         handler_class = hook_decl['handler_class']
