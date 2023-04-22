@@ -1,7 +1,10 @@
-- method: Haml::Helpers#block_is_haml?
+- methods:
+    - Haml::Helpers.block_is_haml?
+    - Haml::TempleEngine#compile
   labels:
     - lang.eval.safe
     - hide.tree
+    - hide
 - method: HAML::ActionView::Helpers::CaptureHelper#capture_with_haml
   # It's unclear how this should be labeled.
   # Is it always a safe eval?
