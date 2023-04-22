@@ -7,7 +7,9 @@
   require_name: active_support
   force: true
 - method: ActiveSupport::SecurityUtils#secure_compare
-  label: crypto.secure_compare
+  label:
+    - crypto.secure_compare
+    - hide.tree
   require_name: active_support/security_utils
   force: true
 - method: ActiveSupport.run_load_hooks
@@ -19,6 +21,12 @@
 - method: ActiveSupport::MessageEncryptor#encrypt_and_sign
   require_name: active_support/message_encryptor
   force: true
+  labels:
+    - encrypt.safe
+    - hide.tree
 - method: ActiveSupport::MessageEncryptor#decrypt_and_verify
   require_name: active_support/message_encryptor
   force: true
+  labels:
+    - decrypt.safe
+    - hide.tree

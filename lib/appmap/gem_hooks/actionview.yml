@@ -15,3 +15,8 @@
   - ActionView::Helpers::SanitizeHelper#sanitize
   label: string.html_safe
   require_name: action_view
+- methods:
+  - ActionView::Template#compile!
+  labels:
+  - mvc.template.compile
+  - lang.eval.safe

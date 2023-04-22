@@ -1,2 +1,4 @@
 - method: Sprockets::EncodingUtils#unmarshaled_deflated
-  label: deserialize.safe
+  label:
+    - deserialize.safe
+    - hide.tree
