@@ -7,14 +7,6 @@
 - method: Marshal#dump
   require_name: ruby
   label: serialize
-- method: Array#pack
-  require_name: ruby
-  label: array.pack
-- methods:
-  - String#unpack
-  - String#unpack1
-  require_name: ruby
-  label: string.unpack
 - methods:
   - Kernel#eval
   require_name: ruby
