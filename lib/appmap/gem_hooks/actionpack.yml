@@ -7,7 +7,6 @@
   - ActionDispatch::Cookies::CookieJar#fetch
   labels:
     - http.session.read
-    - hide.tree
   require_name: action_dispatch
 - methods:
   - ActionDispatch::Request::Session#destroy
@@ -21,7 +20,6 @@
   - ActionDispatch::Cookies::CookieJar#recycle!
   labels:
     - http.session.write
-    - hide.tree
   require_name: action_dispatch
 - methods:
   - ActionDispatch::Request::Session#clear
@@ -29,7 +27,6 @@
   labels:
     - http.session.write
     - http.session.clear
-    - hide.tree
   require_name: action_dispatch
 - methods:
   - ActionDispatch::Cookies::EncryptedCookieJar#[]=
@@ -40,7 +37,6 @@
   labels:
     - http.cookie
     - crypto.encrypt
-    - hide.tree
   require_name: action_dispatch
 - methods:
   - ActionController::Instrumentation#process_action

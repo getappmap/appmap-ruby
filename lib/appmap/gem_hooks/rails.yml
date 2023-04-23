@@ -1,4 +1,4 @@
 - method: Rails::Application#config_for
   label:
     - deserialize.safe
-    - hide.tree
+    - mvc.configuration

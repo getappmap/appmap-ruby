@@ -2,9 +2,8 @@
     - Haml::Helpers.block_is_haml?
     - Haml::TempleEngine#compile
   labels:
+    - mvc.template.compile
     - lang.eval.safe
-    - hide.tree
-    - hide
 - method: HAML::ActionView::Helpers::CaptureHelper#capture_with_haml
   # It's unclear how this should be labeled.
   # Is it always a safe eval?
