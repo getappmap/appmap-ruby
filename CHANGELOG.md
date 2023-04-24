@@ -1,3 +1,10 @@
+## [0.99.1](https://github.com/getappmap/appmap-ruby/compare/v0.99.0...v0.99.1) (2023-04-24)
+
+
+### Bug Fixes
+
+* backtrace_locations may be nil ([7f3890a](https://github.com/getappmap/appmap-ruby/commit/7f3890a00d5f4425fac273c72e5576cf7752eeaf)), closes [#324](https://github.com/getappmap/appmap-ruby/issues/324)
+
 # [0.99.0](https://github.com/getappmap/appmap-ruby/compare/v0.98.1...v0.99.0) (2023-04-13)
 
 
