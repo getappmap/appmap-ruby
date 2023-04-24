@@ -69,7 +69,7 @@ class RSpecTest < Minitest::Test
       assert_includes appmap.keys, 'metadata'
       metadata = appmap['metadata']
       test_failure = metadata['test_failure']
-      assert_equal test_failure['message'], <<~MESSAGE.strip
+      assert_equal test_failure['message'].strip, <<~MESSAGE.strip
       expected: \"Hello\"\n     got: \"Hello!\"\n\n(compared using ==)
       MESSAGE
       assert_equal test_failure['location'], 'spec/failed_spec.rb:7'

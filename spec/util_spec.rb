@@ -3,6 +3,14 @@
 require 'spec_helper'
 require 'appmap/util'
 
+def first
+  second
+end
+
+def second
+  raise 'second'
+end
+
 describe AppMap::Util do
   describe 'scenario_filename' do
     let(:subject) { AppMap::Util.method(:scenario_filename) }
@@ -37,6 +45,20 @@ describe AppMap::Util do
 
     it 'ignores ending ) to not create malformed ({)} paths' do
       expect(AppMap::Util.swaggerize_path('(/locale/:locale)/api/users/:id(.:format)')).to eq('(/locale/{locale})/api/users/{id}')
+    end
+  end
+  describe :extract_test_failure do
+    it 'extracts message and location' do
+      begin
+        first
+      rescue
+        exception = $!
+      end
+      expect(exception).to be
+      expect(AppMap::Util.extract_test_failure(exception)).to eq({ message: 'second', location: 'spec/util_spec.rb:11' })
+    end
+    it "ignores location if it's missing" do
+      expect(AppMap::Util.extract_test_failure(Exception.new('test'))).to eq({ message: 'test' })
     end
   end
 end

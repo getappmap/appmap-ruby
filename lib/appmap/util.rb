@@ -157,6 +157,15 @@ module AppMap
         }
       end
 
+      def extract_test_failure(exception)
+        return unless exception
+
+        { message: exception.message }.tap do |test_failure|
+          first_location = exception.backtrace_locations&.find { |location| !Pathname.new(normalize_path(location.absolute_path)).absolute? }
+          test_failure[:location] = [ normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
+        end
+      end
+
       # Convert a Rails-style path from /org/:org_id(.:format)
       # to Swagger-style paths like /org/{org_id}
       def swaggerize_path(path)
