@@ -45,7 +45,7 @@ class MinitestTest < Minitest::Test
       metadata = appmap['metadata']
       assert_equal 'failed', metadata['test_status']
       test_failure = metadata['test_failure']
-      assert_equal test_failure['message'], <<~MESSAGE.strip
+      assert_equal test_failure['message'].strip, <<~MESSAGE.strip
       Expected: \"Bye!\"\n  Actual: \"Hello!\"
       MESSAGE
       assert_equal test_failure['location'], 'test/hello_failed_test.rb:10'
