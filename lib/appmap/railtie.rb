@@ -32,6 +32,8 @@ module AppMap
           AppMap::Handler::Rails::RequestHandler::RequestListener.method(:begin_request)
         )
       end
+
+      AppMap::Handler::Rails::RequestHandler::RackHook.new.activate
     end
   end
 end if AppMap.recording_enabled?

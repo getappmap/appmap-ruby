@@ -3,6 +3,7 @@
 require 'appmap/event'
 require 'appmap/hook'
 require 'appmap/util'
+require 'appmap/handler/rails/context'
 
 module AppMap
   module Handler
@@ -101,8 +102,11 @@ module AppMap
           protected
 
           def before_hook(receiver, *)
+            req = receiver.request
+            return unless Context.create req.env
+
             before_hook_start_time = AppMap::Util.gettime()
-            call_event = HTTPServerRequest.new(receiver.request)
+            call_event = HTTPServerRequest.new(req)
             call_event.call_elapsed_instrumentation = (AppMap::Util.gettime() - before_hook_start_time)
             # http_server_request events are i/o and do not require a package name.
             AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
@@ -111,13 +115,56 @@ module AppMap
 
           def after_hook(receiver, call_event, elapsed, *)
             after_hook_start_time = AppMap::Util.gettime()
-            return_value = Thread.current[TEMPLATE_RENDER_VALUE]
-            Thread.current[TEMPLATE_RENDER_VALUE] = nil
-            return_event = HTTPServerResponse.build_from_invocation call_event.id, return_value, elapsed, receiver.response
+            return_event = HTTPServerResponse.build_from_invocation \
+              call_event.id, Context.new.find_template_render_value, elapsed, receiver.response
             return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + call_event.call_elapsed_instrumentation
             call_event.call_elapsed_instrumentation = nil # to stay consistent with elapsed_instrumentation only being stored in return
             AppMap.tracing.record_event return_event
+            Context.remove receiver.request.env
           end
+        end
+
+        # Additional hook for the Rack stack in Rails applications.
+        #
+        # Hooking just in ActionController can be inaccurate if there's a middleware that
+        # intercepts the response and modifies it, or catches an exception
+        # or an object and does some other processing.
+        # For example, Devise catches a throw from warden on authentication error, then runs
+        # ActionController stack AGAIN to render a login page, which it then modifies to change
+        # the HTTP status code.
+        # ActionDispatch::Executor seems a good place to hook as the central entry point
+        # in a Rails application; there are a couple middleware that sometimes sit on top of it
+        # but they're usually inconsequential. One issue is that the executor can be entered several
+        # times in the stack (especially if Rails engines are used). To handle that, we set
+        # a context in the request environment the first time we enter it.
+        class RackHook < AppMap::Hook::Method
+          def initialize
+            super(nil, ActionDispatch::Executor, ActionDispatch::Executor.instance_method(:call))
+          end
+
+          protected
+
+          def before_hook(_receiver, env)
+            return unless Context.create env
+
+            before_hook_start_time = AppMap::Util.gettime
+            call_event = HTTPServerRequest.new ActionDispatch::Request.new(env)
+            # http_server_request events are i/o and do not require a package name.
+            AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
+            [call_event, (AppMap::Util.gettime - before_hook_start_time)]
+          end
+
+          # NOTE: this method smells of :reek:LongParameterList and :reek:UtilityFunction
+          # because of the interface it implements.
+          # rubocop:disable Metrics/ParameterLists
+          def after_hook(_receiver, call_event, elapsed_before, elapsed, after_hook_start_time, rack_return, _exception)
+            # TODO: handle exceptions
+            return_event = HTTPServerResponse.build_from_invocation \
+              call_event.id, Context.new.find_template_render_value, elapsed, ActionDispatch::Response.new(*rack_return)
+            return_event.elapsed_instrumentation = (AppMap::Util.gettime - after_hook_start_time) + elapsed_before
+            AppMap.tracing.record_event return_event
+          end
+          # rubocop:enable Metrics/ParameterLists
         end
 
         # RequestListener listens to the 'start_processing.action_controller' notification as a
@@ -125,6 +172,8 @@ module AppMap
         # Rails >= 7 due to the hooked methods visibility dropping to private.
         class RequestListener
           def self.begin_request(_name, _started, _finished, _unique_id, payload)
+            return unless Context.create payload[:request].env
+
             RequestListener.new(payload)
           end
 
@@ -149,17 +198,16 @@ module AppMap
             return unless @request_id == payload[:request].request_id
 
             after_hook_start_time = AppMap::Util.gettime()
-            return_value = Thread.current[TEMPLATE_RENDER_VALUE]
-            Thread.current[TEMPLATE_RENDER_VALUE] = nil
             return_event = HTTPServerResponse.build_from_invocation(
               @call_event.id,
-              return_value,
+              Context.new.find_template_render_value,
               finished - started,
               payload[:response] || payload
             )
             return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + @call_event.call_elapsed_instrumentation
 
             AppMap.tracing.record_event return_event
+            Context.remove payload[:request].env
             ActiveSupport::Notifications.unsubscribe(@subscriber)
           end
         end

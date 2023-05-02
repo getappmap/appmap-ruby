@@ -250,6 +250,24 @@ describe 'Rails' do
         end
       end
     end
+
+    next unless rails_version == 7
+
+    describe 'with middleware' do
+      let(:appmap_json_file) do
+        'Rack_response_hijacking_changes_the_response_on_the_index_to_422.appmap.json'
+      end
+
+      it 'records the middleware effects' do
+        expect(events).to include(
+          hash_including(
+            'http_server_response' => hash_including(
+              'status_code' => 422
+            )
+          )
+        )
+      end
+    end
   end
 
   describe 'with default appmap.yml' do
