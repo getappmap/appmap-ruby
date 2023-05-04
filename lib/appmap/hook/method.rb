@@ -4,11 +4,23 @@ require 'appmap/util'
 
 module AppMap
   class Hook
+    class << self
+      def method_hash_key(cls, method)
+        [ cls, method.name ].hash
+      rescue TypeError => e
+        warn "Error building hash key for #{cls}, #{method}: #{e}"
+      end
+    end
+    
+
     SIGNATURES = {}
     LOOKUP_SIGNATURE = lambda do |id|
       method = super(id)
 
-      signature = SIGNATURES[[ method.owner, method.name ]]
+      hash_key = Hook.method_hash_key(method.owner, method)
+      return method unless hash_key
+
+      signature = SIGNATURES[hash_key]
       if signature
         method.singleton_class.module_eval do
           define_method(:parameters) do
@@ -48,7 +60,8 @@ module AppMap
         end
 
         hook_method_parameters = hook_method.parameters.dup.freeze
-        SIGNATURES[[ hook_class, hook_method.name ]] = hook_method_parameters
+        hash_key = Hook.method_hash_key(hook_class, hook_method)
+        SIGNATURES[hash_key] = hook_method_parameters if hash_key
 
         # irb(main):001:0> Kernel.public_instance_method(:system)
         # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)

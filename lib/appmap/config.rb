@@ -499,6 +499,11 @@ module AppMap
     end
 
     def never_hook?(cls, method)
+      unless method
+        HookLog.log "method is nil" if HookLog.enabled?
+        return true
+      end
+
       _, separator, = ::AppMap::Hook.qualify_method_name(method)
       if exclude.member?(cls.name) || exclude.member?([ cls.name, separator, method.name ].join)
         HookLog.log "Hooking of #{method} disabled by configuration" if HookLog.enabled?
