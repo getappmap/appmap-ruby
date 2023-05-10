@@ -1,3 +1,10 @@
+## [0.99.2](https://github.com/getappmap/appmap-ruby/compare/v0.99.1...v0.99.2) (2023-05-10)
+
+
+### Bug Fixes
+
+* Ensure that signature hash key consists of strings ([acb5db9](https://github.com/getappmap/appmap-ruby/commit/acb5db9ecb0a6cdf40de83bf506f45f5283f641b))
+
 ## [0.99.1](https://github.com/getappmap/appmap-ruby/compare/v0.99.0...v0.99.1) (2023-04-24)
 
 
