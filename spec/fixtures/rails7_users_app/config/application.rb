@@ -10,6 +10,8 @@ require "action_controller/railtie"
 require "action_view/railtie"
 require "rails/test_unit/railtie"
 
+require_relative '../lib/hijacker'
+
 case orm_module
 when 'sequel'
   require 'sequel-rails'
@@ -41,5 +43,6 @@ module App
 
     Rails.autoloaders.main.ignore << File.join(Rails.root, 'app/models')
     config.autoload_paths << File.join(Rails.root, "app/models/#{orm_module}")
+    config.middleware.insert_before(-1, Hijacker)
   end
 end

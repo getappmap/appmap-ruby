@@ -28,3 +28,5 @@ group :development, :test do
   gem 'pry-byebug', '>=0', '< 99'
   gem 'rspec-rails'
 end
+
+gem 'capybara', '~> 3.39', group: :test

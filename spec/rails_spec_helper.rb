@@ -87,8 +87,7 @@ class TestRailsApp
 
     prepare_db
     FileUtils.rm_rf tmpdir
-    run_cmd \
-      './bin/rspec spec/controllers/users_controller_spec.rb spec/controllers/users_controller_api_spec.rb'
+    run_cmd './bin/rspec'
     @specs_ran = true
   end
 
