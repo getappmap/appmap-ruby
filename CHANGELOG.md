@@ -1,3 +1,10 @@
+## [0.99.3](https://github.com/getappmap/appmap-ruby/compare/v0.99.2...v0.99.3) (2023-05-10)
+
+
+### Bug Fixes
+
+* Capture HTTP requests in Rails on Rack level if possible ([e50a280](https://github.com/getappmap/appmap-ruby/commit/e50a280829cd102b8eecbb83a4e2a76247ee6270)), closes [#323](https://github.com/getappmap/appmap-ruby/issues/323)
+
 ## [0.99.2](https://github.com/getappmap/appmap-ruby/compare/v0.99.1...v0.99.2) (2023-05-10)
 
 
