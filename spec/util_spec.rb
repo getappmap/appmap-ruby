@@ -60,5 +60,17 @@ describe AppMap::Util do
     it "ignores location if it's missing" do
       expect(AppMap::Util.extract_test_failure(Exception.new('test'))).to eq({ message: 'test' })
     end
+
+    class_eval(<<-CLASS_EVAL, __FILE__, __LINE__ + 1)
+      def class_evaled
+        raise 'hell'
+      end
+    CLASS_EVAL
+
+    it 'can extract location even for eval-declared functions' do
+      class_evaled
+    rescue StandardError => e
+      expect(AppMap::Util.extract_test_failure(e)).to eq({ message: 'hell', location: 'spec/util_spec.rb:66' })
+    end
   end
 end

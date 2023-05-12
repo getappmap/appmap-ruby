@@ -161,7 +161,9 @@ module AppMap
         return unless exception
 
         { message: exception.message }.tap do |test_failure|
-          first_location = exception.backtrace_locations&.find { |location| !Pathname.new(normalize_path(location.absolute_path)).absolute? }
+          first_location = exception.backtrace_locations&.find do |location|
+            !Pathname.new(normalize_path(location.absolute_path || location.path)).absolute?
+          end
           test_failure[:location] = [ normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
         end
       end
