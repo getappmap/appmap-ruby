@@ -58,6 +58,8 @@ module AppMap
           private
 
           def normalized_path(request, router = ::Rails.application.routes.router)
+            # use a cloned environment because the router can modify it
+            request = ActionDispatch::Request.new request.env.clone
             router.recognize request do |route, _|
               app = route.app
               next unless app.matches? request
