@@ -255,7 +255,7 @@ describe 'Rails' do
 
     describe 'with middleware' do
       let(:appmap_json_file) do
-        'Rack_response_hijacking_changes_the_response_on_the_index_to_422.appmap.json'
+        'Rack_stack_changes_the_response_on_the_index_to_422.appmap.json'
       end
 
       it 'records the middleware effects' do
@@ -263,6 +263,25 @@ describe 'Rails' do
           hash_including(
             'http_server_response' => hash_including(
               'status_code' => 422
+            )
+          )
+        )
+      end
+    end
+
+    describe 'with sprockets' do
+      let(:appmap_json_file) do
+        'Rack_stack_can_serve_sprocket_assets.appmap.json'
+      end
+
+      it 'records the middleware effects' do
+        expect(events).to include(
+          hash_including(
+            'http_server_response' => hash_including(
+              'status_code' => 200,
+              'headers' => hash_including(
+                'content-type' => 'text/css; charset=utf-8'
+              )
             )
           )
         )
