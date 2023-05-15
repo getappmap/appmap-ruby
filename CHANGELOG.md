@@ -1,3 +1,11 @@
+## [0.99.4](https://github.com/getappmap/appmap-ruby/compare/v0.99.3...v0.99.4) (2023-05-15)
+
+
+### Bug Fixes
+
+* More robust extraction of test failures ([3851f7c](https://github.com/getappmap/appmap-ruby/commit/3851f7cdf3daf27767f3eb161c69126b607b8a51))
+* Use a copy of rack environment to probe the route ([7ec89a8](https://github.com/getappmap/appmap-ruby/commit/7ec89a8412dc8b9209322ebe9e246f22531b68ab)), closes [#329](https://github.com/getappmap/appmap-ruby/issues/329)
+
 ## [0.99.3](https://github.com/getappmap/appmap-ruby/compare/v0.99.2...v0.99.3) (2023-05-10)
 
 
