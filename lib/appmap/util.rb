@@ -179,9 +179,22 @@ module AppMap
         end.join('/')
       end
 
+      def mirror_test_folders?
+        ENV['APPMAP_MIRROR_TEST_FOLDERS'] != 'false'
+      end
+
       # Atomically writes AppMap data to +filename+.
-      def write_appmap(filename, appmap)
+      def write_appmap(output_dir, filename, appmap, source_location: nil)
         require 'tmpdir'
+
+        path_tokens = [ output_dir ]
+        if source_location && mirror_test_folders?
+          source_path, _ = source_location.split(':', 2)[0]
+          source_dir = Array(Pathname.new(source_path).dirname.each_filename)[1..-1].join('/')
+          path_tokens.push(source_dir) unless source_dir == ''
+        end
+        path_tokens.push(filename)
+        appmap_path = File.join(*path_tokens)
 
         # This is what Ruby Tempfile does; but we don't want the file to be unlinked.
         mode = File::RDWR | File::CREAT | File::EXCL
@@ -190,7 +203,8 @@ module AppMap
           tempfile.write(JSON.generate(appmap))
           tempfile.close
           # Atomically move the tempfile into place.
-          FileUtils.mv tempfile.path, filename
+          FileUtils.mkdir_p Pathname.new(appmap_path).dirname
+          FileUtils.mv tempfile.path, appmap_path
         end
       end
 

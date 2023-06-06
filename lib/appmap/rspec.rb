@@ -221,7 +221,7 @@ module AppMap
         }.compact
         fname = AppMap::Util.scenario_filename(name)
 
-        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, fname), appmap)
+        AppMap::Util.write_appmap(APPMAP_OUTPUT_DIR, fname, appmap, source_location: source_location)
       end
 
       def enabled?

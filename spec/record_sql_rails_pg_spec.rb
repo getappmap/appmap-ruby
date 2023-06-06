@@ -49,7 +49,7 @@ describe 'SQL events' do
           'RAILS_ENV' => 'test'
       end
 
-      let(:appmap_json) { File.join tmpdir, "appmap/rspec/#{test_case}.appmap.json" }
+      let(:appmap_json) { File.join tmpdir, "appmap/rspec/controllers/#{test_case}.appmap.json" }
       let(:appmap) { JSON.parse(File.read(appmap_json)) }
       let(:tmpdir) { app.tmpdir }
       let(:sql_events) { appmap['events'].select { |ev| ev.include? 'sql_query' } }

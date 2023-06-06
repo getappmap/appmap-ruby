@@ -52,7 +52,7 @@ module AppMap
         appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
         scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
 
-        AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, scenario_filename), appmap)
+        AppMap::Util.write_appmap(APPMAP_OUTPUT_DIR, scenario_filename, appmap, source_location: scenario.location.to_s)
       end
 
       def enabled?
@@ -85,6 +85,7 @@ module AppMap
           m['name'] = attributes.name
           m['feature'] = attributes.feature
           m['feature_group'] = attributes.feature_group
+          m['source_location'] = scenario.location.to_s
           m['labels'] ||= []
           m['labels'] += (scenario.tags&.map(&:name) || [])
           m['frameworks'] ||= []

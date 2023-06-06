@@ -6,7 +6,7 @@ describe 'Rails' do
     include_context 'rails integration test setup'
 
     describe 'rspec metadata' do
-      let(:appmap_json_files) { Dir.glob("#{tmpdir}/appmap/rspec/*.appmap.json") }
+      let(:appmap_json_files) { Dir.glob("#{tmpdir}/appmap/rspec/**/*.appmap.json") }
 
       it 'appmap: false disables recording' do
         test_names = appmap_json_files.map(&File.method(:read)).map(&JSON.method(:parse)).map do |json|
@@ -20,7 +20,7 @@ describe 'Rails' do
     describe 'an API route' do
       describe 'creating an object' do
         let(:appmap_json_file) do
-          'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
+          'controllers/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
         end
 
         it 'http_server_request is recorded in the appmap' do
@@ -104,7 +104,7 @@ describe 'Rails' do
         end
 
         context 'with an object-style message' do
-          let(:appmap_json_file) { 'Api_UsersController_POST_api_users_with_required_parameters_with_object-style_parameters_creates_a_user.appmap.json' }
+          let(:appmap_json_file) { 'controllers/Api_UsersController_POST_api_users_with_required_parameters_with_object-style_parameters_creates_a_user.appmap.json' }
 
           it 'message properties are recorded in the appmap' do
             expect(events).to include(
@@ -126,7 +126,7 @@ describe 'Rails' do
 
       describe 'listing objects' do
         context 'with a custom header' do
-          let(:appmap_json_file) { 'Api_UsersController_GET_api_users_with_a_custom_header_lists_the_users.appmap.json' }
+          let(:appmap_json_file) { 'controllers/Api_UsersController_GET_api_users_with_a_custom_header_lists_the_users.appmap.json' }
 
           it 'custom header is recorded in the appmap' do
             expect(events).to include(
@@ -144,7 +144,7 @@ describe 'Rails' do
     describe 'a UI route' do
       describe 'rendering a page using a template file' do
         let(:appmap_json_file) do
-          'UsersController_GET_users_lists_the_users.appmap.json'
+          'controllers/UsersController_GET_users_lists_the_users.appmap.json'
         end
 
         it 'records the template file' do
@@ -186,7 +186,7 @@ describe 'Rails' do
 
       describe 'rendering a page using a text template' do
         let(:appmap_json_file) do
-          'UsersController_GET_users_login_shows_the_user.appmap.json'
+          'controllers/UsersController_GET_users_login_shows_the_user.appmap.json'
         end
 
         it 'records the normalized path info' do
@@ -294,7 +294,7 @@ describe 'Rails' do
     include_context 'rails integration test setup'
 
     let(:appmap_json_file) do
-      'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
+      'controllers/Api_UsersController_POST_api_users_with_required_parameters_creates_a_user.appmap.json'
     end
 
     it 'http_server_request is recorded' do
