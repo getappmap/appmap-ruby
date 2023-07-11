@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'optparse'
+require 'appmap'
+require 'appmap/command/agent_setup/config'
+
+@options = { config_file: AppMap::DEFAULT_CONFIG_FILE_PATH, force: false }
+
+OptionParser.new do |parser|
+  parser.banner = 'Usage: appmap-agent-config [options]'
+
+  description = "AppMap configuration file path (default: #{AppMap::DEFAULT_CONFIG_FILE_PATH})"
+  parser.on('-c', '--config=FILEPATH', description) do |filepath|
+    @options[:config_file] = filepath
+  end
+
+  parser.on('-f', '--force', 'Overwrite existing configuration file') do
+    @options[:force] = true
+  end
+end.parse!
+
+begin
+  AppMap::Command::AgentSetup::Config.new(@options[:config_file], @options[:force]).perform
+
+  puts "AppMap configuration file created at #{@options[:config_file]}"
+rescue AppMap::Command::AgentSetup::Config::FileExistsError
+  puts "AppMap configuration file already exists at #{@options[:config_file]}"
+  puts 'Use the --force option to overwrite.'
+  exit 1
+end
