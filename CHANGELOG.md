@@ -1,3 +1,10 @@
+# [0.100.0](https://github.com/getappmap/appmap-ruby/compare/v0.99.4...v0.100.0) (2023-07-11)
+
+
+### Features
+
+* Add `appmap-agent-config` command to bootstrap appmap.yml ([568acc3](https://github.com/getappmap/appmap-ruby/commit/568acc3948871f736ba72244a04fd54d8be67615))
+
 ## [0.99.4](https://github.com/getappmap/appmap-ruby/compare/v0.99.3...v0.99.4) (2023-05-15)
 
 
