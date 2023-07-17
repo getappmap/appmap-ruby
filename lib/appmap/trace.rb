@@ -24,7 +24,7 @@ module AppMap
         return nil if source_location.nil? || source_location.first.start_with?('<')
 
         # Do not use method_source's comment method because it's slow
-        @comment ||= RubyMethod.last_comment *source_location
+        @comment ||= RubyMethod.last_comment(*source_location)
       rescue Errno::EINVAL, Errno::ENOENT
         nil
       end
@@ -40,8 +40,6 @@ module AppMap
       def labels
         @package.labels
       end
-
-      private
 
       # Read file and get last comment before line.
       def self.last_comment(file, line_number)
@@ -114,19 +112,19 @@ module AppMap
     end
 
     def initialize
-      @@stacks ||= Hash.new
+      @@stacks ||= {}
     end
 
     def record(event)
       stack = caller.select { |line| !line.index('/lib/appmap/') }[0...StackPrinter.depth].join("\n  ")
       stack_hash = Digest::SHA256.hexdigest(stack)
-      unless @@stacks[stack_hash]
-        @@stacks[stack_hash] = stack
-        puts
-        puts 'Event: ' + event.to_h.map { |k, v| [ "#{k}: #{v}" ] }.join(", ")
-        puts '  ' + stack
-        puts
-      end
+      return if @@stacks[stack_hash]
+
+      @@stacks[stack_hash] = stack
+      puts
+      puts 'Event: ' + event.to_h.map { |k, v| [ "#{k}: #{v}" ] }.join(', ')
+      puts '  ' + stack
+      puts
     end
   end
 
@@ -163,7 +161,9 @@ module AppMap
     def record_event(event, package: nil, defined_class: nil, method: nil)
       return unless @enabled
 
-      raise "Expected event in thread #{@thread_id}, got #{event.thread_id}" if @thread_id && @thread_id != event.thread_id 
+      if @thread_id && @thread_id != event.thread_id
+        raise "Expected event in thread #{@thread_id}, got #{event.thread_id}"
+      end
 
       @stack_printer.record(event) if @stack_printer
       @last_package_for_thread[Thread.current.object_id] = package if package

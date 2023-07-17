@@ -25,9 +25,17 @@ module AppMap
         package_tokens = name.split('/')
 
         class_and_name = package_tokens.pop
-        class_name, function_name, static = class_and_name.include?('.') ? class_and_name.split('.', 2) + [ true ] : class_and_name.split('#', 2) + [ false ]
+        class_name, function_name, static = if class_and_name.include?('.')
+                                              class_and_name.split('.',
+                                                                   2) + [ true ]
+                                            else
+                                              class_and_name.split(
+                                                '#', 2
+                                              ) + [ false ]
+                                            end
 
         raise "Malformed fully-qualified function name #{name}" unless function_name
+
         [ package_tokens.empty? ? 'ruby' : package_tokens.join('/'), class_name, static, function_name ]
       end
 
@@ -70,20 +78,20 @@ module AppMap
       def sanitize_paths(h)
         require 'hashie'
         h.extend(Hashie::Extensions::DeepLocate)
-        keys = %i(path location)
-        h.deep_locate ->(k,v,o) {
+        keys = %i[path location]
+        h.deep_locate lambda { |k, _v, o|
           next unless keys.include?(k)
-          
-          fix = ->(v) {v.gsub(%r{#{Gem.dir}/gems/.*(?=lib)}, '')}
-          keys.each {|k| o[k] = fix.(o[k]) if o[k] }
+
+          fix = ->(v) { v.gsub(%r{#{Gem.dir}/gems/.*(?=lib)}, '') }
+          keys.each { |k| o[k] = fix.call(o[k]) if o[k] }
         }
 
         h
       end
-      
+
       # sanitize_event removes ephemeral values from an event, making
       # events easier to compare across runs.
-      def sanitize_event(event, &block)
+      def sanitize_event(event)
         event.delete(:thread_id)
         event.delete(:elapsed)
         event.delete(:elapsed_instrumentation)
@@ -114,8 +122,8 @@ module AppMap
           blank?(headers) ? nil : headers
         end
 
-        if !env['rack.version']
-          warn "Request headers does not contain rack.version. HTTP_ prefix is not expected."
+        unless env['rack.version']
+          warn 'Request headers does not contain rack.version. HTTP_ prefix is not expected.'
           return finalize_headers.call(env.dup)
         end
 
@@ -123,18 +131,18 @@ module AppMap
         # Apparently, it's following the CGI spec in doing so.
         # https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.18
         matching_headers = env
-          .select { |k,v| k.to_s.start_with? 'HTTP_' }
-          .merge(
-            'CONTENT_TYPE' => env['CONTENT_TYPE'],
-            'CONTENT_LENGTH' => env['CONTENT_LENGTH'],
-            'AUTHORIZATION' => env['AUTHORIZATION']
-          )
-          .reject { |k,v| blank?(v) }
-          .each_with_object({}) do |kv, memo|
-            key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
-            value = kv[1]
-            memo[key] = value
-          end
+                           .select { |k, _v| k.to_s.start_with? 'HTTP_' }
+                           .merge(
+                             'CONTENT_TYPE' => env['CONTENT_TYPE'],
+                             'CONTENT_LENGTH' => env['CONTENT_LENGTH'],
+                             'AUTHORIZATION' => env['AUTHORIZATION']
+                           )
+                           .reject { |_k, v| blank?(v) }
+                           .each_with_object({}) do |kv, memo|
+          key = kv[0].sub(/^HTTP_/, '').split('_').map(&:capitalize).join('-')
+          value = kv[1]
+          memo[key] = value
+        end
         finalize_headers.call(matching_headers)
       end
 
@@ -143,7 +151,7 @@ module AppMap
         is_bundled_path  = -> { path.index(Bundler.bundle_path.to_s) == 0 }
         is_vendored_path = -> { path.index(File.join(Dir.pwd, 'vendor/bundle')) == 0 }
 
-        if is_local_path.() && !is_bundled_path.() && !is_vendored_path.()
+        if is_local_path.call && !is_bundled_path.call && !is_vendored_path.call
           path[Dir.pwd.length + 1..-1]
         else
           path
@@ -153,7 +161,7 @@ module AppMap
       def format_exception(exception)
         {
           class: exception.class.name,
-          message: AppMap::Event::MethodEvent.display_string(exception.to_s),
+          message: AppMap::Event::MethodEvent.display_string(exception.to_s)
         }
       end
 
@@ -164,7 +172,10 @@ module AppMap
           first_location = exception.backtrace_locations&.find do |location|
             !Pathname.new(normalize_path(location.absolute_path || location.path)).absolute?
           end
-          test_failure[:location] = [ normalize_path(first_location.path), first_location.lineno ].join(':') if first_location
+          if first_location
+            test_failure[:location] =
+              [ normalize_path(first_location.path), first_location.lineno ].join(':')
+          end
         end
       end
 
@@ -175,7 +186,7 @@ module AppMap
         tokens = path.split('/')
         tokens.map do |token|
           # stop matching if an ending ) is found
-          token.gsub(/^:(.*[^\)])/, '{\1}')
+          token.gsub(/^:(.*[^)])/, '{\1}')
         end.join('/')
       end
 
@@ -196,22 +207,23 @@ module AppMap
 
       def color(text, color, bold: false)
         color = Util.const_get(color.to_s.upcase) if color.is_a?(Symbol)
-        bold  = bold ? BOLD : ""
+        bold  = bold ? BOLD : ''
         "#{bold}#{color}#{text}#{CLEAR}"
       end
 
       def classify(word)
-        word.split(/[\-_]/).map(&:capitalize).join
+        word.split(/[-_]/).map(&:capitalize).join
       end
 
       # https://api.rubyonrails.org/v6.1.3.2/classes/ActiveSupport/Inflector.html#method-i-underscore
       def underscore(camel_cased_word)
         return camel_cased_word unless /[A-Z-]|::/.match?(camel_cased_word)
-        word = camel_cased_word.to_s.gsub("::", "/")
+
+        word = camel_cased_word.to_s.gsub('::', '/')
         # word.gsub!(inflections.acronyms_underscore_regex) { "#{$1 && '_' }#{$2.downcase}" }
         word.gsub!(/([A-Z\d]+)([A-Z][a-z])/, '\1_\2')
         word.gsub!(/([a-z\d])([A-Z])/, '\1_\2')
-        word.tr!("-", "_")
+        word.tr!('-', '_')
         word.downcase!
         word
       end
@@ -223,7 +235,7 @@ module AppMap
 
       def blank?(obj)
         return true if obj.nil?
-        
+
         return true if obj.is_a?(String) && obj == ''
 
         return true if obj.respond_to?(:length) && obj.length == 0
