@@ -68,7 +68,7 @@ module AppMap
             example_group.parent_groups.first
           end
 
-        example_group_parent != example_group ? ScopeExampleGroup.new(example_group_parent) : nil
+        example_group_parent == example_group ? nil : ScopeExampleGroup.new(example_group_parent)
       end
     end
 
@@ -87,7 +87,7 @@ module AppMap
 
         warn "Starting recording of example #{example}@#{source_location}" if AppMap::RSpec::LOG
         @trace = AppMap.tracing.trace
-        @webdriver_port = webdriver_port.()
+        @webdriver_port = webdriver_port.call
       end
 
       def source_location
@@ -182,7 +182,7 @@ module AppMap
       end
 
       def config
-        @config or raise "AppMap is not configured"
+        @config or raise 'AppMap is not configured'
       end
 
       def add_event_methods(event_methods)
