@@ -30,7 +30,7 @@ describe 'Rails' do
                 'request_method' => 'POST',
                 'normalized_path_info' => '/api/users',
                 'path_info' => '/api/users',
-                'headers' => hash_including('Content-Type' => 'application/x-www-form-urlencoded'),
+                'headers' => hash_including('Content-Type' => 'application/x-www-form-urlencoded')
               ),
               'message' => include(
                 hash_including(
@@ -55,9 +55,10 @@ describe 'Rails' do
             hash_including(
               'http_server_response' => hash_including(
                 'status_code' => 201,
-                'headers' => hash_including('Content-Type' => 'application/json; charset=utf-8'),
+                'headers' => hash_including('Content-Type' => 'application/json; charset=utf-8')
               ),
-              'return_value' => hash_including('class' => 'Hash', 'object_id' => Integer, 'properties' => include({'name' => 'login', 'class' => 'String'})),
+              'return_value' => hash_including('class' => 'Hash', 'object_id' => Integer,
+                                               'properties' => include({ 'name' => 'login', 'class' => 'String' }))
             )
           )
         end
@@ -104,7 +105,9 @@ describe 'Rails' do
         end
 
         context 'with an object-style message' do
-          let(:appmap_json_file) { 'Api_UsersController_POST_api_users_with_required_parameters_with_object-style_parameters_creates_a_user.appmap.json' }
+          let(:appmap_json_file) do
+            'Api_UsersController_POST_api_users_with_required_parameters_with_object-style_parameters_creates_a_user.appmap.json'
+          end
 
           it 'message properties are recorded in the appmap' do
             expect(events).to include(
@@ -126,7 +129,9 @@ describe 'Rails' do
 
       describe 'listing objects' do
         context 'with a custom header' do
-          let(:appmap_json_file) { 'Api_UsersController_GET_api_users_with_a_custom_header_lists_the_users.appmap.json' }
+          let(:appmap_json_file) do
+            'Api_UsersController_GET_api_users_with_a_custom_header_lists_the_users.appmap.json'
+          end
 
           it 'custom header is recorded in the appmap' do
             expect(events).to include(
@@ -167,7 +172,10 @@ describe 'Rails' do
                   'location' => 'app/views/users/index.html.haml',
                   'static' => true,
                   'labels' => [ 'mvc.template' ]
-                )))))))
+                ))
+              ))
+            ))
+          )
           expect(appmap['classMap']).to include hash_including(
             'name' => 'app',
             'children' => include(hash_including(
@@ -180,7 +188,10 @@ describe 'Rails' do
                   'location' => 'app/views/layouts/application.html.haml',
                   'static' => true,
                   'labels' => [ 'mvc.template' ]
-                )))))))
+                ))
+              ))
+            ))
+          )
         end
       end
 
@@ -253,6 +264,23 @@ describe 'Rails' do
 
     next unless rails_version == 7
 
+    describe 'rswag test' do
+      let(:appmap_json_file) do
+        'Users_api_users_post_user_created_returns_a_201_response.appmap.json'
+      end
+
+      it 'includes the rswag framework' do
+        expect(appmap['metadata']['frameworks'].map { |f| f['name'] }).to include('rswag')
+      end
+      it 'records the test status' do
+        expect(appmap['metadata'].keys).to include('test_status')
+        expect(appmap['metadata']['test_status']).to eq('succeeded')
+      end
+      it 'records the source location' do
+        expect(appmap['metadata']['source_location']).to eq('./spec/requests/users_spec.rb:16')
+      end
+    end
+
     describe 'with middleware' do
       let(:appmap_json_file) do
         'Rack_stack_changes_the_response_on_the_index_to_422.appmap.json'
@@ -290,7 +318,7 @@ describe 'Rails' do
   end
 
   describe 'with default appmap.yml' do
-    include_context 'Rails app pg database', "spec/fixtures/rails6_users_app" unless use_existing_data?
+    include_context 'Rails app pg database', 'spec/fixtures/rails6_users_app' unless use_existing_data?
     include_context 'rails integration test setup'
 
     let(:appmap_json_file) do
@@ -312,7 +340,7 @@ describe 'Rails' do
       expect(events).to include hash_including(
         'defined_class' => 'Api::UsersController',
         'method_id' => 'build_user',
-        'path' => 'app/controllers/api/users_controller.rb',
+        'path' => 'app/controllers/api/users_controller.rb'
       )
     end
   end

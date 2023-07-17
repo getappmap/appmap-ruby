@@ -22,12 +22,14 @@ end
 group :test do
   gem 'database_cleaner-active_record', require: false
   gem 'database_cleaner-sequel', require: false
+  gem 'rswag'
 end
 
 group :development, :test do
   gem 'appmap', path: '../../..'
   gem 'pry-byebug', '>=0', '< 99'
   gem 'rspec-rails'
+  gem 'rswag-specs'
 end
 
 gem 'capybara', '~> 3.39', group: :test
