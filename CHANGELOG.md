@@ -1,3 +1,15 @@
+# [0.101.0](https://github.com/getappmap/appmap-ruby/compare/v0.100.0...v0.101.0) (2023-07-17)
+
+
+### Bug Fixes
+
+* Auto-enable tracing on block recording ([59886b6](https://github.com/getappmap/appmap-ruby/commit/59886b6b4720240e9f961a8b76f3035eaf3be44e))
+
+
+### Features
+
+* Record RSwag ([a60d480](https://github.com/getappmap/appmap-ruby/commit/a60d4803feeab519ef4eae1702da00e3dc2dd4ea))
+
 # [0.100.0](https://github.com/getappmap/appmap-ruby/compare/v0.99.4...v0.100.0) (2023-07-11)
 
 
