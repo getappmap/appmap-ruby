@@ -147,7 +147,7 @@ module AppMap
       end
     end
 
-    @recordings_by_example = {}
+    @recordings_by_example = {}.tap(&:compare_by_identity)
     @event_methods = Set.new
     @recording_count = 0
 
@@ -161,23 +161,24 @@ module AppMap
       end
 
       def begin_spec(example)
-        AppMap.info 'Configuring AppMap recorder for RSpec' if first_recording?
         @recording_count += 1
+        # Disable RSpec recording for RSwag, because all the action happens in the before block.
+        # The example is empty except for assertions. So RSwag has its own recorder, and RSpec
+        # recording is disabled so it won't clobber the AppMap with empty data.
+        recording = if example.metadata[:appmap] == false || example.metadata[:rswag]
+                      :disabled
+                    else
+                      Recording.new(example)
+                    end
 
-        recording = if example.metadata[:appmap] != false
-          Recording.new(example)
-        else
-          :false
-        end
-
-        @recordings_by_example[example.object_id] = recording
+        @recordings_by_example[example] = recording
       end
 
       def end_spec(example, exception:)
-        recording = @recordings_by_example.delete(example.object_id)
+        recording = @recordings_by_example.delete(example)
         return warn "No recording found for #{example}" unless recording
 
-        recording.finish example.execution_result.exception || exception, exception unless recording == :false
+        recording.finish example.execution_result.exception || exception, exception unless recording == :disabled
       end
 
       def config
@@ -188,7 +189,8 @@ module AppMap
         @event_methods += event_methods
       end
 
-      def save(name:, class_map:, source_location:, test_status:, test_failure:, exception:, events:)
+      def save(name:, class_map:, source_location:, test_status:, test_failure:, exception:, events:, frameworks: [],
+               recorder: nil)
         metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = name
           m[:source_location] = source_location
@@ -198,7 +200,8 @@ module AppMap
             name: 'rspec',
             version: Gem.loaded_specs['rspec-core']&.version&.to_s
           }
-          m[:recorder] = {
+          m[:frameworks] += frameworks
+          m[:recorder] = recorder || {
             name: 'rspec',
             type: 'tests'
           }
