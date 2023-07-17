@@ -73,6 +73,7 @@ module AppMap
     # and returns an AppMap as a Hash.
     def record
       tracer = tracing.trace
+      tracer.enable
       begin
         yield
       ensure
