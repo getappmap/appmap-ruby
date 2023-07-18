@@ -1,3 +1,10 @@
+# [0.102.0](https://github.com/getappmap/appmap-ruby/compare/v0.101.0...v0.102.0) (2023-07-18)
+
+
+### Features
+
+* Discourage conflicting recording methods ([f86303b](https://github.com/getappmap/appmap-ruby/commit/f86303bf1b62d5131d9ed2c10e01225ec21c1405))
+
 # [0.101.0](https://github.com/getappmap/appmap-ruby/compare/v0.100.0...v0.101.0) (2023-07-17)
 
 
