@@ -32,7 +32,9 @@ module AppMap
 
       def finish(failures, exception)
         failed = failures.any? || exception
-        warn "Finishing recording of #{failed ? 'failed ' : ''} test #{test.class}.#{test.name}" if AppMap::Minitest::LOG
+        if AppMap::Minitest::LOG
+          warn "Finishing recording of #{failed ? 'failed ' : ''} test #{test.class}.#{test.name}"
+        end
         warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
 
         if failed
@@ -107,24 +109,22 @@ module AppMap
           m[:frameworks] ||= []
           m[:frameworks] << {
             name: 'minitest',
-            version: Gem.loaded_specs['minitest']&.version&.to_s,
+            version: Gem.loaded_specs['minitest']&.version&.to_s
           }
           m[:recorder] = {
             name: 'minitest',
-            type: 'tests',
+            type: 'tests'
           }
           m[:test_status] = test_status
           m[:test_failure] = test_failure if test_failure
-          if exception
-            m[:exception] = Util.format_exception(exception)
-          end
+          m[:exception] = Util.format_exception(exception) if exception
         end
 
         appmap = {
           version: AppMap::APPMAP_FORMAT_VERSION,
           metadata: metadata,
           classMap: class_map,
-          events: events,
+          events: events
         }.compact
         fname = AppMap::Util.scenario_filename(name)
 
