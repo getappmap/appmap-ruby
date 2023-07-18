@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require 'appmap'
-require 'appmap/util'
+require_relative '../appmap'
+require_relative './util'
+require_relative './detect_enabled'
 require 'fileutils'
 require 'active_support'
 require 'active_support/core_ext'
@@ -80,7 +81,8 @@ module AppMap
       end
 
       def begin_test(test, name)
-        AppMap.info 'Configuring AppMap recorder for Minitest' if first_recording?
+        AppMap::DetectEnabled.discourage_conflicting_recording_methods :minitest if first_recording?
+
         @recording_count += 1
 
         @recordings_by_test[test.object_id] = Recording.new(test, name)

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require 'appmap'
-require 'appmap/util'
+require_relative '../appmap'
+require_relative './util'
+require_relative './detect_enabled'
 require 'fileutils'
 
 module AppMap
@@ -43,6 +44,8 @@ module AppMap
 
     class << self
       def init
+        AppMap::DetectEnabled.discourage_conflicting_recording_methods :cucumber
+
         warn 'Configuring AppMap recorder for Cucumber'
 
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR

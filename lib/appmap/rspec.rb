@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require 'appmap'
-require 'appmap/util'
+require_relative '../appmap'
+require_relative './util'
+require_relative './detect_enabled'
 require 'set'
 require 'fileutils'
 
@@ -161,6 +162,8 @@ module AppMap
       end
 
       def begin_spec(example)
+        AppMap::DetectEnabled.discourage_conflicting_recording_methods :rspec if first_recording?
+
         @recording_count += 1
         # Disable RSpec recording for RSwag, because all the action happens in the before block.
         # The example is empty except for assertions. So RSwag has its own recorder, and RSpec
