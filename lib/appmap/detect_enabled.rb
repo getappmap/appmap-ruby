@@ -9,6 +9,32 @@ module AppMap
     @@detected_for_method = {}
 
     class << self
+      def discourage_conflicting_recording_methods(recording_method)
+        return if ENV['APPMAP_DISCOURAGE_CONFLICTING_RECORDING_METHODS'] == 'false'
+
+        return unless enabled?(recording_method.to_sym) && enabled?(:requests)
+
+        warn Util.color <<~MSG, :yellow
+AppMap recording is enabled for both 'requests' and '#{recording_method}'. This is not recommended
+because the recordings will contain duplicitive information, and in some case may conflict with each other.
+        MSG
+
+        return unless ENV['APPMAP'] == 'true'
+
+        warn Util.color <<~MSG, :yellow
+The environment contains APPMAP=true, which is not recommended in this application environment because
+it enables all recording methods. Consider letting AppMap detect the appropriate recording method,
+or explicitly enabling only the recording methods you want to use using environment variables like
+APPMAP_RECORD_REQUESTS, APPMAP_RECORD_RSPEC, etc.
+
+See https://appmap.io/docs/reference/appmap-ruby.html#advanced-runtime-options for more information.
+        MSG
+      end
+
+      def enabled?(recording_method)
+        new(recording_method).enabled?
+      end
+
       def clear_cache
         @@detected_for_method = {}
       end
