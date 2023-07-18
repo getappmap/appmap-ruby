@@ -7,7 +7,7 @@ require 'fileutils'
 module AppMap
   module Cucumber
     APPMAP_OUTPUT_DIR = 'tmp/appmap/cucumber'
-    
+
     ScenarioAttributes = Struct.new(:name, :feature, :feature_group)
 
     ProviderStruct = Struct.new(:scenario) do
@@ -47,7 +47,7 @@ module AppMap
 
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
-      
+
       def write_scenario(scenario, appmap)
         appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
         scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
@@ -62,7 +62,7 @@ module AppMap
       def run
         init
       end
-      
+
       protected
 
       def cucumber_version
