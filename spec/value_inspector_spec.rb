@@ -289,4 +289,22 @@ describe AppMap::ValueInspector do
       )
     end
   end
+
+  describe "Array that doesn't implement :size" do
+    it 'does not try and invoke :size' do
+      ary = []
+      class << ary
+        def respond_to?(method)
+          return false if method.to_sym == :size
+
+          super
+        end
+      end
+
+      inspector = Struct.new(:id) do
+        include AppMap::ValueInspector
+      end.new
+      expect(inspector.detect_size(ary)).to be_nil
+    end
+  end
 end

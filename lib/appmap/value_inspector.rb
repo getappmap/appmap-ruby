@@ -7,7 +7,7 @@ module AppMap
 
     def detect_size(value)
       # Don't risk calling #size on things like data-access objects, which can and will issue queries for this information.
-      if value.is_a?(Array) || value.is_a?(Hash)
+      if (value.is_a?(Array) || value.is_a?(Hash)) && value.respond_to?(:size)
         value.size
       end
     end
