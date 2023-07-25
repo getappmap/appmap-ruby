@@ -1,3 +1,10 @@
+## [0.102.1](https://github.com/getappmap/appmap-ruby/compare/v0.102.0...v0.102.1) (2023-07-25)
+
+
+### Bug Fixes
+
+* Guard access to the :size method ([e0b53b2](https://github.com/getappmap/appmap-ruby/commit/e0b53b23d46f8467884c5c387a9081d98cb7cca7)), closes [#341](https://github.com/getappmap/appmap-ruby/issues/341)
+
 # [0.102.0](https://github.com/getappmap/appmap-ruby/compare/v0.101.0...v0.102.0) (2023-07-18)
 
 
