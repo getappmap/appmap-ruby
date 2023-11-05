@@ -76,10 +76,16 @@ module AppMap
           class << self
             def build_from_invocation(parent_id, return_value, elapsed, response, event: HTTPServerResponse.new)
               event ||= HTTPServerResponse.new
-              event.status = response[:status] || response.status
+
+              status = response[:status] || response.status
+              event.status = status if valid_http_status?(status)
               event.headers = (response[:headers] || response.headers).dup
               AppMap::Event::MethodReturn.build_from_invocation parent_id, return_value, nil, elapsed: elapsed, event: event, parameter_schema: true
             end
+          end
+
+          def self.valid_http_status?(status)
+            status.is_a?(Integer) && status >= 100 && status < 600
           end
 
           def to_h
