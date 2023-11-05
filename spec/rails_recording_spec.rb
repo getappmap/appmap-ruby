@@ -308,7 +308,7 @@ describe 'Rails' do
             'http_server_response' => hash_including(
               'status_code' => 200,
               'headers' => hash_including(
-                'content-type' => 'text/css; charset=utf-8'
+                'Content-Type' => 'text/css; charset=utf-8'
               )
             )
           )
