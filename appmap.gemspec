@@ -40,7 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '>= 12.3.3'
   spec.add_development_dependency 'rake-compiler'
   spec.add_development_dependency 'rdoc'
-  spec.add_development_dependency 'rubocop', '~> 1.36'
+  spec.add_development_dependency 'standardrb', "~> 1.0"
 
   # Testing
   spec.add_development_dependency 'climate_control'
