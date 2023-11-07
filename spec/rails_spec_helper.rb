@@ -119,11 +119,15 @@ shared_context 'Rails app pg database' do |dir|
 end
 
 shared_context 'Rails app service running' do
-  def start_server(rails_app_environment: {})
+  def start_server(rails_app_environment: {}, command_options: {})
     service_port = RandomPort::Pool::SINGLETON.acquire
     @app.prepare_db
+
+    command_options[:p] ||= service_port
+    command_options_str = command_options.map { |k, v| "-#{k} #{v}" }.join(' ')
+
     server = @app.spawn_cmd \
-      "./bin/rails server -p #{service_port}", { 'RAILS_ENV' => 'development', 'ORM_MODULE' => 'sequel', 'DISABLE_SPRING' => 'true' }.merge(rails_app_environment)
+      "./bin/rails server #{command_options_str}", { 'RAILS_ENV' => 'development', 'ORM_MODULE' => 'sequel', 'DISABLE_SPRING' => 'true' }.merge(rails_app_environment)
 
     uri = URI("http://localhost:#{service_port}/health")
 
