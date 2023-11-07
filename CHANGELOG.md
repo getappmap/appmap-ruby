@@ -1,3 +1,10 @@
+## [0.102.2](https://github.com/getappmap/appmap-ruby/compare/v0.102.1...v0.102.2) (2023-11-07)
+
+
+### Bug Fixes
+
+* Don't emit invalid HTTP status ([d30fb06](https://github.com/getappmap/appmap-ruby/commit/d30fb06223c6e30e0681c4fac2a9f8824d3c035f)), closes [/github.com/rails/rails/blob/febd21da3438d190f0c6ce296a114baee983d1e1/actioncable/lib/action_cable/connection/client_socket.rb#L71C23-L71C23](https://github.com//github.com/rails/rails/blob/febd21da3438d190f0c6ce296a114baee983d1e1/actioncable/lib/action_cable/connection/client_socket.rb/issues/L71C23-L71C23) [/github.com/faye/websocket-driver-ruby/blob/58d4ed742749dfb3b4f568df36a5365088361220/lib/websocket/driver/draft76.rb#L61](https://github.com//github.com/faye/websocket-driver-ruby/blob/58d4ed742749dfb3b4f568df36a5365088361220/lib/websocket/driver/draft76.rb/issues/L61)
+
 ## [0.102.1](https://github.com/getappmap/appmap-ruby/compare/v0.102.0...v0.102.1) (2023-07-25)
 
 
