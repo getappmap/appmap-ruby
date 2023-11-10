@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require_relative '../appmap'
-require_relative './util'
-require_relative './detect_enabled'
-require 'set'
-require 'fileutils'
+require_relative "../appmap"
+require_relative "util"
+require_relative "detect_enabled"
+require "set"
+require "fileutils"
 
 module AppMap
   module RSpec
-    APPMAP_OUTPUT_DIR = 'tmp/appmap/rspec'
-    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
+    APPMAP_OUTPUT_DIR = "tmp/appmap/rspec"
+    LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
 
     def self.metadata
       AppMap.detect_metadata
@@ -52,7 +52,7 @@ module AppMap
       end
 
       def description
-        description? ? description_args.join(' ') : nil
+        description? ? description_args.join(" ") : nil
       end
 
       def parent
@@ -69,7 +69,7 @@ module AppMap
             example_group.parent_groups.first
           end
 
-        example_group_parent == example_group ? nil : ScopeExampleGroup.new(example_group_parent)
+        (example_group_parent == example_group) ? nil : ScopeExampleGroup.new(example_group_parent)
       end
     end
 
@@ -83,7 +83,7 @@ module AppMap
           # This is the ugliest thing ever but I don't want to lose it.
           # All the WebDriver calls are getting app-mapped and it's really unclear
           # what they are.
-          page.driver.options[:http_client].instance_variable_get('@server_url').port
+          page.driver.options[:http_client].instance_variable_get(:@server_url).port
         end
 
         warn "Starting recording of example #{example}@#{source_location}" if AppMap::RSpec::LOG
@@ -92,14 +92,14 @@ module AppMap
       end
 
       def source_location
-        result = example.location_rerun_argument.split(':')[0]
-        result = result[2..-1] if result.index('./') == 0
+        result = example.location_rerun_argument.split(":")[0]
+        result = result[2..-1] if result.index("./") == 0
         result
       end
 
       def finish(failure, exception)
         failed = true if failure || exception
-        warn "Finishing recording of #{failed ? 'failed ' : ''} example #{example}" if AppMap::RSpec::LOG
+        warn "Finishing recording of #{failed ? "failed " : ""} example #{example}" if AppMap::RSpec::LOG
         warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
 
         if failed
@@ -130,21 +130,21 @@ module AppMap
         description.reverse!
 
         normalize = lambda do |desc|
-          desc.gsub('it should behave like', '')
-              .gsub(/Controller$/, '')
-              .gsub(/\s+/, ' ')
-              .strip
+          desc.gsub("it should behave like", "")
+            .gsub(/Controller$/, "")
+            .gsub(/\s+/, " ")
+            .strip
         end
 
-        full_description = normalize.call(description.join(' '))
+        full_description = normalize.call(description.join(" "))
 
         AppMap::RSpec.save name: full_description,
-                           class_map: class_map,
-                           source_location: source_location,
-                           test_status: exception ? 'failed' : 'succeeded',
-                           test_failure: test_failure,
-                           exception: exception,
-                           events: events
+          class_map: class_map,
+          source_location: source_location,
+          test_status: exception ? "failed" : "succeeded",
+          test_failure: test_failure,
+          exception: exception,
+          events: events
       end
     end
 
@@ -169,10 +169,10 @@ module AppMap
         # The example is empty except for assertions. So RSwag has its own recorder, and RSpec
         # recording is disabled so it won't clobber the AppMap with empty data.
         recording = if example.metadata[:appmap] == false || example.metadata[:rswag]
-                      :disabled
-                    else
-                      Recording.new(example)
-                    end
+          :disabled
+        else
+          Recording.new(example)
+        end
 
         @recordings_by_example[example] = recording
       end
@@ -185,7 +185,7 @@ module AppMap
       end
 
       def config
-        @config or raise 'AppMap is not configured'
+        @config or raise "AppMap is not configured"
       end
 
       def add_event_methods(event_methods)
@@ -193,20 +193,20 @@ module AppMap
       end
 
       def save(name:, class_map:, source_location:, test_status:, test_failure:, exception:, events:, frameworks: [],
-               recorder: nil)
+        recorder: nil)
         metadata = AppMap::RSpec.metadata.tap do |m|
           m[:name] = name
           m[:source_location] = source_location
           m[:app] = AppMap.configuration.name
           m[:frameworks] ||= []
           m[:frameworks] << {
-            name: 'rspec',
-            version: Gem.loaded_specs['rspec-core']&.version&.to_s
+            name: "rspec",
+            version: Gem.loaded_specs["rspec-core"]&.version&.to_s
           }
           m[:frameworks] += frameworks
           m[:recorder] = recorder || {
-            name: 'rspec',
-            type: 'tests'
+            name: "rspec",
+            type: "tests"
           }
           m[:test_status] = test_status
           m[:test_failure] = test_failure if test_failure
@@ -242,9 +242,9 @@ module AppMap
 end
 
 if AppMap::RSpec.enabled?
-  require 'active_support/inflector/transliterate'
-  require 'rspec/core'
-  require 'rspec/core/example'
+  require "active_support/inflector/transliterate"
+  require "rspec/core"
+  require "rspec/core/example"
 
   module RSpec
     module Core

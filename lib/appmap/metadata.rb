@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/util'
+require "appmap/util"
 
 module AppMap
   module Metadata
@@ -9,12 +9,12 @@ module AppMap
         {
           app: AppMap.configuration.name,
           language: {
-            name: 'ruby',
+            name: "ruby",
             engine: RUBY_ENGINE,
             version: RUBY_VERSION
           },
           client: {
-            name: 'appmap',
+            name: "appmap",
             url: AppMap::URL,
             version: AppMap::VERSION
           }
@@ -22,7 +22,7 @@ module AppMap
           if defined?(::Rails) && defined?(::Rails.version)
             m[:frameworks] ||= []
             m[:frameworks] << {
-              name: 'rails',
+              name: "rails",
               version: ::Rails.version
             }
           end
@@ -33,7 +33,7 @@ module AppMap
       protected
 
       def git_available
-        @git_available = system('git status 2>&1 > /dev/null') if @git_available.nil?
+        @git_available = system("git status 2>&1 > /dev/null") if @git_available.nil?
       end
 
       def git_metadata
@@ -45,8 +45,20 @@ module AppMap
         git_last_annotated_tag = nil if Util.blank?(git_last_annotated_tag)
         git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
         git_last_tag = nil if Util.blank?(git_last_tag)
-        git_commits_since_last_annotated_tag = `git describe`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_annotated_tag
-        git_commits_since_last_tag = `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1] rescue 0 if git_last_tag
+        if git_last_annotated_tag
+          git_commits_since_last_annotated_tag = begin
+            `git describe`.strip =~ /-(\d+)-(\w+)$/[1]
+          rescue
+            0
+          end
+        end
+        if git_last_tag
+          git_commits_since_last_tag = begin
+            `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1]
+          rescue
+            0
+          end
+        end
 
         {
           repository: git_repo,

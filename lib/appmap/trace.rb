@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'delegate'
+require "delegate"
 
 module AppMap
   module Trace
@@ -21,7 +21,7 @@ module AppMap
       end
 
       def comment
-        return nil if source_location.nil? || source_location.first.start_with?('<')
+        return nil if source_location.nil? || source_location.first.start_with?("<")
 
         # Do not use method_source's comment method because it's slow
         @comment ||= RubyMethod.last_comment(*source_location)
@@ -103,11 +103,11 @@ module AppMap
   class StackPrinter
     class << self
       def enabled?
-        ENV['APPMAP_PRINT_STACKS'] == 'true'
+        ENV["APPMAP_PRINT_STACKS"] == "true"
       end
 
       def depth
-        (ENV['APPMAP_STACK_DEPTH'] || 20).to_i
+        (ENV["APPMAP_STACK_DEPTH"] || 20).to_i
       end
     end
 
@@ -116,21 +116,21 @@ module AppMap
     end
 
     def record(event)
-      stack = caller.select { |line| !line.index('/lib/appmap/') }[0...StackPrinter.depth].join("\n  ")
+      stack = caller.select { |line| !line.index("/lib/appmap/") }[0...StackPrinter.depth].join("\n  ")
       stack_hash = Digest::SHA256.hexdigest(stack)
       return if @@stacks[stack_hash]
 
       @@stacks[stack_hash] = stack
       puts
-      puts 'Event: ' + event.to_h.map { |k, v| [ "#{k}: #{v}" ] }.join(', ')
-      puts '  ' + stack
+      puts "Event: " + event.to_h.map { |k, v| ["#{k}: #{v}"] }.join(", ")
+      puts "  " + stack
       puts
     end
   end
 
   class Tracer
     attr_accessor :stacks
-    attr_reader   :thread_id, :events
+    attr_reader :thread_id, :events
 
     # Records the events which happen in a program.
     def initialize(thread_id: nil)

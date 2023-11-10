@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'method_source'
+require "method_source"
 
 module AppMap
   class ClassMap
@@ -23,7 +23,7 @@ module AppMap
         include HasChildren
 
         def type
-          'package'
+          "package"
         end
 
         def to_h
@@ -38,7 +38,7 @@ module AppMap
         include HasChildren
 
         def type
-          'class'
+          "class"
         end
 
         def to_h
@@ -53,7 +53,7 @@ module AppMap
         attr_accessor :static, :location, :labels
 
         def type
-          'function'
+          "function"
         end
 
         def to_h
@@ -62,7 +62,7 @@ module AppMap
             type: type,
             location: location,
             static: static,
-            labels: labels,
+            labels: labels
           }.delete_if { |_, v| v.nil? || v == [] }
         end
       end
@@ -76,13 +76,13 @@ module AppMap
         end
 
         collapse_package = lambda do |package|
-          next unless package.type == 'package'
+          next unless package.type == "package"
 
-          while package.children.length == 1 && package.children.all? { |child| child.type == 'package' }
+          while package.children.length == 1 && package.children.all? { |child| child.type == "package" }
             child = package.children[0]
             package.children.clear
             child.children.each { |child| package.children << child }
-            package.name = [ package.name, child.name ].join('/')
+            package.name = [package.name, child.name].join("/")
           end
           package.tap do
             package.children.map(&collapse_package)
@@ -96,20 +96,20 @@ module AppMap
 
       def add_function(root, method)
         object_infos = \
-          method.package.split('/').map do |name|
+          method.package.split("/").map do |name|
             {
               name: name,
-              type: 'package'
+              type: "package"
             }
-          end + method.class_name.split('::').map do |name|
+          end + method.class_name.split("::").map do |name|
             {
               name: name,
-              type: 'class'
+              type: "class"
             }
           end
         function_info = {
           name: method.name,
-          type: 'function',
+          type: "function",
           static: method.static
         }
         location = method.source_location
@@ -118,9 +118,9 @@ module AppMap
           if location
             location_file, lineno = location
             location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
-            [ location_file, lineno ].compact.join(':')
+            [location_file, lineno].compact.join(":")
           else
-            [ method.class_name, method.static ? '.' : '#', method.name ].join
+            [method.class_name, method.static ? "." : "#", method.name].join
           end
 
         comment = method.comment
@@ -155,7 +155,10 @@ module AppMap
           .map { |line| line.match(/^\s*#\s*@labels?\s+(.*)/) }
           .compact
           .map { |match| match[1] }
-          .inject([]) { |accum, labels| accum += labels.split(/\s+/); accum }
+          .inject([]) { |accum, labels|
+          accum += labels.split(/\s+/)
+          accum
+        }
           .sort
       end
 

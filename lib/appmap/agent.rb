@@ -1,15 +1,15 @@
-require_relative 'version'
-require_relative 'hook'
-require_relative 'config'
-require_relative 'trace'
-require_relative 'class_map'
-require_relative 'metadata'
-require_relative 'util'
-require_relative 'open'
+require_relative "version"
+require_relative "hook"
+require_relative "config"
+require_relative "trace"
+require_relative "class_map"
+require_relative "metadata"
+require_relative "util"
+require_relative "open"
 
 # load extension
-require_relative 'appmap'
-require_relative './detect_enabled'
+require_relative "appmap"
+require_relative "detect_enabled"
 
 module AppMap
   class << self
@@ -25,13 +25,17 @@ module AppMap
     # Sets the configuration. This is only expected to happen once per
     # Ruby process.
     def configuration=(config)
-      warn 'AppMap is already configured' if @configuration && config
+      warn "AppMap is already configured" if @configuration && config
 
       @configuration = config
     end
 
+    def output_dir
+      ENV["APPMAP_OUTPUT_DIR"] || DEFAULT_APPMAP_DIR
+    end
+
     def default_config_file_path
-      ENV['APPMAP_CONFIG_FILE'] || 'appmap.yml'
+      ENV["APPMAP_CONFIG_FILE"] || "appmap.yml"
     end
 
     # Configures AppMap for recording. Default behavior is to configure from
@@ -84,10 +88,10 @@ module AppMap
         event_list << tracer.next_event.to_h while tracer.event?
       end
       {
-        'version' => AppMap::APPMAP_FORMAT_VERSION,
-        'metadata' => detect_metadata,
-        'classMap' => class_map(tracer.event_methods),
-        'events' => events
+        "version" => AppMap::APPMAP_FORMAT_VERSION,
+        "metadata" => detect_metadata,
+        "classMap" => class_map(tracer.event_methods),
+        "events" => events
       }
     end
 
@@ -110,11 +114,11 @@ module AppMap
     end
 
     def parameter_schema?
-      ENV['APPMAP_PARAMETER_SCHEMA'] == 'true'
+      ENV["APPMAP_PARAMETER_SCHEMA"] == "true"
     end
 
     def explain_queries?
-      ENV['APPMAP_EXPLAIN_QUERIES'] == 'true'
+      ENV["APPMAP_EXPLAIN_QUERIES"] == "true"
     end
 
     def recording_enabled?(recording_method = nil)
