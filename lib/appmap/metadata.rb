@@ -40,35 +40,11 @@ module AppMap
         git_repo = `git config --get remote.origin.url`.strip
         git_branch = `git rev-parse --abbrev-ref HEAD`.strip
         git_sha = `git rev-parse HEAD`.strip
-        git_status = `git status -s`.split("\n").map(&:strip)
-        git_last_annotated_tag = `git describe --abbrev=0 2>/dev/null`.strip
-        git_last_annotated_tag = nil if Util.blank?(git_last_annotated_tag)
-        git_last_tag = `git describe --abbrev=0 --tags 2>/dev/null`.strip
-        git_last_tag = nil if Util.blank?(git_last_tag)
-        if git_last_annotated_tag
-          git_commits_since_last_annotated_tag = begin
-            `git describe`.strip =~ /-(\d+)-(\w+)$/[1]
-          rescue
-            0
-          end
-        end
-        if git_last_tag
-          git_commits_since_last_tag = begin
-            `git describe --tags`.strip =~ /-(\d+)-(\w+)$/[1]
-          rescue
-            0
-          end
-        end
 
         {
           repository: git_repo,
           branch: git_branch,
-          commit: git_sha,
-          status: git_status,
-          git_last_annotated_tag: git_last_annotated_tag,
-          git_last_tag: git_last_tag,
-          git_commits_since_last_annotated_tag: git_commits_since_last_annotated_tag,
-          git_commits_since_last_tag: git_commits_since_last_tag
+          commit: git_sha
         }
       end
     end
