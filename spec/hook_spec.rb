@@ -112,9 +112,9 @@ describe "AppMap class Hooking" do
     method = hook_cls.instance_method(:say_default)
 
     require "appmap/hook/method"
-    package = config.lookup_package(hook_cls, method)
-    expect(package).to be
-    hook_method = AppMap::Handler::FunctionHandler.new(package, hook_cls, method)
+    hook_config = config.lookup_hook_config(hook_cls, method)
+    expect(hook_config).to be
+    hook_method = AppMap::Handler::FunctionHandler.new(hook_config.package, hook_cls, method)
     hook_method.activate
 
     tracer = AppMap.tracing.trace

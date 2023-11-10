@@ -69,6 +69,27 @@ module AppMap
     end
 
     class << self
+      # Labels can be embedded in the function comment. Label format is similar to YARD and JavaDoc.
+      # The keyword is @labels or @label. The keyword is followed by space-separated labels.
+      # For example:
+      # @label provider.authentication security
+      # rubocop:disable Metrics/MethodLength
+      def parse_labels(comment)
+        return [] unless comment
+
+        comment
+          .split("\n")
+          .map { |line| line.match(/^\s*#\s*@labels?\s+(.*)/) }
+          .compact
+          .map { |match| match[1] }
+          .inject([]) { |accum, labels|
+          accum += labels.split(/\s+/)
+          accum
+        }
+          .sort
+      end
+      # rubocop:enable Metrics/MethodLength
+
       def build_from_methods(methods)
         root = Types::Root.new
         methods.each do |method|
@@ -141,25 +162,6 @@ module AppMap
             end
           end
         end
-      end
-
-      # Labels can be embedded in the function comment. Label format is similar to YARD and JavaDoc.
-      # The keyword is @labels or @label. The keyword is followed by space-separated labels.
-      # For example:
-      # @label provider.authentication security
-      def parse_labels(comment)
-        return [] unless comment
-
-        comment
-          .split("\n")
-          .map { |line| line.match(/^\s*#\s*@labels?\s+(.*)/) }
-          .compact
-          .map { |match| match[1] }
-          .inject([]) { |accum, labels|
-          accum += labels.split(/\s+/)
-          accum
-        }
-          .sort
       end
 
       def find_or_create(list, info)

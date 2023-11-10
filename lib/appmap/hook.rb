@@ -3,6 +3,12 @@
 require "English"
 require_relative "hook_log"
 
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Complexity/CyclomaticComplexity
+# rubocop:disable Complexity/PerceivedComplexity
 module AppMap
   class Hook
     OBJECT_INSTANCE_METHODS = %i[! != !~ <=> == === =~ __id__ __send__ class clone define_singleton_method display dup
@@ -216,9 +222,9 @@ module AppMap
               next
             end
 
-            package = config.lookup_package(hook_cls, method)
+            hook_config = config.lookup_hook_config(hook_cls, method)
             # doing this check first returned early in 98.7% of cases in sample_app_6th_ed
-            next unless package
+            next unless hook_config
 
             # Don't try and trace the AppMap methods or there will be
             # a stack overflow in the defined hook method.
@@ -235,7 +241,11 @@ module AppMap
             # TODO: Figure out how to tell the difference?
             next unless disasm
 
-            package.handler_class.new(package, hook_cls, method).activate
+            record_around = Config::RECORD_AROUND_LABELS.find { |label| hook_config.labels.include?(label) }
+
+            HookLog.log "Detected labels: #{hook_config.labels.join(", ")} (record_around: #{record_around})" if !hook_config.labels.empty? && HookLog.enabled?
+
+            hook_config.package.handler_class.new(hook_config.package, hook_cls, method, record_around: record_around).activate
           end
         end
 

@@ -1,17 +1,21 @@
 # frozen_string_literal: true
 
 require "appmap/util"
+require_relative "../record_around"
 
 module AppMap
   class Hook
     # Delegation methods for Ruby 3.
     class Method
+      include RecordAround
+
       def call(receiver, *args, **kwargs, &block)
         call_event = false
+        record_around_before
         if trace?
           call_event, elapsed_before = with_disabled_hook { before_hook receiver, *args, **kwargs }
         end
-        # note we can't short-circuit directly to do_call because then the call stack
+        # NOTE: we can't short-circuit directly to do_call because then the call stack
         # depth changes and eval handler doesn't work correctly
         trace_call call_event, elapsed_before, receiver, *args, **kwargs, &block
       end
@@ -52,8 +56,11 @@ module AppMap
           raise
         ensure
           after_start_time = AppMap::Util.gettime
-          with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
-            if call_event
+          begin
+            with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception }
+          ensure
+            record_around_after
+          end
         end
       end
       # rubocop:enable Metrics/MethodLength

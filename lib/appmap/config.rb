@@ -10,8 +10,18 @@ require "appmap/swagger/configuration"
 require "appmap/depends/configuration"
 require_relative "hook_log"
 
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/PerceivedComplexity
+# rubocop:disable Style/Documentation
+# rubocop:disable Layout/IndentationWidth
+
 module AppMap
   class Config
+    RECORD_AROUND_LABELS = %w[job.perform cli.command message.handle].freeze
+
     # Specifies a logical code package be mapped.
     # This can be a project source folder, a Gem, or a builtin.
     #
@@ -31,6 +41,10 @@ module AppMap
 
       # Specifies the class that will convert code events into event objects.
       attr_writer :handler_class
+
+      def record_around?
+        RECORD_AROUND_LABELS.find { |label| labels&.member?(label) }
+      end
 
       def handler_class
         require "appmap/handler/function_handler"
@@ -447,14 +461,22 @@ module AppMap
       @hook_paths.find { |hook_path| path.index(hook_path) == 0 }
     end
 
+    HookConfig = Struct.new(:package, :labels) do
+    end
+
     # Looks up a class and method in the config, to find the matching Package configuration.
     # This class is only used after +path_enabled?+ has returned `true`.
-    LookupPackage = Struct.new(:config, :cls, :method) do
-      def package
+    LookupHookConfig = Struct.new(:config, :cls, :method) do
+      def hook_config
         # Global "excludes" configuration can be used to ignore any class/method.
         return if config.never_hook?(cls, method)
 
-        package_for_code_object || package_for_location
+        pkg = package_for_code_object || package_for_location
+        return unless pkg
+
+        comment = method.comment
+        labels = (pkg.labels || []) + ClassMap.parse_labels(comment)
+        HookConfig.new(pkg, labels)
       end
 
       # Hook a method which is specified by class and method name.
@@ -494,8 +516,8 @@ module AppMap
       end
     end
 
-    def lookup_package(cls, method)
-      LookupPackage.new(self, cls, method).package
+    def lookup_hook_config(cls, method)
+      LookupHookConfig.new(self, cls, method).hook_config
     end
 
     def never_hook?(cls, method)

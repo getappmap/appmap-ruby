@@ -36,14 +36,15 @@ module AppMap
     # Single hooked method.
     # Call #activate to override the original.
     class Method
-      attr_reader :hook_package, :hook_class, :hook_method, :parameters, :arity
+      attr_reader :hook_package, :hook_class, :hook_method, :record_around, :parameters, :arity
 
       HOOK_DISABLE_KEY = "AppMap::Hook.disable"
 
-      def initialize(hook_package, hook_class, hook_method)
+      def initialize(hook_package, hook_class, hook_method, record_around: false)
         @hook_package = hook_package
         @hook_class = hook_class
         @hook_method = hook_method
+        @record_around = record_around
         @parameters = hook_method.parameters
         @arity = hook_method.arity
       end
