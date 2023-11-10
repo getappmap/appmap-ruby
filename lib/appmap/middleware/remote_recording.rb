@@ -103,7 +103,7 @@ module AppMap
           path = req.path.gsub(/\/{2,}/, "/") # Double slashes have been observed
           appmap_name = "#{req.request_method} #{path} (#{status}) - #{start_time.strftime("%T.%L")}"
           appmap_file_name = AppMap::Util.scenario_filename([start_time.to_f, req.url].join("_"))
-          output_dir = File.join(AppMap::DEFAULT_APPMAP_DIR, "requests")
+          output_dir = File.join(AppMap.output_dir, "requests")
           appmap_file_path = File.join(output_dir, appmap_file_name)
 
           metadata = AppMap.detect_metadata

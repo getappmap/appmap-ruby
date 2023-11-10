@@ -11,7 +11,7 @@ module AppMap
   # Integration of AppMap with Minitest. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each test.
   module Minitest
-    APPMAP_OUTPUT_DIR = "tmp/appmap/minitest"
+    APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "minitest")
     LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
 
     def self.metadata

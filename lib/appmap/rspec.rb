@@ -8,7 +8,7 @@ require "fileutils"
 
 module AppMap
   module RSpec
-    APPMAP_OUTPUT_DIR = "tmp/appmap/rspec"
+    APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "rspec")
     LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
 
     def self.metadata

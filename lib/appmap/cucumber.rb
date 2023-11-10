@@ -7,7 +7,7 @@ require "fileutils"
 
 module AppMap
   module Cucumber
-    APPMAP_OUTPUT_DIR = "tmp/appmap/cucumber"
+    APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "cucumber")
 
     ScenarioAttributes = Struct.new(:name, :feature, :feature_group)
 
