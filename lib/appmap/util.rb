@@ -198,6 +198,8 @@ module AppMap
       def write_appmap(filename, appmap)
         require "tmpdir"
 
+        FileUtils.mkdir_p(File.dirname(filename))
+
         # This is what Ruby Tempfile does; but we don't want the file to be unlinked.
         mode = File::RDWR | File::CREAT | File::EXCL
         ::Dir::Tmpname.create(["appmap_", ".json"]) do |tmpname|
