@@ -71,8 +71,8 @@ module AppMap
         end
       end
 
-      def enabled?
-        @tracers.any?(&:enabled?)
+      def enabled?(thread_id: nil)
+        @tracers.any? { |t| t.enabled?(thread_id: thread_id) }
       end
 
       def last_package_for_current_thread
@@ -146,8 +146,10 @@ module AppMap
       @enabled = true
     end
 
-    def enabled?
-      @enabled
+    def enabled?(thread_id: nil)
+      return false unless @enabled
+
+      thread_id.nil? || @thread_id.nil? || @thread_id == thread_id
     end
 
     # Private function. Use AppMap.tracing#delete.

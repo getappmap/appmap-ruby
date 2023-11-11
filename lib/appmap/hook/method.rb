@@ -92,7 +92,7 @@ module AppMap
       end
 
       def trace?
-        return false unless AppMap.tracing_enabled?
+        return false unless AppMap.tracing_enabled?(thread: Thread.current)
         return false if Thread.current[HOOK_DISABLE_KEY]
         return false if hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package
 

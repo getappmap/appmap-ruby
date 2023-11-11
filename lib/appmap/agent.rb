@@ -62,10 +62,10 @@ module AppMap
       end
     end
 
-    def tracing_enabled?
+    def tracing_enabled?(thread: nil)
       return false unless @tracing
 
-      @tracing.enabled?
+      @tracing.enabled?(thread_id: thread&.object_id)
     end
 
     # Used to start tracing, stop tracing, and record events.
@@ -73,10 +73,10 @@ module AppMap
       @tracing ||= Trace::Tracing.new
     end
 
-    # Records the events which occur while processing a block,
-    # and returns an AppMap as a Hash.
-    def record
-      tracer = tracing.trace
+    # Records the events which occur while processing a block, and returns an AppMap as a Hash.
+    # Recording may optionally capture only a single thread.
+    def record(thread: nil)
+      tracer = tracing.trace(thread: thread)
       tracer.enable
       begin
         yield
