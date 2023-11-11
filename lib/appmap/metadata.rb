@@ -17,7 +17,8 @@ module AppMap
             name: "appmap",
             url: AppMap::URL,
             version: AppMap::VERSION
-          }
+          },
+          timestamp: DateTime.now.iso8601
         }.tap do |m|
           if defined?(::Rails) && defined?(::Rails.version)
             m[:frameworks] ||= []

@@ -108,7 +108,6 @@ module AppMap
 
           metadata = AppMap.detect_metadata
           metadata[:name] = appmap_name
-          metadata[:timestamp] = start_time.to_f
           metadata[:recorder] = {
             name: "rack",
             type: "requests"
