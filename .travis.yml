@@ -1,7 +1,7 @@
 language: ruby
 dist: focal
 cache:
-- bundle
+- bundler
 - yarn
 
 # Travis pre-installs some Ruby versions. You can see the current list
