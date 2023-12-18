@@ -1,17 +1,27 @@
 # frozen_string_literal: true
 
-require 'pathname'
-require 'set'
-require 'yaml'
-require 'appmap/util'
-require 'appmap/handler'
-require 'appmap/service/guesser'
-require 'appmap/swagger/configuration'
-require 'appmap/depends/configuration'
-require_relative './hook_log'
+require "pathname"
+require "set"
+require "yaml"
+require "appmap/util"
+require "appmap/handler"
+require "appmap/service/guesser"
+require "appmap/swagger/configuration"
+require "appmap/depends/configuration"
+require_relative "hook_log"
+
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/PerceivedComplexity
+# rubocop:disable Style/Documentation
+# rubocop:disable Layout/IndentationWidth
 
 module AppMap
   class Config
+    RECORD_AROUND_LABELS = %w[job.perform cli.command message.handle].freeze
+
     # Specifies a logical code package be mapped.
     # This can be a project source folder, a Gem, or a builtin.
     #
@@ -32,8 +42,12 @@ module AppMap
       # Specifies the class that will convert code events into event objects.
       attr_writer :handler_class
 
+      def record_around?
+        RECORD_AROUND_LABELS.find { |label| labels&.member?(label) }
+      end
+
       def handler_class
-        require 'appmap/handler/function_handler'
+        require "appmap/handler/function_handler"
         @handler_class || AppMap::Handler::FunctionHandler
       end
 
@@ -51,7 +65,7 @@ module AppMap
       def subpackage(location, config)
         return self if gem
 
-        path = location.split('/')[0...-1].join('/')
+        path = location.split("/")[0...-1].join("/")
         clone.tap do |pkg|
           pkg.name = path
           pkg.path = path
@@ -106,7 +120,7 @@ module AppMap
           handler_class: handler_class ? handler_class.name : nil,
           exclude: Util.blank?(exclude) ? nil : exclude,
           labels: Util.blank?(labels) ? nil : labels,
-          shallow: shallow.nil? ? nil : shallow,
+          shallow: shallow.nil? ? nil : shallow
         }.compact
       end
     end
@@ -131,7 +145,7 @@ module AppMap
         }
       end
 
-      alias as_json to_h
+      alias_method :as_json, :to_h
     end
     private_constant :TargetMethods
 
@@ -158,7 +172,7 @@ module AppMap
 
     MethodHook = Struct.new(:cls, :method_names, :labels) # :nodoc:
     private_constant :MethodHook
-    
+
     class << self
       def package_hooks(methods, path: nil, gem: nil, force: false, builtin: false, handler_class: nil, require_name: nil)
         Array(methods).map do |method|
@@ -182,52 +196,52 @@ module AppMap
 
       def declare_hook(hook_decl)
         hook_decl = YAML.load(hook_decl) if hook_decl.is_a?(String)
-        
-        methods_decl = hook_decl['methods'] || hook_decl['method']
+
+        methods_decl = hook_decl["methods"] || hook_decl["method"]
         methods_decl = Array(methods_decl) unless methods_decl.is_a?(Hash)
-        labels_decl = Array(hook_decl['labels'] || hook_decl['label'])
+        labels_decl = Array(hook_decl["labels"] || hook_decl["label"])
 
         methods = methods_decl.map do |name|
-          class_name, method_name, static = name.include?('.') ? name.split('.', 2) + [ true ] : name.split('#', 2) + [ false ]
-          method_hook class_name, [ method_name ], labels_decl
+          class_name, method_name, static = name.include?(".") ? name.split(".", 2) + [true] : name.split("#", 2) + [false]
+          method_hook class_name, [method_name], labels_decl
         end
 
-        require_name = hook_decl['require_name']
-        gem_name = hook_decl['gem']
-        path = hook_decl['path']
-        builtin = hook_decl['builtin']
+        require_name = hook_decl["require_name"]
+        gem_name = hook_decl["gem"]
+        path = hook_decl["path"]
+        builtin = hook_decl["builtin"]
 
         options = {
           builtin: builtin,
           gem: gem_name,
           path: path,
           require_name: require_name || gem_name || path,
-          force: hook_decl['force']
+          force: hook_decl["force"]
         }.compact
 
-        handler_class = hook_decl['handler_class']
+        handler_class = hook_decl["handler_class"]
         options[:handler_class] = Handler.find(handler_class) if handler_class
 
         package_hooks(methods, **options)
       end
 
       def declare_hook_deprecated(hook_decl)
-        function_name = hook_decl['name']
+        function_name = hook_decl["name"]
         package, cls, functions = []
         if function_name
           package, cls, _, function = Util.parse_function_name(function_name)
           functions = Array(function)
         else
-          package = hook_decl['package']
-          cls = hook_decl['class']
-          functions = hook_decl['function'] || hook_decl['functions']
-          raise %q(AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions') unless package && cls && functions
+          package = hook_decl["package"]
+          cls = hook_decl["class"]
+          functions = hook_decl["function"] || hook_decl["functions"]
+          raise "AppMap config 'function' element should specify 'package', 'class' and 'function' or 'functions'" unless package && cls && functions
         end
 
         functions = Array(functions).map(&:to_sym)
-        labels = hook_decl['label'] || hook_decl['labels']
-        req = hook_decl['require']
-        builtin = hook_decl['builtin']
+        labels = hook_decl["label"] || hook_decl["labels"]
+        req = hook_decl["require"]
+        builtin = hook_decl["builtin"]
 
         package_options = {}
         package_options[:labels] = Array(labels).map(&:to_s) if labels
@@ -238,20 +252,20 @@ module AppMap
       end
 
       def builtin_hooks_path
-        [ [ __dir__, 'builtin_hooks' ].join('/') ] + ( ENV['APPMAP_BUILTIN_HOOKS_PATH'] || '').split(/[;:]/)
+        [[__dir__, "builtin_hooks"].join("/")] + (ENV["APPMAP_BUILTIN_HOOKS_PATH"] || "").split(/[;:]/)
       end
 
       def gem_hooks_path
-        [ [ __dir__, 'gem_hooks' ].join('/') ] + ( ENV['APPMAP_GEM_HOOKS_PATH'] || '').split(/[;:]/)
+        [[__dir__, "gem_hooks"].join("/")] + (ENV["APPMAP_GEM_HOOKS_PATH"] || "").split(/[;:]/)
       end
 
       def load_hooks
         loader = lambda do |dir, &block|
-          basename = dir.split('/').compact.join('/')
+          basename = dir.split("/").compact.join("/")
           [].tap do |hooks|
-            Dir.glob(Pathname.new(dir).join('**').join('*.yml').to_s).each do |yaml_file|
+            Dir.glob(Pathname.new(dir).join("**").join("*.yml").to_s).each do |yaml_file|
               path = yaml_file[basename.length + 1...-4]
-              YAML.load(File.read(yaml_file)).map do |config|
+              YAML.load_file(yaml_file).map do |config|
                 block.call path, config
                 config
               end.each do |config|
@@ -262,16 +276,16 @@ module AppMap
         end
 
         builtin_hooks = builtin_hooks_path.map do |path|
-          loader.(path) do |path, config|
-            config['path'] = path
-            config['builtin'] = true
+          loader.call(path) do |path, config|
+            config["path"] = path
+            config["builtin"] = true
           end
         end
 
         gem_hooks = gem_hooks_path.map do |path|
-          loader.(path) do |path, config|
-            config['gem'] = path
-            config['builtin'] = false
+          loader.call(path) do |path, config|
+            config["gem"] = path
+            config["builtin"] = false
           end
         end
 
@@ -296,10 +310,10 @@ module AppMap
       @exclude = exclude
       @functions = functions
 
-      @builtin_hooks = Hash.new { |h,k| h[k] = [] }
-      @gem_hooks = Hash.new { |h,k| h[k] = [] }
-      
-      (functions + self.class.load_hooks).each_with_object(Hash.new { |h,k| h[k] = [] }) do |cls_target_methods, gem_hooks|
+      @builtin_hooks = Hash.new { |h, k| h[k] = [] }
+      @gem_hooks = Hash.new { |h, k| h[k] = [] }
+
+      (functions + self.class.load_hooks).each_with_object(Hash.new { |h, k| h[k] = [] }) do |cls_target_methods, gem_hooks|
         hooks = if cls_target_methods.target_methods.package.builtin
           @builtin_hooks
         else
@@ -318,11 +332,11 @@ module AppMap
       def load_from_file(config_file_name)
         logo = lambda do
           Util.color(<<~LOGO, :magenta)
-             ___             __  ___
-            / _ | ___  ___  /  |/  /__ ____
-           / __ |/ _ \\/ _ \\/ /|_/ / _ `/ _ \\
-          /_/ |_/ .__/ .__/_/  /_/\\_,_/ .__/
-               /_/  /_/              /_/
+               ___             __  ___
+              / _ | ___  ___  /  |/  /__ ____
+             / __ |/ _ \\/ _ \\/ /|_/ / _ `/ _ \\
+            /_/ |_/ .__/ .__/_/  /_/\\_,_/ .__/
+                 /_/  /_/              /_/
           LOGO
         end
 
@@ -331,43 +345,43 @@ module AppMap
         config_data = if config_present
           YAML.safe_load(::File.read(config_file_name))
         else
-          warn logo.()
-          warn ''
-          warn Util.color(%Q|NOTICE: The AppMap config file #{config_file_name} was not found!|, :magenta, bold: true)
-          warn ''
+          warn logo.call
+          warn ""
+          warn Util.color(%(NOTICE: The AppMap config file #{config_file_name} was not found!), :magenta, bold: true)
+          warn ""
           warn Util.color(<<~MISSING_FILE_MSG, :magenta)
-          AppMap uses this file to customize its behavior. For example, you can use
-          the 'packages' setting to indicate which local file paths and dependency
-          gems you want to include in the AppMap. Since you haven't provided specific
-          settings, the appmap gem will use these default options:
+            AppMap uses this file to customize its behavior. For example, you can use
+            the 'packages' setting to indicate which local file paths and dependency
+            gems you want to include in the AppMap. Since you haven't provided specific
+            settings, the appmap gem will use these default options:
           MISSING_FILE_MSG
           {}
         end
 
         load(config_data).tap do |config|
           {
-            'name' => config.name,
-            'language' => 'ruby',
-            'appmap_dir' => AppMap::DEFAULT_APPMAP_DIR,
-            'packages' => config.packages.select{|p| p.path}.map do |pkg|
-              { 'path' => pkg.path }
+            "name" => config.name,
+            "language" => "ruby",
+            "appmap_dir" => AppMap::DEFAULT_APPMAP_DIR,
+            "packages" => config.packages.select { |p| p.path }.map do |pkg|
+              {"path" => pkg.path}
             end,
-            'exclude' => []
+            "exclude" => []
           }.compact.tap do |config_yaml|
             unless config_present
               warn Util.color(YAML.dump(config_yaml), :magenta)
               dirname = Pathname.new(config_file_name).dirname.expand_path
               if Dir.exist?(dirname) && File.writable?(dirname)
                 warn Util.color(<<~CONFIG_FILE_MSG, :magenta)
-                This file will be saved to #{Pathname.new(config_file_name).expand_path},
-                where you can customize it.
+                  This file will be saved to #{Pathname.new(config_file_name).expand_path},
+                  where you can customize it.
                 CONFIG_FILE_MSG
                 File.write(config_file_name, YAML.dump(config_yaml))
               end
               warn Util.color(<<~CONFIG_FILE_MSG, :magenta)
-              For more information, see https://appmap.io/docs/reference/appmap-ruby.html#configuration
+                For more information, see https://appmap.io/docs/reference/appmap-ruby.html#configuration
               CONFIG_FILE_MSG
-              warn logo.()
+              warn logo.call
             end
           end
         end
@@ -375,14 +389,14 @@ module AppMap
 
       # Loads configuration from a Hash.
       def load(config_data)
-        name = config_data['name'] || Service::Guesser.guess_name
+        name = config_data["name"] || Service::Guesser.guess_name
         config_params = {
-          exclude: config_data['exclude']
+          exclude: config_data["exclude"]
         }.compact
 
-        if config_data['functions']
-          config_params[:functions] = config_data['functions'].map do |hook_decl|
-            if hook_decl['name'] || hook_decl['package']
+        if config_data["functions"]
+          config_params[:functions] = config_data["functions"].map do |hook_decl|
+            if hook_decl["name"] || hook_decl["package"]
               declare_hook_deprecated(hook_decl)
             else
               # Support the same syntax within the 'functions' that's used for externalized
@@ -393,24 +407,24 @@ module AppMap
         end
 
         config_params[:packages] = \
-          if config_data['packages']
-            config_data['packages'].map do |package|
-              gem = package['gem']
-              path = package['path']
-              raise %q(AppMap config 'package' element should specify 'gem' or 'path', not both) if gem && path
-              raise %q(AppMap config 'package' element should specify 'gem' or 'path') unless gem || path
+          if config_data["packages"]
+            config_data["packages"].map do |package|
+              gem = package["gem"]
+              path = package["path"]
+              raise "AppMap config 'package' element should specify 'gem' or 'path', not both" if gem && path
+              raise "AppMap config 'package' element should specify 'gem' or 'path'" unless gem || path
 
               if gem
-                shallow = package['shallow']
+                shallow = package["shallow"]
                 # shallow is true by default for gems
                 shallow = true if shallow.nil?
 
                 require_name = \
-                  package['package'] || #deprecated
-                  package['require_name']
-                Package.build_from_gem(gem, require_name: require_name, exclude: package['exclude'] || [], shallow: shallow)
+                  package["package"] || # deprecated
+                  package["require_name"]
+                Package.build_from_gem(gem, require_name: require_name, exclude: package["exclude"] || [], shallow: shallow)
               else
-                Package.build_from_path(path, exclude: package['exclude'] || [], shallow: package['shallow'])
+                Package.build_from_path(path, exclude: package["exclude"] || [], shallow: package["shallow"])
               end
             end.compact
           else
@@ -419,12 +433,12 @@ module AppMap
             end
           end
 
-        if config_data['swagger']
-          swagger_config = Swagger::Configuration.load(config_data['swagger'])
+        if config_data["swagger"]
+          swagger_config = Swagger::Configuration.load(config_data["swagger"])
           config_params[:swagger_config] = swagger_config
         end
-        if config_data['depends']
-          depends_config = Depends::Configuration.load(config_data['depends'])
+        if config_data["depends"]
+          depends_config = Depends::Configuration.load(config_data["depends"])
           config_params[:depends_config] = depends_config
         end
 
@@ -447,27 +461,35 @@ module AppMap
       @hook_paths.find { |hook_path| path.index(hook_path) == 0 }
     end
 
+    HookConfig = Struct.new(:package, :labels) do
+    end
+
     # Looks up a class and method in the config, to find the matching Package configuration.
-    # This class is only used after +path_enabled?+ has returned `true`. 
-    LookupPackage = Struct.new(:config, :cls, :method) do
-      def package
+    # This class is only used after +path_enabled?+ has returned `true`.
+    LookupHookConfig = Struct.new(:config, :cls, :method) do
+      def hook_config
         # Global "excludes" configuration can be used to ignore any class/method.
         return if config.never_hook?(cls, method)
 
-        package_for_code_object || package_for_location
+        pkg = package_for_code_object || package_for_location
+        return unless pkg
+
+        comment = method.comment
+        labels = (pkg.labels || []) + ClassMap.parse_labels(comment)
+        HookConfig.new(pkg, labels)
       end
 
       # Hook a method which is specified by class and method name.
       def package_for_code_object
         class_name = begin
-                       cls.to_s.index('#<Class:') == 0 ? cls.to_s['#<Class:'.length...-1] : cls.name
-                     rescue
-                       # Calling #to_s on some Rails classes
-                       # (e.g. those generated to represent
-                       # associations) will raise an exception. Fall
-                       # back to using the class name.
-                       cls.name
-                     end
+          (cls.to_s.index("#<Class:") == 0) ? cls.to_s["#<Class:".length...-1] : cls.name
+        rescue
+          # Calling #to_s on some Rails classes
+          # (e.g. those generated to represent
+          # associations) will raise an exception. Fall
+          # back to using the class name.
+          cls.name
+        end
         Array(config.gem_hooks[class_name])
           .find { |hook| hook.include_method?(method.name) }
           &.package
@@ -482,20 +504,20 @@ module AppMap
         location_file = AppMap::Util.normalize_path(location_file)
 
         pkg = config
-              .packages
-              .select { |pkg| pkg.path }
-              .select do |pkg|
+          .packages
+          .select { |pkg| pkg.path }
+          .select do |pkg|
                 (location_file.index(pkg.path) == 0) &&
                   !pkg.exclude.find { |p| location_file.index(p) }
               end
-              .min { |a, b| b.path <=> a.path } # Longest matching package first
+          .min { |a, b| b.path <=> a.path } # Longest matching package first
 
         pkg.subpackage(location_file, config) if pkg
       end
     end
 
-    def lookup_package(cls, method)
-      LookupPackage.new(self, cls, method).package
+    def lookup_hook_config(cls, method)
+      LookupHookConfig.new(self, cls, method).hook_config
     end
 
     def never_hook?(cls, method)
@@ -505,7 +527,7 @@ module AppMap
       end
 
       _, separator, = ::AppMap::Hook.qualify_method_name(method)
-      if exclude.member?(cls.name) || exclude.member?([ cls.name, separator, method.name ].join)
+      if exclude.member?(cls.name) || exclude.member?([cls.name, separator, method.name].join)
         HookLog.log "Hooking of #{method} disabled by configuration" if HookLog.enabled?
         return true
       end

@@ -1,14 +1,20 @@
 # frozen_string_literal: true
 
-require 'English'
-require_relative './hook_log'
+require "English"
+require_relative "hook_log"
 
+# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/BlockLength
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Complexity/CyclomaticComplexity
+# rubocop:disable Complexity/PerceivedComplexity
 module AppMap
   class Hook
     OBJECT_INSTANCE_METHODS = %i[! != !~ <=> == === =~ __id__ __send__ class clone define_singleton_method display dup
-                                 enum_for eql? equal? extend freeze frozen? hash inspect instance_eval instance_exec instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method methods nil? object_id private_methods protected_methods public_method public_methods public_send remove_instance_variable respond_to? send singleton_class singleton_method singleton_methods taint tainted? tap then to_enum to_s to_h to_a trust untaint untrust untrusted? yield_self].freeze
+      enum_for eql? equal? extend freeze frozen? hash inspect instance_eval instance_exec instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method methods nil? object_id private_methods protected_methods public_method public_methods public_send remove_instance_variable respond_to? send singleton_class singleton_method singleton_methods taint tainted? tap then to_enum to_s to_h to_a trust untaint untrust untrusted? yield_self].freeze
     OBJECT_STATIC_METHODS = %i[! != !~ < <= <=> == === =~ > >= __id__ __send__ alias_method allocate ancestors attr
-                               attr_accessor attr_reader attr_writer autoload autoload? class class_eval class_exec class_variable_defined? class_variable_get class_variable_set class_variables clone const_defined? const_get const_missing const_set constants define_method define_singleton_method deprecate_constant display dup enum_for eql? equal? extend freeze frozen? hash include include? included_modules inspect instance_eval instance_exec instance_method instance_methods instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method method_defined? methods module_eval module_exec name new nil? object_id prepend private_class_method private_constant private_instance_methods private_method_defined? private_methods protected_instance_methods protected_method_defined? protected_methods public_class_method public_constant public_instance_method public_instance_methods public_method public_method_defined? public_methods public_send remove_class_variable remove_instance_variable remove_method respond_to? send singleton_class singleton_class? singleton_method singleton_methods superclass taint tainted? tap then to_enum to_s trust undef_method untaint untrust untrusted? yield_self].freeze
+      attr_accessor attr_reader attr_writer autoload autoload? class class_eval class_exec class_variable_defined? class_variable_get class_variable_set class_variables clone const_defined? const_get const_missing const_set constants define_method define_singleton_method deprecate_constant display dup enum_for eql? equal? extend freeze frozen? hash include include? included_modules inspect instance_eval instance_exec instance_method instance_methods instance_of? instance_variable_defined? instance_variable_get instance_variable_set instance_variables is_a? itself kind_of? method method_defined? methods module_eval module_exec name new nil? object_id prepend private_class_method private_constant private_instance_methods private_method_defined? private_methods protected_instance_methods protected_method_defined? protected_methods public_class_method public_constant public_instance_method public_instance_methods public_method public_method_defined? public_methods public_send remove_class_variable remove_instance_variable remove_method respond_to? send singleton_class singleton_class? singleton_method singleton_methods superclass taint tainted? tap then to_enum to_s trust undef_method untaint untrust untrusted? yield_self].freeze
     SLOW_PACKAGE_THRESHOLD = 0.001
 
     @unbound_method_arity = ::UnboundMethod.instance_method(:arity)
@@ -39,9 +45,9 @@ module AppMap
       def qualify_method_name(method)
         if method.owner.singleton_class?
           class_name = singleton_method_owner_name(method)
-          [class_name, '.', method.name]
+          [class_name, ".", method.name]
         else
-          [method.owner.name, '#', method.name]
+          [method.owner.name, "#", method.name]
         end
       end
     end
@@ -55,7 +61,7 @@ module AppMap
 
     # Observe class loading and hook all methods which match the config.
     def enable(&block)
-      require 'appmap/hook/method'
+      require "appmap/hook/method"
 
       hook_builtins
 
@@ -66,7 +72,7 @@ module AppMap
       @module_load_times = Hash.new { |memo, k| memo[k] = 0 }
       @slow_packages = Set.new
 
-      if ENV['APPMAP_PROFILE_HOOK'] == 'true'
+      if ENV["APPMAP_PROFILE_HOOK"] == "true"
         dump_times = lambda do
           @module_load_times
             .keys
@@ -80,7 +86,7 @@ module AppMap
           end
         end
 
-        at_exit &dump_times
+        at_exit(&dump_times)
         Thread.new do
           while true
             dump_times.call
@@ -102,7 +108,7 @@ module AppMap
         hooks_by_class.each do |class_name, hooks|
           Array(hooks).each do |hook|
             HookLog.builtin class_name do
-              if builtin && hook.package.require_name && hook.package.require_name != 'ruby'
+              if builtin && hook.package.require_name && hook.package.require_name != "ruby"
                 begin
                   require hook.package.require_name
                 rescue
@@ -110,39 +116,59 @@ module AppMap
                   next
                 end
               end
-  
+
               begin
                 base_cls = Object.const_get class_name
               rescue NameError
                 HookLog.load_error class_name, "Class #{class_name} not found in global scope" if HookLog.enabled?
                 next
               end
-  
+
               Array(hook.method_names).each do |method_name|
                 method_name = method_name.to_sym
-  
+
                 hook_method = lambda do |entry|
                   cls, method = entry
                   next if config.never_hook?(cls, method)
-  
+
                   hook.package.handler_class.new(hook.package, cls, method).activate
                 end
-  
+
                 methods = []
                 # irb(main):001:0> Kernel.public_instance_method(:system)
                 # (irb):1:in `public_instance_method': method `system' for module `Kernel' is  private (NameError)
                 if base_cls == Kernel
-                  methods << [base_cls, base_cls.instance_method(method_name)] rescue nil
+                  begin
+                    methods << [base_cls, base_cls.instance_method(method_name)]
+                  rescue
+                    nil
+                  end
                 end
-                methods << [base_cls, base_cls.public_instance_method(method_name)] rescue nil
-                methods << [base_cls, base_cls.protected_instance_method(method_name)] rescue nil
+                begin
+                  methods << [base_cls, base_cls.public_instance_method(method_name)]
+                rescue
+                  nil
+                end
+                begin
+                  methods << [base_cls, base_cls.protected_instance_method(method_name)]
+                rescue
+                  nil
+                end
                 if base_cls.respond_to?(:singleton_class)
-                  methods << [base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name)] rescue nil
-                  methods << [base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name)] rescue nil
+                  begin
+                    methods << [base_cls.singleton_class, base_cls.singleton_class.public_instance_method(method_name)]
+                  rescue
+                    nil
+                  end
+                  begin
+                    methods << [base_cls.singleton_class, base_cls.singleton_class.protected_instance_method(method_name)]
+                  rescue
+                    nil
+                  end
                 end
                 methods.compact!
                 if methods.empty?
-                  HookLog.load_error [ base_cls.name, method_name ].join('[#.]'), "Method #{method_name} not found on #{base_cls.name}" if HookLog.enabled?
+                  HookLog.load_error [base_cls.name, method_name].join("[#.]"), "Method #{method_name} not found on #{base_cls.name}" if HookLog.enabled?
                 else
                   methods.each(&hook_method)
                 end
@@ -152,13 +178,13 @@ module AppMap
         end
       end
 
-      hook_loaded_code.(config.builtin_hooks, true)
+      hook_loaded_code.call(config.builtin_hooks, true)
     end
 
     protected
 
     def trace_location(trace_point)
-      [trace_point.path, trace_point.lineno].join(':')
+      [trace_point.path, trace_point.lineno].join(":")
     end
 
     def trace_end(trace_point)
@@ -168,7 +194,7 @@ module AppMap
         path = trace_point.path
         enabled = !@notrace_paths.member?(path) && config.path_enabled?(path)
         unless enabled
-          HookLog.log 'Not hooking - path is not enabled' if HookLog.enabled?
+          HookLog.log "Not hooking - path is not enabled" if HookLog.enabled?
           @notrace_paths << path
           next
         end
@@ -178,31 +204,31 @@ module AppMap
         instance_methods = cls.public_instance_methods(false) + cls.protected_instance_methods(false) - OBJECT_INSTANCE_METHODS
         # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
         class_methods = begin
-            if cls.respond_to?(:singleton_class)
-              cls.singleton_class.public_instance_methods(false) + cls.singleton_class.protected_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
-            else
-              []
-            end
-          rescue NameError
+          if cls.respond_to?(:singleton_class)
+            cls.singleton_class.public_instance_methods(false) + cls.singleton_class.protected_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
+          else
             []
           end
+        rescue NameError
+          []
+        end
 
         hook = lambda do |hook_cls|
           lambda do |method_id|
             method = begin
-                hook_cls.instance_method(method_id)
-              rescue NameError
-                HookLog.load_error [ hook_cls, method_id ].join('[#.]'), "Method #{hook_cls} #{method_id} is not accessible: #{$!}" if HookLog.enabled?
-                next
-              end
+              hook_cls.instance_method(method_id)
+            rescue NameError
+              HookLog.load_error [hook_cls, method_id].join("[#.]"), "Method #{hook_cls} #{method_id} is not accessible: #{$!}" if HookLog.enabled?
+              next
+            end
 
-            package = config.lookup_package(hook_cls, method)
+            hook_config = config.lookup_hook_config(hook_cls, method)
             # doing this check first returned early in 98.7% of cases in sample_app_6th_ed
-            next unless package
+            next unless hook_config
 
             # Don't try and trace the AppMap methods or there will be
             # a stack overflow in the defined hook method.
-            next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || '').split('::')[0])
+            next if %w[Marshal AppMap ActiveSupport].member?((hook_cls&.name || "").split("::")[0])
 
             next if method_id == :call
 
@@ -215,15 +241,19 @@ module AppMap
             # TODO: Figure out how to tell the difference?
             next unless disasm
 
-            package.handler_class.new(package, hook_cls, method).activate
+            record_around = Config::RECORD_AROUND_LABELS.find { |label| hook_config.labels.include?(label) }
+
+            HookLog.log "Detected labels: #{hook_config.labels.join(", ")} (record_around: #{record_around})" if !hook_config.labels.empty? && HookLog.enabled?
+
+            hook_config.package.handler_class.new(hook_config.package, hook_cls, method, record_around: record_around).activate
           end
         end
 
         start = Time.now
-        instance_methods.each(&hook.(cls))
+        instance_methods.each(&hook.call(cls))
         begin
           # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
-          class_methods.each(&hook.(cls.singleton_class)) if cls.respond_to?(:singleton_class)
+          class_methods.each(&hook.call(cls.singleton_class)) if cls.respond_to?(:singleton_class)
         rescue NameError
           # NameError:
           #   uninitialized constant Faraday::Connection
@@ -231,12 +261,12 @@ module AppMap
         end
         elapsed = Time.now - start
         if location.index(Bundler.bundle_path.to_s) == 0
-          package_tokens = location[Bundler.bundle_path.to_s.length + 1..-1].split('/')
+          package_tokens = location[Bundler.bundle_path.to_s.length + 1..-1].split("/")
           @module_load_times[package_tokens[1]] += elapsed
         else
           file_path = location[Dir.pwd.length + 1..-1]
           if file_path
-            location = file_path.split('/', 3)[0..1].join('/')
+            location = file_path.split("/", 3)[0..1].join("/")
             @module_load_times[location] += elapsed
           end
         end

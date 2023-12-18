@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require_relative '../appmap'
-require_relative './util'
-require_relative './detect_enabled'
-require 'fileutils'
-require 'active_support'
-require 'active_support/core_ext'
+require_relative "../appmap"
+require_relative "util"
+require_relative "detect_enabled"
+require "fileutils"
+require "active_support"
+require "active_support/core_ext"
 
 module AppMap
   # Integration of AppMap with Minitest. When enabled with APPMAP=true, the AppMap tracer will
   # be activated around each test.
   module Minitest
-    APPMAP_OUTPUT_DIR = 'tmp/appmap/minitest'
-    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
+    APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "minitest")
+    LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
 
     def self.metadata
       AppMap.detect_metadata
@@ -28,13 +28,13 @@ module AppMap
 
       def source_location
         location = test.method(test_name).source_location
-        [ Util.normalize_path(location.first), location.last ].join(':')
+        [Util.normalize_path(location.first), location.last].join(":")
       end
 
       def finish(failures, exception)
         failed = failures.any? || exception
         if AppMap::Minitest::LOG
-          warn "Finishing recording of #{failed ? 'failed ' : ''} test #{test.class}.#{test.name}"
+          warn "Finishing recording of #{failed ? "failed " : ""} test #{test.class}.#{test.name}"
         end
         warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
 
@@ -53,17 +53,17 @@ module AppMap
 
         class_map = AppMap.class_map(@trace.event_methods)
 
-        feature_group = test.class.name.underscore.split('_')[0...-1].join('_').capitalize
-        feature_name = test.name.split('_')[1..-1].join(' ')
-        scenario_name = [feature_group, feature_name].join(' ')
+        feature_group = test.class.name.underscore.split("_")[0...-1].join("_").capitalize
+        feature_name = test.name.split("_")[1..-1].join(" ")
+        scenario_name = [feature_group, feature_name].join(" ")
 
         AppMap::Minitest.save name: scenario_name,
-                              class_map: class_map,
-                              source_location: source_location,
-                              test_status: failed ? 'failed' : 'succeeded',
-                              test_failure: test_failure,
-                              exception: exception,
-                              events: events
+          class_map: class_map,
+          source_location: source_location,
+          test_status: failed ? "failed" : "succeeded",
+          test_failure: test_failure,
+          exception: exception,
+          events: events
       end
     end
 
@@ -96,7 +96,7 @@ module AppMap
       end
 
       def config
-        @config or raise 'AppMap is not configured'
+        @config or raise "AppMap is not configured"
       end
 
       def add_event_methods(event_methods)
@@ -110,12 +110,12 @@ module AppMap
           m[:app] = AppMap.configuration.name
           m[:frameworks] ||= []
           m[:frameworks] << {
-            name: 'minitest',
-            version: Gem.loaded_specs['minitest']&.version&.to_s
+            name: "minitest",
+            version: Gem.loaded_specs["minitest"]&.version&.to_s
           }
           m[:recorder] = {
-            name: 'minitest',
-            type: 'tests'
+            name: "minitest",
+            type: "tests"
           }
           m[:test_status] = test_status
           m[:test_failure] = test_failure if test_failure
@@ -145,11 +145,11 @@ module AppMap
 end
 
 if AppMap::Minitest.enabled?
-  require 'appmap'
-  require 'minitest/test'
+  require "appmap"
+  require "minitest/test"
 
   class ::Minitest::Test
-    alias run_without_hook run
+    alias_method :run_without_hook, :run
 
     def run
       AppMap::Minitest.begin_test self, name

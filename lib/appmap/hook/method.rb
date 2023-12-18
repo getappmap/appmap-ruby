@@ -1,17 +1,16 @@
 # frozen_string_literal: true
 
-require 'appmap/util'
+require "appmap/util"
 
 module AppMap
   class Hook
     class << self
       def method_hash_key(cls, method)
-        [ cls, method.name ].hash
+        [cls, method.name].hash
       rescue TypeError => e
         warn "Error building hash key for #{cls}, #{method}: #{e}"
       end
     end
-    
 
     SIGNATURES = {}
     LOOKUP_SIGNATURE = lambda do |id|
@@ -32,19 +31,20 @@ module AppMap
       method
     end
 
-    RUBY_MAJOR_VERSION, RUBY_MINOR_VERSION, _ = RUBY_VERSION.split('.').map(&:to_i)
+    RUBY_MAJOR_VERSION, RUBY_MINOR_VERSION, _ = RUBY_VERSION.split(".").map(&:to_i)
 
     # Single hooked method.
     # Call #activate to override the original.
     class Method
-      attr_reader :hook_package, :hook_class, :hook_method, :parameters, :arity
+      attr_reader :hook_package, :hook_class, :hook_method, :record_around, :parameters, :arity
 
-      HOOK_DISABLE_KEY = 'AppMap::Hook.disable'
+      HOOK_DISABLE_KEY = "AppMap::Hook.disable"
 
-      def initialize(hook_package, hook_class, hook_method)
+      def initialize(hook_package, hook_class, hook_method, record_around: false)
         @hook_package = hook_package
         @hook_class = hook_class
         @hook_method = hook_method
+        @record_around = record_around
         @parameters = hook_method.parameters
         @arity = hook_method.arity
       end
@@ -52,11 +52,11 @@ module AppMap
       def activate
         if HookLog.enabled?
           msg = if method_display_name
-              "#{method_display_name}"
-            else
-              "#{hook_method.name} (class resolution deferred)"
-            end
-          HookLog.log "Hooking #{msg} at line #{(hook_method.source_location || []).join(':')}"
+            "#{method_display_name}"
+          else
+            "#{hook_method.name} (class resolution deferred)"
+          end
+          HookLog.log "Hooking #{msg} at line #{(hook_method.source_location || []).join(":")}"
         end
 
         hook_method_parameters = hook_method.parameters.dup.freeze
@@ -79,13 +79,13 @@ module AppMap
 
       def defining_class(hook_class)
         cls = if RUBY_MAJOR_VERSION == 2 && RUBY_MINOR_VERSION <= 5
-            hook_class
-              .ancestors
-              .select { |cls| cls.method_defined?(hook_method.name) }
-              .find { |cls| cls.instance_method(hook_method.name).owner == cls }
-          else
-            hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }
-          end
+          hook_class
+            .ancestors
+            .select { |cls| cls.method_defined?(hook_method.name) }
+            .find { |cls| cls.instance_method(hook_method.name).owner == cls }
+        else
+          hook_class.ancestors.find { |cls| cls.method_defined?(hook_method.name, false) }
+        end
 
         return cls if cls
 
@@ -93,7 +93,7 @@ module AppMap
       end
 
       def trace?
-        return false unless AppMap.tracing_enabled?
+        return false unless AppMap.tracing_enabled?(thread: Thread.current)
         return false if Thread.current[HOOK_DISABLE_KEY]
         return false if hook_package&.shallow? && AppMap.tracing.last_package_for_current_thread == hook_package
 
@@ -103,7 +103,7 @@ module AppMap
       def method_display_name
         return @method_display_name if @method_display_name
 
-        return @method_display_name = [defined_class, '#', hook_method.name].join if defined_class
+        return @method_display_name = [defined_class, "#", hook_method.name].join if defined_class
 
         "#{hook_method.name} (class resolution deferred)"
       end
@@ -114,7 +114,7 @@ module AppMap
 
       def after_hook(_receiver, call_event, elapsed_before, elapsed, after_start_time, return_value, exception)
         return_event = handle_return(call_event.id, elapsed, return_value, exception)
-        return_event.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime() - after_start_time)
+        return_event.elapsed_instrumentation = elapsed_before + (AppMap::Util.gettime - after_start_time)
         AppMap.tracing.record_event(return_event) if return_event
       end
 
@@ -141,20 +141,20 @@ module AppMap
   end
 end
 
-unless ENV['APPMAP_NO_PATCH_OBJECT'] == 'true'
+unless ENV["APPMAP_NO_PATCH_OBJECT"] == "true"
   class Object
     prepend AppMap::ObjectMethods
   end
 end
 
-unless ENV['APPMAP_NO_PATCH_MODULE'] == 'true'
+unless ENV["APPMAP_NO_PATCH_MODULE"] == "true"
   class Module
     prepend AppMap::ModuleMethods
   end
 end
 
-if RUBY_VERSION < '3'
-  require 'appmap/hook/method/ruby2'
+if RUBY_VERSION < "3"
+  require "appmap/hook/method/ruby2"
 else
-  require 'appmap/hook/method/ruby3'
+  require "appmap/hook/method/ruby3"
 end

@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
-require_relative '../appmap'
-require_relative './util'
-require_relative './detect_enabled'
-require 'fileutils'
+require_relative "../appmap"
+require_relative "util"
+require_relative "detect_enabled"
+require "fileutils"
 
 module AppMap
   module Cucumber
-    APPMAP_OUTPUT_DIR = 'tmp/appmap/cucumber'
+    APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "cucumber")
 
     ScenarioAttributes = Struct.new(:name, :feature, :feature_group)
 
     ProviderStruct = Struct.new(:scenario) do
       def feature_group
         # e.g. <Cucumber::Core::Ast::Location::Precise: cucumber/api/features/authenticate.feature:1>
-        feature_path.split('/').last.split('.')[0]
+        feature_path.split("/").last.split(".")[0]
       end
     end
 
@@ -34,7 +34,7 @@ module AppMap
     # versions 4.0 and later.
     class Provider4 < ProviderStruct
       def attributes
-        ScenarioAttributes.new(scenario.name, scenario.name.split(' ')[0..1].join(' '), feature_group)
+        ScenarioAttributes.new(scenario.name, scenario.name.split(" ")[0..1].join(" "), feature_group)
       end
 
       def feature_path
@@ -46,14 +46,14 @@ module AppMap
       def init
         AppMap::DetectEnabled.discourage_conflicting_recording_methods :cucumber
 
-        warn 'Configuring AppMap recorder for Cucumber'
+        warn "Configuring AppMap recorder for Cucumber"
 
         FileUtils.mkdir_p APPMAP_OUTPUT_DIR
       end
 
       def write_scenario(scenario, appmap)
-        appmap['metadata'] = update_metadata(scenario, appmap['metadata'])
-        scenario_filename = AppMap::Util.scenario_filename(appmap['metadata']['name'])
+        appmap["metadata"] = update_metadata(scenario, appmap["metadata"])
+        scenario_filename = AppMap::Util.scenario_filename(appmap["metadata"]["name"])
 
         AppMap::Util.write_appmap(File.join(APPMAP_OUTPUT_DIR, scenario_filename), appmap)
       end
@@ -69,11 +69,11 @@ module AppMap
       protected
 
       def cucumber_version
-        Gem.loaded_specs['cucumber']&.version&.to_s
+        Gem.loaded_specs["cucumber"]&.version&.to_s
       end
 
       def provider(scenario)
-        major, = cucumber_version.split('.').map(&:to_i)
+        major, = cucumber_version.split(".").map(&:to_i)
         if major < 4
           ProviderBefore4
         else
@@ -85,19 +85,19 @@ module AppMap
         attributes = provider(scenario).attributes
 
         base_metadata.tap do |m|
-          m['name'] = attributes.name
-          m['feature'] = attributes.feature
-          m['feature_group'] = attributes.feature_group
-          m['labels'] ||= []
-          m['labels'] += (scenario.tags&.map(&:name) || [])
-          m['frameworks'] ||= []
-          m['frameworks'] << {
-            'name' => 'cucumber',
-            'version' => Gem.loaded_specs['cucumber']&.version&.to_s
+          m["name"] = attributes.name
+          m["feature"] = attributes.feature
+          m["feature_group"] = attributes.feature_group
+          m["labels"] ||= []
+          m["labels"] += (scenario.tags&.map(&:name) || [])
+          m["frameworks"] ||= []
+          m["frameworks"] << {
+            "name" => "cucumber",
+            "version" => Gem.loaded_specs["cucumber"]&.version&.to_s
           }
-          m['recorder'] = {
-            'name' => 'cucumber',
-            'type' => 'tests'
+          m["recorder"] = {
+            "name" => "cucumber",
+            "type" => "tests"
           }
         end
       end
@@ -106,7 +106,7 @@ module AppMap
 end
 
 if AppMap::Cucumber.enabled?
-  require 'appmap'
+  require "appmap"
 
   AppMap::Cucumber.run
 end

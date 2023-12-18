@@ -1,7 +1,7 @@
 language: ruby
 dist: focal
 cache:
-- bundle
+- bundler
 - yarn
 
 # Travis pre-installs some Ruby versions. You can see the current list
@@ -10,7 +10,7 @@ cache:
 # that list to not install rvm and ruby each time.
 rvm:
 - 2.6.9
-- 2.7.6
+- 2.7.5
 - 3.0.1 # doesn't show in pre-installed list
 - 3.1.2
 - 3.2.0

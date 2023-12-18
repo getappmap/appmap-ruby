@@ -1,16 +1,23 @@
 # frozen_string_literal: true
 
-require 'appmap/util'
+require "appmap/util"
+require_relative "../record_around"
 
-def ruby2_keywords(*); end unless respond_to?(:ruby2_keywords, true)
+unless respond_to?(:ruby2_keywords, true)
+  def ruby2_keywords(*)
+  end
+end
 
 module AppMap
   class Hook
     # Delegation methods for Ruby 2.
     # cf. https://eregon.me/blog/2019/11/10/the-delegation-challenge-of-ruby27.html
     class Method
+      include RecordAround
+
       ruby2_keywords def call(receiver, *args, &block)
         call_event = false
+        record_around_before
         if trace?
           call_event, elapsed_before = with_disabled_hook { before_hook receiver, *args }
         end
@@ -22,7 +29,7 @@ module AppMap
       protected
 
       def before_hook(receiver, *args)
-        before_hook_start_time = AppMap::Util.gettime()
+        before_hook_start_time = AppMap::Util.gettime
         call_event = handle_call(receiver, args)
         if call_event
           AppMap.tracing.record_event \
@@ -31,10 +38,11 @@ module AppMap
             defined_class: defined_class,
             method: hook_method
         end
-        [call_event, AppMap::Util.gettime() - before_hook_start_time]
+        [call_event, AppMap::Util.gettime - before_hook_start_time]
       end
 
       ruby2_keywords def do_call(receiver, *args, &block)
+        # Do not allow this to change to bind_call, it's not defined for Ruby 2.
         hook_method.bind(receiver).call(*args, &block)
       end
 
@@ -42,16 +50,19 @@ module AppMap
       ruby2_keywords def trace_call(call_event, elapsed_before, receiver, *args, &block)
         return do_call(receiver, *args, &block) unless call_event
 
-        start_time = AppMap::Util.gettime()
+        start_time = AppMap::Util.gettime
         begin
           return_value = do_call(receiver, *args, &block)
         rescue # rubocop:disable Style/RescueStandardError
           exception = $ERROR_INFO
           raise
         ensure
-          after_start_time = AppMap::Util.gettime()
-          with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception } \
-            if call_event
+          after_start_time = AppMap::Util.gettime
+          begin
+            with_disabled_hook { after_hook receiver, call_event, elapsed_before, after_start_time - start_time, after_start_time, return_value, exception }
+          ensure
+            record_around_after
+          end
         end
       end
       # rubocop:enable Metrics/MethodLength

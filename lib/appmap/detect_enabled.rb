@@ -1,4 +1,4 @@
-require_relative './recording_methods'
+require_relative "recording_methods"
 
 module AppMap
   # Detects whether AppMap recording should be enabled. This test can be performed generally, or for
@@ -9,27 +9,29 @@ module AppMap
     @@detected_for_method = {}
 
     class << self
+      # rubocop:disable Metrics/MethodLength
       def discourage_conflicting_recording_methods(recording_method)
-        return if ENV['APPMAP_DISCOURAGE_CONFLICTING_RECORDING_METHODS'] == 'false'
+        return if ENV["APPMAP_DISCOURAGE_CONFLICTING_RECORDING_METHODS"] == "false"
 
         return unless enabled?(recording_method.to_sym) && enabled?(:requests)
 
         warn Util.color <<~MSG, :yellow
-AppMap recording is enabled for both 'requests' and '#{recording_method}'. This is not recommended
-because the recordings will contain duplicitive information, and in some case may conflict with each other.
+          AppMap recording is enabled for both 'requests' and '#{recording_method}'. This is not recommended
+          because the recordings will contain duplicitive information, and in some case may conflict with each other.
         MSG
 
-        return unless ENV['APPMAP'] == 'true'
+        return unless ENV["APPMAP"] == "true"
 
         warn Util.color <<~MSG, :yellow
-The environment contains APPMAP=true, which is not recommended in this application environment because
-it enables all recording methods. Consider letting AppMap detect the appropriate recording method,
-or explicitly enabling only the recording methods you want to use using environment variables like
-APPMAP_RECORD_REQUESTS, APPMAP_RECORD_RSPEC, etc.
-
-See https://appmap.io/docs/reference/appmap-ruby.html#advanced-runtime-options for more information.
+          The environment contains APPMAP=true, which is not recommended in this application environment because
+          it enables all recording methods. Consider letting AppMap detect the appropriate recording method,
+          or explicitly enabling only the recording methods you want to use using environment variables like
+          APPMAP_RECORD_REQUESTS, APPMAP_RECORD_RSPEC, etc.
+          
+          See https://appmap.io/docs/reference/appmap-ruby.html#advanced-runtime-options for more information.
         MSG
       end
+      # rubocop:enable Metrics/MethodLength
 
       def enabled?(recording_method)
         new(recording_method).enabled?
@@ -57,7 +59,7 @@ See https://appmap.io/docs/reference/appmap-ruby.html#advanced-runtime-options f
 
       if @recording_method && (enabled && enabled_by_app_env?)
         warn AppMap::Util.color(
-          "AppMap #{@recording_method.nil? ? '' : "#{@recording_method} "}recording is enabled because #{message}", :magenta
+          "AppMap #{@recording_method.nil? ? "" : "#{@recording_method} "}recording is enabled because #{message}", :magenta
         )
       end
 
@@ -77,63 +79,63 @@ See https://appmap.io/docs/reference/appmap-ruby.html#advanced-runtime-options f
       message, enabled = []
       message, enabled = method(detection_functions.shift).call while enabled.nil? && !detection_functions.empty?
 
-      return [ 'it is not enabled by any configuration or framework', false, false ] if enabled.nil?
+      return ["it is not enabled by any configuration or framework", false, false] if enabled.nil?
 
       _, enabled_by_env = enabled_by_app_env?
-      [ message, enabled, enabled_by_env ]
+      [message, enabled, enabled_by_env]
     end
 
     def enabled_by_testing?
       return unless %i[rspec minitest cucumber].member?(@recording_method)
 
-      [ "running tests with #{@recording_method}", true ]
+      ["running tests with #{@recording_method}", true]
     end
 
     def enabled_by_app_env?
       env_name, app_env = detect_app_env
-      return [ "#{env_name} is '#{app_env}'", true ] if @recording_method.nil? && %w[test development].member?(app_env)
+      return ["#{env_name} is '#{app_env}'", true] if @recording_method.nil? && %w[test development].member?(app_env)
 
       return unless %i[remote requests].member?(@recording_method)
-      return [ "#{env_name} is '#{app_env}'", true ] if app_env == 'development'
+      ["#{env_name} is '#{app_env}'", true] if app_env == "development"
     end
 
     def detect_app_env
       if rails_env
-        [ 'RAILS_ENV', rails_env ]
-      elsif ENV['APP_ENV']
-        [ 'APP_ENV', ENV['APP_ENV']]
+        ["RAILS_ENV", rails_env]
+      elsif ENV["APP_ENV"]
+        ["APP_ENV", ENV["APP_ENV"]]
       end
     end
 
     def globally_enabled?
       # Don't auto-enable request recording in the 'test' environment, because users probably don't want
       # AppMaps of both test cases and requests. Requests recording can always be enabled by APPMAP_RECORD_REQUESTS=true.
-      requests_recording_in_test = -> { [ :requests ].member?(@recording_method) && detect_app_env == 'test' }
-      [ 'APPMAP=true', true ] if ENV['APPMAP'] == 'true' && !requests_recording_in_test.call
+      requests_recording_in_test = -> { [:requests].member?(@recording_method) && detect_app_env == "test" }
+      ["APPMAP=true", true] if ENV["APPMAP"] == "true" && !requests_recording_in_test.call
     end
 
     def globally_disabled?
-      [ 'APPMAP=false', false ] if ENV['APPMAP'] == 'false'
+      ["APPMAP=false", false] if ENV["APPMAP"] == "false"
     end
 
     def recording_method_disabled?
       return false unless @recording_method
 
-      env_var = [ 'APPMAP', 'RECORD', @recording_method.upcase ].join('_')
-      [ "#{[ 'APPMAP', 'RECORD', @recording_method.upcase ].join('_')}=false", false ] if ENV[env_var] == 'false'
+      env_var = ["APPMAP", "RECORD", @recording_method.upcase].join("_")
+      ["#{["APPMAP", "RECORD", @recording_method.upcase].join("_")}=false", false] if ENV[env_var] == "false"
     end
 
     def recording_method_enabled?
       return false unless @recording_method
 
-      env_var = [ 'APPMAP', 'RECORD', @recording_method.upcase ].join('_')
-      [ "#{[ 'APPMAP', 'RECORD', @recording_method.upcase ].join('_')}=true", true ] if ENV[env_var] == 'true'
+      env_var = ["APPMAP", "RECORD", @recording_method.upcase].join("_")
+      ["#{["APPMAP", "RECORD", @recording_method.upcase].join("_")}=true", true] if ENV[env_var] == "true"
     end
 
     def rails_env
       return Rails.env if defined?(::Rails::Railtie)
 
-      ENV.fetch('RAILS_ENV', nil)
+      ENV.fetch("RAILS_ENV", nil)
     end
   end
 end
