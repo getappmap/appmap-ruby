@@ -22,6 +22,9 @@ addons:
     - postgresql-13
     - postgresql-client-13
 
+before_install:
+  - gem update --system
+
 before_deploy:
   - nvm install lts/*
   - |
