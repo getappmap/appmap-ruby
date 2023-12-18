@@ -1,3 +1,20 @@
+# [0.103.0](https://github.com/getappmap/appmap-ruby/compare/v0.102.2...v0.103.0) (2023-12-18)
+
+
+### Bug Fixes
+
+* Drop metadata timestamp ([950d8e6](https://github.com/getappmap/appmap-ruby/commit/950d8e63b87853d8d631f31e70dbf56b76166cec))
+
+
+### Features
+
+* APPMAP_OUTPUT_DIR ([82fe6d7](https://github.com/getappmap/appmap-ruby/commit/82fe6d7cc5b5672f45739ccaaf40b4b05c8fb074))
+* AppMap.record accepts thread ([9863cc5](https://github.com/getappmap/appmap-ruby/commit/9863cc557f3a32229a6068bcb05df095eaf107a2))
+* Drop extended git info ([1d26cb4](https://github.com/getappmap/appmap-ruby/commit/1d26cb451b8c1cee4cccfd1412ec9d8e8e88a3d9))
+* Ensure existence of the appmap output dir ([3019868](https://github.com/getappmap/appmap-ruby/commit/3019868ad9d08af581a33ce2ea8664e74255ca00))
+* Record around command-labeled methods ([9692e2b](https://github.com/getappmap/appmap-ruby/commit/9692e2b4fdf41bcb0bab96b0040cefe063c520ef))
+* Report metadata timestamp as iso8601 ([56f8a52](https://github.com/getappmap/appmap-ruby/commit/56f8a52b3c5b964e163c9ba6021cf0f44981369e))
+
 ## [0.102.2](https://github.com/getappmap/appmap-ruby/compare/v0.102.1...v0.102.2) (2023-11-07)
 
 
