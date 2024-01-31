@@ -85,14 +85,24 @@ module AppMap
 
         @recording_count += 1
 
-        @recordings_by_test[test.object_id] = Recording.new(test, name)
+        recording = if defined?(::Minitest::Tagz) && disabled_by_tag(test, name)
+            :disabled
+          else
+            Recording.new(test, name)
+          end
+        @recordings_by_test[test.object_id] = recording
+      end
+
+      def disabled_by_tag(test, name)
+        tags = ::Minitest::Tagz.tag_map[::Minitest::Tagz.serialize(test.class, name)]
+        tags && tags.include?("noappmap")
       end
 
       def end_test(test, exception:)
         recording = @recordings_by_test.delete(test.object_id)
         return warn "No recording found for #{test}" unless recording
 
-        recording.finish test.failures || [], exception
+        recording.finish test.failures || [], exception unless recording == :disabled
       end
 
       def config
