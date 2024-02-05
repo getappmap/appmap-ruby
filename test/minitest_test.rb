@@ -51,4 +51,16 @@ class MinitestTest < Minitest::Test
       assert_equal test_failure['location'], 'test/hello_failed_test.rb:10'
     end
   end
+
+  def test_noappmap_tag
+    perform_minitest_test 'hello_tagged' do
+      # Sanity check, make sure the test file was executed
+      appmap_file = 'tmp/appmap/minitest/Hello_tagged_untagged.appmap.json'
+      assert File.file?(appmap_file), 'appmap output file does not exist'
+
+      # The test tagged with :noappmap should not have generated an AppMap
+      appmap_file = 'tmp/appmap/minitest/Hello_tagged_tagged.appmap.json'
+      assert !File.file?(appmap_file), 'test tagged :noappmap generated an AppMap'
+    end
+  end
 end
