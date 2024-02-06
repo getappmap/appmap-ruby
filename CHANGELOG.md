@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/getappmap/appmap-ruby/compare/v0.103.0...v1.0.0) (2024-02-06)
+
+
+### Features
+
+* disable recording for tests tagged :noappmap ([0278ad9](https://github.com/getappmap/appmap-ruby/commit/0278ad982d72e8fc229f5f5c0ebf6fb607488018))
+
+
+### BREAKING CHANGES
+
+* bump to version 1.0.0
+
 # [0.103.0](https://github.com/getappmap/appmap-ruby/compare/v0.102.2...v0.103.0) (2023-12-18)
 
 
