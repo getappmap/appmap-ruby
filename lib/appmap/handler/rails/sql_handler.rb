@@ -132,16 +132,42 @@ module AppMap
             end
 
             def in_transaction?
-              ActiveRecord::Base.connection.open_transactions > 0
+              execute_in_context do
+                ActiveRecord::Base.connection_pool.with_connection do
+                  ActiveRecord::Base.connection.open_transactions > 0
+                end
+              end
             end
 
             def execute_query(sql)
-              ActiveRecord::Base.connection.execute(sql).to_a
+              execute_in_context do
+                ActiveRecord::Base.connection_pool.with_connection do
+                  ActiveRecord::Base.connection.execute(sql).to_a
+                end
+              end
+            end
+
+            private
+
+            # Assure Thread and Fiber safety for ActiveRecord queries.
+            # This is only necessary for applications using graphql-ruby.
+            # This change wraps the
+            def execute_in_context
+              if ActiveSupport::IsolatedExecutionState.context == :fiber
+                Fiber.new do
+                  ActiveRecord::Base.connection_pool.with_connection { yield }
+                end.resume
+              else
+                Thread.new do
+                  ActiveRecord::Base.connection_pool.with_connection { yield }
+                end
+              end
             end
           end
         end
 
-        def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
+        def call(_, started, finished, _, payload)
+          # (name, started, finished, unique_id, payload)
           return if AppMap.tracing.empty?
 
           return if Thread.current[AppMap::Hook::Method::HOOK_DISABLE_KEY] == true
