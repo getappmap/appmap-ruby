@@ -22,7 +22,6 @@ when 'activerecord'
   require 'database_cleaner-active_record' if Rails.env.test?
 end
 
-
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
@@ -30,7 +29,7 @@ Bundler.require(*Rails.groups)
 module App
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
+    config.load_defaults 7.1
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -44,5 +43,8 @@ module App
     Rails.autoloaders.main.ignore << File.join(Rails.root, 'app/models')
     config.autoload_paths << File.join(Rails.root, "app/models/#{orm_module}")
     config.middleware.insert_before(-1, Hijacker)
+
+    # Allows testing of fiber-based connection pools
+    config.active_support.isolation_level = ENV.fetch("ISOLATION_LEVEL", "thread").to_sym
   end
 end

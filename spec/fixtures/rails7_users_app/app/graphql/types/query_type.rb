@@ -21,9 +21,6 @@ module Types
     # POST /graphql?query={users{id,login}}
     field :users, [Types::UserType], null: true
     def users
-      # puts "------------------ local_counts stats ------------------"
-      # pp ActiveRecord::Base.connection_pool.my_stat
-      # puts "--------------------------------------------------------"
       User.all
     end
   end

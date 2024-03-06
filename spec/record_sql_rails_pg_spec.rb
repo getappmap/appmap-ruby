@@ -43,10 +43,28 @@ describe 'SQL events' do
 
       def run_specs(orm_module)
         @app.prepare_db
+
+        run_user_specs(orm_module)
+
+        if rails_version == 7
+          run_graphql_specs('thread')
+          run_graphql_specs('fiber')
+        end
+      end
+
+      def run_user_specs(orm_module)
         @app.run_cmd \
           './bin/rspec spec/controllers/users_controller_api_spec.rb:8 spec/controllers/users_controller_api_spec.rb:29',
           'ORM_MODULE' => orm_module,
           'RAILS_ENV' => 'test'
+      end
+
+      def run_graphql_specs(isolation_level = 'thread')
+        @app.run_cmd \
+          './bin/rspec spec/controllers/graphql_controller.rb',
+          'ORM_MODULE' => 'activerecord',
+          'RAILS_ENV' => 'test',
+          'ISOLATION_LEVEL' => isolation_level
       end
 
       let(:appmap_json) { File.join tmpdir, "appmap/rspec/#{test_case}.appmap.json" }
