@@ -132,35 +132,34 @@ module AppMap
             end
 
             def in_transaction?
-              execute_in_context do
-                ActiveRecord::Base.connection_pool.with_connection do
-                  ActiveRecord::Base.connection.open_transactions > 0
-                end
-              end
+              execute_in_context { ActiveRecord::Base.connection.open_transactions > 0 }
             end
 
             def execute_query(sql)
-              execute_in_context do
-                ActiveRecord::Base.connection_pool.with_connection do
-                  ActiveRecord::Base.connection.execute(sql).to_a
-                end
-              end
+              execute_in_context { ActiveRecord::Base.connection.execute(sql).to_a }
             end
 
             private
 
-            # Assure Thread and Fiber safety for ActiveRecord queries.
-            # This is only necessary for applications using graphql-ruby.
-            # This change wraps the
+            # Rails 7.1 introduced ActiveSupport::IsolatedExecutionState which resolves issues related to Enumerator and
+            # Threads. The `graphql-ruby` gem uses the `async` gem to run queries in a separate fiber. When the Fiber
+            # executing the ActiveRecord query within AppMap, the `.transfer` is not handed back to the root Fiber. This
+            # causes the Fiber to remain in a "suspended" state instead of "terminated". By wrapping the execution with
+            # a Fiber, the transfer is handled and terminated correctly.
+            #
+            # @see Demonstration of Fibers not being transfered to the root Fiber
+            #      https://replit.com/@coderberry/Fiber-Transfer-Example
+            #
+            # Also, when a connection is manually checked out, Rails does not automatically release the connection. By
+            # wrapping the execution with `ActiveRecord::Base.connection_pool.with_connection`, we ensure the connection
+            # is properly released.
             def execute_in_context
-              if ActiveSupport::IsolatedExecutionState.context == :fiber
+              if defined?(ActiveSupport::IsolatedExecutionState) && ActiveSupport::IsolatedExecutionState.context == :fiber
                 Fiber.new do
                   ActiveRecord::Base.connection_pool.with_connection { yield }
                 end.resume
               else
-                Thread.new do
-                  ActiveRecord::Base.connection_pool.with_connection { yield }
-                end
+                ActiveRecord::Base.connection_pool.with_connection { yield }
               end
             end
           end

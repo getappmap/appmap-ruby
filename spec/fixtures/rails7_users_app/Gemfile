@@ -6,6 +6,7 @@ gem "rails", "~> 7.0.2", ">= 7.0.2.3"
 gem 'sprockets-rails'
 gem 'haml-rails'
 gem "pg", "~> 1.1"
+gem "graphql", ">= 2"
 gem 'activerecord', require: false
 gem 'sequel', '>= 5.43.0', require: false
 gem 'sequel-rails', require: false

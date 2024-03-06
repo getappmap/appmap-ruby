@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  post "/graphql", to: "graphql#execute"
+
   namespace :api do
     resources :users, only: %i[index create]
   end
