@@ -1,63 +1,64 @@
-require 'rails_helper'
-require 'rack/test'
+require "rails_helper"
+require "rack/test"
 
 RSpec.describe GraphqlController, type: :controller do
-  describe 'POST /graphql' do
-    let(:user_logins) { %w[alice bob charles] }
+  let(:isolation_level) { nil }
 
-    before do
-      user_logins.each do |login|
-        user = User.create!(login: login)
-        puts "Created user: #{user.login} (#{user.id})"
+  before do
+    User.create(login: "alice")
+    User.create(login: "bob")
+    User.create(login: "charles")
+
+    @previous_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
+    ActiveSupport::IsolatedExecutionState.isolation_level = isolation_level
+  end
+
+  after do
+    ActiveSupport::IsolatedExecutionState.isolation_level = @previous_isolation_level
+  end
+
+  context "with thread-based connection pool" do
+    let(:isolation_level) { :thread }
+
+    it "returns the users without leaking the connection pool 6 times" do
+      6.times do |i|
+        post :execute, params: { query: "query { users { id, login } }" }
+        expect(response.status).to eq(200)
+
+        results = JSON.parse(response.body)
+
+        users = results["data"]["users"]
+        expect(users.map { |r| r["login"] }.sort).to eq(%w[alice bob charles])
+
+        stats = results["data"]["connection_pool_stats"].symbolize_keys
+        expect(stats[:size]).to eq(5)
+        expect(stats[:connections]).to eq(1)
+        expect(stats[:dead]).to eq(0)
+        expect(stats[:idle]).to eq(0)
+        expect(stats[:waiting]).to eq(0)
       end
     end
+  end
 
-    def assert_thread_based_connection_pool_stats(stats)
-      puts "STATS (thread): #{stats}"
+  context "with fiber-based connection pool" do
+    let(:isolation_level) { :fiber }
 
-      expect(stats[:size]).to eq(5)
-      expect(stats[:connections]).to eq(1)
-      expect(stats[:dead]).to eq(0)
-      expect(stats[:idle]).to eq(0)
-      expect(stats[:waiting]).to eq(0)
-    end
+    it "returns the users without leaking the connection pool 6 times" do
+      6.times do |i|
+        post :execute, params: { query: "query { users { id, login } }" }
+        expect(response.status).to eq(200)
 
-    def assert_fiber_based_connection_pool_stats(stats)
-      puts "STATS (fiber): #{stats}"
+        results = JSON.parse(response.body)
 
-      expect(stats[:size]).to eq(5)
-      expect(stats[:connections]).to eq(1)
-      expect(stats[:dead]).to eq(0)
-      expect(stats[:idle]).to eq(0)
-      expect(stats[:waiting]).to eq(0)
-    end
+        users = results["data"]["users"]
+        expect(users.map { |r| r["login"] }.sort).to eq(%w[alice bob charles])
 
-    # We want to test the connection pool stats after a handful of requests
-    # to verify that the connection pool is not leaking connections.
-    # @see https://github.com/getappmap/appmap-ruby/pull/353
-    context "when 10 requests are made" do
-
-      it 'returns the users and connection stat' do
-
-        6.times do # total connection pool size is 5
-          post :execute, params: { query: "query { users { id, login } }" }
-          expect(response.status).to eq(200)
-
-          results = JSON.parse(response.body)
-
-          puts "RESULTS: #{results}"
-
-          users = results["data"]["users"]
-          expect(users.map { |r| r["login"] }.sort).to eq(user_logins)
-
-          stats = results["data"]["connection_pool_stats"].symbolize_keys
-
-          if Rails.application.config.active_support.isolation_level == :fiber
-            assert_fiber_based_connection_pool_stats(stats)
-          else
-            assert_thread_based_connection_pool_stats(stats)
-          end
-        end
+        stats = results["data"]["connection_pool_stats"].symbolize_keys
+        expect(stats[:size]).to eq(5)
+        expect(stats[:connections]).to eq(1)
+        expect(stats[:dead]).to eq(0)
+        expect(stats[:idle]).to eq(0)
+        expect(stats[:waiting]).to eq(0)
       end
     end
   end

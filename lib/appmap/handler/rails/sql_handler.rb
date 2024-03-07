@@ -116,7 +116,7 @@ module AppMap
             def issue_warning
               db_type = database_type
               return if @@db_version_warning_issued[db_type]
-              warn("AppMap: Unable to determine database version for #{db_type.inspect}") 
+              warn("AppMap: Unable to determine database version for #{db_type.inspect}")
               @@db_version_warning_issued[db_type] = true
             end
             
@@ -132,11 +132,11 @@ module AppMap
             end
 
             def in_transaction?
-              execute_in_context { ActiveRecord::Base.connection.open_transactions > 0 }
+              ActiveRecord::Base.connection.open_transactions > 0
             end
 
             def execute_query(sql)
-              execute_in_context { ActiveRecord::Base.connection.execute(sql).to_a }
+              execute_in_context { |conn| conn.execute(sql).to_a }
             end
 
             private
@@ -155,18 +155,18 @@ module AppMap
             # is properly released.
             def execute_in_context
               if defined?(ActiveSupport::IsolatedExecutionState) && ActiveSupport::IsolatedExecutionState.context == :fiber
+                # This is not working
                 Fiber.new do
                   ActiveRecord::Base.connection_pool.with_connection { yield }
                 end.resume
               else
-                ActiveRecord::Base.connection_pool.with_connection { yield }
+                ActiveRecord::Base.connection_pool.with_connection { |conn| block.call(conn) }
               end
             end
           end
         end
 
-        def call(_, started, finished, _, payload)
-          # (name, started, finished, unique_id, payload)
+        def call(_, started, finished, _, payload) # (name, started, finished, unique_id, payload)
           return if AppMap.tracing.empty?
 
           return if Thread.current[AppMap::Hook::Method::HOOK_DISABLE_KEY] == true

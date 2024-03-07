@@ -16,12 +16,10 @@ class GraphqlController < ApplicationController
     }
     result = AppSchema.execute(query, variables: variables, context: context, operation_name: operation_name).to_h
 
-    # Append connection pool stats to result if the orm_module is ActiveRecord
+    # Append connection pool enhanced_stats to result if the orm_module is ActiveRecord
     # This data is used in spec/fixtures/rails7_users_app/spec/controllers/graphql_controller_spec.rb
     if defined?(ActiveRecord)
-      connection_pool_stats = ActiveRecord::Base.connection_pool.stat
-      puts "CONNECTION POOL STATS: #{connection_pool_stats}"
-      puts "RESULT: #{result}"
+      connection_pool_stats = ActiveRecord::Base.connection_pool.enhanced_stats
       result["data"]["connection_pool_stats"] = connection_pool_stats
     end
 

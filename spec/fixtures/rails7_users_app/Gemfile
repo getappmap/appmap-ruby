@@ -7,6 +7,7 @@ gem 'sprockets-rails'
 gem 'haml-rails'
 gem "pg", "~> 1.1"
 gem "graphql", ">= 2"
+gem "async"
 gem 'activerecord', require: false
 gem 'sequel', '>= 5.43.0', require: false
 gem 'sequel-rails', require: false
