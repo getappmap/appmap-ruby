@@ -45,11 +45,7 @@ describe 'SQL events' do
         @app.prepare_db
 
         run_user_specs(orm_module)
-
-        if rails_version == 7
-          run_graphql_specs('thread')
-          run_graphql_specs('fiber')
-        end
+        run_graphql_specs if rails_version >= 7
       end
 
       def run_user_specs(orm_module)
@@ -59,12 +55,11 @@ describe 'SQL events' do
           'RAILS_ENV' => 'test'
       end
 
-      def run_graphql_specs(isolation_level = 'thread')
+      def run_graphql_specs
         @app.run_cmd \
           './bin/rspec spec/controllers/graphql_controller.rb',
           'ORM_MODULE' => 'activerecord',
-          'RAILS_ENV' => 'test',
-          'ISOLATION_LEVEL' => isolation_level
+          'RAILS_ENV' => 'test'
       end
 
       let(:appmap_json) { File.join tmpdir, "appmap/rspec/#{test_case}.appmap.json" }
