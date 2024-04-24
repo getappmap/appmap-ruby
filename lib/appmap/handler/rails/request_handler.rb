@@ -4,6 +4,7 @@ require "appmap/event"
 require "appmap/hook"
 require "appmap/util"
 require "appmap/handler/rails/context"
+require "appmap/handler/rails/test_route"
 
 module AppMap
   module Handler
@@ -59,9 +60,12 @@ module AppMap
           def normalized_path(request, router = ::Rails.application.routes.router)
             # use a cloned environment because the router can modify it
             request = ActionDispatch::Request.new request.env.clone
+
             router.recognize request do |route, _|
               app = route.app
-              next unless app.matches? request
+
+              next unless Rails.test_route(app, request)
+
               return normalized_path request, app.rack_app.routes.router if app.engine?
 
               return AppMap::Util.swaggerize_path(route.path.spec.to_s)
