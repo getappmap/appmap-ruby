@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/getappmap/appmap-ruby/compare/v1.0.0...v1.0.1) (2024-04-30)
+
+
+### Bug Fixes
+
+* Handle exceptions in app.matches? ([0e9db0d](https://github.com/getappmap/appmap-ruby/commit/0e9db0dc6d574785865c8883a85f011635fa1495)), closes [#358](https://github.com/getappmap/appmap-ruby/issues/358)
+
 # [1.0.0](https://github.com/getappmap/appmap-ruby/compare/v0.103.0...v1.0.0) (2024-02-06)
 
 
