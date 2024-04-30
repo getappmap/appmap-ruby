@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require 'appmap/event'
-require 'appmap/hook'
-require 'appmap/util'
-require 'appmap/handler/rails/context'
+require "appmap/event"
+require "appmap/hook"
+require "appmap/util"
+require "appmap/handler/rails/context"
+require "appmap/handler/rails/test_route"
 
 module AppMap
   module Handler
     module Rails
-
       module RequestHandler
         class HTTPServerRequest < AppMap::Event::MethodEvent
           attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers, :call_elapsed_instrumentation
@@ -19,7 +19,7 @@ module AppMap
             self.request_method = request.request_method
             self.normalized_path_info = normalized_path(request)
             self.headers = AppMap::Util.select_rack_headers(request.env)
-            self.path_info = request.path_info.split('?')[0]
+            self.path_info = request.path_info.split("?")[0]
             # ActionDispatch::Http::ParameterFilter is deprecated
             parameter_filter_cls = \
               if defined?(ActiveSupport::ParameterFilter)
@@ -36,7 +36,7 @@ module AppMap
                 request_method: request_method,
                 path_info: path_info,
                 normalized_path_info: normalized_path_info,
-                headers: headers,
+                headers: headers
               }.compact
 
               unless Util.blank?(params)
@@ -46,7 +46,7 @@ module AppMap
                     name: key,
                     class: val.class.name,
                     value: self.class.display_string(val),
-                    object_id: val.__id__,
+                    object_id: val.__id__
                   }.tap do |message|
                     AppMap::Event::MethodEvent.add_schema message, val
                   end
@@ -60,9 +60,12 @@ module AppMap
           def normalized_path(request, router = ::Rails.application.routes.router)
             # use a cloned environment because the router can modify it
             request = ActionDispatch::Request.new request.env.clone
+
             router.recognize request do |route, _|
               app = route.app
-              next unless app.matches? request
+
+              next unless Rails.test_route(app, request)
+
               return normalized_path request, app.rack_app.routes.router if app.engine?
 
               return AppMap::Util.swaggerize_path(route.path.spec.to_s)
@@ -113,19 +116,19 @@ module AppMap
             req = receiver.request
             return unless Context.create req.env
 
-            before_hook_start_time = AppMap::Util.gettime()
+            before_hook_start_time = AppMap::Util.gettime
             call_event = HTTPServerRequest.new(req)
-            call_event.call_elapsed_instrumentation = (AppMap::Util.gettime() - before_hook_start_time)
+            call_event.call_elapsed_instrumentation = (AppMap::Util.gettime - before_hook_start_time)
             # http_server_request events are i/o and do not require a package name.
             AppMap.tracing.record_event call_event, defined_class: defined_class, method: hook_method
             call_event
           end
 
           def after_hook(receiver, call_event, elapsed, *)
-            after_hook_start_time = AppMap::Util.gettime()
+            after_hook_start_time = AppMap::Util.gettime
             return_event = HTTPServerResponse.build_from_invocation \
               call_event.id, Context.new.find_template_render_value, elapsed, receiver.response
-            return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + call_event.call_elapsed_instrumentation
+            return_event.elapsed_instrumentation = (AppMap::Util.gettime - after_hook_start_time) + call_event.call_elapsed_instrumentation
             call_event.call_elapsed_instrumentation = nil # to stay consistent with elapsed_instrumentation only being stored in return
             AppMap.tracing.record_event return_event
             Context.remove receiver.request.env
@@ -191,28 +194,28 @@ module AppMap
             @request_id = payload[:request].request_id
             @subscriber = self.class.instance_method(:after_hook).bind(self)
 
-            ActiveSupport::Notifications.subscribe 'process_action.action_controller', @subscriber
+            ActiveSupport::Notifications.subscribe "process_action.action_controller", @subscriber
             before_hook payload
           end
 
           def before_hook(payload)
-            before_hook_start_time = AppMap::Util.gettime()
+            before_hook_start_time = AppMap::Util.gettime
             @call_event = HTTPServerRequest.new payload[:request]
-            @call_event.call_elapsed_instrumentation = (AppMap::Util.gettime() - before_hook_start_time)
+            @call_event.call_elapsed_instrumentation = (AppMap::Util.gettime - before_hook_start_time)
             AppMap.tracing.record_event @call_event
           end
 
           def after_hook(_name, started, finished, _unique_id, payload)
             return unless @request_id == payload[:request].request_id
 
-            after_hook_start_time = AppMap::Util.gettime()
+            after_hook_start_time = AppMap::Util.gettime
             return_event = HTTPServerResponse.build_from_invocation(
               @call_event.id,
               Context.new.find_template_render_value,
               finished - started,
               payload[:response] || payload
             )
-            return_event.elapsed_instrumentation = (AppMap::Util.gettime() - after_hook_start_time) + @call_event.call_elapsed_instrumentation
+            return_event.elapsed_instrumentation = (AppMap::Util.gettime - after_hook_start_time) + @call_event.call_elapsed_instrumentation
 
             AppMap.tracing.record_event return_event
             Context.remove payload[:request].env
