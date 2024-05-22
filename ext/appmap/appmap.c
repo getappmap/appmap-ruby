@@ -1,6 +1,7 @@
 #include <ruby.h>
 #include <ruby/debug.h>
 #include <ruby/intern.h>
+#include <ruby/version.h>
 
 // Seems like CLASS_OR_MODULE_P should really be in a header file in
 // the ruby source -- it's in object.c and duplicated in eval.c.  In
@@ -17,7 +18,13 @@ static VALUE
 singleton_method_owner_name(VALUE klass, VALUE method)
 {
   VALUE owner = rb_funcall(method, rb_intern("owner"), 0);
+
+#if RUBY_API_VERSION_CODE < 30200
   VALUE attached = rb_ivar_get(owner, rb_intern("__attached__"));
+#else
+  VALUE attached = rb_class_attached_object(owner);
+#endif
+
   if (!CLASS_OR_MODULE_P(attached)) {
     attached = rb_funcall(attached, rb_intern("class"), 0);
   }
