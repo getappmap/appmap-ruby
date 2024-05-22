@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/getappmap/appmap-ruby/compare/v1.0.1...v1.1.0) (2024-05-22)
+
+
+### Features
+
+* support Ruby 3.3 ([e25847a](https://github.com/getappmap/appmap-ruby/commit/e25847a509098b39fbe40d28d637832c920e87c7))
+
 ## [1.0.1](https://github.com/getappmap/appmap-ruby/compare/v1.0.0...v1.0.1) (2024-04-30)
 
 
