@@ -66,7 +66,9 @@ module AppMap
 
               next unless Rails.test_route(app, request)
 
-              return normalized_path request, app.rack_app.routes.router if app.engine?
+              if app.respond_to?(:engine?) && app.engine?
+                return normalized_path request, app.rack_app.routes.router
+              end
 
               return AppMap::Util.swaggerize_path(route.path.spec.to_s)
             end
