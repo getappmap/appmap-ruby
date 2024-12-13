@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/getappmap/appmap-ruby/compare/v1.1.0...v1.1.1) (2024-12-13)
+
+
+### Bug Fixes
+
+* Handle rack apps without engine? method in Rails ([7e9d3a0](https://github.com/getappmap/appmap-ruby/commit/7e9d3a0e7c7aa6a9a8e8c7da04a97122b3952bce))
+
 # [1.1.0](https://github.com/getappmap/appmap-ruby/compare/v1.0.1...v1.1.0) (2024-05-22)
 
 
