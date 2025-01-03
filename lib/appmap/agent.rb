@@ -3,13 +3,14 @@ require_relative "hook"
 require_relative "config"
 require_relative "trace"
 require_relative "class_map"
+require_relative "detect_enabled"
 require_relative "metadata"
 require_relative "util"
 require_relative "open"
 
 # load extension
-require_relative "appmap"
-require_relative "detect_enabled"
+# note this cannot be require_relative because the extension might not be in the same directory
+require "appmap/appmap"
 
 module AppMap
   class << self
