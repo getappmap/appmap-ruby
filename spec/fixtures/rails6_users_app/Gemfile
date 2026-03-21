@@ -12,6 +12,9 @@ gem 'sequel', '>= 5.43.0', require: false
 gem 'sequel-rails', require: false
 gem 'sequel_secure_password', require: false
 
+# pin to avoid uninitialized constant ActiveSupport::LoggerThreadSafeLevel::Logger
+gem 'concurrent-ruby', '1.3.4'
+
 group :development, :test do
   gem 'appmap', path: '../../..'
   gem 'cucumber-rails', require: false
