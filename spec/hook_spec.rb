@@ -1079,15 +1079,6 @@ describe "AppMap class Hooking" do
   end
 
   describe "kwargs handling" do
-    if ruby_2?
-      # https://github.com/applandinc/appmap-ruby/issues/153
-      it "empty hash for **kwrest can be proxied as a regular function argument", github_issue: 153 do
-        invoke_test_file "spec/fixtures/hook/kwargs.rb" do
-          expect(Kwargs.has_kwrest_calls_no_kwargs(nil, {})).to eq({})
-        end
-      end
-    end
-
     if ruby_3_2_or_higher?
       # https://www.ruby-lang.org/en/news/2022/12/25/ruby-3-2-0-released/
       #
