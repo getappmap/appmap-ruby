@@ -11,7 +11,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14
+        image: postgres:16
         env:
           POSTGRES_USER: travis
           POSTGRES_HOST_AUTH_METHOD: trust
@@ -45,6 +45,11 @@ jobs:
         run: |
           gem install bundler-audit --no-document
           bundle audit check --update
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'yarn'
 
       - name: Install yarn dependencies
         run: yarn install
