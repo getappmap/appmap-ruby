@@ -35,11 +35,7 @@ describe 'SQL events' do
                             %(INSERT INTO "users" ("login") VALUES ($1) RETURNING "id")
                           end
 
-        expected_select = if rails_version >= 6
-                            %(SELECT * FROM "users")
-                          else
-                            %(SELECT "users".* FROM "users")
-                          end
+        expected_select = %(SELECT "users".* FROM "users")
 
         check_queries(
           'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user' => expected_insert,
@@ -49,6 +45,9 @@ describe 'SQL events' do
 
       def run_specs(orm_module)
         @app.prepare_db
+        # Reset data between ORM runs (Sequel doesn't use DatabaseCleaner's
+        # transaction strategy, so data from previous runs persists)
+        @app.run_cmd './bin/rake db:drop db:create db:schema:load', 'RAILS_ENV' => 'test'
         @app.run_cmd \
           './bin/rspec spec/controllers/users_controller_api_spec.rb:8 spec/controllers/users_controller_api_spec.rb:29',
           'ORM_MODULE' => orm_module,
