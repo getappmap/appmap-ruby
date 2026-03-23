@@ -41,6 +41,11 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      - name: Audit gem dependencies for vulnerabilities
+        run: |
+          gem install bundler-audit --no-document
+          bundle audit check --update
+
       - name: Install yarn dependencies
         run: yarn install
 
