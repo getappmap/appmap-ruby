@@ -1,6 +1,6 @@
 {
   "name": "appmap-ruby",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "AppMap client agent for Ruby",
   "directories": {
     "lib": "lib",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/applandinc/appmap-ruby.git"
+    "url": "git+https://github.com/getappmap/appmap-ruby.git"
   },
   "author": "kgilpin@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/applandinc/appmap-ruby/issues"
+    "url": "https://github.com/getappmap/appmap-ruby/issues"
   },
-  "homepage": "https://github.com/applandinc/appmap-ruby#readme",
+  "homepage": "https://github.com/getappmap/appmap-ruby#readme",
   "dependencies": {
     "@appland/appmap": "^3.18.3"
   }
