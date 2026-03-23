@@ -37,7 +37,9 @@ module AppMap
 
       def test_env
         # DISABLE_SPRING because it's likely to not have APPMAP=true
-        { 'RAILS_ENV' => 'test', 'APPMAP' => 'true', 'DISABLE_SPRING' => '1' }
+        ruby_bin = File.dirname(RbConfig.ruby)
+        path = [ruby_bin, ENV['PATH']].join(File::PATH_SEPARATOR)
+        { 'RAILS_ENV' => 'test', 'APPMAP' => 'true', 'DISABLE_SPRING' => '1', 'PATH' => path }
       end
 
       def simplify_path(file)

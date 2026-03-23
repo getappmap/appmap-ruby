@@ -1,6 +1,7 @@
 default: &default
   url: <%= ENV['DATABASE_URL'] %>
   adapter: postgresql
+  host: 127.0.0.1
   database: <%= ENV['TEST_DATABASE'] || 'appland-rails7-test' %>
 
 development:

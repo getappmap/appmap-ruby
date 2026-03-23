@@ -8,7 +8,7 @@ describe AppMap::Service::IntegrationTestPathFinder do
 
   describe '.count' do
     it 'counts existing paths' do
-      expect(subject.count_paths).to be(4)
+      expect(subject.count_paths).to be(5)
     end
   end
 
@@ -17,7 +17,7 @@ describe AppMap::Service::IntegrationTestPathFinder do
       expect(subject.find).to eq({
         rspec: %w[spec/controllers spec/requests],
         minitest: %w[test/controllers test/integration],
-        cucumber: []
+        cucumber: %w[features]
       })
     end
   end

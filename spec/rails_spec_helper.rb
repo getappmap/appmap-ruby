@@ -99,11 +99,15 @@ class TestRailsApp
   protected
 
   def run_process(method, cmd, env, options = {})
-    Bundler.with_clean_env do
-      method.call \
-        env.merge('TEST_DATABASE' => database_name),
-        cmd,
-        options.merge(chdir: fixture_dir)
+    Bundler.with_unbundled_env do
+      ruby_bin = File.dirname(RbConfig.ruby)
+      merged_env = env.merge(
+        'TEST_DATABASE' => database_name,
+        'BUNDLER_VERSION' => '2.5.22',
+        'PATH' => [ruby_bin, ENV['PATH']].join(File::PATH_SEPARATOR),
+        'APPMAP_INITIALIZE' => nil
+      )
+      method.call merged_env, cmd, options.merge(chdir: fixture_dir)
     end
   end
 end

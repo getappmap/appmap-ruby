@@ -14,13 +14,13 @@ module AppMap
         end
 
         def minitest_test_command(test_files)
-          "time bundle exec ruby -rminitest -Itest #{test_files}"
+          "bundle exec ruby -rminitest -Itest #{test_files}"
         end
 
         alias minitest_test_command_method minitest_test_command
 
         def rspec_test_command_method(test_files)
-          "time bundle exec rspec #{test_files}"
+          "bundle exec rspec #{test_files}"
         end
 
         def rspec_select_tests_method(test_files)
