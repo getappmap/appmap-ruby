@@ -47,7 +47,7 @@ module AppMap
         def parse_config
           return unless present?
 
-          @config_data ||= YAML.load_file(@config_file)
+          @config_data ||= YAML.safe_load_file(@config_file)
         rescue Psych::SyntaxError => e
           @violations << Violation.error(
             filename: @config_file,
