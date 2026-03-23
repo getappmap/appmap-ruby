@@ -29,15 +29,21 @@ describe 'SQL events' do
       context 'with ActiveRecord' do
         before(:context) { run_specs 'activerecord' }
 
-        expected_query = if rails_version == 7
-                           %(INSERT INTO "users" ("login", "password_digest") VALUES ($1, $2) RETURNING "id")
-                         else
-                           %(INSERT INTO "users" ("login") VALUES ($1) RETURNING "id")
-                         end
+        expected_insert = if rails_version == 7
+                            %(INSERT INTO "users" ("login", "password_digest") VALUES ($1, $2) RETURNING "id")
+                          else
+                            %(INSERT INTO "users" ("login") VALUES ($1) RETURNING "id")
+                          end
+
+        expected_select = if rails_version >= 6
+                            %(SELECT * FROM "users")
+                          else
+                            %(SELECT "users".* FROM "users")
+                          end
 
         check_queries(
-          'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user' => expected_query,
-          'Api_UsersController_GET_api_users_lists_the_users' => %(SELECT "users".* FROM "users")
+          'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user' => expected_insert,
+          'Api_UsersController_GET_api_users_lists_the_users' => expected_select
         )
       end
 
