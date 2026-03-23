@@ -40,7 +40,7 @@ module AppMap
           lambda do |env|
             [200, { 'Content-Type' => 'text/html' }, [page]]
           end,
-          :Port => 0
+          Port: 0
         ) do |server|
           @port = server.config[:Port]
         end
