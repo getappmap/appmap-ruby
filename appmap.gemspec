@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Kevin Gilpin"]
   spec.email = ["kgilpin@gmail.com"]
 
-  spec.required_ruby_version = ">= 2.6.0"
+  spec.required_ruby_version = ">= 3.0.0"
 
   spec.summary = "Record the operation of a Ruby program, using the AppLand 'AppMap' format."
   spec.homepage = AppMap::URL

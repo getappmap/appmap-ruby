@@ -14,11 +14,7 @@ describe "remote recording", order: :defined do
 
       before(:all) do
         rails_app_environment = {"ORM_MODULE" => "sequel", "APPMAP_RECORD_REQUESTS" => "false"}
-        command_options = if testing_ruby_2?
-          {}
-        else
-          {u: "puma"}
-        end
+        command_options = {u: "puma"}
 
         @service_port, @server = start_server(rails_app_environment: rails_app_environment, command_options: command_options)
       end

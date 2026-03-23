@@ -8,21 +8,8 @@ require 'spec_helper'
 require 'active_support'
 require 'active_support/core_ext'
 
-def testing_ruby_2?
-  RUBY_VERSION.split('.')[0].to_i == 2
-end
-
-# Rails5 doesn't work with Ruby 3.x, Rails 7 doesn't work with Ruby < 2.7.
 def default_rails_versions
-  if testing_ruby_2?
-    if Gem::Requirement.create('>= 2.7') =~ Gem::Version.new(RUBY_VERSION)
-      [ 5, 6, 7 ]
-    else
-      [ 5, 6 ]
-    end
-  else
-    [ 6, 7 ]
-  end
+  [6, 7]
 end
 
 def rails_versions
