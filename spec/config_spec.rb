@@ -1,30 +1,30 @@
 # frozen_string_literal: true
 
-require 'rails_spec_helper'
-require 'appmap/config'
+require "rails_spec_helper"
+require "appmap/config"
 
 describe AppMap::Config do
-  it 'loads as expected' do
+  it "loads as expected" do
     config_data = {
-      name: 'test',
+      name: "test",
       packages: [],
       functions: [
         {
-          name: 'pkg/cls#fn',
+          name: "pkg/cls#fn"
         },
         {
-          methods: ['cls#new_fn'],
-          path: 'pkg'
+          methods: ["cls#new_fn"],
+          path: "pkg"
         }
       ]
     }.deep_stringify_keys!
     config = AppMap::Config.load(config_data)
 
     expect(config.as_json.keys.sort).to eq(["appmap_dir", "builtin_hooks", "depends_config", "exclude", "functions", "gem_hooks", "hook_paths", "name", "packages", "swagger_config"])
-    expect(config.as_json['appmap_dir']).to eq('tmp/appmap')
-    expect(config.as_json['name']).to eq('test')
-    expect(config.as_json['packages']).to eq([])
-    expect(config.as_json['depends_config']).to eq({
+    expect(config.as_json["appmap_dir"]).to eq("tmp/appmap")
+    expect(config.as_json["name"]).to eq("test")
+    expect(config.as_json["packages"]).to eq([])
+    expect(config.as_json["depends_config"]).to eq({
       "base_dir" => nil,
       "base_branches" => [
         "remotes/origin/main",
@@ -45,17 +45,17 @@ describe AppMap::Config do
       "rspec_test_command_method" => "AppMap::Depends.rspec_test_command",
       "minitest_test_command_method" => "AppMap::Depends.minitest_test_command"
     })
-    expect(config.as_json['swagger_config']).to eq({
+    expect(config.as_json["swagger_config"]).to eq({
       "project_name" => nil,
       "project_version" => "1.0",
       "output_dir" => "swagger",
       "description" => "Generate Swagger from AppMaps"
     })
-    expect(config.as_json['hook_paths']).to eq([
+    expect(config.as_json["hook_paths"]).to eq([
       "pkg"
     ])
-    expect(config.as_json['exclude']).to eq([])
-    expect(config.as_json['functions'].map(&:deep_stringify_keys)).to eq([
+    expect(config.as_json["exclude"]).to eq([])
+    expect(config.as_json["functions"].map(&:deep_stringify_keys)).to eq([
       {
         "cls" => "cls",
         "target_methods" => {
@@ -75,16 +75,15 @@ describe AppMap::Config do
         }
       }
     ])
-    expect(config.as_json['builtin_hooks']).to have_key('JSON::Ext::Parser')
-    expect(config.as_json['builtin_hooks']['JSON::Ext::Parser'].map(&:deep_stringify_keys)).to eq([{
-        "package" => "json",
-        "method_names" => [
-          :parse
-        ]
-      }
-    ])
-    expect(config.as_json['gem_hooks']).to have_key('cls')
-    expect(config.as_json['gem_hooks']['cls'].map(&:deep_stringify_keys)).to eq([
+    expect(config.as_json["builtin_hooks"]).to have_key("JSON::Ext::Parser")
+    expect(config.as_json["builtin_hooks"]["JSON::Ext::Parser"].map(&:deep_stringify_keys)).to eq([{
+      "package" => "json",
+      "method_names" => [
+        :parse
+      ]
+    }])
+    expect(config.as_json["gem_hooks"]).to have_key("cls")
+    expect(config.as_json["gem_hooks"]["cls"].map(&:deep_stringify_keys)).to eq([
       {
         "package" => "pkg",
         "method_names" => [
@@ -98,8 +97,8 @@ describe AppMap::Config do
         ]
       }
     ])
-    expect(config.as_json['builtin_hooks']).to have_key('ActiveSupport::Callbacks::CallbackSequence')
-    expect(config.as_json['builtin_hooks']['ActiveSupport::Callbacks::CallbackSequence'].map(&:deep_stringify_keys)).to eq([
+    expect(config.as_json["builtin_hooks"]).to have_key("ActiveSupport::Callbacks::CallbackSequence")
+    expect(config.as_json["builtin_hooks"]["ActiveSupport::Callbacks::CallbackSequence"].map(&:deep_stringify_keys)).to eq([
       {
         "package" => "activesupport",
         "method_names" => [
@@ -120,48 +119,48 @@ describe AppMap::Config do
       let(:mock_rails) { double(logger: double(info: true)) }
 
       before do
-        stub_const('Rails', mock_rails)
+        stub_const("Rails", mock_rails)
       end
 
-      it 'does not return a truthy value on failure' do
-        result = AppMap::Config::Package.build_from_gem('some_missing_gem_name', optional: true)
+      it "does not return a truthy value on failure" do
+        result = AppMap::Config::Package.build_from_gem("some_missing_gem_name", optional: true)
         expect(result).to_not be_truthy
       end
     end
   end
 
-  context 'missing config file' do
-    before { FileUtils.mkdir_p 'tmp' }
+  context "missing config file" do
+    before { FileUtils.mkdir_p "tmp" }
     let(:warnings) { @warnings ||= [] }
     let(:warning) { warnings.join }
-    it 'prints a warning and uses a default config' do
+    it "prints a warning and uses a default config" do
       expect(AppMap::Config).to receive(:warn).at_least(1) { |msg| warnings << msg }
 
-      config = AppMap::Config.load_from_file 'no/such/file'
-      expect(config.to_h).to eq(YAML.load(<<~CONFIG))
-      :name: appmap-ruby
-      :packages:
-      - :name: lib
-        :path: lib
-        :handler_class: AppMap::Handler::FunctionHandler
-        :shallow: false
-      :functions: []
-      :exclude: []
+      config = AppMap::Config.load_from_file "no/such/file"
+      expect(config.to_h).to eq(YAML.safe_load(<<~CONFIG, permitted_classes: [Symbol]))
+        :name: appmap-ruby
+        :packages:
+        - :name: lib
+          :path: lib
+          :handler_class: AppMap::Handler::FunctionHandler
+          :shallow: false
+        :functions: []
+        :exclude: []
       CONFIG
-      expect(warning).to include('NOTICE: The AppMap config file no/such/file was not found!')
+      expect(warning).to include("NOTICE: The AppMap config file no/such/file was not found!")
     end
-    describe 'writeable dir' do
-      it 'saves the guessed config' do
+    describe "writeable dir" do
+      it "saves the guessed config" do
         expect(File).to receive(:write).with("tmp/appmap.yml", instance_of(String))
 
-        AppMap::Config.load_from_file 'tmp/appmap.yml'
+        AppMap::Config.load_from_file "tmp/appmap.yml"
       end
     end
-    describe 'non-writeable dir' do
-      it 'does not save the guessed config' do
+    describe "non-writeable dir" do
+      it "does not save the guessed config" do
         File.stub(:write).and_raise "Unexpected File.write"
 
-        config = AppMap::Config.load_from_file '/no/such/appmap.yml'
+        AppMap::Config.load_from_file "/no/such/appmap.yml"
       end
     end
   end

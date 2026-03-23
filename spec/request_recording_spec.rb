@@ -35,7 +35,7 @@ describe "request recording", order: :defined do
     # Every event should come from the same thread
     expect(appmap["events"].map { |evt| evt["thread_id"] }.uniq.length).to eq(1)
     # AppMap should contain only one request and response
-    expect(appmap["events"].select { |evt| evt["http_server_request"] }.length).to eq(1)
-    expect(appmap["events"].select { |evt| evt["http_server_response"] }.length).to eq(1)
+    expect(appmap["events"].count { |evt| evt["http_server_request"] }).to eq(1)
+    expect(appmap["events"].count { |evt| evt["http_server_response"] }).to eq(1)
   end
 end

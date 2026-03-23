@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'shellwords'
-require 'appmap/node_cli'
+require "shellwords"
+require "appmap/node_cli"
 
 module AppMap
   module Depends
@@ -13,10 +13,10 @@ module AppMap
       attr_accessor :field
 
       def initialize(verbose:, appmap_dir:)
-        super(verbose: verbose, appmap_dir: appmap_dir)
+        super
 
         @base_dir = nil
-        @field = 'source_location'
+        @field = "source_location"
       end
 
       # Returns the source_location field of every AppMap that is "out of date" with respect to one of the
@@ -25,15 +25,15 @@ module AppMap
         index_appmaps
 
         cmd = %w[depends]
-        cmd += [ '--field', field ] if field
-        cmd += [ '--appmap-dir', appmap_dir ] if appmap_dir
-        cmd += [ '--base-dir', base_dir ] if base_dir
+        cmd += ["--field", field] if field
+        cmd += ["--appmap-dir", appmap_dir] if appmap_dir
+        cmd += ["--base-dir", base_dir] if base_dir
 
         options = {}
         if modified_files
-          cmd << '--stdin-files'
+          cmd << "--stdin-files"
           options[:stdin_data] = modified_files.map(&:shellescape).join("\n")
-          warn "Checking modified files: #{modified_files.join(' ')}" if verbose
+          warn "Checking modified files: #{modified_files.join(" ")}" if verbose
         end
 
         stdout, = command cmd, options

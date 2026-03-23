@@ -12,7 +12,7 @@ module AppMap
   # be activated around each test.
   module Minitest
     APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "minitest")
-    LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
+    LOG = ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true"
 
     def self.metadata
       AppMap.detect_metadata
@@ -34,7 +34,7 @@ module AppMap
       def finish(failures, exception)
         failed = failures.any? || exception
         if AppMap::Minitest::LOG
-          warn "Finishing recording of #{failed ? "failed " : ""} test #{test.class}.#{test.name}"
+          warn "Finishing recording of #{"failed " if failed} test #{test.class}.#{test.name}"
         end
         warn "Exception: #{exception}" if exception && AppMap::Minitest::LOG
 
@@ -54,7 +54,7 @@ module AppMap
         class_map = AppMap.class_map(@trace.event_methods)
 
         feature_group = test.class.name.underscore.split("_")[0...-1].join("_").capitalize
-        feature_name = test.name.split("_")[1..-1].join(" ")
+        feature_name = test.name.split("_")[1..].join(" ")
         scenario_name = [feature_group, feature_name].join(" ")
 
         AppMap::Minitest.save name: scenario_name,
@@ -86,16 +86,16 @@ module AppMap
         @recording_count += 1
 
         recording = if defined?(::Minitest::Tagz) && disabled_by_tag(test, name)
-            :disabled
-          else
-            Recording.new(test, name)
-          end
+          :disabled
+        else
+          Recording.new(test, name)
+        end
         @recordings_by_test[test.object_id] = recording
       end
 
       def disabled_by_tag(test, name)
         tags = ::Minitest::Tagz.tag_map[::Minitest::Tagz.serialize(test.class, name)]
-        tags && tags.include?("noappmap")
+        tags&.include?("noappmap")
       end
 
       def end_test(test, exception:)

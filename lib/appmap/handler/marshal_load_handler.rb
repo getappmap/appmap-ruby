@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require 'appmap/handler/function_handler'
+require "appmap/handler/function_handler"
 
 module AppMap
   module Handler
     class MarshalLoadHandler < FunctionHandler
-      PARAMETERS= [
-        [ :req, :source ],
-        [ :rest ],
+      PARAMETERS = [
+        [:req, :source],
+        [:rest]
       ]
 
       def handle_call(receiver, args)

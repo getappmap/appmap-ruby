@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'yaml'
-require 'appmap/service/guesser'
+require "json"
+require "yaml"
+require "appmap/service/guesser"
 
 module AppMap
   module Command
@@ -12,10 +12,10 @@ module AppMap
       class Init < InitStruct
         def perform
           config = {
-            'name' => Service::Guesser.guess_name,
-            'packages' => Service::Guesser.guess_paths.map { |path| { 'path' => path } },
-            'language' => 'ruby',
-            'appmap_dir' => 'tmp/appmap'
+            "name" => Service::Guesser.guess_name,
+            "packages" => Service::Guesser.guess_paths.map { |path| {"path" => path} },
+            "language" => "ruby",
+            "appmap_dir" => "tmp/appmap"
           }
 
           result = {

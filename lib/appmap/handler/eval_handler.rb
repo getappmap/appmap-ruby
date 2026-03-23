@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/handler/function_handler'
+require "appmap/handler/function_handler"
 
 module AppMap
   module Handler
@@ -33,9 +33,9 @@ module AppMap
       #
       # To make eval easier to analyze, fake the hook_method parameters to better match
       # the documentation.
-      PARAMETERS= [
-        [ :req, :string ],
-        [ :rest ],
+      PARAMETERS = [
+        [:req, :string],
+        [:rest]
       ]
 
       # The depth of the frame we need to pluck out:
@@ -46,14 +46,14 @@ module AppMap
       # 5. the (intended) frame of the original eval that we hooked
       # Note it needs to be adjusted if this call sequence changes.
       FRAME_DEPTH = 5
-  
+
       def handle_call(receiver, args)
         AppMap::Event::MethodCall.build_from_invocation(defined_class, hook_method, receiver, args, parameters: PARAMETERS)
       end
 
       def do_call(receiver, src = nil, context = nil, *rest)
         context ||= AppMap.caller_binding FRAME_DEPTH
-        hook_method.bind(receiver).call(src, context, *rest)
+        hook_method.bind_call(receiver, src, context, *rest)
       end
     end
   end

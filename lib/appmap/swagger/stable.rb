@@ -10,15 +10,15 @@ module AppMap
       def perform
         clean_only = nil
         clean = lambda do |obj, properties = %w[description example]|
-          next obj.each(&clean_only.(properties)) if obj.is_a?(Array)
+          next obj.each(&clean_only.call(properties)) if obj.is_a?(Array)
           next unless obj.is_a?(Hash)
 
           properties.each { |property| obj.delete property }
 
           obj.each do |key, value|
             # Don't clean 'description' from within 'properties'
-            props = key == 'properties' ? %w[example] : properties
-            clean_only.(props).(value)
+            props = (key == "properties") ? %w[example] : properties
+            clean_only.call(props).call(value)
           end
 
           obj
@@ -26,11 +26,11 @@ module AppMap
 
         clean_only = lambda do |properties|
           lambda do |example|
-            clean.(example, properties)
+            clean.call(example, properties)
           end
         end
 
-        clean.(@swagger_yaml.deep_dup)
+        clean.call(@swagger_yaml.deep_dup)
       end
     end
   end

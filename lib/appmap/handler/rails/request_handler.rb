@@ -14,14 +14,14 @@ module AppMap
           attr_accessor :normalized_path_info, :request_method, :path_info, :params, :headers, :call_elapsed_instrumentation
 
           def initialize(request)
-            super AppMap::Event.next_id_counter, :call, Thread.current.object_id
+            super(AppMap::Event.next_id_counter, :call, Thread.current.object_id)
 
             self.request_method = request.request_method
             self.normalized_path_info = normalized_path(request)
             self.headers = AppMap::Util.select_rack_headers(request.env)
             self.path_info = request.path_info.split("?")[0]
             # ActionDispatch::Http::ParameterFilter is deprecated
-            parameter_filter_cls = \
+            parameter_filter_cls =
               if defined?(ActiveSupport::ParameterFilter)
                 ActiveSupport::ParameterFilter
               else

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'weakref'
-require_relative './value_inspector'
+require "weakref"
+require_relative "value_inspector"
 
 module AppMap
   module Event
@@ -39,14 +39,14 @@ module AppMap
           return nil if value.equal?(nil)
 
           # With setting APPMAP_PROFILE_DISPLAY_STRING, stringifying this class is shown to take 9 seconds(!) of a 17 second test run.
-          return nil if best_class_name(value) == 'ActiveSupport::Callbacks::Filters::Environment'
+          return nil if best_class_name(value) == "ActiveSupport::Callbacks::Filters::Environment"
 
-          if @times.nil? && ENV['APPMAP_PROFILE_DISPLAY_STRING'] == 'true'
-            @times = Hash.new {|memo,key| memo[key] = 0}
+          if @times.nil? && ENV["APPMAP_PROFILE_DISPLAY_STRING"] == "true"
+            @times = Hash.new { |memo, key| memo[key] = 0 }
             Thread.new do
               sleep 0.5
-              while true
-                warn @times.to_a.sort{|a,b| b[1] <=> a[1]}[0..9].join("\n")
+              loop do
+                warn @times.to_a.sort { |a, b| b[1] <=> a[1] }[0..9].join("\n")
                 sleep 3
               end
             end
@@ -73,44 +73,44 @@ module AppMap
         end
 
         def encode_display_string(value)
-          (value||'')[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+          (value || "")[0...MAX_STRING_LENGTH].encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
         end
 
         def custom_display_string(value)
           case value
           when NilClass, TrueClass, FalseClass, Numeric, Time, Date
-            [ value.to_s, true ]
+            [value.to_s, true]
           when Symbol
-            [ ":#{value}", true ]
+            [":#{value}", true]
           when String
-            result = value[0...MAX_STRING_LENGTH].encode('utf-8', invalid: :replace, undef: :replace, replace: '_')
+            result = value[0...MAX_STRING_LENGTH].encode("utf-8", invalid: :replace, undef: :replace, replace: "_")
             result << " (...#{value.length - MAX_STRING_LENGTH} more characters)" if value.length > MAX_STRING_LENGTH
-            [ result, true ]
+            [result, true]
           when Array
-            result = value[0...MAX_ARRAY_ENUMERATION].map{|v| display_string(v)}.join(', ')
+            result = value[0...MAX_ARRAY_ENUMERATION].map { |v| display_string(v) }.join(", ")
             result << " (...#{value.length - MAX_ARRAY_ENUMERATION} more items)" if value.length > MAX_ARRAY_ENUMERATION
-            [ [ '[', result, ']' ].join, true ]
+            [["[", result, "]"].join, true]
           when Hash
-            result = value.keys[0...MAX_HASH_ENUMERATION].map{|key| "#{display_string(key)}=>#{display_string(value[key])}"}.join(', ')
+            result = value.keys[0...MAX_HASH_ENUMERATION].map { |key| "#{display_string(key)}=>#{display_string(value[key])}" }.join(", ")
             result << " (...#{value.size - MAX_HASH_ENUMERATION} more entries)" if value.size > MAX_HASH_ENUMERATION
-            [ [ '{', result, '}' ].join, true ]
+            [["{", result, "}"].join, true]
           when File
-            [ "#{value.class}[path=#{value.path}]", true ]
+            ["#{value.class}[path=#{value.path}]", true]
           when Net::HTTP
-            [ "#{value.class}[#{value.address}:#{value.port}]", true ]
+            ["#{value.class}[#{value.address}:#{value.port}]", true]
           when Net::HTTPGenericRequest
-            [ "#{value.class}[#{value.method} #{value.path}]", true ]
+            ["#{value.class}[#{value.method} #{value.path}]", true]
           end
-        rescue StandardError
+        rescue
           nil
         end
 
         def default_display_string(value)
-          return nil if ENV['APPMAP_OBJECT_STRING'] == 'false'
+          return nil if ENV["APPMAP_OBJECT_STRING"] == "false"
 
           last_resort_string = lambda do
             warn "AppMap encountered an error inspecting a #{value.class.name}: #{$!.message}"
-            '*Error inspecting variable*'
+            "*Error inspecting variable*"
           end
 
           begin
@@ -128,10 +128,10 @@ module AppMap
           end
         end
       end
-      
+
       # An event may be partially constructed, and then completed at a later time. When the event
-      # is only partially constructed, it's not ready for serialization to the AppMap file. 
-      # 
+      # is only partially constructed, it's not ready for serialization to the AppMap file.
+      #
       # @return false until the event is fully constructed and available.
       def ready?
         true
@@ -164,11 +164,11 @@ module AppMap
           result.method_id = method.name.to_s
           if method.source_location
             path = method.source_location[0]
-            path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
+            path = path[Dir.pwd.length + 1..] if path.index(Dir.pwd) == 0
             result.path = path
             result.lineno = method.source_location[1]
           else
-            result.path = [ defined_class, result.static ? '.' : '#', method.name ].join
+            result.path = [defined_class, result.static ? "." : "#", method.name].join
           end
           @@method_metadata[method] = result
         end
@@ -177,7 +177,7 @@ module AppMap
 
         def build_from_invocation(defined_class, method, receiver, arguments, parameters: method.parameters, event: MethodCall.new)
           event ||= MethodCall.new
-          defined_class ||= 'Class'
+          defined_class ||= "Class"
 
           event.tap do
             metadata = method_metadata(defined_class, method, receiver)
@@ -190,22 +190,22 @@ module AppMap
 
             # Check if the method has key parameters. If there are any they'll always be last.
             # If yes, then extract it from arguments.
-            has_key = [[:dummy], *parameters].last.first.to_s.start_with?('key') && arguments[-1].is_a?(Hash)
+            has_key = [[:dummy], *parameters].last.first.to_s.start_with?("key") && arguments[-1].is_a?(Hash)
             kwargs = has_key && arguments[-1].dup || {}
 
             event.parameters = parameters.map.with_index do |method_param, idx|
               param_type, param_name = method_param
-              param_name ||= 'arg'
+              param_name ||= "arg"
               value = case param_type
-                when :keyrest
-                  kwargs
-                when /^key/
-                  kwargs.delete param_name
-                when :rest
-                  arguments[idx..(has_key ? -2 : -1)]
-                else
-                  arguments[idx]
-                end
+              when :keyrest
+                kwargs
+              when /^key/
+                kwargs.delete param_name
+              when :rest
+                arguments[idx..(has_key ? -2 : -1)]
+              else
+                arguments[idx]
+              end
               {
                 name: param_name,
                 class: best_class_name(value),
@@ -240,7 +240,7 @@ module AppMap
         end
       end
 
-      alias static? static
+      alias_method :static?, :static
     end
 
     class MethodReturnIgnoreValue < MethodEvent

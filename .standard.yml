@@ -1,1 +1,5 @@
 ruby_version: 3.0
+ignore:
+  - spec/fixtures/**/*
+  - test/fixtures/**/*
+  - examples/**/*

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'appmap'
-require 'json'
+require "appmap"
+require "json"
 
 tracer = AppMap.tracing.trace
 
@@ -14,15 +14,15 @@ at_exit do
 
   metadata = AppMap.detect_metadata
   metadata[:recorder] = {
-    name: 'record_process',
-    type: 'process'
+    name: "record_process",
+    type: "process"
   }
 
   appmap = {
-    'version' => AppMap::APPMAP_FORMAT_VERSION,
-    'metadata' => metadata,
-    'classMap' => AppMap.class_map(tracer.event_methods),
-    'events' => events
+    "version" => AppMap::APPMAP_FORMAT_VERSION,
+    "metadata" => metadata,
+    "classMap" => AppMap.class_map(tracer.event_methods),
+    "events" => events
   }
-  AppMap::Util.write_appmap('appmap.json', appmap)
+  AppMap::Util.write_appmap("appmap.json", appmap)
 end

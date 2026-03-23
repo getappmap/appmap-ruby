@@ -8,7 +8,7 @@ module AppMap
 
         class << self
           def error(message:, setting: nil, filename: nil, detailed_message: nil, help_urls: nil)
-            self.new(
+            new(
               level: :error,
               message: message,
               setting: setting,
@@ -19,7 +19,7 @@ module AppMap
           end
 
           def warning(message:, setting: nil, filename: nil, detailed_message: nil, help_urls: nil)
-            self.new(
+            new(
               level: :warning,
               message: message,
               setting: setting,
@@ -41,7 +41,7 @@ module AppMap
 
         def to_h
           instance_variables.each_with_object({}) do |var, hash|
-            hash[var.to_s.delete("@")] = self.instance_variable_get(var)
+            hash[var.to_s.delete("@")] = instance_variable_get(var)
           end.compact
         end
 

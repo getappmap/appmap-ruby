@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'yaml'
-require 'appmap/service/guesser'
+require "yaml"
+require "appmap/service/guesser"
 
 module AppMap
   module Command
@@ -15,10 +15,10 @@ module AppMap
           raise FileExistsError unless overwrite || !File.exist?(config_file)
 
           config = {
-            'name' => Service::Guesser.guess_name,
-            'packages' => Service::Guesser.guess_paths.map { |path| { 'path' => path } },
-            'language' => 'ruby',
-            'appmap_dir' => 'tmp/appmap'
+            "name" => Service::Guesser.guess_name,
+            "packages" => Service::Guesser.guess_paths.map { |path| {"path" => path} },
+            "language" => "ruby",
+            "appmap_dir" => "tmp/appmap"
           }
 
           File.write(config_file, YAML.dump(config))

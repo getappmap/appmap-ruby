@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require_relative '../lib/appmap/value_inspector'
+require "spec_helper"
+require_relative "../lib/appmap/value_inspector"
 
-describe 'Schema example' do
+describe "Schema example" do
   let(:parent_id) { nil }
   let(:exception) { nil }
   let(:max_depth) { nil }
@@ -13,43 +13,43 @@ describe 'Schema example' do
     AppMap::ValueInspector.detect_schema value, **options
   }
 
-  describe 'Hash value' do
-    let(:value) { { id: 1, contents: 'some text' } }
-    it 'is a one level schema' do
+  describe "Hash value" do
+    let(:value) { {id: 1, contents: "some text"} }
+    it "is a one level schema" do
       expect(schema).to match(hash_including(
         properties: [
-          { name: :id, class: 'Integer' },
-          { name: :contents, class: 'String' }
+          {name: :id, class: "Integer"},
+          {name: :contents, class: "String"}
         ]
       ))
     end
   end
 
-  describe 'nested Hash value' do
-    let(:value) { { page: { page_number: 1, page_size: 20, total: 2383 } } }
-    it 'is a two level schema' do
+  describe "nested Hash value" do
+    let(:value) { {page: {page_number: 1, page_size: 20, total: 2383}} }
+    it "is a two level schema" do
       expect(schema).to match(hash_including(
           properties: [
             {
               name: :page,
-              class: 'Hash',
+              class: "Hash",
               properties: [
-                { name: :page_number, class: 'Integer' },
-                { name: :page_size, class: 'Integer' },
-                { name: :total, class: 'Integer' }
+                {name: :page_number, class: "Integer"},
+                {name: :page_size, class: "Integer"},
+                {name: :total, class: "Integer"}
               ]
             }
           ]
         ))
     end
-    describe 'max depth' do
+    describe "max depth" do
       let(:max_depth) { 1 }
-      it 'respects max depth for dicts' do
+      it "respects max depth for dicts" do
         expect(schema).to match(hash_including(
             properties: [
               {
                 name: :page,
-                class: 'Hash'
+                class: "Hash"
               }
             ]
           ))
@@ -57,45 +57,45 @@ describe 'Schema example' do
     end
   end
 
-  describe 'Arrays' do
-    describe 'of Hashes' do
-      let(:value) { [ { id: 1, contents: 'some text' }, { id: 2 } ] }
-      it 'is an array containing the schema' do
+  describe "Arrays" do
+    describe "of Hashes" do
+      let(:value) { [{id: 1, contents: "some text"}, {id: 2}] }
+      it "is an array containing the schema" do
         expect(schema).to match(
           hash_including(
-            class: 'Array',
+            class: "Array",
             items: [
               {
-                class: 'Hash',
+                class: "Hash",
                 properties: [
-                  { name: :id, class: 'Integer' },
-                  { name: :contents, class: 'String' }
+                  {name: :id, class: "Integer"},
+                  {name: :contents, class: "String"}
                 ]
               },
               {
-                class: 'Hash',
-                properties: [ { name: :id, class: 'Integer' } ]
+                class: "Hash",
+                properties: [{name: :id, class: "Integer"}]
               }
             ]
           )
         )
       end
     end
-    describe 'of Arrays' do
-      let(:value) { [[['foo']]] }
+    describe "of Arrays" do
+      let(:value) { [[["foo"]]] }
       let(:max_depth) { 1 }
-      it 'is an array containing the schema' do
+      it "is an array containing the schema" do
         expect(schema).to match(
-          class: 'Array',
+          class: "Array",
           items: [
             {
-              class: 'Array',
+              class: "Array",
               items: [
                 {
-                  class: 'Array',
+                  class: "Array",
                   items: [
                     {
-                      class: 'String'
+                      class: "String"
                     }
                   ]
                 }

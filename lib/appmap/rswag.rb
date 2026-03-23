@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap'
+require "appmap"
 
 module AppMap
   module Rswag
@@ -11,12 +11,12 @@ module AppMap
 
       appmap = AppMap.record(&block)
 
-      events = appmap['events']
-      class_map = appmap['classMap']
+      events = appmap["events"]
+      class_map = appmap["classMap"]
 
       exception = (events.last || {})[:exception]
       failed = true if exception
-      warn "Finishing recording of #{failed ? 'failed ' : ''} RSwag test #{description}" if AppMap::RSpec::LOG
+      warn "Finishing recording of #{"failed " if failed} RSwag test #{description}" if AppMap::RSpec::LOG
       warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
 
       if failed
@@ -25,20 +25,20 @@ module AppMap
       end
 
       AppMap::RSpec.save name: description,
-                         class_map: class_map,
-                         source_location: source_location,
-                         test_status: exception ? 'failed' : 'succeeded',
-                         test_failure: test_failure,
-                         exception: exception,
-                         events: events,
-                         frameworks: [
-                           { name: 'rswag',
-                             version: Gem.loaded_specs['rswag-specs']&.version&.to_s }
-                         ],
-                         recorder: {
-                           name: 'rswag',
-                           type: 'tests'
-                         }
+        class_map: class_map,
+        source_location: source_location,
+        test_status: exception ? "failed" : "succeeded",
+        test_failure: test_failure,
+        exception: exception,
+        events: events,
+        frameworks: [
+          {name: "rswag",
+           version: Gem.loaded_specs["rswag-specs"]&.version&.to_s}
+        ],
+        recorder: {
+          name: "rswag",
+          type: "tests"
+        }
     end
 
     class << self
@@ -49,14 +49,14 @@ module AppMap
   end
 
   if Rswag.enabled?
-    require 'rswag'
-    require 'rswag/specs'
-    require 'appmap/rspec'
+    require "rswag"
+    require "rswag/specs"
+    require "appmap/rspec"
 
     module ::Rswag
       module Specs
         module ExampleHelpers
-          alias submit_request_without_appmap submit_request
+          alias_method :submit_request_without_appmap, :submit_request
 
           def submit_request(metadata)
             AppMap::Rswag.record(metadata) do

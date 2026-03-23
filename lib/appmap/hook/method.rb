@@ -52,7 +52,7 @@ module AppMap
       def activate
         if HookLog.enabled?
           msg = if method_display_name
-            "#{method_display_name}"
+            method_display_name.to_s
           else
             "#{hook_method.name} (class resolution deferred)"
           end
@@ -69,9 +69,7 @@ module AppMap
           hook_class.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
         else
           cls = defining_class(hook_class)
-          if cls
-            cls.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
-          end
+          cls&.define_method_with_arity(hook_method.name, hook_method.arity, hook_method_def)
         end
       end
 

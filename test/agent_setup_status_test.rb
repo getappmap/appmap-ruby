@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'test_helper'
+require "test_helper"
 
 class AgentSetupInitTest < Minitest::Test
   def test_status_gem
@@ -11,13 +11,13 @@ class AgentSetupInitTest < Minitest::Test
       test_commands: [],
       properties: {
         config: {
-          app: 'AppMap Rubygem',
+          app: "AppMap Rubygem",
           present: true,
           valid: true
         },
         project: {
           agentVersion: AppMap::VERSION,
-          language: 'ruby',
+          language: "ruby",
           remoteRecordingCapable: false,
           integrationTests: false
         }
@@ -34,37 +34,37 @@ class AgentSetupInitTest < Minitest::Test
         {
           framework: :rspec,
           command: {
-            program: 'bundle',
+            program: "bundle",
             args: %w[exec rspec ./spec/controllers ./spec/requests],
-            environment: { }
+            environment: {}
           }
         },
         {
           framework: :minitest,
           command: {
-            program: 'bundle',
+            program: "bundle",
             args: %w[exec ruby ./test/controllers],
-            environment: { }
+            environment: {}
           }
         },
         {
           framework: :minitest,
           command: {
-            program: 'bundle',
+            program: "bundle",
             args: %w[exec ruby ./test/integration],
-            environment: { }
+            environment: {}
           }
         }
       ],
       properties: {
         config: {
-          app: 'rails6_users_app',
+          app: "rails6_users_app",
           present: true,
           valid: false
         },
         project: {
           agentVersion: AppMap::VERSION,
-          language: 'ruby',
+          language: "ruby",
           remoteRecordingCapable: false,
           integrationTests: true
         }

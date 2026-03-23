@@ -6,11 +6,11 @@ module AppMap
   module Depends
     class << self
       def select_rspec_tests(test_files)
-        select_tests_by_directory(test_files, 'spec')
+        select_tests_by_directory(test_files, "spec")
       end
 
       def select_minitest_tests(test_files)
-        select_tests_by_directory(test_files, 'test')
+        select_tests_by_directory(test_files, "test")
       end
 
       def rspec_test_command(test_files)
@@ -25,25 +25,25 @@ module AppMap
         test_files
           .map(&method(:simplify_path))
           .uniq
-          .select { |path| path.split('/').first == dir }
+          .select { |path| path.split("/").first == dir }
       end
 
       def normalize_test_files(test_files)
         test_files
           .map(&method(:simplify_path))
           .uniq
-          .map(&:shellescape).join(' ')
+          .map(&:shellescape).join(" ")
       end
 
       def test_env
         # DISABLE_SPRING because it's likely to not have APPMAP=true
         ruby_bin = File.dirname(RbConfig.ruby)
-        path = [ruby_bin, ENV['PATH']].join(File::PATH_SEPARATOR)
-        { 'RAILS_ENV' => 'test', 'APPMAP' => 'true', 'DISABLE_SPRING' => '1', 'PATH' => path }
+        path = [ruby_bin, ENV["PATH"]].join(File::PATH_SEPARATOR)
+        {"RAILS_ENV" => "test", "APPMAP" => "true", "DISABLE_SPRING" => "1", "PATH" => path}
       end
 
       def simplify_path(file)
-        file.index(Dir.pwd) == 0 ? file[Dir.pwd.length+1..-1] : file
+        (file.index(Dir.pwd) == 0) ? file[Dir.pwd.length + 1..] : file
       end
     end
 
@@ -86,7 +86,7 @@ module AppMap
 
       def lookup_method(setting_name, &block)
         method_name = AppMap.configuration.depends_config.send(setting_name)
-        method_tokens = method_name.split(/\:\:|\./)
+        method_tokens = method_name.split(/::|\./)
         cls = Object
         while method_tokens.size > 1
           cls = cls.const_get(method_tokens.shift)
@@ -95,13 +95,13 @@ module AppMap
       end
 
       def run_tests(select_tests_fn, env_fn, test_command_fn)
-        test_files = select_tests_fn.(@test_files)
+        test_files = select_tests_fn.call(@test_files)
         return if test_files.empty?
 
         test_files = Depends.normalize_test_files(test_files)
-        command = test_command_fn.(test_files)
-        succeeded = system(env_fn.(), command)
-        raise %Q|Command failed: #{command}| unless succeeded
+        command = test_command_fn.call(test_files)
+        succeeded = system(env_fn.call, command)
+        raise %(Command failed: #{command}) unless succeeded
       end
     end
   end

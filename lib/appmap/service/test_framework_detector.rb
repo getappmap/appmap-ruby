@@ -5,15 +5,15 @@ module AppMap
     class TestFrameworkDetector
       class << self
         def rspec_present?
-          gem_available?('rspec-core')
+          gem_available?("rspec-core")
         end
 
         def minitest_present?
-          gem_available?('minitest')
+          gem_available?("minitest")
         end
 
         def cucumber_present?
-          gem_available?('cucumber')
+          gem_available?("cucumber")
         end
 
         private

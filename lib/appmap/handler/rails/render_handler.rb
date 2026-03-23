@@ -1,4 +1,4 @@
-require 'appmap/handler/function_handler'
+require "appmap/handler/function_handler"
 
 module AppMap
   module Handler
@@ -17,7 +17,11 @@ module AppMap
 
         def handle_return(call_event_id, elapsed, return_value, exception)
           if Thread.current[TEMPLATE_RENDER_FORMAT] == :json
-            Thread.current[TEMPLATE_RENDER_VALUE] = JSON.parse(return_value) rescue nil
+            Thread.current[TEMPLATE_RENDER_VALUE] = begin
+              JSON.parse(return_value)
+            rescue
+              nil
+            end
           end
           Thread.current[TEMPLATE_RENDER_FORMAT] = nil
 

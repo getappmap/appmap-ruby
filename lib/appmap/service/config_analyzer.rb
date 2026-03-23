@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/service/validator/config_validator'
+require "appmap/service/validator/config_validator"
 
 module AppMap
   module Service
@@ -12,7 +12,7 @@ module AppMap
       end
 
       def app_name
-        config_validator.config.to_h['name'] if present?
+        config_validator.config.to_h["name"] if present?
       end
 
       def present?

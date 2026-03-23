@@ -4,7 +4,7 @@ module AppMap
     attr_reader :command, :msg
 
     def initialize(command, msg = nil)
-      super [ "Command failed: #{command}", msg ].compact.join('; ')
+      super(["Command failed: #{command}", msg].compact.join("; "))
 
       @command = command
       @msg = msg

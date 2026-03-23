@@ -43,7 +43,7 @@ module AppMap
 
       ruby2_keywords def do_call(receiver, *args, &block)
         # Do not allow this to change to bind_call, it's not defined for Ruby 2.
-        hook_method.bind(receiver).call(*args, &block)
+        hook_method.bind_call(receiver, *args, &block)
       end
 
       # rubocop:disable Metrics/MethodLength

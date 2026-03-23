@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'test_helper'
+require "test_helper"
 
 class AgentSetupInitTest < Minitest::Test
-  CONFIG_FILENAME = '123.yml'
+  CONFIG_FILENAME = "123.yml"
   EXPECTED_CONFIG_CONTENT = %(---
 name: appmap-ruby
 packages:
@@ -18,7 +18,7 @@ appmap_dir: tmp/appmap
     assert_equal 0, $CHILD_STATUS.exitstatus
     expected = JSON.pretty_generate({
       configuration: {
-        filename: 'appmap.yml',
+        filename: "appmap.yml",
         contents: EXPECTED_CONFIG_CONTENT
       }
     })

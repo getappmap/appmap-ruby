@@ -1,9 +1,9 @@
-require 'rake'
-require 'yaml'
-require 'fileutils'
-require 'appmap/node_cli'
-require 'appmap/swagger/markdown_descriptions'
-require 'appmap/swagger/stable'
+require "rake"
+require "yaml"
+require "fileutils"
+require "appmap/node_cli"
+require "appmap/swagger/markdown_descriptions"
+require "appmap/swagger/stable"
 
 module AppMap
   module Swagger
@@ -20,25 +20,25 @@ module AppMap
           appmap_js = AppMap::NodeCLI.new(verbose: Rake.verbose == true)
 
           FileUtils.mkdir_p configuration.swagger_config.output_dir
-          swagger_template = Tempfile.new('swagger_template')
+          swagger_template = Tempfile.new("swagger_template")
 
           swagger_template.write(configuration.swagger_config.template.to_yaml)
           swagger_template.close
 
           cmd = %w[swagger]
-          cmd << '--openapi-template' << swagger_template.path
+          cmd << "--openapi-template" << swagger_template.path
 
           swagger_raw, = appmap_js.command(cmd)
 
-          gen_swagger = YAML.load(swagger_raw)
+          gen_swagger = YAML.safe_load(swagger_raw)
           gen_swagger_full = AppMap::Swagger::MarkdownDescriptions.new(gen_swagger).perform
           gen_swagger_stable = AppMap::Swagger::Stable.new(gen_swagger).perform
-  
+
           swagger = configuration.swagger_config.template.merge(gen_swagger_full)
-          File.write File.join(configuration.swagger_config.output_dir, 'openapi.yaml'), YAML.dump(swagger)
-  
+          File.write File.join(configuration.swagger_config.output_dir, "openapi.yaml"), YAML.dump(swagger)
+
           swagger = configuration.swagger_config.template.merge(gen_swagger_stable)
-          File.write File.join(configuration.swagger_config.output_dir, 'openapi_stable.yaml'), YAML.dump(swagger)  
+          File.write File.join(configuration.swagger_config.output_dir, "openapi_stable.yaml"), YAML.dump(swagger)
         end
 
         desc configuration.swagger_config.description

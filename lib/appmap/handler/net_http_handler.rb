@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'appmap/event'
-require 'appmap/hook/method'
-require 'appmap/util'
-require 'rack'
+require "appmap/event"
+require "appmap/hook/method"
+require "appmap/util"
+require "rack"
 
 module AppMap
   module Handler
@@ -11,12 +11,12 @@ module AppMap
       attr_accessor :request_method, :url, :params, :headers
 
       def initialize(http, request)
-        super AppMap::Event.next_id_counter, :call, Thread.current.object_id
+        super(AppMap::Event.next_id_counter, :call, Thread.current.object_id)
 
-        path, query = request.path.split('?')
-        query ||= ''
+        path, query = request.path.split("?")
+        query ||= ""
 
-        protocol = http.use_ssl? ? 'https' : 'http'
+        protocol = http.use_ssl? ? "https" : "http"
         port = if http.use_ssl? && http.port == 443
           nil
         elsif !http.use_ssl? && http.port == 80
@@ -25,7 +25,7 @@ module AppMap
           ":#{http.port}"
         end
 
-        url = [ protocol, '://', http.address, port, path ].compact.join
+        url = [protocol, "://", http.address, port, path].compact.join
 
         self.request_method = request.method
         self.url = url
@@ -48,7 +48,7 @@ module AppMap
                 name: key,
                 class: val.class.name,
                 value: self.class.display_string(val),
-                object_id: val.__id__,
+                object_id: val.__id__
               }
             end
           end
@@ -60,7 +60,7 @@ module AppMap
       attr_accessor :status, :headers
 
       def initialize(response, parent_id, elapsed)
-        super AppMap::Event.next_id_counter, :return, Thread.current.object_id
+        super(AppMap::Event.next_id_counter, :return, Thread.current.object_id)
 
         if response
           self.status = response.code.to_i
@@ -88,7 +88,7 @@ module AppMap
       def self.copy_headers(obj)
         {}.tap do |headers|
           obj.each_header do |key, value|
-            key = key.split('-').map(&:capitalize).join('-')
+            key = key.split("-").map(&:capitalize).join("-")
             headers[key] = value
           end
         end

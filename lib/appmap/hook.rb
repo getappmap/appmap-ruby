@@ -78,17 +78,17 @@ module AppMap
             .keys
             .select { |key| !@slow_packages.member?(key) }
             .each do |key|
-            elapsed = @module_load_times[key]
-            if elapsed >= SLOW_PACKAGE_THRESHOLD
-              @slow_packages.add(key)
-              warn "AppMap: Package #{key} took #{@module_load_times[key]} seconds to hook"
-            end
+              elapsed = @module_load_times[key]
+              if elapsed >= SLOW_PACKAGE_THRESHOLD
+                @slow_packages.add(key)
+                warn "AppMap: Package #{key} took #{@module_load_times[key]} seconds to hook"
+              end
           end
         end
 
         at_exit(&dump_times)
         Thread.new do
-          while true
+          loop do
             dump_times.call
             sleep 5
           end
@@ -261,10 +261,10 @@ module AppMap
         end
         elapsed = Time.now - start
         if location.index(Bundler.bundle_path.to_s) == 0
-          package_tokens = location[Bundler.bundle_path.to_s.length + 1..-1].split("/")
+          package_tokens = location[Bundler.bundle_path.to_s.length + 1..].split("/")
           @module_load_times[package_tokens[1]] += elapsed
         else
-          file_path = location[Dir.pwd.length + 1..-1]
+          file_path = location[Dir.pwd.length + 1..]
           if file_path
             location = file_path.split("/", 3)[0..1].join("/")
             @module_load_times[location] += elapsed

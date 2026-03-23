@@ -69,7 +69,7 @@ describe "AppMap class Hooking" do
       --- []
     YAML
 
-    _, tracer = test_hook_behavior "spec/fixtures/hook/method_named_call.rb", events_yaml do
+    _, _ = test_hook_behavior "spec/fixtures/hook/method_named_call.rb", events_yaml do
       expect(MethodNamedCall.new.call(1, 2, 3, 4, 5)).to eq("1 2 3 4 5")
     end
   end
@@ -378,7 +378,6 @@ describe "AppMap class Hooking" do
           :class: String
           :value: self.protected
     YAML
-    parameters = []
     test_hook_behavior "spec/fixtures/hook/protected_method.rb", events_yaml do
       expect(ProtectedMethod.call_protected).to eq("self.protected")
     end
@@ -888,7 +887,7 @@ describe "AppMap class Hooking" do
         expect(Compare.compare("string", "string")).to be_truthy
       end
 
-      secure_compare_event = YAML.load(events).find { |evt| evt[:defined_class] == "ActiveSupport::SecurityUtils" }
+      secure_compare_event = YAML.safe_load(events, permitted_classes: [Symbol]).find { |evt| evt[:defined_class] == "ActiveSupport::SecurityUtils" }
       expect(secure_compare_event).to be_truthy
       secure_compare_event.delete(:lineno)
       secure_compare_event.delete(:path)
@@ -916,65 +915,6 @@ describe "AppMap class Hooking" do
     end
 
     it "gets labeled in the classmap" do
-      classmap_yaml = <<~YAML
-        ---
-        - :name: spec/fixtures/hook/compare.rb
-          :type: package
-          :children:
-          - :name: Compare
-            :type: class
-            :children:
-            - :name: compare
-              :type: function
-              :location: spec/fixtures/hook/compare.rb:4
-              :static: true
-              :source: |2
-                  def self.compare(s1, s2)
-                    ActiveSupport::SecurityUtils.secure_compare(s1, s2)
-                  end
-        - :name: active_support
-          :type: package
-          :children:
-          - :name: ActiveSupport
-            :type: class
-            :children:
-            - :name: SecurityUtils
-              :type: class
-              :children:
-              - :name: secure_compare
-                :type: function
-                :location: lib/active_support/security_utils.rb:26
-                :static: true
-                :labels:
-                - security
-                - crypto
-                :comment: |
-                  # Constant time string comparison, for variable length strings.
-                  #
-                  # The values are first processed by SHA256, so that we don't leak length info
-                  # via timing attacks.
-                :source: |2
-                      def secure_compare(a, b)
-                        fixed_length_secure_compare(::Digest::SHA256.digest(a), ::Digest::SHA256.digest(b)) && a == b
-                      end
-        - :name: openssl
-          :type: package
-          :children:
-          - :name: Digest
-            :type: class
-            :children:
-            - :name: Instance
-              :type: class
-              :children:
-              - :name: digest
-                :type: function
-                :location: Digest::Instance#digest
-                :static: false
-                :labels:
-                - security
-                - crypto
-      YAML
-
       _, tracer = invoke_test_file "spec/fixtures/hook/compare.rb" do
         expect(Compare.compare("string", "string")).to be_truthy
       end
@@ -1031,7 +971,6 @@ describe "AppMap class Hooking" do
   end
 
   it "preserves the signature of hooked methods" do
-    parameters = []
     events = <<~YAML
       ---
       - :id: 1

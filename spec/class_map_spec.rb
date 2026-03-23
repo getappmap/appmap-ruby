@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
-describe 'AppMap::ClassMap' do
-  describe '.build_from_methods' do
-    it 'includes method labels' do
+describe "AppMap::ClassMap" do
+  describe ".build_from_methods" do
+    it "includes method labels" do
       map = AppMap.class_map([ruby_method((method :test_method))])
       function = dig_map(map, 5)[0]
       expect(function).to include(:labels)
@@ -13,11 +13,11 @@ describe 'AppMap::ClassMap' do
     # test method comment
     # @labels test.method
     def test_method
-      'test method body'
+      "test method body"
     end
 
     def ruby_method(method)
-      AppMap::Trace::RubyMethod.new AppMap::Config::Package.new('pkg'), method.receiver.class.name, method, false
+      AppMap::Trace::RubyMethod.new AppMap::Config::Package.new("pkg"), method.receiver.class.name, method, false
     end
 
     def dig_map(map, depth)

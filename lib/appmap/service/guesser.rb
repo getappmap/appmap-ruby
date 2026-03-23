@@ -6,9 +6,9 @@ module AppMap
       POSSIBLE_PATHS = %w[app lib]
       class << self
         def guess_name
-          return Pathname.new(`git rev-parse --show-toplevel`.strip).basename.to_s if File.directory?('.git')
+          return Pathname.new(`git rev-parse --show-toplevel`.strip).basename.to_s if File.directory?(".git")
 
-          Dir.pwd.split('/').last
+          Dir.pwd.split("/").last
         end
 
         def guess_paths

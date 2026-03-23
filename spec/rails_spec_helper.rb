@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-require 'open3'
-require 'random-port'
-require 'socket'
+require "open3"
+require "random-port"
+require "socket"
 
-require 'spec_helper'
-require 'active_support'
-require 'active_support/core_ext'
+require "spec_helper"
+require "active_support"
+require "active_support/core_ext"
 
 def default_rails_versions
   [6, 7]
 end
 
 def rails_versions
-  Array(ENV['RAILS_VERSIONS']&.split(',')&.map(&:to_i) || default_rails_versions)
+  Array(ENV["RAILS_VERSIONS"]&.split(",")&.map(&:to_i) || default_rails_versions)
 end
 
 class TestRailsApp
@@ -39,13 +39,13 @@ class TestRailsApp
 
   def database_name
     # This is used locally too, so make the name nice and unique.
-    @database_name ||= "appland-rails-test-#{Random.new.bytes(8).unpack1('h*')}"
+    @database_name ||= "appland-rails-test-#{Random.new.bytes(8).unpack1("h*")}"
   end
 
   def bundle
     return if @bundled
 
-    run_cmd 'bundle'
+    run_cmd "bundle"
     @bundled = true
   end
 
@@ -53,7 +53,7 @@ class TestRailsApp
     return if @db_prepared
 
     bundle
-    run_cmd './bin/rake db:create db:schema:load'
+    run_cmd "./bin/rake db:create db:schema:load"
     @db_prepared = true
     at_exit { drop_db }
   end
@@ -61,20 +61,20 @@ class TestRailsApp
   def drop_db
     return unless @db_prepared
 
-    run_cmd './bin/rake db:drop'
+    run_cmd "./bin/rake db:drop"
     @db_prepared = false
   end
 
   def tmpdir
-    @tmpdir ||= File.join(fixture_dir, 'tmp')
+    @tmpdir ||= File.join(fixture_dir, "tmp")
   end
 
   def run_specs
-    return if @specs_ran or use_existing_data?
+    return if @specs_ran || use_existing_data?
 
     prepare_db
     FileUtils.rm_rf tmpdir
-    run_cmd './bin/rspec'
+    run_cmd "./bin/rspec"
     @specs_ran = true
   end
 
@@ -89,49 +89,47 @@ class TestRailsApp
     Bundler.with_unbundled_env do
       ruby_bin = File.dirname(RbConfig.ruby)
       merged_env = env.merge(
-        'TEST_DATABASE' => database_name,
-        'BUNDLER_VERSION' => '2.5.22',
-        'PATH' => [ruby_bin, ENV['PATH']].join(File::PATH_SEPARATOR),
-        'APPMAP_INITIALIZE' => nil
+        "TEST_DATABASE" => database_name,
+        "BUNDLER_VERSION" => "2.5.22",
+        "PATH" => [ruby_bin, ENV["PATH"]].join(File::PATH_SEPARATOR),
+        "APPMAP_INITIALIZE" => nil
       )
       method.call merged_env, cmd, options.merge(chdir: fixture_dir)
     end
   end
 end
 
-shared_context 'rails app' do |rails_major_version|
-  include_context 'Rails app pg database', "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
+shared_context "rails app" do |rails_major_version|
+  include_context "Rails app pg database", "spec/fixtures/rails#{rails_major_version}_users_app" unless use_existing_data?
 end
 
-shared_context 'Rails app pg database' do |dir|
+shared_context "Rails app pg database" do |dir|
   before(:all) { @app = TestRailsApp.for_fixture dir }
   let(:app) { @app }
-  let(:users_path) { '/users' }
+  let(:users_path) { "/users" }
 end
 
-shared_context 'Rails app service running' do
+shared_context "Rails app service running" do
   def start_server(rails_app_environment: {}, command_options: {})
     service_port = RandomPort::Pool::SINGLETON.acquire
     @app.prepare_db
 
     command_options[:p] ||= service_port
-    command_options_str = command_options.map { |k, v| "-#{k} #{v}" }.join(' ')
+    command_options_str = command_options.map { |k, v| "-#{k} #{v}" }.join(" ")
 
     server = @app.spawn_cmd \
-      "./bin/rails server #{command_options_str}", { 'RAILS_ENV' => 'development', 'ORM_MODULE' => 'sequel', 'DISABLE_SPRING' => 'true' }.merge(rails_app_environment)
+      "./bin/rails server #{command_options_str}", {"RAILS_ENV" => "development", "ORM_MODULE" => "sequel", "DISABLE_SPRING" => "true"}.merge(rails_app_environment)
 
     uri = URI("http://localhost:#{service_port}/health")
 
     100.times do
-      begin
-        Net::HTTP.get(uri)
-        break
-      rescue Errno::ECONNREFUSED
-        sleep 0.1
-      end
+      Net::HTTP.get(uri)
+      break
+    rescue Errno::ECONNREFUSED
+      sleep 0.1
     end
 
-    [ service_port, server ]
+    [service_port, server]
   end
 
   def json_body(res)
@@ -140,17 +138,17 @@ shared_context 'Rails app service running' do
 
   def stop_server(server)
     if server
-      Process.kill 'INT', server
+      Process.kill "INT", server
       Process.wait server
     end
   end
 end
 
-shared_context 'rails integration test setup' do
+shared_context "rails integration test setup" do
   let(:tmpdir) { app.tmpdir }
   before(:all) { @app.run_specs } unless use_existing_data?
 
-  let(:appmap_json_path) { File.join(tmpdir, 'appmap/rspec', appmap_json_file) }
+  let(:appmap_json_path) { File.join(tmpdir, "appmap/rspec", appmap_json_file) }
   let(:appmap) { JSON.parse File.read(appmap_json_path) }
-  let(:events) { appmap['events'] }
+  let(:events) { appmap["events"] }
 end

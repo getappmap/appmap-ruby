@@ -89,7 +89,7 @@ module AppMap
           m["feature"] = attributes.feature
           m["feature_group"] = attributes.feature_group
           m["labels"] ||= []
-          m["labels"] += (scenario.tags&.map(&:name) || [])
+          m["labels"] += scenario.tags&.map(&:name) || []
           m["frameworks"] ||= []
           m["frameworks"] << {
             "name" => "cucumber",

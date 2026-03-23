@@ -17,6 +17,7 @@ require_relative "hook_log"
 # rubocop:disable Metrics/PerceivedComplexity
 # rubocop:disable Style/Documentation
 # rubocop:disable Layout/IndentationWidth
+# rubocop:enable Layout/IndentationWidth
 
 module AppMap
   class Config
@@ -107,7 +108,7 @@ module AppMap
           gemspec = Gem.loaded_specs[gem]
           # This exception will notify a user that their appmap.yml contains non-existent gems.
           raise "Gem #{gem.inspect} not found" unless gemspec || optional
-          gemspec ? gemspec.gem_dir : nil
+          gemspec&.gem_dir
         end
       end
 
@@ -117,7 +118,7 @@ module AppMap
           path: path,
           gem: gem,
           require_name: require_name,
-          handler_class: handler_class ? handler_class.name : nil,
+          handler_class: handler_class&.name,
           exclude: Util.blank?(exclude) ? nil : exclude,
           labels: Util.blank?(labels) ? nil : labels,
           shallow: shallow.nil? ? nil : shallow
@@ -195,14 +196,14 @@ module AppMap
       end
 
       def declare_hook(hook_decl)
-        hook_decl = YAML.load(hook_decl) if hook_decl.is_a?(String)
+        hook_decl = YAML.safe_load(hook_decl) if hook_decl.is_a?(String)
 
         methods_decl = hook_decl["methods"] || hook_decl["method"]
         methods_decl = Array(methods_decl) unless methods_decl.is_a?(Hash)
         labels_decl = Array(hook_decl["labels"] || hook_decl["label"])
 
         methods = methods_decl.map do |name|
-          class_name, method_name, static = name.include?(".") ? name.split(".", 2) + [true] : name.split("#", 2) + [false]
+          class_name, method_name, _ = name.include?(".") ? name.split(".", 2) + [true] : name.split("#", 2) + [false]
           method_hook class_name, [method_name], labels_decl
         end
 
@@ -343,7 +344,7 @@ module AppMap
         config_present = true if File.exist?(config_file_name)
 
         config_data = if config_present
-          YAML.safe_load(::File.read(config_file_name))
+          YAML.safe_load_file(config_file_name)
         else
           warn logo.call
           warn ""
@@ -406,7 +407,7 @@ module AppMap
           end.flatten
         end
 
-        config_params[:packages] = \
+        config_params[:packages] =
           if config_data["packages"]
             config_data["packages"].map do |package|
               gem = package["gem"]
@@ -419,7 +420,7 @@ module AppMap
                 # shallow is true by default for gems
                 shallow = true if shallow.nil?
 
-                require_name = \
+                require_name =
                   package["package"] || # deprecated
                   package["require_name"]
                 Package.build_from_gem(gem, require_name: require_name, exclude: package["exclude"] || [], shallow: shallow)
@@ -507,12 +508,12 @@ module AppMap
           .packages
           .select { |pkg| pkg.path }
           .select do |pkg|
-                (location_file.index(pkg.path) == 0) &&
-                  !pkg.exclude.find { |p| location_file.index(p) }
-              end
+            (location_file.index(pkg.path) == 0) &&
+              !pkg.exclude.find { |p| location_file.index(p) }
+          end
           .min { |a, b| b.path <=> a.path } # Longest matching package first
 
-        pkg.subpackage(location_file, config) if pkg
+        pkg&.subpackage(location_file, config)
       end
     end
 

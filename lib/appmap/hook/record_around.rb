@@ -56,7 +56,7 @@ module AppMap
       # when requests recording is on, and there is no other recording in progress, then start a
       # new recording and end it when the method returns.
       def record_around?
-        (record_around && AppMap.recording_enabled?(:requests) && !AppMap.tracing_enabled?(thread: Thread.current))
+        record_around && AppMap.recording_enabled?(:requests) && !AppMap.tracing_enabled?(thread: Thread.current)
       end
 
       def record_around_before

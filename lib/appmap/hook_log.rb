@@ -1,15 +1,15 @@
 module AppMap
   class HookLog
-    LOG = (ENV['APPMAP_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
-    LOG_HOOK = (ENV['DEBUG_HOOK'] == 'true' || ENV['APPMAP_LOG_HOOK'] == 'true')
-    LOG_HOOK_FILE = (ENV['APPMAP_LOG_HOOK_FILE'] || 'appmap_hook.log')
+    LOG = ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true"
+    LOG_HOOK = ENV["DEBUG_HOOK"] == "true" || ENV["APPMAP_LOG_HOOK"] == "true"
+    LOG_HOOK_FILE = ENV["APPMAP_LOG_HOOK_FILE"] || "appmap_hook.log"
 
     def initialize
       @file_handle = self.class.send :open_log_file
       @elapsed = Hash.new { |h, k| h[k] = [] }
 
       at_exit do
-        @file_handle.puts 'Elapsed time:'
+        @file_handle.puts "Elapsed time:"
         @elapsed.keys.each do |k|
           @file_handle.puts "#{k}:\t#{@elapsed[k].sum}"
         end
@@ -80,16 +80,16 @@ module AppMap
       end
 
       protected def open_log_file
-        if LOG_HOOK_FILE == 'stderr'
+        if LOG_HOOK_FILE == "stderr"
           $stderr
         else
-          File.open(LOG_HOOK_FILE, 'w')
+          File.open(LOG_HOOK_FILE, "w")
         end
       end
     end
 
     def log(msg)
-      if LOG_HOOK_FILE == 'stderr'
+      if LOG_HOOK_FILE == "stderr"
         msg = "AppMap: #{msg}"
       end
       msg = "#{Util.gettime}\t#{msg}"

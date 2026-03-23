@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'appmap/event'
-require 'appmap/hook/method'
+require "appmap/event"
+require "appmap/hook/method"
 
 module AppMap
   module Handler

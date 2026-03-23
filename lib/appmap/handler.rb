@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'active_support/inflector/methods'
+require "active_support/inflector/methods"
 
 module AppMap
   # Specific hook handler classes and general related utilities.
   module Handler
-    TEMPLATE_RENDER_FORMAT = 'appmap.handler.template.return_value_format'
-    TEMPLATE_RENDER_VALUE = 'appmap.handler.template.return_value'
+    TEMPLATE_RENDER_FORMAT = "appmap.handler.template.return_value_format"
+    TEMPLATE_RENDER_VALUE = "appmap.handler.template.return_value"
 
     # Try to find handler module with a given name.
     #
@@ -25,11 +25,11 @@ module AppMap
     end
 
     def self.try_load(fname)
-      fname = fname.sub %r{^app_map/}, 'appmap/'
-      fname = fname.split '/'
+      fname = fname.sub %r{^app_map/}, "appmap/"
+      fname = fname.split "/"
       until fname.empty?
         begin
-          require fname.join '/'
+          require fname.join "/"
           return
         rescue LoadError
           # pass

@@ -20,60 +20,63 @@
 # - appmap/swagger (Rake task)
 # - appmap/depends (Rake task)
 
-require 'appmap/version'
-require 'appmap/agent'
+require "appmap/version"
+require "appmap/agent"
 
-lambda do
-  Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
+unless ENV["APPMAP_AUTOREQUIRE"] == "false"
+  lambda do
+    # standard:disable Lint/ConstantDefinitionInBlock
+    Initializer = Struct.new(:class_name, :module_name, :gem_module_name)
 
-  INITIALIZERS = {
-    # In a Rails app, Rails is always defined by the time the other gems are loaded. Therefore, we
-    # don't try and trap the loading of Rails itself here.
-    # Emperically, Rake and RSpec are also defined before appmap is loaded whenever a Rake task or
-    # RSpec tests are being run. Therefore, the only hook we need here is Minitest.
-    'Minitest::Unit::TestCase' => Initializer.new('AppMap::Minitest', 'appmap/minitest', 'minitest'),
-  }
+    INITIALIZERS = {
+      # In a Rails app, Rails is always defined by the time the other gems are loaded. Therefore, we
+      # don't try and trap the loading of Rails itself here.
+      # Emperically, Rake and RSpec are also defined before appmap is loaded whenever a Rake task or
+      # RSpec tests are being run. Therefore, the only hook we need here is Minitest.
+      "Minitest::Unit::TestCase" => Initializer.new("AppMap::Minitest", "appmap/minitest", "minitest")
+    }
+    # standard:enable Lint/ConstantDefinitionInBlock
 
-  TracePoint.new(:class) do |tp|
-    cls_name = tp.self.name
-    initializers = INITIALIZERS.delete(cls_name)
-    if initializers
-      initializers = [ initializers ] unless initializers.is_a?(Array)
-      next if Object.const_defined?(initializers.first.class_name)
+    TracePoint.new(:class) do |tp|
+      cls_name = tp.self.name
+      initializers = INITIALIZERS.delete(cls_name)
+      if initializers
+        initializers = [initializers] unless initializers.is_a?(Array)
+        next if Object.const_defined?(initializers.first.class_name)
 
-      gem_module_name = initializers.first.gem_module_name
+        gem_module_name = initializers.first.gem_module_name
 
-      AppMap::Util.startup_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
-      When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
-      just been loaded, so the following AppMap modules will be automatically required:
+        AppMap::Util.startup_message AppMap::Util.color(<<~LOAD_MSG, :magenta)
+          When 'appmap' was loaded, '#{gem_module_name}' had not been loaded yet. Now '#{gem_module_name}' has
+          just been loaded, so the following AppMap modules will be automatically required:
 
-      #{initializers.map(&:module_name).join("\n")}
+          #{initializers.map(&:module_name).join("\n")}
 
-      To suppress this message, ensure '#{gem_module_name}' appears before 'appmap' in your Gemfile.
-      LOAD_MSG
-      initializers.each do |init|
-        require init.module_name
+          To suppress this message, ensure '#{gem_module_name}' appears before 'appmap' in your Gemfile.
+        LOAD_MSG
+        initializers.each do |init|
+          require init.module_name
+        end
       end
+    end.enable
+
+    if defined?(::Rails::Railtie)
+      require "appmap/railtie"
     end
-  end.enable
 
-  if defined?(::Rails::Railtie)
-    require 'appmap/railtie'
-  end
+    if defined?(::RSpec)
+      require "appmap/rspec"
+    end
 
-  if defined?(::RSpec)
-    require 'appmap/rspec'
-  end
+    if defined?(::Minitest)
+      require "appmap/minitest"
+    end
 
-  if defined?(::Minitest)
-    require 'appmap/minitest'
-  end
+    if defined?(::Rake)
+      require "appmap/swagger"
+      require "appmap/depends"
+    end
+  end.call
+end
 
-  if defined?(::Rake)
-    require 'appmap/swagger'
-    require 'appmap/depends'
-  end
-
-end.call unless ENV['APPMAP_AUTOREQUIRE'] == 'false'
-
-AppMap.initialize_configuration if AppMap.recording_enabled? && ENV['APPMAP_INITIALIZE'] != 'false'
+AppMap.initialize_configuration if AppMap.recording_enabled? && ENV["APPMAP_INITIALIZE"] != "false"

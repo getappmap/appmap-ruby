@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'appmap/handler'
+require "appmap/handler"
 
 module AppMap
   module Handler
@@ -35,7 +35,7 @@ module AppMap
 
         # context is set on the rack environment to make sure a single request is only recorded once
         # even if ActionDispatch::Executor is entered more than once (as can happen with engines)
-        REQUEST_CONTEXT = 'appmap.handler.request.context'
+        REQUEST_CONTEXT = "appmap.handler.request.context"
       end
     end
   end

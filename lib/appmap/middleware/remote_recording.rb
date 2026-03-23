@@ -137,7 +137,7 @@ module AppMap
       def handle_record_request(req)
         method = req.env["REQUEST_METHOD"]
 
-        status, body = \
+        status, body =
           if method.eql?("GET")
             recording_state
           elsif method.eql?("POST")

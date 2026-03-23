@@ -143,9 +143,9 @@ module AppMap
           )
           .reject { |_k, v| blank?(v) }
           .each_with_object({}) do |kv, memo|
-          key = kv[0].sub(/^HTTP_/, "").split("_").map(&:capitalize).join("-")
-          value = kv[1]
-          memo[key] = value
+            key = kv[0].sub(/^HTTP_/, "").split("_").map(&:capitalize).join("-")
+            value = kv[1]
+            memo[key] = value
         end
         finalize_headers.call(matching_headers)
       end
@@ -156,7 +156,7 @@ module AppMap
         is_vendored_path = -> { path.index(File.join(Dir.pwd, "vendor/bundle")) == 0 }
 
         if is_local_path.call && !is_bundled_path.call && !is_vendored_path.call
-          path[Dir.pwd.length + 1..-1]
+          path[Dir.pwd.length + 1..]
         else
           path
         end

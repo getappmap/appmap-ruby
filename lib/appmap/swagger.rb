@@ -1,2 +1,2 @@
-require 'appmap/swagger/configuration'
-require 'appmap/swagger/rake_tasks'
+require "appmap/swagger/configuration"
+require "appmap/swagger/rake_tasks"

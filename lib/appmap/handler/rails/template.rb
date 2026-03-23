@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require 'appmap/handler/function_handler'
-require 'appmap/event'
+require "appmap/handler/function_handler"
+require "appmap/event"
 
 module AppMap
   module Handler
     module Rails
       class Template
-        LOG = (ENV['APPMAP_TEMPLATE_DEBUG'] == 'true' || ENV['DEBUG'] == 'true')
+        LOG = ENV["APPMAP_TEMPLATE_DEBUG"] == "true" || ENV["DEBUG"] == "true"
 
         # All the code which is touched by the AppMap is recorded in the classMap.
         # This duck-typed 'method' is used to represent a view template as a package,
@@ -28,7 +28,7 @@ module AppMap
           end
 
           def id
-            [ package, path, name ]
+            [package, path, name]
           end
 
           def hash
@@ -40,11 +40,11 @@ module AppMap
           end
 
           def package
-            'app/views'
+            "app/views"
           end
 
           def name
-            'render'
+            "render"
           end
 
           def source_location
@@ -60,7 +60,7 @@ module AppMap
           end
 
           def labels
-            [ 'mvc.template' ]
+            ["mvc.template"]
           end
         end
 
@@ -75,10 +75,10 @@ module AppMap
           # Indicates when the event is fully constructed.
           attr_accessor :ready
 
-          alias ready? ready
+          alias_method :ready?, :ready
 
           def initialize(render_instance)
-            super :call
+            super(:call)
 
             AppMap::Event::MethodEvent.build_from_invocation(:call, event: self)
             @ready = false
@@ -91,8 +91,8 @@ module AppMap
 
           def to_h
             super.tap do |h|
-              h[:defined_class] = path ? path.parameterize.underscore : 'inline_template'
-              h[:method_id] = 'render'
+              h[:defined_class] = path ? path.parameterize.underscore : "inline_template"
+              h[:method_id] = "render"
               h[:path] = path
               h[:static] = static?
               h[:parameters] = []
@@ -105,7 +105,7 @@ module AppMap
           end
         end
 
-        TEMPLATE_RENDERER = 'appmap.handler.rails.template.renderer'
+        TEMPLATE_RENDERER = "appmap.handler.rails.template.renderer"
 
         # Hooks the ActionView::Resolver methods +find_all+, +find_all_anywhere+. The resolver is used
         # during template rendering to lookup the template file path from parameters such as the
@@ -113,7 +113,7 @@ module AppMap
         class ResolverHandler < AppMap::Handler::FunctionHandler
           def handle_call(receiver, args)
             name, prefix, partial = args
-            warn "Resolver: #{{ name: name, prefix: prefix, partial: partial }}" if LOG
+            warn "Resolver: #{{name: name, prefix: prefix, partial: partial}}" if LOG
 
             super
           end
@@ -142,12 +142,12 @@ module AppMap
 
           def path_from_obj(path_obj)
             path =
-              if path_obj.respond_to?(:identifier) && path_obj.inspect.index('#<')
+              if path_obj.respond_to?(:identifier) && path_obj.inspect.index("#<")
                 path_obj.identifier
               else
                 path_obj.inspect
               end
-            path = path[Dir.pwd.length + 1..-1] if path.index(Dir.pwd) == 0
+            path = path[Dir.pwd.length + 1..] if path.index(Dir.pwd) == 0
             path
           end
         end

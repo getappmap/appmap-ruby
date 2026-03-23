@@ -1,16 +1,17 @@
 require "mkmf"
 
-
-$CFLAGS='-Werror ' + $CFLAGS
+# standard:disable Style/GlobalVars -- mkmf convention
+$CFLAGS = "-Werror " + $CFLAGS
 
 # Per https://bugs.ruby-lang.org/issues/17865,
 # compound-token-split-by-macro was added in clang 12 and broke
 # compilation with some of the ruby headers. If the current compiler
 # supports the new warning, turn it off.
-new_warning = '-Wno-error=compound-token-split-by-macro'
+new_warning = "-Wno-error=compound-token-split-by-macro"
 if try_cflags(new_warning)
-  $CFLAGS += ' ' + new_warning
+  $CFLAGS += " " + new_warning
 end
+# standard:enable Style/GlobalVars
 
 extension_name = "appmap"
 dir_config(extension_name)

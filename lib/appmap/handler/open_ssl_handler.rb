@@ -1,4 +1,4 @@
-require 'appmap/handler/function_handler'
+require "appmap/handler/function_handler"
 
 module AppMap
   module Handler
@@ -7,7 +7,7 @@ module AppMap
         super.tap do |event|
           algorithm = receiver.name
           event.receiver[:labels] ||= []
-          label = [ 'crypto.algorithm', algorithm ].join('.')
+          label = ["crypto.algorithm", algorithm].join(".")
           event.receiver[:labels] << label unless event.receiver[:labels].include?(label)
         end
       end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'appmap/event'
-require 'appmap/hook/method'
-require 'appmap/util'
+require "appmap/event"
+require "appmap/hook/method"
+require "appmap/util"
 
 module AppMap
   module Handler
@@ -12,7 +12,7 @@ module AppMap
           attr_accessor :payload
 
           def initialize(payload)
-            super AppMap::Event.next_id_counter, :call, Thread.current.object_id
+            super(AppMap::Event.next_id_counter, :call, Thread.current.object_id)
 
             self.payload = payload
           end
@@ -34,7 +34,7 @@ module AppMap
 
         class SQLReturn < AppMap::Event::MethodReturnIgnoreValue
           def initialize(parent_id, elapsed)
-            super AppMap::Event.next_id_counter, :return, Thread.current.object_id
+            super(AppMap::Event.next_id_counter, :return, Thread.current.object_id)
 
             self.parent_id = parent_id
             self.elapsed = elapsed
@@ -49,10 +49,10 @@ module AppMap
               in_transaction = examiner.in_transaction?
 
               if AppMap.explain_queries? && examiner.database_type == :postgres
-                if sql =~ /\A(SELECT|INSERT|UPDATE|DELETE|WITH)/i
-                  savepoint_established = \
+                if /\A(SELECT|INSERT|UPDATE|DELETE|WITH)/i.match?(sql)
+                  savepoint_established =
                     begin
-                      tx_query = in_transaction ? 'SAVEPOINT appmap_sql_examiner' : 'BEGIN TRANSACTION'
+                      tx_query = in_transaction ? "SAVEPOINT appmap_sql_examiner" : "BEGIN TRANSACTION"
                       examiner.execute_query tx_query
                       true
                     rescue
@@ -62,14 +62,13 @@ module AppMap
                     end
 
                   if savepoint_established
-                    plan = nil
                     begin
                       plan = examiner.execute_query(%(EXPLAIN #{sql}))
-                      payload[:query_plan] = plan.map { |line| line[:'QUERY PLAN'] }.join("\n")
+                      payload[:query_plan] = plan.map { |line| line[:"QUERY PLAN"] }.join("\n")
                     rescue
                       warn "(appmap) Error explaining query: #{$!}"
                     ensure
-                      tx_query = in_transaction ? 'ROLLBACK TO SAVEPOINT appmap_sql_examiner' : 'ROLLBACK'
+                      tx_query = in_transaction ? "ROLLBACK TO SAVEPOINT appmap_sql_examiner" : "ROLLBACK"
                       examiner.execute_query tx_query
                     end
                   end
@@ -112,14 +111,14 @@ module AppMap
 
           class ActiveRecordExaminer
             @@db_version_warning_issued = {}
-            
+
             def issue_warning
               db_type = database_type
               return if @@db_version_warning_issued[db_type]
-              warn("AppMap: Unable to determine database version for #{db_type.inspect}") 
+              warn("AppMap: Unable to determine database version for #{db_type.inspect}")
               @@db_version_warning_issued[db_type] = true
             end
-            
+
             def server_version
               ActiveRecord::Base.connection.try(:database_version) || issue_warning
             end
@@ -149,7 +148,7 @@ module AppMap
           reentry_key = "#{self.class.name}#call"
           return if Thread.current[reentry_key] == true
 
-          after_start_time = AppMap::Util.gettime()
+          after_start_time = AppMap::Util.gettime
 
           Thread.current[reentry_key] = true
           begin
@@ -160,7 +159,7 @@ module AppMap
             call = SQLCall.new(payload)
             AppMap.tracing.record_event(call)
             sql_return_event = SQLReturn.new(call.id, finished - started)
-            sql_return_event.elapsed_instrumentation = AppMap::Util.gettime() - after_start_time
+            sql_return_event.elapsed_instrumentation = AppMap::Util.gettime - after_start_time
             AppMap.tracing.record_event(sql_return_event)
           ensure
             Thread.current[reentry_key] = nil

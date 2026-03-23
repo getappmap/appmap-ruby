@@ -2,12 +2,12 @@
 
 # rubocop:disable Security/Eval, Style/EvalWithLocation
 
-require 'spec_helper'
-require 'appmap/config'
+require "spec_helper"
+require "appmap/config"
 
-describe 'AppMap::Handler::EvalHandler' do
-  include_context 'collect events'
-  let!(:config) { AppMap::Config.new('hook_spec') }
+describe "AppMap::Handler::EvalHandler" do
+  include_context "collect events"
+  let!(:config) { AppMap::Config.new("hook_spec") }
   before { AppMap.configuration = config }
   after { AppMap.configuration = nil }
 
@@ -24,23 +24,23 @@ describe 'AppMap::Handler::EvalHandler' do
     end
   end
 
-  it 'produces a simple result' do
+  it "produces a simple result" do
     tracer = record_block do
-      expect(eval('12')).to eq(12)
+      expect(eval("12")).to eq(12)
     end
     events = collect_events(tracer)
     expect(events[0]).to match hash_including \
-      defined_class: 'Kernel',
-      method_id: 'eval',
+      defined_class: "Kernel",
+      method_id: "eval",
       parameters: [
-        { class: 'String', kind: :req,  name: :string, value: '12' },
-        { class: 'Array',  kind: :rest, name: 'arg', size: 0, value: '[]' },
+        {class: "String", kind: :req, name: :string, value: "12"},
+        {class: "Array", kind: :rest, name: "arg", size: 0, value: "[]"}
       ]
   end
 
   # a la Ruby 2.6.3 ruby-token.rb
   # token_c = eval("class #{token_n} < #{super_token}; end; #{token_n}")
-  it 'can define a new class' do
+  it "can define a new class" do
     num = (Random.new.random_number * 10_000).to_i
     class_name = "Cls_#{num}"
     m = ClassMaker
@@ -61,7 +61,7 @@ describe 'AppMap::Handler::EvalHandler' do
     expect(new_cls.const_get(class_name)).to eq(cls)
   end
 
-  it 'works correctly when loaded even when not tracing' do
+  it "works correctly when loaded even when not tracing" do
     load "#{__dir__}/class_with_eval.rb"
     expect { AppMap::SpecClasses::WithEval.new.text }.to_not raise_error(NameError)
   end

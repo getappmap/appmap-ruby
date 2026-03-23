@@ -1,12 +1,12 @@
-require 'appmap/version'
-require 'appmap/node_cli'
+require "appmap/version"
+require "appmap/node_cli"
 
 module AppMap
   module Command
     class Index < AppMap::NodeCLI
       class << self
         def run
-          command = Index.new(verbose: ENV['DEBUG'] == 'true')
+          command = Index.new(verbose: ENV["DEBUG"] == "true")
           command.index(ARGV)
         end
       end
@@ -14,9 +14,9 @@ module AppMap
       def index(arguments)
         detect_nodejs
 
-        arguments.unshift 'index'
+        arguments.unshift "index"
         arguments.unshift APPMAP_JS
-        arguments.unshift 'npx'
+        arguments.unshift "npx"
 
         exec(*arguments)
       end

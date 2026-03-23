@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require "test_helper"
 
-schema_path = File.expand_path('../../config-schema.yml', __FILE__)
-CONFIG_SCHEMA = YAML.safe_load(File.read(schema_path))
+schema_path = File.expand_path("../../config-schema.yml", __FILE__)
+CONFIG_SCHEMA = YAML.safe_load_file(schema_path)
 class AgentSetupValidateTest < Minitest::Test
-  NON_EXISTING_CONFIG_FILENAME = '123.yml'
-  INVALID_YAML_CONFIG_FILENAME = 'spec/fixtures/config/invalid_yaml_config.yml'
-  INVALID_CONFIG_FILENAME = 'spec/fixtures/config/invalid_config.yml'
-  MISSING_PATH_OR_GEM_CONFIG_FILENAME = 'spec/fixtures/config/missing_path_or_gem.yml'
+  NON_EXISTING_CONFIG_FILENAME = "123.yml"
+  INVALID_YAML_CONFIG_FILENAME = "spec/fixtures/config/invalid_yaml_config.yml"
+  INVALID_CONFIG_FILENAME = "spec/fixtures/config/invalid_config.yml"
+  MISSING_PATH_OR_GEM_CONFIG_FILENAME = "spec/fixtures/config/missing_path_or_gem.yml"
 
   RAILS_WARNING = {
     level: :warning,
     message: "This is not a Rails project. AppMap won't be automatically loaded.",
     detailed_message: "Please ensure you `require 'appmap'` in your test environment.",
-    help_urls: [ 'https://appmap.io/docs/reference/appmap-ruby#tests-recording' ]
+    help_urls: ["https://appmap.io/docs/reference/appmap-ruby#tests-recording"]
   }.freeze
 
   def check_output(output, expected_errors)
@@ -57,7 +57,7 @@ class AgentSetupValidateTest < Minitest::Test
         filename: INVALID_YAML_CONFIG_FILENAME,
         message: "AppMap configuration #{INVALID_YAML_CONFIG_FILENAME} is not valid YAML",
         detailed_message: "(#{INVALID_YAML_CONFIG_FILENAME}): " \
-          'did not find expected key while parsing a block mapping at line 1 column 1'
+          "did not find expected key while parsing a block mapping at line 1 column 1"
       }
     ])
   end

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe AppMap::Open do
-  context 'a block of Ruby code' do
-    it 'opens in the browser' do
+  context "a block of Ruby code" do
+    it "opens in the browser" do
       appmap = AppMap.record do
         File.read __FILE__
       end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'appmap/service/test_framework_detector'
-require 'appmap/service/integration_test_path_finder'
+require "appmap/service/test_framework_detector"
+require "appmap/service/integration_test_path_finder"
 
 module AppMap
   module Service
@@ -14,9 +14,9 @@ module AppMap
             commands << {
               framework: :rspec,
               command: {
-                program: 'bundle',
+                program: "bundle",
                 args: %w[exec rspec] + integration_test_paths[:rspec].map { |path| "./#{path}" },
-                environment: { }
+                environment: {}
               }
             }
           end
@@ -28,9 +28,9 @@ module AppMap
             commands << {
               framework: :cucumber,
               command: {
-                program: 'bundle',
+                program: "bundle",
                 args: %w[exec cucumber],
-                environment: { }
+                environment: {}
               }
             }
           end
@@ -41,14 +41,14 @@ module AppMap
         private
 
         def minitest_commands
-          if Gem.loaded_specs.has_key?('rails')
+          if Gem.loaded_specs.has_key?("rails")
             [
               {
                 framework: :minitest,
                 command: {
-                  program: 'bundle',
+                  program: "bundle",
                   args: %w[exec rails test] + integration_test_paths[:minitest].map { |path| "./#{path}" },
-                  environment: { }
+                  environment: {}
                 }
               }
             ]
@@ -57,9 +57,9 @@ module AppMap
               {
                 framework: :minitest,
                 command: {
-                  program: 'bundle',
-                  args: ['exec', 'ruby', "./#{path}"],
-                  environment: { }
+                  program: "bundle",
+                  args: ["exec", "ruby", "./#{path}"],
+                  environment: {}
                 }
               }
             end

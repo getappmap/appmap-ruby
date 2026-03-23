@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'appmap/service/validator/config_validator'
+require "json"
+require "appmap/service/validator/config_validator"
 
 module AppMap
   module Command
@@ -10,8 +10,8 @@ module AppMap
 
       class Validate < ValidateStruct
         def perform
-          schema_path = File.expand_path('../../../../../config-schema.yml', __FILE__)
-          schema = YAML.safe_load(File.read(schema_path))
+          schema_path = File.expand_path("../../../../../config-schema.yml", __FILE__)
+          schema = YAML.safe_load_file(schema_path)
           result = {
             version: 2,
             errors: config_validator.violations.map(&:to_h),

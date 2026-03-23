@@ -83,13 +83,14 @@ module AppMap
           .compact
           .map { |match| match[1] }
           .inject([]) { |accum, labels|
-          accum += labels.split(/\s+/)
-          accum
+            accum += labels.split(/\s+/)
+            accum
         }
           .sort
       end
       # rubocop:enable Metrics/MethodLength
 
+      # rubocop:disable Metrics/MethodLength
       def build_from_methods(methods)
         root = Types::Root.new
         methods.each do |method|
@@ -115,8 +116,9 @@ module AppMap
 
       protected
 
+      # rubocop:disable Metrics/MethodLength
       def add_function(root, method)
-        object_infos = \
+        object_infos =
           method.package.split("/").map do |name|
             {
               name: name,
@@ -135,10 +137,10 @@ module AppMap
         }
         location = method.source_location
 
-        function_info[:location] = \
+        function_info[:location] =
           if location
             location_file, lineno = location
-            location_file = location_file[Dir.pwd.length + 1..-1] if location_file.index(Dir.pwd) == 0
+            location_file = location_file[Dir.pwd.length + 1..] if location_file.index(Dir.pwd) == 0
             [location_file, lineno].compact.join(":")
           else
             [method.class_name, method.static ? "." : "#", method.name].join
@@ -173,5 +175,6 @@ module AppMap
         end
       end
     end
+    # rubocop:enable Metrics/MethodLength
   end
 end

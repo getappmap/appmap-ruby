@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'appmap/service/config_analyzer'
-require 'appmap/service/integration_test_path_finder'
-require 'appmap/service/test_command_provider'
+require "json"
+require "appmap/service/config_analyzer"
+require "appmap/service/integration_test_path_finder"
+require "appmap/service/test_command_provider"
 
 module AppMap
   module Command
@@ -22,8 +22,8 @@ module AppMap
               },
               project: {
                 agentVersion: AppMap::VERSION,
-                language: 'ruby',
-                remoteRecordingCapable: Gem.loaded_specs.has_key?('rails'),
+                language: "ruby",
+                remoteRecordingCapable: Gem.loaded_specs.has_key?("rails"),
                 integrationTests: Service::IntegrationTestPathFinder.new.count_paths > 0
               }
             }

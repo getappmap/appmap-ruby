@@ -46,6 +46,7 @@ module AppMap
       @recording_method = recording_method
     end
 
+    # rubocop:disable Metrics/MethodLength
     def enabled?
       return @@detected_for_method[@recording_method] unless @@detected_for_method[@recording_method].nil?
 
@@ -53,19 +54,21 @@ module AppMap
         raise "Unrecognized recording method: #{@recording_method}"
       end
 
-      message, enabled, enabled_by_env = detect_enabled
+      message, enabled, _ = detect_enabled
 
       @@detected_for_method[@recording_method] = enabled
 
-      if @recording_method && (enabled && enabled_by_app_env?)
+      if @recording_method && enabled && enabled_by_app_env?
         warn AppMap::Util.color(
-          "AppMap #{@recording_method.nil? ? "" : "#{@recording_method} "}recording is enabled because #{message}", :magenta
+          "AppMap #{"#{@recording_method} " unless @recording_method.nil?}recording is enabled because #{message}", :magenta
         )
       end
 
       enabled
     end
+    # rubocop:enable Metrics/MethodLength
 
+    # rubocop:disable Metrics/MethodLength
     def detect_enabled
       detection_functions = %i[
         globally_disabled?
@@ -84,6 +87,7 @@ module AppMap
       _, enabled_by_env = enabled_by_app_env?
       [message, enabled, enabled_by_env]
     end
+    # rubocop:enable Metrics/MethodLength
 
     def enabled_by_testing?
       return unless %i[rspec minitest cucumber].member?(@recording_method)

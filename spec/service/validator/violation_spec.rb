@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'appmap/service/validator/violation'
+require "spec_helper"
+require "appmap/service/validator/violation"
 
 describe AppMap::Service::Validator::Violation do
-  describe '.error' do
-    let(:message) { 'error' }
+  describe ".error" do
+    let(:message) { "error" }
 
-    context 'with default parameters' do
+    context "with default parameters" do
       subject { described_class.error(message: :message) }
 
-      it 'builds an error' do
+      it "builds an error" do
         expect(subject.level).to be :error
         expect(subject.message).to be :message
       end
     end
 
-    context 'with default parameters' do
+    context "with default parameters" do
       subject do
         described_class.error(
           message: :message,
@@ -27,12 +27,12 @@ describe AppMap::Service::Validator::Violation do
         )
       end
 
-      let(:filename) { 'filename' }
-      let(:setting) { 'setting' }
-      let(:detailed_message) { 'details' }
+      let(:filename) { "filename" }
+      let(:setting) { "setting" }
+      let(:detailed_message) { "details" }
       let(:help_urls) { %w[123 456] }
 
-      it 'builds an error' do
+      it "builds an error" do
         expect(subject.level).to be :error
         expect(subject.message).to be :message
         expect(subject.setting).to be :setting
@@ -41,27 +41,27 @@ describe AppMap::Service::Validator::Violation do
       end
     end
 
-    describe '.warning' do
-      let(:message) { 'warning' }
+    describe ".warning" do
+      let(:message) { "warning" }
 
-      context 'with default parameters' do
+      context "with default parameters" do
         subject { described_class.warning(message: :message) }
 
-        it 'builds an error' do
+        it "builds an error" do
           expect(subject.level).to be :warning
           expect(subject.message).to be :message
         end
       end
     end
 
-    describe '#to_hash' do
+    describe "#to_hash" do
       subject { described_class.warning(message: :message) }
 
-      let(:message) { 'warning' }
+      let(:message) { "warning" }
 
-      it 'returns correct hash' do
-        expect(subject.to_h['level']).to be :warning
-        expect(subject.to_h['message']).to be :message
+      it "returns correct hash" do
+        expect(subject.to_h["level"]).to be :warning
+        expect(subject.to_h["message"]).to be :message
       end
     end
   end

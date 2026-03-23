@@ -1,17 +1,17 @@
-require 'rspec'
-require 'net/http'
-require 'json'
-require 'yaml'
-require 'English'
-require 'byebug'
-require 'webdrivers/chromedriver'
+require "rspec"
+require "net/http"
+require "json"
+require "yaml"
+require "English"
+require "byebug"
+require "webdrivers/chromedriver"
 
 # Disable default initialization of AppMap
-ENV['APPMAP_INITIALIZE'] = 'false'
-ENV.delete('RAILS_ENV')
-ENV.delete('APP_ENV')
+ENV["APPMAP_INITIALIZE"] = "false"
+ENV.delete("RAILS_ENV")
+ENV.delete("APP_ENV")
 
-require 'appmap'
+require "appmap"
 
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "tmp/rspec_failed_examples.txt"
@@ -21,16 +21,16 @@ end
 # Re-run the Rails specs without re-generating the data. This is useful for efficiently enhancing and
 # debugging the test itself.
 def use_existing_data?
-  ENV['USE_EXISTING_DATA'] == 'true'
+  ENV["USE_EXISTING_DATA"] == "true"
 end
 
 def ruby_3_2_or_higher?
-  version = RUBY_VERSION.split('.')
+  version = RUBY_VERSION.split(".")
   ((version[0].to_i == 3 && version[1].to_i >= 2) or
    version[0].to_i >= 4)
 end
 
-shared_context 'collect events' do
+shared_context "collect events" do
   def collect_events(tracer)
     [].tap do |events|
       while tracer.event?

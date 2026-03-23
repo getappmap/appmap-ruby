@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'util'
-require_relative 'node_cli'
-require_relative 'test_file_inspector'
-require_relative 'test_runner'
+require_relative "util"
+require_relative "node_cli"
+require_relative "test_file_inspector"
+require_relative "test_runner"
 
 module AppMap
   module Depends
@@ -33,7 +33,7 @@ module AppMap
 
       # Print a brief report to STDERR.
       def report_list(title, files)
-        warn [ title, files.to_a.sort.join(' ') ].join(': ') unless files.empty?
+        warn [title, files.to_a.sort.join(" ")].join(": ") unless files.empty?
       end
 
       # Run the specified test files. After running the tests, update the AppMap index.
@@ -42,7 +42,7 @@ module AppMap
       # user expectations.
       def run_tests(test_files, appmap_dir:)
         test_files = test_files.to_a.sort
-        warn "Running tests: #{test_files.join(' ')}"
+        warn "Running tests: #{test_files.join(" ")}"
 
         TestRunner.new(test_files).run
 
@@ -54,7 +54,7 @@ module AppMap
       #
       # * +since+ an instance of Time
       def remove_out_of_date_appmaps(since, appmap_dir:, base_dir:)
-        since_ms = ( since.to_f * 1000 ).to_i
+        since_ms = (since.to_f * 1000).to_i
 
         depends = AppMap::Depends::NodeCLI.new(verbose: verbose, appmap_dir: appmap_dir)
         depends.base_dir = base_dir if base_dir
@@ -62,7 +62,7 @@ module AppMap
         out_of_date_appmaps = depends.depends
         removed = []
         out_of_date_appmaps.each do |appmap_path|
-          mtime_path = File.join(appmap_path, 'mtime')
+          mtime_path = File.join(appmap_path, "mtime")
           next unless File.exist?(mtime_path)
 
           appmap_mtime = File.read(mtime_path).to_i

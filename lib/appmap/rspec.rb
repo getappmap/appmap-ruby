@@ -9,7 +9,7 @@ require "fileutils"
 module AppMap
   module RSpec
     APPMAP_OUTPUT_DIR = File.join(AppMap.output_dir, "rspec")
-    LOG = (ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true")
+    LOG = ENV["APPMAP_DEBUG"] == "true" || ENV["DEBUG"] == "true"
 
     def self.metadata
       AppMap.detect_metadata
@@ -60,7 +60,7 @@ module AppMap
 
         # DEPRECATION WARNING: `Module#parent` has been renamed to `module_parent`. `parent` is deprecated and will be
         # removed in Rails 6.1. (called from parent at /Users/kgilpin/source/appland/appmap-ruby/lib/appmap/rspec.rb:110)
-        example_group_parent = \
+        example_group_parent =
           if example_group.respond_to?(:module_parent)
             example_group.module_parent
           elsif example_group.respond_to?(:parent)
@@ -93,13 +93,13 @@ module AppMap
 
       def source_location
         result = example.location_rerun_argument.split(":")[0]
-        result = result[2..-1] if result.index("./") == 0
+        result = result[2..] if result.index("./") == 0
         result
       end
 
       def finish(failure, exception)
         failed = true if failure || exception
-        warn "Finishing recording of #{failed ? "failed " : ""} example #{example}" if AppMap::RSpec::LOG
+        warn "Finishing recording of #{"failed " if failed} example #{example}" if AppMap::RSpec::LOG
         warn "Exception: #{exception}" if exception && AppMap::RSpec::LOG
 
         if failed
@@ -126,7 +126,7 @@ module AppMap
 
         description.reject!(&:nil?)
         description.reject!(&Util.method(:blank?))
-        default_description = description.last
+        description.last
         description.reverse!
 
         normalize = lambda do |desc|

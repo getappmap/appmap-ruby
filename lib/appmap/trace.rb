@@ -167,7 +167,7 @@ module AppMap
         raise "Expected event in thread #{@thread_id}, got #{event.thread_id}"
       end
 
-      @stack_printer.record(event) if @stack_printer
+      @stack_printer&.record(event)
       @last_package_for_thread[Thread.current.object_id] = package if package
       @events << event
       static = event.static if event.respond_to?(:static)
