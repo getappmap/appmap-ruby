@@ -1,6 +1,0 @@
-AllCops:
-  DisabledByDefault: true
-  Exclude:
-    - 'lib/**'
-    - 'test/**'
-    - 'spec/**'
