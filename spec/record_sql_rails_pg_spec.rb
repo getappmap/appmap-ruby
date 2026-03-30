@@ -42,7 +42,7 @@ describe 'SQL events' do
       end
 
       def run_specs(orm_module)
-        @app.prepare_db
+        @app.prepare_db(reset: true)
         @app.run_cmd \
           './bin/rspec spec/controllers/users_controller_api_spec.rb:8 spec/controllers/users_controller_api_spec.rb:29',
           'ORM_MODULE' => orm_module,

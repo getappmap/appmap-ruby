@@ -62,8 +62,11 @@ class TestRailsApp
     @bundled = true
   end
 
-  def prepare_db
-    return if @db_prepared
+  def prepare_db(reset: false)
+    if @db_prepared
+      run_cmd './bin/rake db:drop db:create db:schema:load' if reset
+      return
+    end
 
     bundle
     run_cmd './bin/rake db:create db:schema:load'
