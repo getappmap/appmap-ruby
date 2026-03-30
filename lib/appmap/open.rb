@@ -33,20 +33,30 @@ module AppMap
       PAGE
     end
 
-    def run_server
+    def run_server(timeout: 10)
       require 'rack'
-      Thread.new do
+      thread = Thread.new do
         Rack::Handler::WEBrick.run(
           lambda do |env|
             [200, { 'Content-Type' => 'text/html' }, [page]]
           end,
-          :Port => 0
+          Port: 0,
+          BindAddress: "127.0.0.1"
         ) do |server|
           @port = server.config[:Port]
         end
-      end.tap do
-        sleep 1.0
       end
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
+      sleep 0.1 until @port || !thread.alive? || Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+      unless thread.alive?
+        thread.value # re-raise any exception from the server thread
+        raise "Server thread exited unexpectedly"
+      end
+
+      return thread if @port
+
+      raise "Timed out waiting for server to start after #{timeout} s"
     end
 
     def open_browser
