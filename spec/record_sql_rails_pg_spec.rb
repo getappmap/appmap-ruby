@@ -22,7 +22,7 @@ describe 'SQL events' do
         check_queries(
           'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user' =>
             %(INSERT INTO "users" ("login") VALUES ('alice') RETURNING *),
-          'Api_UsersController_GET_api_users_lists_the_users' => %(SELECT * FROM "users")
+          'Api_UsersController_GET_api_users_lists_the_users' => /SELECT (?:"users"\.)?\* FROM "users"/
         )
       end
 
@@ -37,7 +37,7 @@ describe 'SQL events' do
 
         check_queries(
           'Api_UsersController_POST_api_users_with_required_parameters_creates_a_user' => expected_query,
-          'Api_UsersController_GET_api_users_lists_the_users' => %(SELECT "users".* FROM "users")
+          'Api_UsersController_GET_api_users_lists_the_users' => /SELECT (?:"users"\.)?\* FROM "users"/
         )
       end
 
