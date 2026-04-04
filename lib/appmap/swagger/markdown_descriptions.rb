@@ -1,4 +1,3 @@
-require 'rdoc'
 require 'reverse_markdown'
 
 module AppMap
@@ -32,6 +31,7 @@ module AppMap
       protected
 
       def rdoc_to_markdown(comment)
+        require 'rdoc'
         # Strip tags
         comment = comment.split("\n").reject { |line| line =~ /^\s*@/ }.join("\n")
         converter = ::RDoc::Markup::ToHtml.new(::RDoc::Options.new)
