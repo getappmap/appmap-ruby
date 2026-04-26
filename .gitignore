@@ -2,7 +2,6 @@
 /html/
 .bundle
 /.yardoc
-/.yarn
 /_yardoc/
 /coverage/
 /doc/

@@ -6,7 +6,7 @@ The official documentation for `appmap-ruby` is at [appland.com/docs](https://ap
 
 ## Integration with appmap-js
 
-Most of the analytics functionality for AppMap JSON is implemented in [appmap-js](https://github.com/applandinc/appmap-js/). In particular, `packages/cli`. `appmap-ruby` includes the source code and dependencies of `@appland/appmap`. Check the [Rakefile](./Rakefile) for references to npm and/or yarn to see how the packaging works.
+Most of the analytics functionality for AppMap JSON is implemented in [appmap-js](https://github.com/applandinc/appmap-js/). In particular, `packages/cli`. `appmap-ruby` invokes `@appland/appmap` via `npx` at runtime; no local installation is required.
 
 `appmap-ruby` executes command-line programs provided by `@appland/appmap`; it doesn't attempt to load a Node.js library in-process. `@appland/appmap` commands are designed to produce clean output on stdout, which is obtained and processed by `appmap-ruby`.
 

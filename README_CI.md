@@ -11,8 +11,8 @@ to avoid publication of test releases under official package name
 
 Bash wrapper script is used merely as a launcher of `semantic-release`
 with extra logic to explicitly determine git url from `GITHUB_REPOSITORY` \
-variable if it's defined (otherwise git url is taken from `package.json`,
-which breaks CI on forked repos).
+variable if it's defined (otherwise semantic-release may resolve the wrong
+repository URL on forked repos).
 
 # CI flow
 

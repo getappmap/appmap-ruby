@@ -10,12 +10,7 @@ Rake::ExtensionTask.new("appmap") do |ext|
   ext.lib_dir = "lib/appmap"
 end
 
-desc 'Install non-Ruby dependencies'
-task :install do
-  system 'yarn install' or raise 'yarn install failed'
-end
-
-RSpec::Core::RakeTask.new spec: %i[compile install] do |task, args|
+RSpec::Core::RakeTask.new spec: [:compile] do |task, args|
   task.exclude_pattern = 'spec/fixtures/**/*_spec.rb'
   task.rspec_opts = '-f doc'
   if args.count > 0
