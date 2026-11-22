@@ -3,7 +3,6 @@
 require "rails_spec_helper"
 require "appmap/hook"
 require "appmap/event"
-require "diffy"
 
 # Show nulls as the literal +null+, rather than just leaving the field
 # empty. This make some of the expected YAML below easier to
@@ -45,7 +44,7 @@ describe "AppMap class Hooking" do
 
     events = collect_events(tracer).to_yaml
 
-    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq("") if events_yaml
+    expect(events).to eq(events_yaml) if events_yaml
 
     [config, tracer, events]
   end
@@ -127,9 +126,9 @@ describe "AppMap class Hooking" do
 
     events = collect_events(tracer).to_yaml
 
-    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq("")
+    expect(events).to eq(events_yaml)
     class_map = AppMap.class_map(tracer.event_methods)
-    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq("")
+    expect(YAML.dump(class_map)).to eq(<<~CLASSMAP)
       ---
       - :name: hook_spec
         :type: package
@@ -151,7 +150,7 @@ describe "AppMap class Hooking" do
       ClassWithLabel.new.fn_with_label
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -174,7 +173,7 @@ describe "AppMap class Hooking" do
       SubPackages.invoke_a
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -247,7 +246,7 @@ describe "AppMap class Hooking" do
       InstanceMethod.new.say_default
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -893,7 +892,7 @@ describe "AppMap class Hooking" do
       secure_compare_event.delete(:lineno)
       secure_compare_event.delete(:path)
 
-      expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq("")
+      expect(secure_compare_event.to_yaml).to eq(<<~YAML)
         ---
         :id: 2
         :event: :call
