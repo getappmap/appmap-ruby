@@ -26,10 +26,11 @@ class GemTest < Minitest::Test
       events = appmap['events']
       assert_equal 6, events.size
       assert_equal 'call', events.first['event']
-      assert_equal 'default_parser', events.first['method_id']
+      assert_equal 'parse', events.first['method_id']
+      assert_equal true, events.first['static']
       assert_match /\lib\/parser\/base\.rb$/, events.first['path']
-      assert_equal 'return', events.second['event']
-      assert_equal 1, events.second['parent_id']
+      assert_equal 'return', events.last['event']
+      assert_equal 1, events.last['parent_id']
     end
   end
 end

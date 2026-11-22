@@ -625,6 +625,50 @@ describe "AppMap class Hooking" do
     end
   end
 
+  it "hooks a class method with the same name as an instance method" do
+    events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: SameNameMethods
+        :method_id: say_hello
+        :path: spec/fixtures/hook/same_name_methods.rb
+        :lineno: 4
+        :static: true
+        :parameters: []
+        :receiver:
+          :class: Class
+          :value: SameNameMethods
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+        :return_value:
+          :class: String
+          :value: hello from the class
+      - :id: 3
+        :event: :call
+        :defined_class: SameNameMethods
+        :method_id: say_hello
+        :path: spec/fixtures/hook/same_name_methods.rb
+        :lineno: 8
+        :static: false
+        :parameters: []
+        :receiver:
+          :class: SameNameMethods
+          :value: Same Name Methods fixture
+      - :id: 4
+        :event: :return
+        :parent_id: 3
+        :return_value:
+          :class: String
+          :value: hello from an instance
+    YAML
+    test_hook_behavior "spec/fixtures/hook/same_name_methods.rb", events_yaml do
+      expect(SameNameMethods.say_hello).to eq("hello from the class")
+      expect(SameNameMethods.new.say_hello).to eq("hello from an instance")
+    end
+  end
+
   it "hooks an included method" do
     events_yaml = <<~YAML
       ---

@@ -205,7 +205,7 @@ module AppMap
         # NoMethodError: private method `singleton_class' called for Rack::MiniProfiler:Class
         class_methods = begin
           if cls.respond_to?(:singleton_class)
-            cls.singleton_class.public_instance_methods(false) + cls.singleton_class.protected_instance_methods(false) - instance_methods - OBJECT_STATIC_METHODS
+            cls.singleton_class.public_instance_methods(false) + cls.singleton_class.protected_instance_methods(false) - OBJECT_STATIC_METHODS
           else
             []
           end
