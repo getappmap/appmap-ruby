@@ -34,6 +34,12 @@ def ruby_3_2_or_higher?
    version[0].to_i >= 4)
 end
 
+def ruby_3_4_or_higher?
+  version = RUBY_VERSION.split('.')
+  ((version[0].to_i == 3 && version[1].to_i >= 4) or
+   version[0].to_i >= 4)
+end
+
 shared_context 'collect events' do
   def collect_events(tracer)
     [].tap do |events|

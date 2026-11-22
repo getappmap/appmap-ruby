@@ -474,6 +474,13 @@ describe "AppMap class Hooking" do
   end
 
   it "hooks an instance method that takes keyword arguments" do
+    # Ruby 3.4 changed Hash#inspect, and YAML has to quote the new format.
+    return_value, return_value_yaml =
+      if ruby_3_4_or_higher?
+        ["one2{kw3: :three}45", "'one2{kw3: :three}45'"]
+      else
+        ["one2{:kw3=>:three}45", "one2{:kw3=>:three}45"]
+      end
     events_yaml = <<~YAML
       ---
       - :id: 1
@@ -510,10 +517,10 @@ describe "AppMap class Hooking" do
         :parent_id: 1
         :return_value:
           :class: String
-          :value: one2{:kw3=>:three}45
+          :value: #{return_value_yaml}
     YAML
     test_hook_behavior "spec/fixtures/hook/instance_method.rb", events_yaml do
-      expect(InstanceMethod.new.say_kws(4, 5, kw1: "one", kw2: 2, kw3: :three)).to eq("one2{:kw3=>:three}45")
+      expect(InstanceMethod.new.say_kws(4, 5, kw1: "one", kw2: 2, kw3: :three)).to eq(return_value)
     end
   end
 
