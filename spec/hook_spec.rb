@@ -749,6 +749,9 @@ describe "AppMap class Hooking" do
   end
 
   it "hooks a singleton method on an embedded struct" do
+    # Prism doesn't fire TracePoint :class/:end events for `class << self`,
+    # so methods defined in it outside a class body are never hooked.
+    pending "https://bugs.ruby-lang.org/issues/22629" if prism_compiler?
     events_yaml = <<~YAML
       ---
       - :id: 1
