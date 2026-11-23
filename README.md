@@ -1,6 +1,7 @@
 
 - [About](#about)
 - [Usage](#usage)
+- [Known issues](#known-issues)
 - [Development](#development)
   - [Internal architecture](#internal-architecture)
   - [Running tests](#running-tests)
@@ -20,6 +21,26 @@ granular than a full debug trace. It's designed to be optimal for understanding 
 # Usage
 
 Visit the [AppMap for Ruby](https://appland.com/docs/reference/appmap-ruby.html) reference page on AppLand.com for a complete reference guide.
+
+# Known issues
+
+## Ruby 3.4+ with Prism: some singleton class methods are not recorded
+
+Prism, the default parser since Ruby 3.4, doesn't report the start and end of `class << self` (or `class << obj`) bodies to TracePoint ([Ruby bug #22629](https://bugs.ruby-lang.org/issues/22629)). AppMap relies on these events, so it doesn't record methods defined in such a body unless it is a `class << self` that runs inside the definition of that same class or module (directly in its body, or for example in an `included` block of a module included there). For example, these methods are not recorded:
+
+```ruby
+Point = Struct.new(:x, :y) do
+  class << self
+    def origin = new(0, 0)
+  end
+end
+
+class << MyModule
+  def helper; end
+end
+```
+
+To work around this, run Ruby with the old parser, for example with `RUBYOPT=--parser=parse.y`.
 
 # Development
 [![CI](https://github.com/getappmap/appmap-ruby/actions/workflows/ci.yml/badge.svg)](https://github.com/getappmap/appmap-ruby/actions/workflows/ci.yml)
