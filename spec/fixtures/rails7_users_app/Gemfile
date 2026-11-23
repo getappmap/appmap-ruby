@@ -33,3 +33,6 @@ group :development, :test do
 end
 
 gem 'capybara', '~> 3.39', group: :test
+
+# no longer a default gem since Ruby 4.0, needed by rswag-ui
+gem 'ostruct'
