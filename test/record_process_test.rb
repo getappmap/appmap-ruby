@@ -10,7 +10,7 @@ class RecordProcessTest < Minitest::Test
       Dir.chdir 'test/fixtures/process_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system(%(bundle exec ruby #{program_name}))
 
         yield

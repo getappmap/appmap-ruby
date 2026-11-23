@@ -11,7 +11,7 @@ class BundleVendorTest < Minitest::Test
         FileUtils.rm_rf 'tmp'
         FileUtils.mkdir_p 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system(%(bundle exec ruby -Ilib -Itest cli.rb add foobar))
         system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest cli.rb list))
 

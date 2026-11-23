@@ -10,7 +10,7 @@ class OpenSSLTest < Minitest::Test
       Dir.chdir 'test/fixtures/openssl_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP' => 'true' }, %(bundle exec ruby lib/openssl_#{test_name}.rb))
 
         yield

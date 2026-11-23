@@ -10,7 +10,7 @@ class CucumberTest < Minitest::Test
       Dir.chdir "test/fixtures/#{dir}" do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP_RECORD_CUCUMBER' => 'true' }, %(bundle exec cucumber))
 
         yield

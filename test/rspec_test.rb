@@ -10,7 +10,7 @@ class RSpecTest < Minitest::Test
       Dir.chdir 'test/fixtures/rspec_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system(%(bundle exec rspec spec/#{test_name}.rb))
 
         yield

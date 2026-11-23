@@ -11,7 +11,7 @@ class GemTest < Minitest::Test
       Dir.chdir 'test/fixtures/gem_test' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield

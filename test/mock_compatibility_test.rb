@@ -9,7 +9,7 @@ class MockCompatibilityTest < Minitest::Test
       Dir.chdir 'test/fixtures/mocha_mock_app' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield
