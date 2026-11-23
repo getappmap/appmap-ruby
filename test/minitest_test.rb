@@ -6,10 +6,10 @@ require 'English'
 
 class MinitestTest < Minitest::Test
   def perform_minitest_test(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/minitest_recorder' do
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP_RECORD_MINITEST' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield

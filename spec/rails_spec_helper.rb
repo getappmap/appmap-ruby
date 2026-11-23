@@ -58,7 +58,7 @@ class TestRailsApp
   def bundle
     return if @bundled
 
-    run_cmd 'bundle'
+    run_cmd 'bundle install'
     @bundled = true
   end
 

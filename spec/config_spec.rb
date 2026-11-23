@@ -159,7 +159,7 @@ describe AppMap::Config do
     end
     describe 'non-writeable dir' do
       it 'does not save the guessed config' do
-        File.stub(:write).and_raise "Unexpected File.write"
+        expect(File).not_to receive(:write)
 
         config = AppMap::Config.load_from_file '/no/such/appmap.yml'
       end

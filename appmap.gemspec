@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "method_source"
+  spec.add_dependency "rdoc"
   spec.add_dependency "reverse_markdown"
 
   spec.add_runtime_dependency "activesupport"
@@ -39,11 +40,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "rake", ">= 12.3.3"
   spec.add_development_dependency "rake-compiler"
-  spec.add_development_dependency "rdoc"
 
   # Testing
   spec.add_development_dependency "climate_control"
-  spec.add_development_dependency "diffy"
   spec.add_development_dependency "hashie"
   spec.add_development_dependency "launchy"
   spec.add_development_dependency "random-port", "~> 0.5.1"

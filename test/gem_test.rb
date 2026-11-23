@@ -7,11 +7,11 @@ require 'json'
 
 class GemTest < Minitest::Test
   def perform_gem_test(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/gem_test' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system({ 'APPMAP' => 'true' }, %(bundle exec ruby -Ilib -Itest test/#{test_name}_test.rb))
 
         yield
@@ -26,10 +26,11 @@ class GemTest < Minitest::Test
       events = appmap['events']
       assert_equal 6, events.size
       assert_equal 'call', events.first['event']
-      assert_equal 'default_parser', events.first['method_id']
+      assert_equal 'parse', events.first['method_id']
+      assert_equal true, events.first['static']
       assert_match /\lib\/parser\/base\.rb$/, events.first['path']
-      assert_equal 'return', events.second['event']
-      assert_equal 1, events.second['parent_id']
+      assert_equal 'return', events.last['event']
+      assert_equal 1, events.last['parent_id']
     end
   end
 end

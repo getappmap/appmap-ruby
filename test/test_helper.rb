@@ -8,7 +8,6 @@ ENV.delete('APP_ENV')
 require 'appmap'
 
 require 'minitest/autorun'
-require 'diffy'
 require 'active_support'
 require 'active_support/core_ext'
 require 'json'

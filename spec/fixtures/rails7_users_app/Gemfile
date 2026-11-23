@@ -12,9 +12,6 @@ gem 'sequel-rails', require: false
 gem 'sequel_secure_password', require: false
 gem "puma", "~> 5.0"
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
-
 group :development do
   gem "web-console"
 end
@@ -33,3 +30,6 @@ group :development, :test do
 end
 
 gem 'capybara', '~> 3.39', group: :test
+
+# no longer a default gem since Ruby 4.0, needed by rswag-ui
+gem 'ostruct'

@@ -3,7 +3,6 @@
 require "rails_spec_helper"
 require "appmap/hook"
 require "appmap/event"
-require "diffy"
 
 # Show nulls as the literal +null+, rather than just leaving the field
 # empty. This make some of the expected YAML below easier to
@@ -45,7 +44,7 @@ describe "AppMap class Hooking" do
 
     events = collect_events(tracer).to_yaml
 
-    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq("") if events_yaml
+    expect(events).to eq(events_yaml) if events_yaml
 
     [config, tracer, events]
   end
@@ -127,9 +126,9 @@ describe "AppMap class Hooking" do
 
     events = collect_events(tracer).to_yaml
 
-    expect(Diffy::Diff.new(events_yaml, events).to_s).to eq("")
+    expect(events).to eq(events_yaml)
     class_map = AppMap.class_map(tracer.event_methods)
-    expect(Diffy::Diff.new(<<~CLASSMAP, YAML.dump(class_map)).to_s).to eq("")
+    expect(YAML.dump(class_map)).to eq(<<~CLASSMAP)
       ---
       - :name: hook_spec
         :type: package
@@ -151,7 +150,7 @@ describe "AppMap class Hooking" do
       ClassWithLabel.new.fn_with_label
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -174,7 +173,7 @@ describe "AppMap class Hooking" do
       SubPackages.invoke_a
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -247,7 +246,7 @@ describe "AppMap class Hooking" do
       InstanceMethod.new.say_default
     end
     class_map = AppMap.class_map(tracer.event_methods).to_yaml
-    expect(Diffy::Diff.new(<<~YAML, class_map).to_s).to eq("")
+    expect(class_map).to eq(<<~YAML)
       ---
       - :name: spec/fixtures/hook
         :type: package
@@ -475,6 +474,13 @@ describe "AppMap class Hooking" do
   end
 
   it "hooks an instance method that takes keyword arguments" do
+    # Ruby 3.4 changed Hash#inspect, and YAML has to quote the new format.
+    return_value, return_value_yaml =
+      if ruby_3_4_or_higher?
+        ["one2{kw3: :three}45", "'one2{kw3: :three}45'"]
+      else
+        ["one2{:kw3=>:three}45", "one2{:kw3=>:three}45"]
+      end
     events_yaml = <<~YAML
       ---
       - :id: 1
@@ -511,10 +517,10 @@ describe "AppMap class Hooking" do
         :parent_id: 1
         :return_value:
           :class: String
-          :value: one2{:kw3=>:three}45
+          :value: #{return_value_yaml}
     YAML
     test_hook_behavior "spec/fixtures/hook/instance_method.rb", events_yaml do
-      expect(InstanceMethod.new.say_kws(4, 5, kw1: "one", kw2: 2, kw3: :three)).to eq("one2{:kw3=>:three}45")
+      expect(InstanceMethod.new.say_kws(4, 5, kw1: "one", kw2: 2, kw3: :three)).to eq(return_value)
     end
   end
 
@@ -626,6 +632,50 @@ describe "AppMap class Hooking" do
     end
   end
 
+  it "hooks a class method with the same name as an instance method" do
+    events_yaml = <<~YAML
+      ---
+      - :id: 1
+        :event: :call
+        :defined_class: SameNameMethods
+        :method_id: say_hello
+        :path: spec/fixtures/hook/same_name_methods.rb
+        :lineno: 4
+        :static: true
+        :parameters: []
+        :receiver:
+          :class: Class
+          :value: SameNameMethods
+      - :id: 2
+        :event: :return
+        :parent_id: 1
+        :return_value:
+          :class: String
+          :value: hello from the class
+      - :id: 3
+        :event: :call
+        :defined_class: SameNameMethods
+        :method_id: say_hello
+        :path: spec/fixtures/hook/same_name_methods.rb
+        :lineno: 8
+        :static: false
+        :parameters: []
+        :receiver:
+          :class: SameNameMethods
+          :value: Same Name Methods fixture
+      - :id: 4
+        :event: :return
+        :parent_id: 3
+        :return_value:
+          :class: String
+          :value: hello from an instance
+    YAML
+    test_hook_behavior "spec/fixtures/hook/same_name_methods.rb", events_yaml do
+      expect(SameNameMethods.say_hello).to eq("hello from the class")
+      expect(SameNameMethods.new.say_hello).to eq("hello from an instance")
+    end
+  end
+
   it "hooks an included method" do
     events_yaml = <<~YAML
       ---
@@ -699,6 +749,9 @@ describe "AppMap class Hooking" do
   end
 
   it "hooks a singleton method on an embedded struct" do
+    # Prism doesn't fire TracePoint :class/:end events for `class << self`,
+    # so methods defined in it outside a class body are never hooked.
+    pending "https://bugs.ruby-lang.org/issues/22629" if prism_compiler?
     events_yaml = <<~YAML
       ---
       - :id: 1
@@ -893,7 +946,7 @@ describe "AppMap class Hooking" do
       secure_compare_event.delete(:lineno)
       secure_compare_event.delete(:path)
 
-      expect(Diffy::Diff.new(<<~YAML, secure_compare_event.to_yaml).to_s).to eq("")
+      expect(secure_compare_event.to_yaml).to eq(<<~YAML)
         ---
         :id: 2
         :event: :call

@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'diffy'
 require 'rack'
 require 'webrick'
 require 'rack/handler/webrick'
@@ -76,7 +75,7 @@ describe 'Net::HTTP handler' do
         end
 
         events = collect_events(@tracer).to_yaml
-        expect(Diffy::Diff.new(<<~EVENTS, events).to_s).to eq('')
+        expect(events).to eq(<<~EVENTS)
         ---
         - :id: 1
           :event: :call
@@ -112,7 +111,7 @@ describe 'Net::HTTP handler' do
         end
 
         event = collect_events(@tracer).first.to_yaml
-        expect(Diffy::Diff.new(<<~EVENT, event).to_s).to eq('')
+        expect(event).to eq(<<~EVENT)
         ---
         :id: 1
         :event: :call
@@ -138,7 +137,7 @@ describe 'Net::HTTP handler' do
         end
 
         event = collect_events(@tracer).first.to_yaml
-        expect(Diffy::Diff.new(<<~EVENT, event).to_s).to eq('')
+        expect(event).to eq(<<~EVENT)
         ---
         :id: 1
         :event: :call

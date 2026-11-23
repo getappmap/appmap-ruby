@@ -6,11 +6,11 @@ require 'English'
 
 class RecordProcessTest < Minitest::Test
   def perform_test(program_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/process_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
-        system 'bundle'
+        system 'bundle install'
         system(%(bundle exec ruby #{program_name}))
 
         yield

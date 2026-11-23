@@ -34,7 +34,12 @@ module AppMap
         require 'rdoc'
         # Strip tags
         comment = comment.split("\n").reject { |line| line =~ /^\s*@/ }.join("\n")
-        converter = ::RDoc::Markup::ToHtml.new(::RDoc::Options.new)
+        # RDoc 8 removed the options argument.
+        converter = if Gem::Version.new(::RDoc::VERSION) >= Gem::Version.new('8')
+          ::RDoc::Markup::ToHtml.new
+        else
+          ::RDoc::Markup::ToHtml.new(::RDoc::Options.new)
+        end
         html = converter.convert(comment).strip
         ::ReverseMarkdown.convert(html).strip
       end
