@@ -12,6 +12,7 @@ appmap_hook.log
 vendor
 node_modules
 Gemfile.lock
+.ruby-version
 appmap.json
 .vscode
 .byebug_history
