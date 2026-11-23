@@ -6,7 +6,7 @@ require 'English'
 
 class RSpecTest < Minitest::Test
   def perform_test(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/rspec_recorder' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'

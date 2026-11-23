@@ -5,7 +5,7 @@ require 'test_helper'
 
 class MockCompatibilityTest < Minitest::Test
   def perform_minitest_test(test_name, env = {})
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/mocha_mock_app' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'

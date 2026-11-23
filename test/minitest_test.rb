@@ -6,7 +6,7 @@ require 'English'
 
 class MinitestTest < Minitest::Test
   def perform_minitest_test(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/minitest_recorder' do
         system 'bundle config --local local.appmap ../../..'
         system 'bundle'

@@ -6,7 +6,7 @@ require 'English'
 
 class BundleVendorTest < Minitest::Test
   def perform_bundle_vendor_app(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/bundle_vendor_app' do
         FileUtils.rm_rf 'tmp'
         FileUtils.mkdir_p 'tmp'

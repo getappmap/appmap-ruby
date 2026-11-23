@@ -7,7 +7,7 @@ require 'json'
 
 class GemTest < Minitest::Test
   def perform_gem_test(test_name)
-    Bundler.with_clean_env do
+    Bundler.with_unbundled_env do
       Dir.chdir 'test/fixtures/gem_test' do
         FileUtils.rm_rf 'tmp'
         system 'bundle config --local local.appmap ../../..'
